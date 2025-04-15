@@ -1,0 +1,10 @@
+
+http://127.0.0.1:8000/deezer/track/3135556/
+
+curl -s http://127.0.0.1:8000/deezer/track/3135556/
+
+http://127.0.0.1:8000/deezer/search/?q=apt"
+
+curl "http://127.0.0.1:8000/deezer/search/?q=apt"
+
+
