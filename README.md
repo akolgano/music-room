@@ -62,8 +62,8 @@ gradle --version
 ## 6. Create a New Android Project
 
 ```bash
-mkdir -p ~/projects/MyKotlinApp
-cd ~/projects/MyKotlinApp
+mkdir -p ~/projects/music-room-frontend
+cd ~/projects/music-room-frontend
 sudo apt install gradle
 gradle init --type kotlin-application --dsl kotlin
 ```
