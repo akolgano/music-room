@@ -2,7 +2,7 @@
 
 This branch is for the frontend portion, i will be running program on physical android connected via USB.
 
-## Getting Started with Kotlin Android Development on Terminal
+## Kotlin
 
 ## 1. Install Java Development Kit (JDK)
 
@@ -135,11 +135,13 @@ mkdir -p app/src/main/res/values
 ./gradlew installDebug
 ```
 
-## 10. Helpful Tools
-
 ```bash
 sudo apt install adb
 adb devices
 adb install app/build/outputs/apk/debug/app-debug.apk
 adb logcat
 ```
+
+## Links
+
+https://docs.google.com/document/d/1U1w2xSYmP-hdfEApE2pUCcMkwGfQivqdXo9uNorzn4A/
