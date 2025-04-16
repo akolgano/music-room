@@ -7,5 +7,5 @@ __pycache__/
 /logs/
 django.log
 .vscode/
-/pong/staticfiles/
 /venv/
+migrations/

@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'apps.deezer',
     'apps.users',
+    'apps.tracks',
+    'apps.playlists',
 ]
 
 MIDDLEWARE = [
