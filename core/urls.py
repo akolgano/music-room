@@ -20,5 +20,8 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('deezer/', include('apps.deezer.urls')),
-    path('users/', include('apps.users.urls')), 
+    path('users/', include('apps.users.urls')),
+    path('tracks/', include('apps.tracks.urls')),
+    path('playlists/', include('apps.playlists.urls')),
 ]
+

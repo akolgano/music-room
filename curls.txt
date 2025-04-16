@@ -1,3 +1,6 @@
+==========================================================
+API to fetch from SDK Deezer. Returns JSON not saving to DB
+
 
 http://127.0.0.1:8000/deezer/track/3135556/
 
@@ -7,4 +10,36 @@ http://127.0.0.1:8000/deezer/search/?q=apt"
 
 curl "http://127.0.0.1:8000/deezer/search/?q=apt"
 
+
+
+
+==========================================================
+Backend API
+
+1. Create user
+
+curl -X POST http://localhost:8000/users/signup/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "anna", "password": "Pass1234!", "email": "anna@mail.com"}'
+
+2. Add track to DB by deezer track_id
+
+curl -X POST http://127.0.0.1:8000/tracks/add_from_deezer/3135556/ -u anna:Pass1234!
+
+3. Save playlist to DB
+
+curl -X POST http://127.0.0.1:8000/playlists/save_playlist/ -u anna:Pass1234!      -H "Content-Type: application/json"      -d '{
+           "name": "My Favorite Playlist",
+           "description": "This is a test playlist.",
+           "public": true,
+           "track_ids": [1, 2, 3]
+         }'
+
+4. Search track and save in DB all results:
+
+http://127.0.0.1:8000/tracks/search/?query=The+Beatles
+
+5. Add track to playlist
+
+http://127.0.0.1:8000/playlists/to_playlist/1/add_track/1/
 
