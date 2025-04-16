@@ -1,0 +1,11 @@
+# created by virtualenv automatically
+*.pyc
+*.swp
+__pycache__/
+/bin/
+/lib/
+/logs/
+django.log
+.vscode/
+/venv/
+migrations/
