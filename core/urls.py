@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('deezer/', include('deezer.urls')), 
+    path('deezer/', include('apps.deezer.urls')), 
 ]
