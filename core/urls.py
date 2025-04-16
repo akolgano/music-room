@@ -24,4 +24,3 @@ urlpatterns = [
     path('tracks/', include('apps.tracks.urls')),
     path('playlists/', include('apps.playlists.urls')),
 ]
-

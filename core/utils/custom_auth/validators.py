@@ -7,6 +7,7 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
+
 class NoSpacesPasswordValidator:
     def validate(self, password, user=None):
         if ' ' in password:

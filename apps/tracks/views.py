@@ -1,9 +1,9 @@
-from django.shortcuts import render
 from .models import Track
 import requests
 from django.http import JsonResponse
 from apps.deezer.deezer_client import DeezerClient
 from django.views.decorators.csrf import csrf_exempt
+
 
 def get_deezer_tracks(query):
     """
@@ -11,7 +11,7 @@ def get_deezer_tracks(query):
     """
     url = f"http://127.0.0.1:8000/deezer/search/?q={query}"
     response = requests.get(url)
-    
+
     if response.status_code == 200:
         tracks = response.json().get('data', [])
         return tracks
@@ -25,7 +25,7 @@ def search_tracks(request):
 
     if query:
         tracks_data = get_deezer_tracks(query)
-        
+
         if tracks_data:
             for track_data in tracks_data:
                 Track.objects.update_or_create(
@@ -34,16 +34,16 @@ def search_tracks(request):
                         'name': track_data['title'],
                         'artist': track_data['artist']['name'],
                         'album': track_data['album']['title'],
-                        #'duration': track_data['duration'],
                         'url': track_data['link'],
                     }
                 )
-            
+
             tracks = Track.objects.filter(name__icontains=query)
         else:
             tracks = []
 
     return JsonResponse({'tracks': list(tracks.values())})
+
 
 @csrf_exempt
 def add_track_from_deezer(request, track_id):
