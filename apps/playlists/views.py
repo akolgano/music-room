@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from .models import Playlist
 from apps.tracks.models import Track
-from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+
 
 @api_view(['GET'])
 def get_user_saved_playlists(request):
@@ -47,6 +47,7 @@ def get_all_shared_playlists(request):
 
     return JsonResponse({'playlists': playlist_data})
 
+
 @api_view(['POST'])
 def save_shared_playlist(request):
     if not request.user.is_authenticated:
@@ -84,13 +85,9 @@ def save_shared_playlist(request):
     }, status=201)
 
 
-
-
 @api_view(['POST'])
 def add_track_to_playlist(request, playlist_id, track_id):
     try:
-        #playlist = Playlist.objects.get(id=playlist_id)
-        #track = Track.objects.get(id=track_id)
         playlist = get_object_or_404(Playlist, id=playlist_id)
         track = get_object_or_404(Track, id=track_id)
         playlist.tracks.add(track)
@@ -98,8 +95,7 @@ def add_track_to_playlist(request, playlist_id, track_id):
         return JsonResponse({
             "message": "Track added to playlist successfully.",
             "playlist_id": playlist.id,
-            "track_id": track.id,
-            #"track_title": track.title
+            "track_id": track.id
         }, status=200)
 
     except Playlist.DoesNotExist:
