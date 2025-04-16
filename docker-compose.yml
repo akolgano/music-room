@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+           POSTGRES_HOST: ${POSTGRES_HOST}
+           POSTGRES_DB: ${POSTGRES_DB}
+           POSTGRES_USER: ${POSTGRES_USER}
+           POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - backend
+
+  django:
+    container_name: django
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - .:/app
+      - ./logs:/var/log
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    networks:
+      - backend
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PIPELINE: local
+      DJANGO_SUPERUSER_USERNAME: ${SUPER_USER}
+      DJANGO_SUPERUSER_PASSWORD: ${SUPER_PASSWORD}
+      DJANGO_SUPERUSER_EMAIL: ${SUPER_EMAIL}
+volumes:
+  postgres_data:
+  backup:
+         driver: local
+         driver_opts:
+            type: none
+            o: bind
+            device: ~/data/backup
+
+networks:
+  backend:
+    driver: bridge
