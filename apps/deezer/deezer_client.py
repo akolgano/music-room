@@ -2,6 +2,7 @@ import requests
 
 DEEZER_API_URL = "https://api.deezer.com"
 
+
 class DeezerClient:
     def __init__(self):
         pass
