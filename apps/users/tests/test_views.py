@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
+
 class UserSignupTests(APITestCase):
     def test_user_signup(self):
         url = reverse('users:signup')
@@ -17,10 +18,11 @@ class UserSignupTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+
 class LoginApiTests(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword', email = 'dummy')
+        self.user = User.objects.create_user(username='testuser', password='testpassword', email='dummy')
         self.token, created = Token.objects.get_or_create(user=self.user)
 
     def test_login_success(self):
@@ -58,10 +60,11 @@ class LoginApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+
 class LogoutApiTests(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword', email = 'dummy')
+        self.user = User.objects.create_user(username='testuser', password='testpassword', email='dummy')
         self.token, created = Token.objects.get_or_create(user=self.user)
 
     def test_logout_success(self):
@@ -72,10 +75,11 @@ class LogoutApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('Logout successfully', response.data)
 
+
 class SignupApiTests(APITestCase):
-    
+
     def setUp(self):
-        self.existing_user = User.objects.create_user(username='existinguser', password='testpassword', email = 'dummy')
+        self.existing_user = User.objects.create_user(username='existinguser', password='testpassword', email='dummy')
 
     def test_signup_success(self):
         url = reverse('users:signup')
