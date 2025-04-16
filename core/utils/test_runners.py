@@ -7,6 +7,7 @@
 from django.test.runner import DiscoverRunner
 import unittest
 
+
 class CustomTextTestResult(unittest.TextTestResult):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,6 +24,7 @@ class CustomTextTestResult(unittest.TextTestResult):
     def addError(self, test, err):
         super().addError(test, err)
         self.test_outcomes[test] = 'ERROR'
+
 
 class CustomTestRunner(DiscoverRunner):
     def run_suite(self, suite, **kwargs):
