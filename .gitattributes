@@ -1,0 +1,48 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout
+*.java text
+*.kt text
+*.kts text
+*.py text
+*.html text
+*.css text
+*.js text
+*.json text
+*.xml text
+*.yml text
+*.yaml text
+*.properties text
+*.md text
+
+# Declare files that will always have CRLF line endings on checkout
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Declare files that will always have LF line endings on checkout
+*.sh text eol=lf
+
+# Denote all files that are truly binary and should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.apk binary
+*.jar binary
+*.zip binary
+*.db binary
+*.pdf binary
+*.mp3 binary
+*.wav binary
+
+# Android Studio/IntelliJ
+*.iml linguist-generated=true
+
+# Gradle
+*.gradle linguist-language=Kotlin
+
+# Django
+*.py linguist-language=Python
