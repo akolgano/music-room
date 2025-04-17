@@ -17,4 +17,7 @@ sudo apt update
 sudo apt install openjdk-17-jdk
 java -version
 javac -version
+
+./gradlew assembleDebug
+./gradlew installDebug
 ```
