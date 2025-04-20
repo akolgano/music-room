@@ -17,7 +17,6 @@ sudo apt update
 sudo apt install openjdk-17-jdk
 java -version
 javac -version
-
-./gradlew assembleDebug
-./gradlew installDebug
 ```
+
+I have build a custom gradlew command inside app/build.gradle.kts, so just need to run `./gradlew installAndRun`
