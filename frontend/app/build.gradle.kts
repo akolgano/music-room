@@ -55,12 +55,25 @@ dependencies {
     implementation("androidx.compose.compiler:compiler:1.5.0")
     implementation("androidx.navigation:navigation-compose:2.7.0")
     implementation("androidx.compose.foundation:foundation")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+tasks.register("setupPortForwarding") {
+    doLast {
+        exec {
+            executable = "adb"
+            args = listOf("reverse", "tcp:8000", "tcp:8000")
+        }
+        println("Port forwarding set up: localhost:8000 on device → localhost:8000 on computer")
+    }
 }
 
 tasks.register("installAndRun") {
