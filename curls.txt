@@ -26,7 +26,15 @@ curl -X POST http://localhost:8000/users/signup/ \
 
 curl -X POST http://127.0.0.1:8000/tracks/add_from_deezer/3135556/ -u anna:Pass1234!
 
-3. Save playlist to DB
+3. Create new empty playlist
+
+curl -X POST http://127.0.0.1:8000/playlists/playlists -u anna:Pass1234!      -H "Content-Type: application/json"      -d '{
+           "name": "My playlist #1",
+           "description": "This is a test playlist.",
+           "public": true
+         }'
+
+4. Save playlist with tracks to DB
 
 curl -X POST http://127.0.0.1:8000/playlists/save_playlist/ -u anna:Pass1234!      -H "Content-Type: application/json"      -d '{
            "name": "My Favorite Playlist",
@@ -35,11 +43,20 @@ curl -X POST http://127.0.0.1:8000/playlists/save_playlist/ -u anna:Pass1234!   
            "track_ids": [1, 2, 3]
          }'
 
-4. Search track and save in DB all results:
+5. Search track and save in DB all results:
 
 http://127.0.0.1:8000/tracks/search/?query=The+Beatles
 
-5. Add track to playlist
+6. Add 1 track to playlist
 
-http://127.0.0.1:8000/playlists/to_playlist/1/add_track/1/
+curl -X POST http://127.0.0.1:8000/playlists/to_playlist/1/add_track/5/ -u anna:Pass1234!
+
+7. Add items to playlist:
+
+curl -X POST http://127.0.0.1:8000/playlists/playlists/4/tracks -u anna:Pass1234! -H "Content-Type: application/json" -d '{
+           "track_ids": [1, 2, 3]
+         }'
+8. Get playlist:
+
+curl -X GET http://127.0.0.1:8000/playlists/playlists/4 -u anna:Pass1234!
 
