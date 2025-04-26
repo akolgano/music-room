@@ -1,0 +1,49 @@
+1) Create Playlist
+
+Create a playlist for a user. (The playlist will be empty until you add tracks)
+
+POST
+/playlists/playlists
+
+
+Request:
+curl -X POST http://127.0.0.1:8000/playlists/playlists -u anna:Pass1234!      -H "Content-Type: application/json"      -d '{
+           "name": "My playlist #1",              
+           "description": "This is a test playlist.",
+           "public": true
+         }'
+
+Response:
+
+{"message": "Empty playlist is created.", "playlist_id": 6}
+
+2) Add Items to Playlist
+
+Add one or more items to a user's playlist.
+
+POST
+/playlists/playlists/{playlist_id}/tracks
+
+Request:
+
+curl -X POST http://127.0.0.1:8000/playlists/playlists/6/tracks -u anna:Pass1234! -H "Content-Type: application/json" -d '{
+           "track_ids": [1,2,3]
+         }'
+
+Response:
+
+{"message": "Tracks added successfully.", "playlist_id": 6, "tracks": [1, 2, 3]}
+
+3) Get Playlist
+
+Get a playlist owned by a user.
+
+GET
+/playlists/playlists/{playlist_id}
+
+Request:
+curl -X GET http://127.0.0.1:8000/playlists/playlists/4 -u anna:Pass1234!
+
+Response:
+
+{"playlist": [{"name": "My playlist #1", "description": "This is a test playlist.", "public": true, "creator": "anna", "tracks": [{"name": "APT.", "artist": "ROS\u00c9"}, {"name": "APT.", "artist": "Bongo Cat"}, {"name": "APT. (ULTRAFUNK)", "artist": "HISTED"}, {"name": "APT.", "artist": "Sandaru Sathsara"}]}]}
