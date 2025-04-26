@@ -88,7 +88,8 @@ fun MainScreen(navController: NavHostController) {
                     style = adaptiveTextStyle(windowSize, MaterialTheme.typography.headlineMedium),
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
-                
+               
+                // Music Control Delegation not implemented as pdf only requires 2/3
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -98,13 +99,6 @@ fun MainScreen(navController: NavHostController) {
                         modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
                     ) {
                         Text("Track Vote")
-                    }
-                    
-                    Button(
-                        onClick = { Toast.makeText(context, "Music Control Delegation feature coming soon", Toast.LENGTH_SHORT).show() },
-                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                    ) {
-                        Text("Control Delegation")
                     }
                 }
                 
@@ -149,15 +143,6 @@ fun MainScreen(navController: NavHostController) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Track Vote")
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Button(
-                    onClick = { Toast.makeText(context, "Music Control Delegation feature coming soon", Toast.LENGTH_SHORT).show() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Control Delegation")
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
