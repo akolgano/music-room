@@ -1,16 +1,17 @@
 # music_room
 
-A new Flutter project.
+Music, Collaboration and mobility
 
-## Getting Started
+## VAR
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```sh
+API_BASE_URL=
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+JWT_SECRET=
+ENCRYPTION_KEY=
+SOCKET_URL=
+MUSIC_API_KEY=
+```
