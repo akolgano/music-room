@@ -1,43 +1,40 @@
+// models/track.dart
 class Track {
   final String id;
-  final String title;
+  final String name;
   final String artist;
   final String album;
-  final String coverArt;
-  final Duration duration;
-  int votes;
-
+  final String url;
+  final String? deezerTrackId;
+  
   Track({
     required this.id,
-    required this.title,
+    required this.name,
     required this.artist,
     required this.album,
-    required this.coverArt,
-    required this.duration,
-    this.votes = 0,
+    required this.url,
+    this.deezerTrackId,
   });
-
+  
   factory Track.fromJson(Map<String, dynamic> json) {
     return Track(
-      id: json['id'],
-      title: json['title'],
+      id: json['id'].toString(),
+      name: json['name'],
       artist: json['artist'],
-      album: json['album'],
-      coverArt: json['cover_art'],
-      duration: Duration(seconds: json['duration']),
-      votes: json['votes'] ?? 0,
+      album: json['album'] ?? '',
+      url: json['url'] ?? '',
+      deezerTrackId: json['deezer_track_id']?.toString(),
     );
   }
-
+  
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
+      'name': name,
       'artist': artist,
       'album': album,
-      'cover_art': coverArt,
-      'duration': duration.inSeconds,
-      'votes': votes,
+      'url': url,
+      'deezer_track_id': deezerTrackId,
     };
   }
 }
