@@ -4,11 +4,19 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/track.dart';
+import 'deezer_track_detail_screen.dart';
 
 class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;
+  final Track? initialTrack;
+  final bool searchDeezer;
 
-  const TrackSearchScreen({Key? key, this.playlistId}) : super(key: key);
+  const TrackSearchScreen({
+    Key? key, 
+    this.playlistId,
+    this.initialTrack,
+    this.searchDeezer = true,
+  }) : super(key: key);
 
   @override
   _TrackSearchScreenState createState() => _TrackSearchScreenState();
@@ -92,15 +100,27 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
                         child: ListTile(
                           title: Text(tracks[i].name),
                           subtitle: Text('${tracks[i].artist} - ${tracks[i].album}'),
-                          trailing: widget.playlistId != null
-                              ? IconButton(
-                                  icon: Icon(Icons.add),
-                                  onPressed: () => _addTrackToPlaylist(tracks[i], authProvider.token!),
-                                )
-                              : IconButton(
-                                  icon: Icon(Icons.save),
-                                  onPressed: () => _addTrackToDatabase(tracks[i], authProvider.token!),
+                          onTap: () {
+                            if (tracks[i].deezerTrackId != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DeezerTrackDetailScreen(
+                                    trackId: tracks[i].deezerTrackId!,
+                                  ),
                                 ),
+                              );
+                            }
+                          },
+                          trailing: widget.playlistId != null
+                            ? IconButton(
+                                icon: Icon(Icons.add),
+                                onPressed: () => _addTrackToPlaylist(tracks[i], authProvider.token!),
+                              )
+                            : IconButton(
+                                icon: Icon(Icons.save),
+                                onPressed: () => _addTrackToDatabase(tracks[i], authProvider.token!),
+                              ),
                         ),
                       ),
                     ),
