@@ -2,6 +2,8 @@
 
 docker-compose up --build
 
+docker compose down -v
+
 http://localhost:8000/admin admin/admin
 
 ## Backend Code requirements

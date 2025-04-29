@@ -105,6 +105,12 @@ class _AuthScreenState extends State<AuthScreen> {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a username';
                                   }
+                                  if (value.trim() != value) {
+                                    return 'Username cannot have leading or trailing spaces';
+                                  }
+                                  if (!RegExp(r'^\w+$').hasMatch(value)) {
+                                    return 'Username can only contain letters, numbers, and underscores';
+                                  }
                                   return null;
                                 },
                               ),
@@ -122,14 +128,20 @@ class _AuthScreenState extends State<AuthScreen> {
                                   ),
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (value) {
-                                    if (!_isLogin && (value == null || value.isEmpty || !value.contains('@'))) {
-                                      return 'Please enter a valid email';
+                                    if (!_isLogin && (value == null || value.isEmpty)) {
+                                      return 'Please enter an email';
+                                    }
+                                    if (!_isLogin && value != null && value.trim() != value) {
+                                      return 'Email cannot have leading or trailing spaces';
+                                    }
+                                    if (!_isLogin && value != null && !RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value)) {
+                                      return 'Enter a valid email address';
                                     }
                                     return null;
                                   },
                                 ),
                               if (!_isLogin) const SizedBox(height: 15),
-                              
+ 
                               TextFormField(
                                 controller: _passwordController,
                                 decoration: InputDecoration(
@@ -141,8 +153,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ),
                                 obscureText: true,
                                 validator: (value) {
-                                  if (value == null || value.isEmpty || value.length < 6) {
-                                    return 'Password must be at least 6 characters';
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a password';
+                                  }
+                                  if (value.length < 8) {
+                                    return 'Password must be at least 8 characters';
                                   }
                                   return null;
                                 },
@@ -268,24 +283,18 @@ class _AuthScreenState extends State<AuthScreen> {
         );
       }
     } catch (error) {
-      /*var errorMessage = 'Authentication failed';
-      if (error.toString().contains('EMAIL_EXISTS')) {
-        errorMessage = 'This email is already in use';
-      } else if (error.toString().contains('INVALID_EMAIL')) {
-        errorMessage = 'This is not a valid email';
-      } else if (error.toString().contains('WEAK_PASSWORD')) {
-        errorMessage = 'This password is too weak';
-      } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
-        errorMessage = 'Could not find a user with that email';
-      } else if (error.toString().contains('INVALID_PASSWORD')) {
-        errorMessage = 'Invalid password';
-      }*/
-      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          //content: Text(errorMessage),
           content: Text(error.toString()),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'DISMISS',
+            textColor: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ),
         ),
       );
     }
