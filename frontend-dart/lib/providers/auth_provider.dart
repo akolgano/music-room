@@ -51,7 +51,7 @@ class AuthProvider with ChangeNotifier {
       
       final responseData = json.decode(response.body);
       if (response.statusCode != 200) {
-        // throw responseData['detail'] ?? 'Authentication failed';
+        throw responseData['detail'] ?? 'Authentication failed';
         throw responseData['detail'];
       }
       
@@ -73,7 +73,7 @@ class AuthProvider with ChangeNotifier {
       rethrow;
     }
   }
-  
+
   Future<void> signup(String username, String email, String password) async {
     try {
       final response = await http.post(
@@ -87,8 +87,23 @@ class AuthProvider with ChangeNotifier {
       );
       
       final responseData = json.decode(response.body);
+      
       if (response.statusCode != 201) {
-        throw responseData['detail'] ?? 'Registration failed';
+        if (responseData is Map) {
+          String errorMsg = '';
+          responseData.forEach((key, value) {
+            if (value is List) {
+              errorMsg += '$key: ${value.join(', ')}\n';
+            } else {
+              errorMsg += '$key: $value\n';
+            }
+          });
+          throw errorMsg.trim();
+        } else if (responseData['detail'] != null) {
+          throw responseData['detail'];
+        } else {
+          throw 'Registration failed';
+        }
       }
       
       _token = responseData['token'];
