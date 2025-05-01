@@ -1,8 +1,7 @@
 // screens/home/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
-import '../../providers/music_provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'events_tab.dart';
 import 'playlists_tab.dart';
 import '../profile/profile_screen.dart';
@@ -11,6 +10,8 @@ import '../music/control_delegation_screen.dart';
 import '../music/track_vote_screen.dart';
 import '../music/enhanced_playlist_editor_screen.dart';
 import '../all_screens_demo.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/music_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -31,7 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
   
   Future<void> _loadData() async {
