@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'models/playlist.dart';
 import 'providers/auth_provider.dart';
+import 'services/music_player_service.dart';
+import 'widgets/music_player_widget.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/profile/profile_screen.dart';
@@ -17,6 +19,7 @@ import 'screens/music/playlist_sharing_screen.dart';
 import 'screens/music/public_playlists_screen.dart';
 import 'screens/music/music_features_screen.dart';
 import 'screens/music/track_search_screen.dart';
+import 'screens/music/player_screen.dart';
 import 'screens/all_screens_demo.dart';
 
 class MusicRoomApp extends StatelessWidget {
@@ -41,7 +44,7 @@ class MusicRoomApp extends StatelessWidget {
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: child!,
+          child: _CustomScaffold(child: child!),
         );
       },
       home: Consumer<AuthProvider>(
@@ -88,8 +91,84 @@ class MusicRoomApp extends StatelessWidget {
         '/deezer_track_detail': (context) => DeezerTrackDetailScreen(
           trackId: ModalRoute.of(context)!.settings.arguments as String,
         ),
+        '/player': (context) => const PlayerScreen(),
         '/all_screens_demo': (context) => const AllScreensDemo(),
       },
+    );
+  }
+}
+
+class _CustomScaffold extends StatelessWidget {
+  final Widget child;
+
+  const _CustomScaffold({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final playerService = Provider.of<MusicPlayerService>(context);
+    final hasCurrentTrack = playerService.currentTrack != null;
+    final bottomPadding = hasCurrentTrack ? 56.0 : 0.0;
+
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: child,
+          ),
+          if (hasCurrentTrack)
+            GestureDetector(
+              onTap: () {
+                _showPlayerBottomSheet(context);
+              },
+              child: const MusicPlayerWidget(mini: true),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showPlayerBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const MusicPlayerWidget(showTrackInfo: true),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed('/player');
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 48),
+              ),
+              child: const Text('Full Screen Player'),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
     );
   }
 }
