@@ -42,7 +42,8 @@ class MusicProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       _hasConnectionError = false;
-      notifyListeners();
+      
+      Future.microtask(() => notifyListeners());
       
       final response = await http.get(
         Uri.parse('$_apiBaseUrl/playlists/public_playlists/'),
@@ -64,7 +65,7 @@ class MusicProvider with ChangeNotifier {
       print('Error fetching public playlists: $error');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      Future.microtask(() => notifyListeners());
     }
   }
 
@@ -472,6 +473,25 @@ class MusicProvider with ChangeNotifier {
     }
   }
 
+  Future<String?> getDeezerTrackPreviewUrl(String trackId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_apiBaseUrl/deezer/track/$trackId/'),
+      );
+      
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        
+        return responseData['preview'];
+      } else {
+        throw Exception('Failed to get Deezer track preview URL');
+      }
+    } catch (error) {
+      print('Error getting Deezer track preview URL: $error');
+      rethrow;
+    }
+  }
+
   Future<Track?> getDeezerTrack(String trackId) async {
     try {
       final response = await http.get(
@@ -488,6 +508,7 @@ class MusicProvider with ChangeNotifier {
           album: responseData['album']['title'],
           url: responseData['link'],
           deezerTrackId: responseData['id'].toString(),
+          previewUrl: responseData['preview'],
         );
       } else {
         throw Exception('Failed to get Deezer track details');

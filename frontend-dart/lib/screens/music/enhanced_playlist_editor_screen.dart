@@ -1,11 +1,12 @@
 // screens/music/enhanced_playlist_editor_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'track_search_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
 import '../../models/track.dart';
-import 'track_search_screen.dart';
+import '../../services/music_player_service.dart';
 
 class EnhancedPlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
@@ -42,7 +43,43 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
     _descriptionController.dispose();
     super.dispose();
   }
-  
+
+  Future<void> _playTrack(Track track) async {
+    try {
+      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+      final playerService = Provider.of<MusicPlayerService>(context, listen: false);
+      
+      if (track.deezerTrackId != null) {
+        final previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
+        
+        if (previewUrl != null) {
+          await playerService.playTrack(track, previewUrl);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No preview available for this track'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Preview not available for non-Deezer tracks'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to play track: ${error.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _loadPlaylist() async {
     if (widget.playlistId == null) {
       setState(() {
@@ -230,12 +267,6 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      
-      /* await musicProvider.removeTrackFromPlaylist(
-        widget.playlistId!,
-        track.id,
-        authProvider.token!,
-      ); */
       
       _playlist = await musicProvider.getPlaylistDetails(
         widget.playlistId!,
@@ -506,8 +537,11 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
       ],
     );
   }
-  
+
   Widget _buildTrackItem(Track track) {
+    final playerService = Provider.of<MusicPlayerService>(context);
+    final isPlaying = playerService.currentTrack?.id == track.id && playerService.isPlaying;
+    
     return Dismissible(
       key: Key(track.id),
       background: Container(
@@ -554,13 +588,16 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(Icons.play_arrow),
+                icon: Icon(
+                  isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: isPlaying ? Colors.indigo : null,
+                ),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Playing ${track.name}'),
-                    ),
-                  );
+                  if (isPlaying) {
+                    playerService.pause();
+                  } else {
+                    _playTrack(track);
+                  }
                 },
               ),
               IconButton(
