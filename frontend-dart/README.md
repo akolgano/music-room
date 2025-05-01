@@ -38,7 +38,7 @@ curl -X POST http://localhost:8000/users/login/ \
 ```bash
 curl -X POST http://localhost:8000/users/logout/ \
   -H "Content-Type: application/json" \
-  -H "Authorization: Token YOUR_AUTH_TOKEN" \
+  -H "Authorization: Bearer YOUR_AUTH_TOKEN" \
   -d '{"username": "testuser"}'
 ```
 
