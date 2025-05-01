@@ -53,10 +53,15 @@ curl -X POST http://127.0.0.1:8000/playlists/to_playlist/1/add_track/5/ -u anna:
 
 7. Add items to playlist:
 
-curl -X POST http://127.0.0.1:8000/playlists/playlists/4/tracks -u anna:Pass1234! -H "Content-Type: application/json" -d '{
+curl -X POST http://127.0.0.1:8000/playlists/playlists/1/tracks -u anna:Pass1234! -H "Content-Type: application/json" -d '{
            "track_ids": [1, 2, 3]
          }'
 8. Get playlist:
 
 curl -X GET http://127.0.0.1:8000/playlists/playlists/4 -u anna:Pass1234!
 
+9. Remove items in playlist:
+
+curl -X POST http://127.0.0.1:8000/playlists/playlists/1/remove_tracks -u anna:Pass1234! -H "Content-Type: application/json" -d '{
+           "track_ids": [1, 2, 3]
+         }'
