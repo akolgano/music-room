@@ -179,3 +179,29 @@ def get_playlist(request, playlist_id):
         return JsonResponse({'playlist': playlist_data})
     except Playlist.DoesNotExist:
         return JsonResponse({"error": "Playlist not found."}, status=404)
+
+
+@api_view(['POST'])
+#@authentication_classes([TokenAuthentication])
+def remove_playlist_items(request, playlist_id):
+    try:
+        user = request.user
+        playlist = get_object_or_404(Playlist, id=playlist_id)
+        track_ids = request.data.get('track_ids', [])  
+        tracks = Track.objects.filter(id__in=track_ids)
+
+        if tracks.exists():
+            playlist.tracks.remove(*tracks)
+        else:
+            return JsonResponse({"error": "One or more tracks not found."}, status=404)
+
+        user.saved_playlists.add(playlist)
+        return JsonResponse({
+            "message": "Tracks deleted successfully.",
+            "playlist_id": playlist.id,
+            "tracks": [track.id for track in tracks]
+        }, status=200)
+    except Playlist.DoesNotExist:
+        return JsonResponse({"error": "Playlist not found."}, status=404)
+    except Track.DoesNotExist:
+        return JsonResponse({"error": "Track not found."}, status=404)
