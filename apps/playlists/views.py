@@ -181,7 +181,7 @@ def get_playlist(request, playlist_id):
         return JsonResponse({"error": "Playlist not found."}, status=404)
 
 
-@api_view(['DELETE'])
+@api_view(['POST'])
 #@authentication_classes([TokenAuthentication])
 def remove_playlist_items(request, playlist_id):
     try:

@@ -9,8 +9,7 @@ __pycache__/
 django.log
 .vscode/
 /venv/
-migrations/
-*/migrations/
+#migrations/
 
 # Kotlin & Android
 *.iml
