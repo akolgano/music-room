@@ -19,6 +19,9 @@ dependencies:
   sentry_flutter: ^6.10.0
   connectivity_plus: ^2.3.6
   cached_network_image: ^3.2.2
+  just_audio: ^0.9.34
+  audio_session: ^0.1.16
+  just_audio_background: ^0.0.1-beta.16
 dev_dependencies:
   flutter_test:
     sdk: flutter
