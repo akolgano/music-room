@@ -205,29 +205,46 @@ class _HomeScreenState extends State<HomeScreen> {
           if (musicProvider.hasConnectionError)
             Container(
               width: double.infinity,
-              color: Colors.red.shade100,
+              color: musicProvider.isRetrying ? Colors.blue.shade100 : Colors.red.shade100,
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: Colors.red),
+                  Icon(
+                    musicProvider.isRetrying ? Icons.refresh : Icons.error_outline,
+                    color: musicProvider.isRetrying ? Colors.blue : Colors.red,
+                  ),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Connection error: ${musicProvider.errorMessage}',
-                      style: TextStyle(color: Colors.red.shade900),
+                      musicProvider.isRetrying 
+                          ? 'Retrying connection... (${musicProvider.errorMessage})' 
+                          : 'Connection error: ${musicProvider.errorMessage}',
+                      style: TextStyle(
+                        color: musicProvider.isRetrying ? Colors.blue.shade900 : Colors.red.shade900
+                      ),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.refresh, color: Colors.red.shade900),
-                    onPressed: () {
-                      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                      if (authProvider.isLoggedIn && authProvider.token != null) {
-                        musicProvider.fetchUserPlaylists(authProvider.token!);
-                      } else {
-                        musicProvider.fetchPublicPlaylists();
-                      }
-                    },
-                  ),
+                  if (!musicProvider.isRetrying)
+                    IconButton(
+                      icon: Icon(Icons.refresh, color: Colors.red.shade900),
+                      onPressed: () {
+                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                        if (authProvider.isLoggedIn && authProvider.token != null) {
+                          musicProvider.fetchUserPlaylists(authProvider.token!);
+                        } else {
+                          musicProvider.fetchPublicPlaylists();
+                        }
+                      },
+                    ),
+                  if (musicProvider.isRetrying)
+                    SizedBox(
+                      width: 24, 
+                      height: 24, 
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      ),
+                    ),
                 ],
               ),
             ),

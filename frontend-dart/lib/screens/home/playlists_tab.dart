@@ -22,7 +22,7 @@ class PlaylistsTab extends StatelessWidget {
     if (musicProvider.isLoading) {
       return Center(child: CircularProgressIndicator());
     }
-    
+
     if (musicProvider.hasConnectionError) {
       return ApiErrorWidget(
         message: musicProvider.errorMessage ?? 'Failed to connect to server',
@@ -33,8 +33,9 @@ class PlaylistsTab extends StatelessWidget {
             musicProvider.fetchPublicPlaylists();
           }
         },
+        isRetrying: musicProvider.isRetrying,
       );
-    }
+    } 
     
     return Column(
       children: [
