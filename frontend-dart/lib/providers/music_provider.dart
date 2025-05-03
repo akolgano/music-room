@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-
+import 'dart:async';
 import '../models/playlist.dart';
 import '../models/track.dart';
 import '../models/event.dart';
@@ -22,10 +22,16 @@ class MusicProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _hasConnectionError = false;
-  
+
+  bool _isRetrying = false;
+  int _retryCount = 0;
+  int _maxRetries = 3;
+  int _retryDelaySeconds = 3;
+
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasConnectionError => _hasConnectionError;
+  bool get isRetrying => _isRetrying;
 
   MusicProvider() {
     _apiBaseUrl = dotenv.env['API_BASE_URL'];
@@ -37,11 +43,44 @@ class MusicProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _autoRetry(Function apiCall) async {
+    if (_retryCount >= _maxRetries) {
+      _isRetrying = false;
+      notifyListeners();
+      return;
+    }
+
+    _isRetrying = true;
+    _retryCount++;
+    notifyListeners();
+    
+    await Future.delayed(Duration(seconds: _retryDelaySeconds));
+    
+    try {
+      await apiCall();
+      _isRetrying = false;
+      _retryCount = 0;
+      _errorMessage = null;
+      _hasConnectionError = false;
+    } catch (error) {
+      if (_retryCount < _maxRetries) {
+        _autoRetry(apiCall);
+      } else {
+        _isRetrying = false;
+        _errorMessage = 'Unable to connect after $_maxRetries attempts. Please check your connection and try again manually.';
+        _hasConnectionError = true;
+      }
+    }
+    
+    notifyListeners();
+  }
+
   Future<void> fetchPublicPlaylists() async {
     try {
       _isLoading = true;
       _errorMessage = null;
       _hasConnectionError = false;
+      _isRetrying = false;
       
       Future.microtask(() => notifyListeners());
       
@@ -54,6 +93,7 @@ class MusicProvider with ChangeNotifier {
         final List<dynamic> playlistsData = responseData['playlists'];
         
         _playlists = playlistsData.map((playlist) => Playlist.fromJson(playlist)).toList();
+        _retryCount = 0;
       } else {
         _errorMessage = 'Failed to load public playlists';
         _hasConnectionError = true;
@@ -63,6 +103,10 @@ class MusicProvider with ChangeNotifier {
       _errorMessage = 'Unable to connect to server. Please check your internet connection.';
       _hasConnectionError = true;
       print('Error fetching public playlists: $error');
+      
+      if (!_isRetrying) {
+        _autoRetry(() => fetchPublicPlaylists());
+      }
     } finally {
       _isLoading = false;
       Future.microtask(() => notifyListeners());
@@ -74,6 +118,7 @@ class MusicProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       _hasConnectionError = false;
+      _isRetrying = false;
       notifyListeners();
       
       final response = await http.get(
@@ -89,6 +134,7 @@ class MusicProvider with ChangeNotifier {
         final List<dynamic> playlistsData = responseData['playlists'];
         
         _playlists = playlistsData.map((playlist) => Playlist.fromJson(playlist)).toList();
+        _retryCount = 0;
       } else {
         _errorMessage = 'Failed to load user playlists';
         _hasConnectionError = true;
@@ -98,6 +144,10 @@ class MusicProvider with ChangeNotifier {
       _errorMessage = 'Unable to connect to server. Please check your internet connection.';
       _hasConnectionError = true;
       print('Error fetching user playlists: $error');
+      
+      if (!_isRetrying) {
+        _autoRetry(() => fetchUserPlaylists(token));
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -110,6 +160,7 @@ class MusicProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       _hasConnectionError = false;
+      _isRetrying = false;
       notifyListeners();
       
       final response = await http.post(
@@ -129,6 +180,7 @@ class MusicProvider with ChangeNotifier {
       if (response.statusCode == 201) {
         final responseData = json.decode(response.body);
         await fetchUserPlaylists(token);
+        _retryCount = 0;
         return responseData['playlist_id'].toString();
       } else {
         final responseData = json.decode(response.body);
@@ -140,6 +192,10 @@ class MusicProvider with ChangeNotifier {
       _errorMessage = 'Unable to connect to server. Please check your internet connection.';
       _hasConnectionError = true;
       print('Error saving shared playlist: $error');
+      
+      if (!_isRetrying) {
+        _autoRetry(() => saveSharedPlaylist(name, description, isPublic, trackIds, token));
+      }
       rethrow;
     } finally {
       _isLoading = false;
@@ -351,6 +407,7 @@ class MusicProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       _hasConnectionError = false;
+      _isRetrying = false;
       notifyListeners();
       
       final response = await http.get(
@@ -362,6 +419,7 @@ class MusicProvider with ChangeNotifier {
         final List<dynamic> tracksData = responseData['tracks'];
         
         _searchResults = tracksData.map((track) => Track.fromJson(track)).toList();
+        _retryCount = 0;
         return _searchResults;
       } else {
         _errorMessage = 'Failed to search tracks';
@@ -372,6 +430,10 @@ class MusicProvider with ChangeNotifier {
       _errorMessage = 'Unable to connect to server. Please check your internet connection.';
       _hasConnectionError = true;
       print('Error searching tracks: $error');
+      
+      if (!_isRetrying) {
+        _autoRetry(() => searchTracks(query));
+      }
       rethrow;
     } finally {
       _isLoading = false;
@@ -524,6 +586,7 @@ class MusicProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       _hasConnectionError = false;
+      _isRetrying = false;
       notifyListeners();
       
       final response = await http.get(
@@ -544,6 +607,7 @@ class MusicProvider with ChangeNotifier {
             deezerTrackId: track['id'].toString(),
           );
         }).toList();
+        _retryCount = 0;
       } else {
         _errorMessage = 'Failed to search Deezer tracks';
         _hasConnectionError = true;
@@ -553,6 +617,10 @@ class MusicProvider with ChangeNotifier {
       _errorMessage = 'Unable to connect to the Deezer service. Please check your internet connection.';
       _hasConnectionError = true;
       print('Error searching Deezer tracks: $error');
+      
+      if (!_isRetrying) {
+        _autoRetry(() => searchDeezerTracks(query));
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

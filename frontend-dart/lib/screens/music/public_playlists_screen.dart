@@ -103,6 +103,7 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
               child: ApiErrorWidget(
                 message: musicProvider.errorMessage ?? 'Failed to load public playlists',
                 onRetry: _loadPlaylists,
+                isRetrying: musicProvider.isRetrying,
               ),
             )
           else if (_filteredPlaylists.isEmpty)
