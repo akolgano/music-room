@@ -76,6 +76,9 @@ class AllScreensDemo extends StatelessWidget {
               ),
               child: const Text('Logout'),
             ),
+            
+            _buildSectionTitle('API Documentation'),
+            _buildNavigationButton(context, 'API Documentation', '/api_docs'),
           ],
         ),
       ),
