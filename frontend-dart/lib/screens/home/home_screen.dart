@@ -197,6 +197,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+            const Divider(),
+            ListTile(
+              leading: Icon(Icons.api),
+              title: Text('API Documentation'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/api_docs');
+              },
+            ),
           ],
         ),
       ),
@@ -274,16 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Profile',
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_selectedIndex == 0) {
-            _showCreateEventDialog(context);
-          } else if (_selectedIndex == 1) {
-            _showCreatePlaylistDialog(context);
-          }
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }

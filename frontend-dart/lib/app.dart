@@ -8,7 +8,6 @@ import 'widgets/music_player_widget.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/profile/profile_screen.dart';
-
 import 'screens/music/track_vote_screen.dart';
 import 'screens/music/control_delegation_screen.dart';
 import 'screens/music/playlist_editor_screen.dart';
@@ -20,6 +19,7 @@ import 'screens/music/public_playlists_screen.dart';
 import 'screens/music/music_features_screen.dart';
 import 'screens/music/track_search_screen.dart';
 import 'screens/music/player_screen.dart';
+import 'screens/docs/api_docs_screen.dart';
 import 'screens/all_screens_demo.dart';
 
 class MusicRoomApp extends StatelessWidget {
@@ -58,7 +58,7 @@ class MusicRoomApp extends StatelessWidget {
         '/track_vote': (context) => const MusicTrackVoteScreen(),
         '/control_delegation': (context) => const MusicControlDelegationScreen(),
         '/music_features': (context) => const MusicFeaturesScreen(),
-        
+        '/api_docs': (context) => const ApiDocsScreen(),
         '/playlist_editor': (context) => const MusicPlaylistEditorScreen(),
         
         '/enhanced_playlist_editor': (context) {
