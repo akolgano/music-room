@@ -13,7 +13,6 @@ services:
            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - backend
-
   django:
     container_name: django
     build:
@@ -37,6 +36,19 @@ services:
       DJANGO_SUPERUSER_USERNAME: ${SUPER_USER}
       DJANGO_SUPERUSER_PASSWORD: ${SUPER_PASSWORD}
       DJANGO_SUPERUSER_EMAIL: ${SUPER_EMAIL}
+  flutter_web:
+    container_name: flutter_web
+    build:
+      context: ./frontend-dart
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend-dart:/app
+    networks:
+      - backend
+    depends_on:
+      - django
 volumes:
   postgres_data:
   backup:
@@ -45,7 +57,6 @@ volumes:
             type: none
             o: bind
             device: ~/data/backup
-
 networks:
   backend:
     driver: bridge

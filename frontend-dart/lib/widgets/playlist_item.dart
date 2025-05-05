@@ -1,27 +1,167 @@
 // widgets/playlist_item.dart
 import 'package:flutter/material.dart';
-import '../screens/music/playlist_editor_screen.dart';
+import '../models/playlist.dart';
+import '../screens/music/enhanced_playlist_editor_screen.dart';
+import '../app.dart';
 
 class PlaylistItem extends StatelessWidget {
-  final Map<String, dynamic> playlist;
+  final Playlist playlist;
+  final VoidCallback? onPlay;
+  final VoidCallback? onShare;
   
-  const PlaylistItem({Key? key, required this.playlist}) : super(key: key);
+  const PlaylistItem({
+    Key? key, 
+    required this.playlist, 
+    this.onPlay,
+    this.onShare,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-      child: ListTile(
-        title: Text(playlist['name']),
-        subtitle: Text(playlist['isPublic'] ? 'Public' : 'Private'),
-        trailing: const Icon(Icons.arrow_forward_ios),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: MusicColors.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (ctx) => MusicPlaylistEditorScreen(playlistId: playlist['id']),
+              builder: (ctx) => EnhancedPlaylistEditorScreen(playlistId: playlist.id),
             ),
           );
         },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              _buildPlaylistCover(),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      playlist.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${playlist.tracks.length} songs • ${playlist.creator}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        if (playlist.isPublic)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: MusicColors.primary.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'PUBLIC',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: MusicColors.primary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onPlay != null)
+                    IconButton(
+                      icon: Container(
+                        decoration: const BoxDecoration(
+                          color: MusicColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.play_arrow,
+                            color: Colors.black,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      onPressed: onPlay,
+                    ),
+                  if (onShare != null)
+                    IconButton(
+                      icon: const Icon(
+                        Icons.share,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      onPressed: onShare,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaylistCover() {
+    final colors = [
+      Colors.purple,
+      Colors.pink,
+      Colors.blue,
+      Colors.teal,
+      Colors.orange,
+      Colors.red,
+    ];
+    final int colorIndex = playlist.id.hashCode % colors.length;
+    final Color coverColor = colors[colorIndex];
+    
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            coverColor,
+            coverColor.withOpacity(0.6),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Center(
+        child: Icon(
+          playlist.tracks.isEmpty ? Icons.playlist_add : Icons.music_note,
+          color: Colors.white,
+          size: 30,
+        ),
       ),
     );
   }

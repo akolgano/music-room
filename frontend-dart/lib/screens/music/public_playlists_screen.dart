@@ -5,6 +5,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
 import '../../widgets/api_error_widget.dart';
+import '../../app.dart';
+import '../../widgets/playlist_item.dart';
 
 class PublicPlaylistsScreen extends StatefulWidget {
   const PublicPlaylistsScreen({Key? key}) : super(key: key);
@@ -68,8 +70,18 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
     final musicProvider = Provider.of<MusicProvider>(context);
 
     return Scaffold(
+      backgroundColor: MusicColors.background,
       appBar: AppBar(
-        title: const Text('Public Playlists'),
+        backgroundColor: MusicColors.background,
+        title: const Text(
+          'Public Playlists',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        elevation: 0,
       ),
       body: Column(
         children: [
@@ -78,25 +90,50 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                labelText: 'Search playlists',
-                prefixIcon: Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    _filterPlaylists('');
-                  },
+                labelText: 'Find in playlists',
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white.withOpacity(0.7),
                 ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.clear,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          _filterPlaylists('');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: MusicColors.surfaceVariant,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: MusicColors.primary),
                 ),
               ),
+              style: const TextStyle(color: Colors.white),
+              cursorColor: MusicColors.primary,
               onChanged: _filterPlaylists,
             ),
           ),
           if (_isLoading)
             const Expanded(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: MusicColors.primary,
+                ),
+              ),
             )
           else if (musicProvider.hasConnectionError)
             Expanded(
@@ -107,7 +144,7 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
               ),
             )
           else if (_filteredPlaylists.isEmpty)
-            const Expanded(
+            Expanded(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -115,10 +152,24 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
                     Icon(
                       Icons.playlist_play,
                       size: 64,
-                      color: Colors.grey,
+                      color: Colors.white.withOpacity(0.5),
                     ),
-                    SizedBox(height: 16),
-                    Text('No playlists found'),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No playlists found',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Try adjusting your search',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -127,9 +178,15 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _loadPlaylists,
+                color: MusicColors.primary,
                 child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 16),
                   itemCount: _filteredPlaylists.length,
-                  itemBuilder: (ctx, i) => _buildPlaylistItem(_filteredPlaylists[i]),
+                  itemBuilder: (ctx, i) => PlaylistItem(
+                    playlist: _filteredPlaylists[i],
+                    onPlay: () => _playPlaylist(_filteredPlaylists[i]),
+                    onShare: () => _savePlaylist(_filteredPlaylists[i]),
+                  ),
                 ),
               ),
             ),
@@ -138,126 +195,15 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
     );
   }
 
-  Widget _buildPlaylistItem(Playlist playlist) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      child: InkWell(
-        onTap: () => _openPlaylistDetails(playlist),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.playlist_play,
-                      size: 48,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          playlist.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Created by ${playlist.creator}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Chip(
-                              label: Text('${playlist.tracks.length} tracks'),
-                              backgroundColor: Colors.blue[100],
-                              labelStyle: const TextStyle(fontSize: 12),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            const SizedBox(width: 8),
-                            if (playlist.isPublic)
-                              Chip(
-                                label: const Text('Public'),
-                                backgroundColor: Colors.green[100],
-                                labelStyle: const TextStyle(fontSize: 12),
-                                padding: EdgeInsets.zero,
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if (playlist.description.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  playlist.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ],
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.play_arrow),
-                    label: const Text('Play'),
-                    onPressed: () => _playPlaylist(playlist),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Save'),
-                    onPressed: () => _savePlaylist(playlist),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _openPlaylistDetails(Playlist playlist) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (ctx) => PlaylistDetailScreen(playlist: playlist),
-      ),
-    );
-  }
-
   void _playPlaylist(Playlist playlist) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Playing playlist: ${playlist.name}'),
+        content: Text('Playing ${playlist.name}'),
+        backgroundColor: MusicColors.surfaceVariant,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
       ),
     );
   }
@@ -283,15 +229,40 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Playlist "${playlist.name}" saved to your library'),
-          backgroundColor: Colors.green,
+          content: Row(
+            children: [
+              const Icon(
+                Icons.check_circle,
+                color: MusicColors.primary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Added to Your Library',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: MusicColors.surfaceVariant,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save playlist: ${error.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: MusicColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       );
     }
@@ -299,151 +270,5 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
     setState(() {
       _isLoading = false;
     });
-  }
-}
-
-class PlaylistDetailScreen extends StatelessWidget {
-  final Playlist playlist;
-
-  const PlaylistDetailScreen({Key? key, required this.playlist}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(playlist.name),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  playlist.name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Created by: ${playlist.creator}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                if (playlist.description.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    playlist.description,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Playing playlist: ${playlist.name}'),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('Play'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          _savePlaylist(context, playlist);
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text('Save'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                Text(
-                  'Tracks (${playlist.tracks.length})',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: playlist.tracks.isEmpty
-                ? const Center(child: Text('No tracks in this playlist'))
-                : ListView.builder(
-                    itemCount: playlist.tracks.length,
-                    itemBuilder: (ctx, i) => ListTile(
-                      leading: CircleAvatar(
-                        child: Text('${i + 1}'),
-                      ),
-                      title: Text(playlist.tracks[i].name),
-                      subtitle: Text(playlist.tracks[i].artist),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.play_arrow),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Playing: ${playlist.tracks[i].name}'),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _savePlaylist(BuildContext context, Playlist playlist) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-
-      final trackIds = playlist.tracks.map((track) => track.id).toList();
-
-      await musicProvider.saveSharedPlaylist(
-        playlist.name,
-        playlist.description,
-        playlist.isPublic,
-        trackIds,
-        authProvider.token!,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Playlist "${playlist.name}" saved to your library'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to save playlist: ${error.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 }
