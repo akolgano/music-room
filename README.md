@@ -12,13 +12,6 @@ http://localhost:8000/admin admin/admin
 
 ## Frontend
 
-All the files for kotlin frontend is stored in frontend folder
+Refer to this link to setup flutter in linux https://docs.flutter.dev/get-started/install/linux/web
 
-```bash
-sudo apt update
-sudo apt install openjdk-17-jdk
-java -version
-javac -version
-```
-
-I have build a custom gradlew command inside app/build.gradle.kts, so just need to run `./gradlew installAndRun`
+After you have flutter installed and configured, `cd frontend-dart` then `flutter run` for mobile version, else `docker compose up` will suffice for web version.
