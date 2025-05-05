@@ -3,6 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
+class MusicColors {
+  static const Color primary = Color(0xFF1DB954);
+  static const Color background = Color(0xFF121212);
+  static const Color surface = Color(0xFF282828);
+  static const Color surfaceVariant = Color(0xFF333333);
+  static const Color onSurface = Color(0xFFFFFFFF);
+  static const Color onSurfaceVariant = Color(0xFFB3B3B3);
+  static const Color error = Color(0xFFE91429);
+}
+
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
 
@@ -26,7 +36,10 @@ class _AuthScreenState extends State<AuthScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.indigo.shade200, Colors.indigo.shade100],
+            colors: [
+              Colors.black,
+              MusicColors.background,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -42,18 +55,19 @@ class _AuthScreenState extends State<AuthScreen> {
                   children: [
                     if (!isLandscape) ...[
                       const SizedBox(height: 20),
-                      Image.asset(
-                        'assets/images/musicroom.png',
-                        width: 150,
-                        height: 150,
+                      const Icon(
+                        Icons.music_note,
+                        size: 80,
+                        color: MusicColors.primary,
                       ),
                       const SizedBox(height: 20),
-                      Text(
+                      const Text(
                         'Music Room',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
+                          letterSpacing: 1.2,
                         ),
                       ),
                       const SizedBox(height: 40),
@@ -61,19 +75,20 @@ class _AuthScreenState extends State<AuthScreen> {
                     if (isLandscape) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            'assets/images/musicroom.png',
-                            width: 80,
-                            height: 80,
+                        children: const [
+                          Icon(
+                            Icons.music_note,
+                            size: 60,
+                            color: MusicColors.primary,
                           ),
-                          const SizedBox(width: 20),
+                          SizedBox(width: 20),
                           Text(
                             'Music Room',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
+                              letterSpacing: 1.2,
                             ),
                           ),
                         ],
@@ -81,26 +96,42 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(height: 20),
                     ],
                     Card(
+                      color: MusicColors.surface,
                       elevation: 8,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.all(24.0),
                         child: Form(
                           key: _formKey,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              Text(
+                                _isLogin ? 'Sign In' : 'Create Account',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
                               TextFormField(
                                 controller: _usernameController,
                                 decoration: InputDecoration(
                                   labelText: 'Username',
-                                  prefixIcon: Icon(Icons.person),
+                                  prefixIcon: Icon(Icons.person, color: MusicColors.onSurfaceVariant),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide.none,
                                   ),
+                                  filled: true,
+                                  fillColor: MusicColors.surfaceVariant,
                                 ),
+                                style: const TextStyle(color: Colors.white),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a username';
@@ -114,18 +145,22 @@ class _AuthScreenState extends State<AuthScreen> {
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 16),
                               
                               if (!_isLogin)
                                 TextFormField(
                                   controller: _emailController,
                                   decoration: InputDecoration(
                                     labelText: 'Email',
-                                    prefixIcon: Icon(Icons.email),
+                                    prefixIcon: Icon(Icons.email, color: MusicColors.onSurfaceVariant),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide.none,
                                     ),
+                                    filled: true,
+                                    fillColor: MusicColors.surfaceVariant,
                                   ),
+                                  style: const TextStyle(color: Colors.white),
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (value) {
                                     if (!_isLogin && (value == null || value.isEmpty)) {
@@ -140,17 +175,21 @@ class _AuthScreenState extends State<AuthScreen> {
                                     return null;
                                   },
                                 ),
-                              if (!_isLogin) const SizedBox(height: 15),
+                              if (!_isLogin) const SizedBox(height: 16),
  
                               TextFormField(
                                 controller: _passwordController,
                                 decoration: InputDecoration(
                                   labelText: 'Password',
-                                  prefixIcon: Icon(Icons.lock),
+                                  prefixIcon: Icon(Icons.lock, color: MusicColors.onSurfaceVariant),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide.none,
                                   ),
+                                  filled: true,
+                                  fillColor: MusicColors.surfaceVariant,
                                 ),
+                                style: const TextStyle(color: Colors.white),
                                 obscureText: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -162,84 +201,128 @@ class _AuthScreenState extends State<AuthScreen> {
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 24),
                               if (_isLoading)
-                                CircularProgressIndicator()
+                                const Center(
+                                  child: CircularProgressIndicator(
+                                    color: MusicColors.primary,
+                                  ),
+                                )
                               else
                                 ElevatedButton(
                                   onPressed: _submit,
                                   style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(double.infinity, 50),
+                                    backgroundColor: MusicColors.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(32),
                                     ),
                                   ),
                                   child: Text(
-                                    _isLogin ? 'LOGIN' : 'SIGN UP',
-                                    style: TextStyle(fontSize: 16),
+                                    _isLogin ? 'SIGN IN' : 'SIGN UP',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.5,
+                                    ),
                                   ),
                                 ),
+                              const SizedBox(height: 16),
                               TextButton(
                                 onPressed: () {
                                   setState(() {
                                     _isLogin = !_isLogin;
                                   });
                                 },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                ),
                                 child: Text(
                                   _isLogin
                                       ? 'Create an account'
-                                      : 'Already have an account? Login',
+                                      : 'Already have an account? Sign in',
                                 ),
                               ),
-                              const Divider(),
-                              Text('Or continue with'),
-                              const SizedBox(height: 10),
+                              const Divider(
+                                color: MusicColors.onSurfaceVariant,
+                                height: 32,
+                              ),
+                              const Center(
+                                child: Text(
+                                  'OR CONTINUE WITH',
+                                  style: TextStyle(
+                                    color: MusicColors.onSurfaceVariant,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
                               isLandscape 
                                 ? Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      ElevatedButton.icon(
-                                        onPressed: () => _loginWithSocial('Google'),
-                                        icon: Icon(Icons.g_mobiledata),
-                                        label: Text('Google'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          foregroundColor: Colors.black,
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () => _loginWithSocial('Google'),
+                                          icon: const Icon(Icons.g_mobiledata),
+                                          label: const Text('GOOGLE'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            side: const BorderSide(color: Colors.white),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(32),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                      ElevatedButton.icon(
-                                        onPressed: () => _loginWithSocial('Facebook'),
-                                        icon: Icon(Icons.facebook),
-                                        label: Text('Facebook'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue[100],
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () => _loginWithSocial('Facebook'),
+                                          icon: const Icon(Icons.facebook),
+                                          label: const Text('FACEBOOK'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            side: const BorderSide(color: Colors.white),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(32),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
                                   )
                                 : Column(
                                     children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton.icon(
-                                          onPressed: () => _loginWithSocial('Google'),
-                                          icon: Icon(Icons.g_mobiledata),
-                                          label: Text('Google'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: Colors.black,
+                                      OutlinedButton.icon(
+                                        onPressed: () => _loginWithSocial('Google'),
+                                        icon: const Icon(Icons.g_mobiledata),
+                                        label: const Text('CONTINUE WITH GOOGLE'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          side: const BorderSide(color: Colors.white),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(32),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 10),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton.icon(
-                                          onPressed: () => _loginWithSocial('Facebook'),
-                                          icon: Icon(Icons.facebook),
-                                          label: Text('Facebook'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue[100],
+                                      const SizedBox(height: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: () => _loginWithSocial('Facebook'),
+                                        icon: const Icon(Icons.facebook),
+                                        label: const Text('CONTINUE WITH FACEBOOK'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          side: const BorderSide(color: Colors.white),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(32),
                                           ),
                                         ),
                                       ),
@@ -286,7 +369,7 @@ class _AuthScreenState extends State<AuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.toString()),
-          backgroundColor: Colors.red,
+          backgroundColor: MusicColors.error,
           duration: Duration(seconds: 5),
           action: SnackBarAction(
             label: 'DISMISS',
@@ -308,7 +391,7 @@ class _AuthScreenState extends State<AuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$provider login is not implemented yet.'),
-        backgroundColor: Colors.orange,
+        backgroundColor: MusicColors.surface,
       ),
     );
   }

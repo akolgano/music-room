@@ -98,17 +98,6 @@ class EventsTab extends StatelessWidget {
             },
             child: Text('Try Track Voting'),
           ),
-          SizedBox(height: 8),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => const MusicControlDelegationScreen(),
-                ),
-              );
-            },
-            child: Text('Explore Control Delegation'),
-          ),
         ],
       ),
     );

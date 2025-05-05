@@ -5,6 +5,16 @@ import 'package:provider/provider.dart';
 import '../services/music_player_service.dart';
 import '../models/track.dart';
 
+class MusicColors {
+  static const Color primary = Color(0xFF1DB954);
+  static const Color background = Color(0xFF121212);
+  static const Color surface = Color(0xFF282828);
+  static const Color surfaceVariant = Color(0xFF333333);
+  static const Color onSurface = Color(0xFFFFFFFF);
+  static const Color onSurfaceVariant = Color(0xFFB3B3B3);
+  static const Color error = Color(0xFFE91429);
+}
+
 class MusicPlayerWidget extends StatelessWidget {
   final bool showTrackInfo;
   final bool mini;
@@ -24,45 +34,74 @@ class MusicPlayerWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Card(
-      margin: EdgeInsets.zero,
-      child: mini ? _buildMiniPlayer(context, playerService, track) : _buildFullPlayer(context, playerService, track),
-    );
+    return mini ? _buildMiniPlayer(context, playerService, track) : _buildFullPlayer(context, playerService, track);
   }
 
   Widget _buildMiniPlayer(BuildContext context, MusicPlayerService playerService, Track track) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.indigo.withOpacity(0.2),
-        child: Icon(
-          playerService.isPlaying ? Icons.pause : Icons.play_arrow,
-          color: Colors.indigo,
+    return Container(
+      color: MusicColors.surface,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: MusicColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: const Icon(
+            Icons.music_note,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          track.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+        subtitle: Text(
+          track.artist,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 12,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                playerService.isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                playerService.togglePlay();
+              },
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.close,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                playerService.stop();
+              },
+            ),
+          ],
         ),
       ),
-      title: Text(
-        track.name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        track.artist,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: () {
-          playerService.stop();
-        },
-      ),
-      onTap: () {
-        playerService.togglePlay();
-      },
     );
   }
 
   Widget _buildFullPlayer(BuildContext context, MusicPlayerService playerService, Track track) {
-    return Padding(
+    return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -71,26 +110,27 @@ class MusicPlayerWidget extends StatelessWidget {
             Text(
               track.name,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
             Text(
-              '${track.artist} - ${track.album}',
+              '${track.artist} • ${track.album}',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: Colors.white.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
           ],
           _buildProgressBar(playerService),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           _buildTimeLabels(playerService),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           _buildControls(playerService),
         ],
       ),
@@ -101,7 +141,9 @@ class MusicPlayerWidget extends StatelessWidget {
     return SliderTheme(
       data: const SliderThemeData(
         trackHeight: 4.0,
-        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8.0),
+        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6.0),
+        overlayShape: RoundSliderOverlayShape(overlayRadius: 12.0),
+        trackShape: RoundedRectSliderTrackShape(),
       ),
       child: Slider(
         value: playerService.position.inMilliseconds.toDouble().clamp(
@@ -113,8 +155,8 @@ class MusicPlayerWidget extends StatelessWidget {
         onChanged: (value) {
           playerService.seekTo(Duration(milliseconds: value.round()));
         },
-        activeColor: Colors.indigo,
-        inactiveColor: Colors.grey[300],
+        activeColor: MusicColors.primary,
+        inactiveColor: Colors.white.withOpacity(0.3),
       ),
     );
   }
@@ -127,11 +169,19 @@ class MusicPlayerWidget extends StatelessWidget {
         children: [
           Text(
             _formatDuration(playerService.position),
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12, 
+              color: Colors.white.withOpacity(0.7),
+              fontWeight: FontWeight.w500,
+            ),
           ),
           Text(
             _formatDuration(playerService.duration),
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12, 
+              color: Colors.white.withOpacity(0.7),
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -143,35 +193,59 @@ class MusicPlayerWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
-          icon: const Icon(Icons.replay_10),
+          icon: Icon(
+            Icons.shuffle,
+            color: Colors.white.withOpacity(0.7),
+            size: 24,
+          ),
           onPressed: () {
-            final newPosition = playerService.position - const Duration(seconds: 10);
-            playerService.seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
           },
         ),
-        const SizedBox(width: 16),
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: Colors.indigo,
+        IconButton(
+          icon: Icon(
+            Icons.skip_previous,
+            color: Colors.white,
+            size: 32,
+          ),
+          onPressed: () {
+          },
+        ),
+        const SizedBox(width: 8),
+        Container(
+          width: 56,
+          height: 56,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
           child: IconButton(
             icon: Icon(
               playerService.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.white,
-              size: 28,
+              color: Colors.black,
+              size: 32,
             ),
             onPressed: () {
               playerService.togglePlay();
             },
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 8),
         IconButton(
-          icon: const Icon(Icons.forward_10),
+          icon: const Icon(
+            Icons.skip_next,
+            color: Colors.white,
+            size: 32,
+          ),
           onPressed: () {
-            final newPosition = playerService.position + const Duration(seconds: 10);
-            playerService.seekTo(
-              newPosition > playerService.duration ? playerService.duration : newPosition,
-            );
+          },
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.repeat,
+            color: Colors.white.withOpacity(0.7),
+            size: 24,
+          ),
+          onPressed: () {
           },
         ),
       ],

@@ -2,16 +2,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
-import 'events_tab.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/music_provider.dart';
+import '../../models/playlist.dart';
 import 'playlists_tab.dart';
+import 'events_tab.dart';
 import '../profile/profile_screen.dart';
 import '../music/public_playlists_screen.dart';
 import '../music/control_delegation_screen.dart';
 import '../music/track_vote_screen.dart';
 import '../music/enhanced_playlist_editor_screen.dart';
 import '../all_screens_demo.dart';
-import '../../providers/auth_provider.dart';
-import '../../providers/music_provider.dart';
+
+class MusicColors {
+  static const Color primary = Color(0xFF1DB954);
+  static const Color background = Color(0xFF121212);
+  static const Color surface = Color(0xFF282828);
+  static const Color surfaceVariant = Color(0xFF333333);
+  static const Color onSurface = Color(0xFFFFFFFF);
+  static const Color onSurfaceVariant = Color(0xFFB3B3B3);
+  static const Color error = Color(0xFFE91429);
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -27,6 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
     const EventsTab(),
     const PlaylistsTab(),
     const ProfileScreen(),
+  ];
+
+  final List<String> _pageTitles = [
+    'Home',
+    'Library',
+    'Profile',
   ];
 
   @override
@@ -54,188 +71,67 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
+      backgroundColor: MusicColors.background,
       appBar: AppBar(
-        title: const Text('Music Room'),
+        backgroundColor: MusicColors.background,
+        elevation: 0,
+        title: Text(
+          _pageTitles[_selectedIndex],
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.exit_to_app),
+            icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
-              Provider.of<AuthProvider>(context, listen: false).logout();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Notifications will be implemented in the future'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
+              Scaffold.of(context).openEndDrawer();
             },
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.indigo,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.music_note,
-                      size: 30,
-                      color: Colors.indigo,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Music Room',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                    ),
-                  ),
-                  Text(
-                    authProvider.username ?? 'Guest',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
-              selected: _selectedIndex == 0,
-              onTap: () {
-                setState(() {
-                  _selectedIndex = 0;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.playlist_play),
-              title: Text('My Playlists'),
-              selected: _selectedIndex == 1,
-              onTap: () {
-                setState(() {
-                  _selectedIndex = 1;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: Icon(Icons.public),
-              title: Text('Discover Public Playlists'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/public_playlists');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.how_to_vote),
-              title: Text('Track Voting'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/track_vote');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.people),
-              title: Text('Control Delegation'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/control_delegation');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Create New Playlist'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/enhanced_playlist_editor');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Profile'),
-              selected: _selectedIndex == 2,
-              onTap: () {
-                setState(() {
-                  _selectedIndex = 2;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Settings will be implemented in the future'),
-                  ),
-                );
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: Icon(Icons.apps),
-              title: Text('All Screens Demo'),
-              subtitle: Text('Access all app screens'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AllScreensDemo(),
-                  ),
-                );
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: Icon(Icons.api),
-              title: Text('API Documentation'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/api_docs');
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(authProvider),
       body: Column(
         children: [
           if (musicProvider.hasConnectionError)
             Container(
               width: double.infinity,
-              color: musicProvider.isRetrying ? Colors.blue.shade100 : Colors.red.shade100,
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: musicProvider.isRetrying
+                  ? MusicColors.primary.withOpacity(0.1)
+                  : MusicColors.error.withOpacity(0.1),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Icon(
                     musicProvider.isRetrying ? Icons.refresh : Icons.error_outline,
-                    color: musicProvider.isRetrying ? Colors.blue : Colors.red,
+                    color: musicProvider.isRetrying ? MusicColors.primary : MusicColors.error,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       musicProvider.isRetrying 
                           ? 'Retrying connection... (${musicProvider.errorMessage})' 
                           : 'Connection error: ${musicProvider.errorMessage}',
                       style: TextStyle(
-                        color: musicProvider.isRetrying ? Colors.blue.shade900 : Colors.red.shade900
+                        color: musicProvider.isRetrying ? MusicColors.primary : MusicColors.error,
                       ),
                     ),
                   ),
                   if (!musicProvider.isRetrying)
                     IconButton(
-                      icon: Icon(Icons.refresh, color: Colors.red.shade900),
+                      icon: Icon(Icons.refresh, color: MusicColors.error),
                       onPressed: () {
                         final authProvider = Provider.of<AuthProvider>(context, listen: false);
                         if (authProvider.isLoggedIn && authProvider.token != null) {
@@ -251,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 24, 
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                        valueColor: AlwaysStoppedAnimation<Color>(MusicColors.primary),
                       ),
                     ),
                 ],
@@ -262,7 +158,273 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      // BottomNavigationBar has been removed
+      bottomNavigationBar: _buildBottomNavigationBar(),
+      floatingActionButton: _selectedIndex == 1 
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/enhanced_playlist_editor');
+              },
+              backgroundColor: MusicColors.primary,
+              child: const Icon(Icons.add, color: Colors.black),
+            )
+          : null,
+    );
+  }
+  
+  Widget _buildDrawer(AuthProvider authProvider) {
+    return Drawer(
+      backgroundColor: MusicColors.background,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: MusicColors.surface,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: MusicColors.primary,
+                  child: Icon(
+                    Icons.music_note,
+                    size: 30,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Music Room',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  authProvider.username ?? 'Guest',
+                  style: const TextStyle(
+                    color: MusicColors.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildDrawerItem(
+            icon: Icons.home,
+            title: 'Home',
+            selected: _selectedIndex == 0,
+            onTap: () {
+              setState(() {
+                _selectedIndex = 0;
+              });
+              Navigator.pop(context);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.library_music,
+            title: 'Your Library',
+            selected: _selectedIndex == 1,
+            onTap: () {
+              setState(() {
+                _selectedIndex = 1;
+              });
+              Navigator.pop(context);
+            },
+          ),
+          const Divider(color: MusicColors.surfaceVariant),
+          _buildDrawerItem(
+            icon: Icons.public,
+            title: 'Discover Playlists',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/public_playlists');
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.how_to_vote,
+            title: 'Track Voting',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/track_vote');
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.people,
+            title: 'Control Delegation',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/control_delegation');
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.add,
+            title: 'Create Playlist',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/enhanced_playlist_editor');
+            },
+          ),
+          const Divider(color: MusicColors.surfaceVariant),
+          _buildDrawerItem(
+            icon: Icons.person,
+            title: 'Profile',
+            selected: _selectedIndex == 2,
+            onTap: () {
+              setState(() {
+                _selectedIndex = 2;
+              });
+              Navigator.pop(context);
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.settings,
+            title: 'Settings',
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Settings will be implemented in the future'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+          const Divider(color: MusicColors.surfaceVariant),
+          _buildDrawerItem(
+            icon: Icons.apps,
+            title: 'All Screens Demo',
+            subtitle: 'Access all app screens',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AllScreensDemo(),
+                ),
+              );
+            },
+          ),
+          const Divider(color: MusicColors.surfaceVariant),
+          _buildDrawerItem(
+            icon: Icons.api,
+            title: 'API Documentation',
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/api_docs');
+            },
+          ),
+          const Divider(color: MusicColors.surfaceVariant),
+          _buildDrawerItem(
+            icon: Icons.logout,
+            title: 'Logout',
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: MusicColors.surface,
+                  title: const Text('Logout', style: TextStyle(color: Colors.white)),
+                  content: const Text(
+                    'Are you sure you want to logout?',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('CANCEL'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        Navigator.of(context).pop();
+                        Provider.of<AuthProvider>(context, listen: false).logout();
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: MusicColors.error,
+                      ),
+                      child: const Text('LOGOUT'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    bool selected = false,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: selected ? MusicColors.primary : Colors.white,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: selected ? MusicColors.primary : Colors.white,
+          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: const TextStyle(
+                color: MusicColors.onSurfaceVariant,
+                fontSize: 12,
+              ),
+            )
+          : null,
+      selected: selected,
+      onTap: onTap,
+    );
+  }
+  
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: MusicColors.surface,
+        border: Border(
+          top: BorderSide(
+            color: MusicColors.surfaceVariant,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        backgroundColor: MusicColors.surface,
+        selectedItemColor: MusicColors.primary,
+        unselectedItemColor: MusicColors.onSurfaceVariant,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.library_music),
+            label: 'Library',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
   
@@ -270,21 +432,31 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Create New Event'),
-        content: const Text('Event creation would be implemented here'),
+        backgroundColor: MusicColors.surface,
+        title: const Text(
+          'Create New Event',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Event creation would be implemented here',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
             },
-            child: const Text('Close'),
+            child: const Text('CANCEL'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pushNamed('/track_vote');
             },
-            child: const Text('Create Sample Event'),
+            style: TextButton.styleFrom(
+              foregroundColor: MusicColors.primary,
+            ),
+            child: const Text('CREATE DEMO EVENT'),
           ),
         ],
       ),
@@ -295,29 +467,36 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Create New Playlist'),
-        content: const Text('How would you like to create your playlist?'),
+        backgroundColor: MusicColors.surface,
+        title: const Text(
+          'Create New Playlist',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'How would you like to create your playlist?',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pushNamed('/enhanced_playlist_editor');
             },
-            child: const Text('Enhanced Editor'),
+            child: const Text('ENHANCED EDITOR'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pushNamed('/playlist_editor');
             },
-            child: const Text('Simple Editor'),
+            child: const Text('SIMPLE EDITOR'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pushNamed('/track_selection');
             },
-            child: const Text('Track Selection'),
+            child: const Text('TRACK SELECTION'),
           ),
         ],
       ),
