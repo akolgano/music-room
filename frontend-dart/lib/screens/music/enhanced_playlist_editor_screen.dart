@@ -579,9 +579,7 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: ListTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.music_note),
-          ),
+          leading: _buildTrackImage(track),
           title: Text(track.name),
           subtitle: Text('${track.artist} - ${track.album}'),
           trailing: Row(
@@ -629,6 +627,32 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTrackImage(Track track) {
+    if (track.imageUrl != null && track.imageUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.network(
+          track.imageUrl!,
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildFallbackTrackImage();
+          },
+        ),
+      );
+    } else {
+      return _buildFallbackTrackImage();
+    }
+  }
+
+  Widget _buildFallbackTrackImage() {
+    return CircleAvatar(
+      backgroundColor: Colors.grey[300],
+      child: Icon(Icons.music_note, color: Colors.grey[700]),
     );
   }
 }

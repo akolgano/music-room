@@ -113,7 +113,26 @@ class _DeezerTrackDetailScreenState extends State<DeezerTrackDetailScreen> {
                                 Center(
                                   child: Column(
                                     children: [
-                                      Icon(Icons.music_note, size: 80, color: Colors.indigo),
+                                      _track!.imageUrl != null && _track!.imageUrl!.isNotEmpty
+                                          ? Container(
+                                              width: 200,
+                                              height: 200,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(8),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black.withOpacity(0.3),
+                                                    blurRadius: 10,
+                                                    offset: const Offset(0, 4),
+                                                  ),
+                                                ],
+                                                image: DecorationImage(
+                                                  image: NetworkImage(_track!.imageUrl!),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            )
+                                          : Icon(Icons.music_note, size: 80, color: Colors.indigo),
                                       const SizedBox(height: 16),
                                       Text(
                                         _track!.name,
