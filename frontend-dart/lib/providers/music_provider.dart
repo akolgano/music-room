@@ -571,6 +571,7 @@ class MusicProvider with ChangeNotifier {
           url: responseData['link'],
           deezerTrackId: responseData['id'].toString(),
           previewUrl: responseData['preview'],
+          imageUrl: responseData['album']['cover_medium'] ?? responseData['album']['cover'],
         );
       } else {
         throw Exception('Failed to get Deezer track details');
@@ -605,6 +606,7 @@ class MusicProvider with ChangeNotifier {
             album: track['album']['title'],
             url: track['link'],
             deezerTrackId: track['id'].toString(),
+            imageUrl: track['album']['cover_medium'] ?? track['album']['cover'],
           );
         }).toList();
         _retryCount = 0;

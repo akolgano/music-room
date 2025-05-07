@@ -8,6 +8,7 @@ class Playlist {
   final bool isPublic;
   final String creator;
   final List<Track> tracks;
+  final String? imageUrl;
   
   Playlist({
     required this.id,
@@ -16,6 +17,7 @@ class Playlist {
     required this.isPublic,
     required this.creator,
     required this.tracks,
+    this.imageUrl,
   });
   
   factory Playlist.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class Playlist {
       isPublic: json['public'] ?? false,
       creator: json['creator'] ?? '',
       tracks: tracksList,
+      imageUrl: json['image_url'],
     );
   }
   
@@ -45,6 +48,7 @@ class Playlist {
       'public': isPublic,
       'creator': creator,
       'tracks': tracks.map((track) => track.toJson()).toList(),
+      'image_url': imageUrl,
     };
   }
 }

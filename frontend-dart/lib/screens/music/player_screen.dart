@@ -66,7 +66,7 @@ class PlayerScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(flex: 1),
-              _buildAlbumArt(),
+              _buildAlbumArt(context),
               const Spacer(flex: 1),
               _buildTrackInfo(track),
               const Spacer(flex: 1),
@@ -85,12 +85,37 @@ class PlayerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAlbumArt() {
+  Widget _buildAlbumArt(BuildContext context) {
+    final playerService = Provider.of<MusicPlayerService>(context);
+    final track = playerService.currentTrack;
+    
+    if (track != null && track.imageUrl != null && track.imageUrl!.isNotEmpty) {
+      return Container(
+        width: 320,
+        height: 320,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+          image: DecorationImage(
+            image: NetworkImage(track.imageUrl!),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+    
     return Container(
       width: 320,
       height: 320,
       decoration: BoxDecoration(
         color: MusicColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),

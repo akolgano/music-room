@@ -107,6 +107,8 @@ class MusicPlayerWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showTrackInfo) ...[
+            _buildTrackImage(track),
+            const SizedBox(height: 16),
             Text(
               track.name,
               style: const TextStyle(
@@ -135,6 +137,50 @@ class MusicPlayerWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildTrackImage(Track track) {
+    if (track.imageUrl != null && track.imageUrl!.isNotEmpty) {
+      return Container(
+        width: 200,
+        height: 200,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          image: DecorationImage(
+            image: NetworkImage(track.imageUrl!),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: 200,
+        height: 200,
+        decoration: BoxDecoration(
+          color: MusicColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.music_note,
+          size: 80,
+          color: Colors.white.withOpacity(0.5),
+        ),
+      );
+    }
   }
 
   Widget _buildProgressBar(MusicPlayerService playerService) {

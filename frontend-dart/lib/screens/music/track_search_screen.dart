@@ -98,6 +98,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
                           vertical: 5,
                         ),
                         child: ListTile(
+                          leading: _buildTrackImage(tracks[i]),
                           title: Text(tracks[i].name),
                           subtitle: Text('${tracks[i].artist} - ${tracks[i].album}'),
                           onTap: () {
@@ -123,10 +124,35 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
                               ),
                         ),
                       ),
-                    ),
+                    )
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTrackImage(Track track) {
+    if (track.imageUrl != null && track.imageUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.network(
+          track.imageUrl!,
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return CircleAvatar(
+              backgroundColor: Colors.grey[300],
+              child: const Icon(Icons.music_note, color: Colors.grey),
+            );
+          },
+        ),
+      );
+    }
+    
+    return CircleAvatar(
+      backgroundColor: Colors.grey[300],
+      child: const Icon(Icons.music_note, color: Colors.grey),
     );
   }
 
