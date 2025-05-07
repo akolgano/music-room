@@ -7,6 +7,7 @@ class Track {
   final String url;
   final String? deezerTrackId;
   final String? previewUrl;
+  final String? imageUrl;
   
   Track({
     required this.id,
@@ -16,6 +17,7 @@ class Track {
     required this.url,
     this.deezerTrackId,
     this.previewUrl,
+    this.imageUrl,
   });
   
   factory Track.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class Track {
       url: json['url'] ?? '',
       deezerTrackId: json['deezer_track_id']?.toString(),
       previewUrl: json['preview_url'],
+      imageUrl: json['image_url'],
     );
   }
   
@@ -39,6 +42,7 @@ class Track {
       'url': url,
       'deezer_track_id': deezerTrackId,
       'preview_url': previewUrl,
+      'image_url': imageUrl,
     };
   }
 }
