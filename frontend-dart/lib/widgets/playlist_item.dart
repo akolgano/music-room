@@ -131,6 +131,23 @@ class PlaylistItem extends StatelessWidget {
   }
 
   Widget _buildPlaylistCover() {
+    if (playlist.imageUrl != null && playlist.imageUrl!.isNotEmpty) {
+      return Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          image: DecorationImage(
+            image: NetworkImage(playlist.imageUrl!),
+            fit: BoxFit.cover,
+            onError: (exception, stackTrace) {
+              print('Error loading image: $exception');
+            },
+          ),
+        ),
+      );
+    }
+    
     final colors = [
       Colors.purple,
       Colors.pink,
