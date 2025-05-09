@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/playlist.dart';
 import '../screens/music/enhanced_playlist_editor_screen.dart';
 import '../app.dart';
+import '../../config/theme.dart';
 
 class PlaylistItem extends StatelessWidget {
   final Playlist playlist;
