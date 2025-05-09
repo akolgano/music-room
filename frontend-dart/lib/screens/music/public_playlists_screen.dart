@@ -7,6 +7,7 @@ import '../../models/playlist.dart';
 import '../../widgets/api_error_widget.dart';
 import '../../app.dart';
 import '../../widgets/playlist_item.dart';
+import '../../config/theme.dart';
 
 class PublicPlaylistsScreen extends StatefulWidget {
   const PublicPlaylistsScreen({Key? key}) : super(key: key);
