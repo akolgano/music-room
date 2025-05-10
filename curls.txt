@@ -65,3 +65,32 @@ curl -X GET http://127.0.0.1:8000/playlists/playlists/4 -u anna:Pass1234!
 curl -X POST http://127.0.0.1:8000/playlists/playlists/1/remove_tracks -u anna:Pass1234! -H "Content-Type: application/json" -d '{
            "track_ids": [1, 2, 3]
          }'
+
+
+10. ========================================Friends===============================================================
+curl -X POST http://localhost:8000/users/send_friend_request/3/ \
+-H "Authorization: Token ca6bea6a2f0edf618dd01068353e6482b38957e4" \
+-H "Content-Type: application/json"
+
+
+curl -X GET http://localhost:8000/users/get_friends/ \
+-H "Authorization: Token 4b7364d879905bf5ec1b4814a1a1c45f21c87399" \
+-H "Content-Type: application/json"
+
+
+
+curl -X POST http://localhost:8000/users/accept_friend_request/2/ \
+-H "Authorization: Token 3e267e52152026ef9ceeafd319aaad0b31745f6b" \
+-H "Content-Type: application/json"
+
+
+
+curl -X POST http://localhost:8000/users/reject_friend_request/5/ \
+-H "Authorization: Token 4b7364d879905bf5ec1b4814a1a1c45f21c87399" \
+-H "Content-Type: application/json"
+
+
+
+curl -X POST http://localhost:8000/users/remove_friend/4/ \
+-H "Authorization: Token 3e267e52152026ef9ceeafd319aaad0b31745f6b" \
+-H "Content-Type: application/json"
