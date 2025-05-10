@@ -19,6 +19,7 @@ class MusicProvider with ChangeNotifier, BaseProviderMixin {
   List<Event> get events => [..._events];
 
   MusicProvider() {
+    // _apiBaseUrl = 'http://localhost:8000';
     _apiBaseUrl = dotenv.env['API_BASE_URL'];
   }
 

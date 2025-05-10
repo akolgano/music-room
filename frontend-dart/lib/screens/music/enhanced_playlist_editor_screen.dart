@@ -1,6 +1,7 @@
 // screens/music/enhanced_playlist_editor_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'track_search_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
@@ -23,18 +24,21 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
   bool _isDeleting = false;
   Playlist? _playlist;
   final _formKey = GlobalKey<FormState>();
-  
+  String? _errorMessage; 
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
   late bool _isPublic;
-  
+
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
     _descriptionController = TextEditingController();
     _isPublic = false;
-    _loadPlaylist();
+    
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadPlaylist();
+    });
   }
   
   @override
@@ -292,7 +296,22 @@ class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScr
       _isLoading = false;
     });
   }
-  
+
+  Future<T?> apiCallSilent<T>(Future<T> Function() call) async {
+    _isLoading = true;
+    
+    try {
+      final result = await call();
+      return result;
+    } catch (error) {
+      _errorMessage = 'Unable to connect to server. Please check your internet connection.';
+      print('API error: $error');
+    } finally {
+      _isLoading = false;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

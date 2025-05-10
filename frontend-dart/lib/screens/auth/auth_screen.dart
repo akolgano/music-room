@@ -390,7 +390,10 @@ class _AuthScreenState extends State<AuthScreen> {
   void _loginWithSocial(String provider) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$provider login is not implemented yet.'),
+        content: Text(
+          '$provider login is not implemented yet.',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: MusicColors.surface,
       ),
     );
