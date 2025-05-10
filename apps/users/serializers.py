@@ -63,3 +63,11 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+
+class FriendSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['username']
