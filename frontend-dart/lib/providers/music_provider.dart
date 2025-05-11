@@ -1,4 +1,4 @@
-// lib/providers/music_provider.dart - Fixed version
+// lib/providers/music_provider.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,10 +19,13 @@ class MusicProvider with ChangeNotifier, BaseProviderMixin {
   List<Event> get events => [..._events];
 
   MusicProvider() {
+    // _apiBaseUrl = 'http://localhost:8000';
     _apiBaseUrl = dotenv.env['API_BASE_URL'];
   }
 
   Future<void> fetchPublicPlaylists() async {
+    if (isLoading) return;
+    
     await apiCall(() async {
       final response = await http.get(Uri.parse('$_apiBaseUrl/playlists/public_playlists/'));
       
@@ -30,9 +33,8 @@ class MusicProvider with ChangeNotifier, BaseProviderMixin {
         final responseData = json.decode(response.body);
         final List<dynamic> playlistsData = responseData['playlists'];
         _playlists = playlistsData.map((playlist) => Playlist.fromJson(playlist)).toList();
-        return _playlists;
       } else {
-        throw Exception('Failed to load public playlists');
+        throw Exception('Failed to load public playlists: ${response.statusCode}');
       }
     });
   }

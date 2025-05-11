@@ -1,4 +1,4 @@
-// models/event.dart
+// lib/models/event.dart
 class Event {
   final String id;
   final String name;

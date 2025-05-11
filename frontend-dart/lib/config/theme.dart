@@ -207,6 +207,10 @@ class AppRoutes {
   static const String player = '/player';
   
   static const String apiDocs = '/api_docs';
+  
+  static const String friends = '/friends';
+  static const String addFriend = '/add_friend';
+  static const String friendRequests = '/friend_requests';
 }
 
 class AppStrings {
