@@ -35,7 +35,9 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      _loadPlaylists();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _loadPlaylists();
+      });
       _isInit = true;
     }
   }

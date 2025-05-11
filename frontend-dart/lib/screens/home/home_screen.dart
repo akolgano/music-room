@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
+import '../../config/theme.dart';
 import 'playlists_tab.dart';
 import 'events_tab.dart';
 import '../profile/profile_screen.dart';
@@ -307,6 +308,32 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+        const Divider(color: MusicColors.surfaceVariant),
+        _buildDrawerItem(
+          icon: Icons.people,
+          title: 'Friends',
+          subtitle: 'Connect with other users',
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, AppRoutes.friends);
+          },
+        ),
+        _buildDrawerItem(
+          icon: Icons.person_add,
+          title: 'Add Friend',
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, AppRoutes.addFriend);
+          },
+        ),
+        _buildDrawerItem(
+          icon: Icons.notifications,
+          title: 'Friend Requests',
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, AppRoutes.friendRequests);
+          },
+        ),
           const Divider(color: MusicColors.surfaceVariant),
           _buildDrawerItem(
             icon: Icons.api,
