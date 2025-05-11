@@ -1,5 +1,7 @@
-// lib/providers/base_provider.dart - Optional update if needed
+// lib/providers/base_provider.dart
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 
 mixin BaseProviderMixin on ChangeNotifier {
   bool _isLoading = false;
@@ -33,22 +35,30 @@ mixin BaseProviderMixin on ChangeNotifier {
   }
 
   Future<T?> apiCall<T>(Future<T> Function() call, {bool autoRetry = true}) async {
-    setLoading(true);
-    resetError();
+    final inBuildPhase = SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks;
+    
+    if (!inBuildPhase) {
+      setLoading(true);
+      resetError();
+    }
     
     try {
       final result = await call();
       _retryCount = 0;
       return result;
     } catch (error) {
-      setError('Unable to connect to server. Please check your internet connection.');
+      if (!inBuildPhase) {
+        setError('Unable to connect to server. Please check your internet connection.');
+      }
       print('API error: $error');
       
       if (autoRetry && !_isRetrying) {
         _autoRetry(() => apiCall(call, autoRetry: false));
       }
     } finally {
-      setLoading(false);
+      if (!inBuildPhase) {
+        setLoading(false);
+      }
     }
     return null;
   }

@@ -23,6 +23,9 @@ import 'screens/music/track_search_screen.dart';
 import 'screens/music/player_screen.dart';
 import 'screens/docs/api_docs_screen.dart';
 import 'screens/all_screens_demo.dart';
+import 'screens/friends/friends_list_screen.dart';
+import 'screens/friends/add_friend_screen.dart';
+import 'screens/friends/friend_request_screen.dart';
 
 class MusicRoomApp extends StatelessWidget {
   const MusicRoomApp({Key? key}) : super(key: key);
@@ -57,6 +60,10 @@ class MusicRoomApp extends StatelessWidget {
       AppRoutes.musicFeatures: (context) => const MusicFeaturesScreen(),
       AppRoutes.apiDocs: (context) => const ApiDocsScreen(),
       AppRoutes.playlistEditor: (context) => const PlaylistEditorScreen(),
+      
+      AppRoutes.friends: (context) => const FriendsListScreen(),
+      AppRoutes.addFriend: (context) => const AddFriendScreen(),
+      AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
       
       AppRoutes.enhancedPlaylistEditor: (context) {
         final args = ModalRoute.of(context)!.settings.arguments;

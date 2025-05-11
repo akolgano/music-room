@@ -1,4 +1,4 @@
-// models/playlist.dart
+// lib/models/playlist.dart
 import 'track.dart';
 
 class Playlist {

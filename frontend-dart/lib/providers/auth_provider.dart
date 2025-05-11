@@ -1,4 +1,4 @@
-// providers/auth_provider.dart
+// lib/providers/auth_provider.dart
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
