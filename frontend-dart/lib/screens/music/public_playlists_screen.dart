@@ -1,6 +1,7 @@
 // screens/music/public_playlists_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
@@ -20,11 +21,25 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
   final _searchController = TextEditingController();
   bool _isLoading = true;
   List<Playlist> _filteredPlaylists = [];
+  bool _isInit = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPlaylists();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadPlaylists();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInit) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _loadPlaylists();
+      });
+      _isInit = true;
+    }
   }
 
   Future<void> _loadPlaylists() async {
