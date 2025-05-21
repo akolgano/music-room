@@ -147,7 +147,7 @@ class AppTheme {
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: primary,
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
