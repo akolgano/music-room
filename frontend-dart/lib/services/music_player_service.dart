@@ -1,103 +1,64 @@
-// services/music_player_service.dart
+// lib/services/music_player_service.dart
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:audio_session/audio_session.dart';
 import '../models/track.dart';
 
 class MusicPlayerService with ChangeNotifier {
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  
+  final AudioPlayer _player = AudioPlayer();
   Track? _currentTrack;
-  
   bool _isPlaying = false;
-  bool _isBuffering = false;
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
-  
-  AudioPlayer get audioPlayer => _audioPlayer;
+
   Track? get currentTrack => _currentTrack;
   bool get isPlaying => _isPlaying;
-  bool get isBuffering => _isBuffering;
   Duration get duration => _duration;
   Duration get position => _position;
-  
+
   MusicPlayerService() {
-    _init();
-  }
-  
-  Future<void> _init() async {
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.music());
-    
-    _audioPlayer.playerStateStream.listen((playerState) {
-      _isPlaying = playerState.playing;
-      _isBuffering = playerState.processingState == ProcessingState.buffering;
+    _player.playerStateStream.listen((state) {
+      _isPlaying = state.playing;
       notifyListeners();
     });
     
-    _audioPlayer.durationStream.listen((newDuration) {
-      if (newDuration != null) {
-        _duration = newDuration;
-        notifyListeners();
-      }
+    _player.durationStream.listen((duration) {
+      _duration = duration ?? Duration.zero;
+      notifyListeners();
     });
     
-    _audioPlayer.positionStream.listen((newPosition) {
-      _position = newPosition;
+    _player.positionStream.listen((position) {
+      _position = position;
       notifyListeners();
     });
   }
-  
-  Future<void> playTrack(Track track, String previewUrl) async {
-    if (_currentTrack?.id == track.id && _isPlaying) {
-      await pause();
-      return;
-    }
-    
-    try {
-      _currentTrack = track;
-      await _audioPlayer.stop();
-      await _audioPlayer.setUrl(previewUrl);
-      await _audioPlayer.play();
-      notifyListeners();
-    } catch (e) {
-      print('Error playing track: $e');
-      rethrow;
-    }
+
+  Future<void> playTrack(Track track, String url) async {
+    _currentTrack = track;
+    await _player.setUrl(url);
+    await _player.play();
+    notifyListeners();
   }
-  
+
   Future<void> togglePlay() async {
     if (_isPlaying) {
-      await pause();
+      await _player.pause();
     } else {
-      await resume();
+      await _player.play();
     }
   }
-  
-  Future<void> pause() async {
-    await _audioPlayer.pause();
-    notifyListeners();
-  }
-  
-  Future<void> resume() async {
-    await _audioPlayer.play();
-    notifyListeners();
-  }
-  
+
+  Future<void> pause() async => await _player.pause();
   Future<void> stop() async {
-    await _audioPlayer.stop();
+    await _player.stop();
     _currentTrack = null;
     notifyListeners();
   }
-  
-  Future<void> seekTo(Duration position) async {
-    await _audioPlayer.seek(position);
-    notifyListeners();
-  }
-  
+
+  Future<void> seekTo(Duration position) async => await _player.seek(position);
+
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    _player.dispose();
     super.dispose();
   }
 }
