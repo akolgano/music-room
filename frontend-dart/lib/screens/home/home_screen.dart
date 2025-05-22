@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
 import '../../config/theme.dart';
+import '../../core/constants.dart';
 import 'playlists_tab.dart';
 import 'events_tab.dart';
 import '../profile/profile_screen.dart';

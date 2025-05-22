@@ -6,9 +6,18 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
 import '../../widgets/api_error_widget.dart';
-import '../../app.dart';
 import '../../widgets/playlist_item.dart';
 import '../../config/theme.dart';
+
+class MusicColors {
+  static const Color primary = Color(0xFF1DB954);
+  static const Color background = Color(0xFF121212);
+  static const Color surface = Color(0xFF282828);
+  static const Color surfaceVariant = Color(0xFF333333);
+  static const Color onSurface = Color(0xFFFFFFFF);
+  static const Color onSurfaceVariant = Color(0xFFB3B3B3);
+  static const Color error = Color(0xFFE91429);
+}
 
 class PublicPlaylistsScreen extends StatefulWidget {
   const PublicPlaylistsScreen({Key? key}) : super(key: key);

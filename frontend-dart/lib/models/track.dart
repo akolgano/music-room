@@ -22,24 +22,19 @@ class Track {
   
   factory Track.fromJson(Map<String, dynamic> json) => Track(
     id: json['id'].toString(),
-    name: json['name'],
-    artist: json['artist'],
-    album: json['album'] ?? '',
-    url: json['url'] ?? '',
+    name: json['name'] ?? json['title'] ?? '',
+    artist: json['artist'] is String 
+      ? json['artist'] 
+      : json['artist']?['name'] ?? '',
+    album: json['album'] is String 
+      ? json['album'] 
+      : json['album']?['title'] ?? '',
+    url: json['url'] ?? json['link'] ?? '',
     deezerTrackId: json['deezer_track_id']?.toString(),
-    previewUrl: json['preview_url'],
-    imageUrl: json['image_url'],
-  );
-  
-  factory Track.fromDeezerJson(Map<String, dynamic> json) => Track(
-    id: json['id'].toString(),
-    name: json['title'],
-    artist: json['artist']['name'],
-    album: json['album']['title'],
-    url: json['link'],
-    deezerTrackId: json['id'].toString(),
-    previewUrl: json['preview'],
-    imageUrl: json['album']['cover_medium'] ?? json['album']['cover'],
+    previewUrl: json['preview_url'] ?? json['preview'],
+    imageUrl: json['image_url'] ?? 
+              json['album']?['cover_medium'] ?? 
+              json['album']?['cover'],
   );
   
   Map<String, dynamic> toJson() => {

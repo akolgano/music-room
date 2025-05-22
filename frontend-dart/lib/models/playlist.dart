@@ -20,35 +20,25 @@ class Playlist {
     this.imageUrl,
   });
   
-  factory Playlist.fromJson(Map<String, dynamic> json) {
-    List<Track> tracksList = [];
-    
-    if (json['tracks'] != null) {
-      tracksList = List<Track>.from(
-        json['tracks'].map((track) => Track.fromJson(track))
-      );
-    }
-    
-    return Playlist(
-      id: json['id'].toString(),
-      name: json['name'],
-      description: json['description'] ?? '',
-      isPublic: json['public'] ?? false,
-      creator: json['creator'] ?? '',
-      tracks: tracksList,
-      imageUrl: json['image_url'],
-    );
-  }
+  factory Playlist.fromJson(Map<String, dynamic> json) => Playlist(
+    id: json['id'].toString(),
+    name: json['name'] ?? '',
+    description: json['description'] ?? '',
+    isPublic: json['public'] ?? false,
+    creator: json['creator'] ?? '',
+    tracks: (json['tracks'] as List?)
+        ?.map((track) => Track.fromJson(track))
+        .toList() ?? [],
+    imageUrl: json['image_url'],
+  );
   
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'public': isPublic,
-      'creator': creator,
-      'tracks': tracks.map((track) => track.toJson()).toList(),
-      'image_url': imageUrl,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'public': isPublic,
+    'creator': creator,
+    'tracks': tracks.map((track) => track.toJson()).toList(),
+    'image_url': imageUrl,
+  };
 }
