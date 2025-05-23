@@ -49,7 +49,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
+          content: Text(message ?? 'Friend request sent'),
           backgroundColor: Colors.green,
         ),
       );

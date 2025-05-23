@@ -1,18 +1,19 @@
-// screens/home/events_tab.dart
+// lib/screens/home/events_tab.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_provider.dart';
 import '../../widgets/event_item.dart';
+import '../../widgets/common/base_widgets.dart';
 import '../music/music_features_screen.dart';
 import '../music/track_vote_screen.dart';
-import '../music/control_delegation_screen.dart';
 
 class EventsTab extends StatelessWidget {
   const EventsTab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final events = Provider.of<MusicProvider>(context).events;
+    final musicProvider = Provider.of<MusicProvider>(context);
+    final events = musicProvider.events;
     
     return Column(
       children: [
@@ -39,14 +40,14 @@ class EventsTab extends StatelessWidget {
               onPressed: () {
                 _showCreateEventDialog(context);
               },
-              icon: Icon(Icons.add),
-              label: Text('New Event'),
+              icon: const Icon(Icons.add),
+              label: const Text('New Event'),
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
@@ -56,10 +57,10 @@ class EventsTab extends StatelessWidget {
                   ),
                 );
               },
-              icon: Icon(Icons.featured_play_list),
-              label: Text('Features'),
+              icon: const Icon(Icons.featured_play_list),
+              label: const Text('Features'),
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
@@ -69,37 +70,10 @@ class EventsTab extends StatelessWidget {
   }
 
   Widget _buildEmptyEventsView(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.event,
-            size: 64,
-            color: Colors.grey,
-          ),
-          SizedBox(height: 16),
-          Text('No events found'),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              _showCreateEventDialog(context);
-            },
-            child: Text('Create Your First Event'),
-          ),
-          SizedBox(height: 8),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => const MusicTrackVoteScreen(),
-                ),
-              );
-            },
-            child: Text('Try Track Voting'),
-          ),
-        ],
-      ),
+    return const EmptyStateWidget(
+      icon: Icons.event,
+      title: 'No events found',
+      subtitle: 'Create your first event to get started with collaborative music experiences',
     );
   }
   
@@ -111,9 +85,7 @@ class EventsTab extends StatelessWidget {
         content: const Text('Event creation would be implemented here'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
+            onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Cancel'),
           ),
           TextButton(

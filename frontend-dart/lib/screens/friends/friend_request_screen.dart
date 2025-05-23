@@ -15,7 +15,7 @@ class FriendRequestScreen extends StatefulWidget {
 
 class _FriendRequestScreenState extends State<FriendRequestScreen> {
   bool _isLoading = true;
-  List<Friendship> _pendingRequests = [];
+  List<Map<String, dynamic>> _pendingRequests = [];
 
   @override
   void initState() {
@@ -98,7 +98,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
     );
   }
 
-  Widget _buildRequestItem(Friendship request) {
+  Widget _buildRequestItem(Map<String, dynamic> request) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.surface,
@@ -123,7 +123,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'User ID: ${request.fromUser}',
+                        'User ID: ${request['from_user'] ?? 'Unknown'}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -132,7 +132,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Status: ${request.status}',
+                        'Status: ${request['status'] ?? 'pending'}',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.7),
@@ -148,7 +148,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 OutlinedButton(
-                  onPressed: () => _rejectRequest(request.id),
+                  onPressed: () => _rejectRequest(request['id']?.toString() ?? '0'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white),
@@ -158,7 +158,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                  onPressed: () => _acceptRequest(request.id),
+                  onPressed: () => _acceptRequest(request['id']?.toString() ?? '0'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.black,
@@ -186,7 +186,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
+          content: Text(message ?? 'Friend request accepted'),
           backgroundColor: Colors.green,
         ),
       );
@@ -214,7 +214,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
+          content: Text(message ?? 'Friend request rejected'),
           backgroundColor: Colors.orange,
         ),
       );
