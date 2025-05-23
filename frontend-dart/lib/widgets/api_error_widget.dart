@@ -1,4 +1,4 @@
-// widgets/api_error_widget.dart
+// lib/widgets/api_error_widget.dart
 import 'package:flutter/material.dart';
 
 class ApiErrorWidget extends StatelessWidget {
@@ -17,38 +17,38 @@ class ApiErrorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(32.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               isRetrying ? Icons.refresh : Icons.cloud_off,
               size: 64,
-              color: isRetrying ? Colors.blue : Colors.grey,
+              color: Colors.grey,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
-              isRetrying ? 'Retrying Connection...' : 'Connection Error',
-              style: TextStyle(
+              isRetrying ? 'Retrying...' : 'Connection Error',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[700]),
+              style: TextStyle(color: Colors.grey[600]),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             if (!isRetrying)
               ElevatedButton.icon(
                 onPressed: onRetry,
-                icon: Icon(Icons.refresh),
-                label: Text('Retry'),
-              )
-            else
-              CircularProgressIndicator(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            if (isRetrying)
+              const CircularProgressIndicator(),
           ],
         ),
       ),

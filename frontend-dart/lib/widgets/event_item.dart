@@ -1,29 +1,52 @@
-// widgets/event_item.dart
+// lib/widgets/event_item.dart
 import 'package:flutter/material.dart';
 import '../models/event.dart';
-import '../screens/music/track_vote_screen.dart';
 
 class EventItem extends StatelessWidget {
   final Event event;
-  
-  const EventItem({Key? key, required this.event}) : super(key: key);
+  final VoidCallback? onTap;
+
+  const EventItem({
+    Key? key,
+    required this.event,
+    this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: event.isPublic ? Colors.green : Colors.blue,
+          child: Icon(
+            event.isPublic ? Icons.public : Icons.lock,
+            color: Colors.white,
+          ),
+        ),
         title: Text(event.name),
-        subtitle: Text(event.isPublic ? 'Public' : 'Private'),
-        trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => MusicTrackVoteScreen(eventId: event.id),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(event.description),
+            const SizedBox(height: 4),
+            Text(
+              'By ${event.creator}',
+              style: const TextStyle(fontSize: 12),
             ),
-          );
-        },
+            Text(
+              '${_formatDate(event.startTime)} - ${_formatDate(event.endTime)}',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        trailing: Icon(Icons.arrow_forward_ios),
+        onTap: onTap,
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 }

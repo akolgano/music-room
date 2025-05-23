@@ -47,4 +47,14 @@ class Track {
     'preview_url': previewUrl,
     'image_url': imageUrl,
   };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Track &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }
