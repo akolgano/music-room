@@ -9,6 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from apps.playlists.models import Playlist, PlaylistTrack
 from django.db import models
 from django.db import transaction
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -241,6 +243,7 @@ def move_track_in_playlist(request):
         return JsonResponse({'error': 'Invalid method'}, status=405)
 
     try:
+        print('move_track_in_playlist starts')
         data = json.loads(request.body)
 
         playlist_id = data['playlist_id']
@@ -264,7 +267,6 @@ def move_track_in_playlist(request):
             tracks.insert(insert_before + i, track)
 
         TEMP_OFFSET = 1000
-
         with transaction.atomic():
             for i, pt in enumerate(tracks):
                 pt.position = i + TEMP_OFFSET
@@ -273,7 +275,19 @@ def move_track_in_playlist(request):
             for i, pt in enumerate(tracks):
                 pt.position = i
             PlaylistTrack.objects.bulk_update(tracks, ['position'])
-
+        updated_playlist = Playlist.objects.get(id=playlist_id)
+        utracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
+        data = [{"id": t.id, "position": t.position} for t in tracks]
+        channel_layer = get_channel_layer()
+        print(channel_layer)
+        async_to_sync(channel_layer.group_send)(
+            f'playlist_{playlist_id}',
+            {
+                'type': 'playlist.update',
+                'playlist_id': playlist_id,
+                'data': data,
+            }
+        )
         return JsonResponse({'message': 'Tracks reordered successfully'})
 
     except Playlist.DoesNotExist:

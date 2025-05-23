@@ -29,4 +29,5 @@ fi
 
 
 echo "Starting development server..."
-exec python manage.py runserver 0.0.0.0:8000
+#exec python manage.py runserver 0.0.0.0:8000
+exec daphne -b 0.0.0.0 -p 8000 core.asgi:application
