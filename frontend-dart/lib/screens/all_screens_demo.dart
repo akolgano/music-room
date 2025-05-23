@@ -10,147 +10,115 @@ class AllScreensDemo extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Screens Demo'),
-        backgroundColor: AppConstants.background,
       ),
-      backgroundColor: AppConstants.background,
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         children: [
           const Text(
-            'Music Room - All Screens',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            'Navigate to Different Screens',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'This demo screen provides access to all screens in the Music Room app for development and testing purposes.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 24),
           
-          _buildSection(
+          _buildScreenButton(
             context,
-            'Authentication',
-            [
-              _ScreenItem('Login/Signup', '/auth', Icons.login),
-            ],
+            'Home',
+            Icons.home,
+            AppRoutes.home,
           ),
-          
-          _buildSection(
+          _buildScreenButton(
             context,
-            'Main Navigation',
-            [
-              _ScreenItem('Home Screen', '/home', Icons.home),
-              _ScreenItem('Profile', '/profile', Icons.person),
-            ],
+            'Profile',
+            Icons.person,
+            AppRoutes.profile,
           ),
-          
-          _buildSection(
+          _buildScreenButton(
             context,
-            'Playlist Management',
-            [
-              _ScreenItem('Enhanced Playlist Editor', '/enhanced_playlist_editor', Icons.playlist_add),
-              _ScreenItem('Public Playlists', '/public_playlists', Icons.public),
-              _ScreenItem('Track Selection', '/track_selection', Icons.track_changes),
-            ],
+            'Enhanced Playlist Editor',
+            Icons.playlist_add,
+            AppRoutes.enhancedPlaylistEditor,
           ),
-          
-          _buildSection(
+          _buildScreenButton(
+            context,
+            'Track Search',
+            Icons.search,
+            AppRoutes.trackSearch,
+          ),
+          _buildScreenButton(
+            context,
+            'Public Playlists',
+            Icons.public,
+            AppRoutes.publicPlaylists,
+          ),
+          _buildScreenButton(
+            context,
+            'Track Voting',
+            Icons.how_to_vote,
+            AppRoutes.trackVote,
+          ),
+          _buildScreenButton(
+            context,
+            'Control Delegation',
+            Icons.admin_panel_settings,
+            AppRoutes.controlDelegation,
+          ),
+          _buildScreenButton(
             context,
             'Music Features',
-            [
-              _ScreenItem('Track Search', '/track_search', Icons.search),
-              _ScreenItem('Music Features', '/music_features', Icons.featured_play_list),
-              _ScreenItem('Player Screen', '/player', Icons.play_circle),
-            ],
+            Icons.featured_play_list,
+            AppRoutes.musicFeatures,
           ),
-          
-          _buildSection(
+          _buildScreenButton(
             context,
-            'Social Features',
-            [
-              _ScreenItem('Track Voting', '/track_vote', Icons.how_to_vote),
-              _ScreenItem('Control Delegation', '/control_delegation', Icons.admin_panel_settings),
-            ],
+            'Player',
+            Icons.play_circle,
+            AppRoutes.player,
           ),
-          
-          _buildSection(
+          _buildScreenButton(
             context,
-            'Documentation',
-            [
-              _ScreenItem('API Documentation', '/api_docs', Icons.api),
-            ],
+            'Friends',
+            Icons.people,
+            AppRoutes.friends,
+          ),
+          _buildScreenButton(
+            context,
+            'Add Friend',
+            Icons.person_add,
+            AppRoutes.addFriend,
+          ),
+          _buildScreenButton(
+            context,
+            'Friend Requests',
+            Icons.notifications,
+            AppRoutes.friendRequests,
+          ),
+          _buildScreenButton(
+            context,
+            'API Documentation',
+            Icons.api,
+            AppRoutes.apiDocs,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<_ScreenItem> screens) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppConstants.primary,
-            ),
-          ),
-        ),
-        ...screens.map((screen) => _buildScreenCard(context, screen)),
-      ],
-    );
-  }
-
-  Widget _buildScreenCard(BuildContext context, _ScreenItem screen) {
+  Widget _buildScreenButton(
+    BuildContext context,
+    String title,
+    IconData icon,
+    String route,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      color: AppConstants.surface,
       child: ListTile(
-        leading: Icon(
-          screen.icon,
-          color: AppConstants.primary,
-        ),
-        title: Text(
-          screen.title,
-          style: const TextStyle(color: Colors.white),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          color: Colors.white,
-          size: 16,
-        ),
+        leading: Icon(icon),
+        title: Text(title),
+        trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () {
-          try {
-            Navigator.of(context).pushNamed(screen.route);
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Error navigating to ${screen.title}: $e'),
-                backgroundColor: AppConstants.error,
-              ),
-            );
-          }
+          Navigator.pushNamed(context, route);
         },
       ),
     );
   }
-}
-
-class _ScreenItem {
-  final String title;
-  final String route;
-  final IconData icon;
-
-  const _ScreenItem(this.title, this.route, this.icon);
 }

@@ -4,18 +4,10 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 
-class MusicColors {
-  static const Color primary = Color(0xFF1DB954);
-  static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF282828);
-  static const Color surfaceVariant = Color(0xFF333333);
-  static const Color onSurface = Color(0xFFFFFFFF);
-  static const Color onSurfaceVariant = Color(0xFFB3B3B3);
-  static const Color error = Color(0xFFE91429);
-}
-
 class PlaylistEditorScreen extends StatefulWidget {
-  const PlaylistEditorScreen({Key? key}) : super(key: key);
+  final String? playlistId;
+  
+  const PlaylistEditorScreen({Key? key, this.playlistId}) : super(key: key);
 
   @override
   _PlaylistEditorScreenState createState() => _PlaylistEditorScreenState();
@@ -35,10 +27,69 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.playlistId == null ? 'Create Playlist' : 'Edit Playlist'),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Playlist Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Please enter a playlist name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: const Text('Make Public'),
+                      value: _isPublic,
+                      onChanged: (value) {
+                        setState(() {
+                          _isPublic = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _createPlaylist,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text('CREATE PLAYLIST'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+
   Future<void> _createPlaylist() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -66,7 +117,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to create playlist: ${error.toString()}'),
+          content: Text('Failed to create playlist: $error'),
           backgroundColor: Colors.red,
         ),
       );
@@ -75,76 +126,5 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     setState(() {
       _isLoading = false;
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Playlist'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    const Text(
-                      'Create New Playlist',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Playlist Name',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a playlist name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        labelText: 'Description (optional)',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 15),
-                    SwitchListTile(
-                      title: const Text('Make Public'),
-                      subtitle: const Text('Public playlists can be seen by all users'),
-                      value: _isPublic,
-                      onChanged: (value) {
-                        setState(() {
-                          _isPublic = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _createPlaylist,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('CREATE PLAYLIST'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-    );
   }
 }

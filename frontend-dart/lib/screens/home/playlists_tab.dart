@@ -1,14 +1,12 @@
-// screens/home/playlists_tab.dart
+// lib/screens/home/playlists_tab.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/playlist.dart';
-import '../music/playlist_editor_screen.dart';
 import '../music/enhanced_playlist_editor_screen.dart';
-import '../music/public_playlists_screen.dart';
-import '../music/track_selection_screen.dart';
 import '../../widgets/api_error_widget.dart';
+import '../../widgets/common/base_widgets.dart';
 
 class PlaylistsTab extends StatelessWidget {
   const PlaylistsTab({Key? key}) : super(key: key);
@@ -20,7 +18,7 @@ class PlaylistsTab extends StatelessWidget {
     final playlists = musicProvider.playlists;
     
     if (musicProvider.isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (musicProvider.hasConnectionError) {
@@ -42,33 +40,10 @@ class PlaylistsTab extends StatelessWidget {
         _buildQuickActionsBar(context),
         Expanded(
           child: playlists.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.playlist_play,
-                        size: 64,
-                        color: Colors.grey,
-                      ),
-                      SizedBox(height: 16),
-                      Text('No playlists found'),
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed('/enhanced_playlist_editor');
-                        },
-                        child: Text('Create Your First Playlist'),
-                      ),
-                      SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed('/public_playlists');
-                        },
-                        child: Text('Discover Public Playlists'),
-                      ),
-                    ],
-                  ),
+              ? const EmptyStateWidget(
+                  icon: Icons.playlist_play,
+                  title: 'No playlists found',
+                  subtitle: 'Create your first playlist to get started',
                 )
               : ListView.builder(
                   itemCount: playlists.length,
@@ -89,36 +64,36 @@ class PlaylistsTab extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pushNamed('/enhanced_playlist_editor');
               },
-              icon: Icon(Icons.add),
-              label: Text('New'),
+              icon: const Icon(Icons.add),
+              label: const Text('New'),
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(context).pushNamed('/public_playlists');
               },
-              icon: Icon(Icons.public),
-              label: Text('Discover'),
+              icon: const Icon(Icons.public),
+              label: const Text('Discover'),
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(context).pushNamed('/track_selection');
               },
-              icon: Icon(Icons.search),
-              label: Text('Tracks'),
+              icon: const Icon(Icons.search),
+              label: const Text('Tracks'),
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
@@ -141,16 +116,16 @@ class PlaylistsTab extends StatelessWidget {
                 playlist.description,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 12),
               ),
-            Text('Tracks: ${playlist.tracks.length}', style: TextStyle(fontSize: 12)),
+            Text('Tracks: ${playlist.tracks.length}', style: const TextStyle(fontSize: 12)),
           ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.share),
+              icon: const Icon(Icons.share),
               onPressed: () {
                 Navigator.of(context).pushNamed(
                   '/playlist_sharing',
@@ -159,7 +134,7 @@ class PlaylistsTab extends StatelessWidget {
               },
             ),
             IconButton(
-              icon: Icon(Icons.edit),
+              icon: const Icon(Icons.edit),
               onPressed: () {
                 Navigator.of(context).pushNamed(
                   '/enhanced_playlist_editor',
