@@ -1,6 +1,7 @@
-// screens/music/music_features_screen.dart
+// lib/screens/music/music_features_screen.dart
 import 'package:flutter/material.dart';
-import '../music/track_search_screen.dart';
+import '../../core/constants.dart';
+import 'track_search_screen.dart';
 
 class MusicFeaturesScreen extends StatelessWidget {
   const MusicFeaturesScreen({Key? key}) : super(key: key);
@@ -21,21 +22,21 @@ class MusicFeaturesScreen extends StatelessWidget {
               icon: Icons.playlist_add,
               title: 'Create New Playlist',
               description: 'Create a new playlist with enhanced options',
-              route: '/enhanced_playlist_editor',
+              route: AppRoutes.playlistEditor,
             ),
             _buildFeatureCard(
               context,
               icon: Icons.public,
               title: 'Public Playlists',
               description: 'Discover and explore playlists created by other users',
-              route: '/public_playlists',
+              route: AppRoutes.publicPlaylists,
             ),
             _buildFeatureCard(
               context,
               icon: Icons.search,
               title: 'Track Selection',
               description: 'Search and select tracks to add to playlists',
-              route: '/track_selection',
+              route: AppRoutes.trackSelection,
             ),
             
             _buildSectionTitle('Collaboration Features'),
@@ -44,14 +45,14 @@ class MusicFeaturesScreen extends StatelessWidget {
               icon: Icons.how_to_vote,
               title: 'Track Voting',
               description: 'Vote on tracks for collaborative playlist creation',
-              route: '/track_vote',
+              route: AppRoutes.trackVote,
             ),
             _buildFeatureCard(
               context,
               icon: Icons.admin_panel_settings,
               title: 'Control Delegation',
               description: 'Delegate playlist control to other users',
-              route: '/control_delegation',
+              route: AppRoutes.controlDelegation,
             ),
             
             _buildSectionTitle('Deezer Integration'),

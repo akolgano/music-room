@@ -1,19 +1,19 @@
-// screens/home/home_screen.dart
+// lib/screens/home/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
-import '../../config/theme.dart';
+import '../../core/theme.dart';
 import '../../core/constants.dart';
 import 'playlists_tab.dart';
 import 'events_tab.dart';
 import '../profile/profile_screen.dart';
-import '../music/public_playlists_screen.dart';
+import '../playlists/public_playlists_screen.dart';
 import '../music/control_delegation_screen.dart';
 import '../music/track_vote_screen.dart';
-import '../music/enhanced_playlist_editor_screen.dart';
+import '../music/playlist_editor_screen.dart';
 import '../all_screens_demo.dart';
 
 class MusicColors {
@@ -60,10 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final musicProvider = Provider.of<MusicProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    await musicProvider.fetchPublicPlaylists();
-    
     if (authProvider.token != null && authProvider.userId != null) {
       await musicProvider.fetchUserPlaylists(authProvider.token!);
+      await musicProvider.fetchPublicPlaylists(authProvider.token!);
     }
   }
   
@@ -135,11 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: Icon(Icons.refresh, color: MusicColors.error),
                       onPressed: () {
-                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
                         if (authProvider.isLoggedIn && authProvider.token != null) {
                           musicProvider.fetchUserPlaylists(authProvider.token!);
-                        } else {
-                          musicProvider.fetchPublicPlaylists();
                         }
                       },
                     ),
@@ -164,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: _selectedIndex == 1 
           ? FloatingActionButton(
               onPressed: () {
-                Navigator.of(context).pushNamed('/enhanced_playlist_editor');
+                Navigator.of(context).pushNamed(AppRoutes.playlistEditor);
               },
               backgroundColor: MusicColors.primary,
               child: const Icon(Icons.add, color: Colors.black),
@@ -242,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'Discover Playlists',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/public_playlists');
+              Navigator.pushNamed(context, AppRoutes.publicPlaylists);
             },
           ),
           _buildDrawerItem(
@@ -250,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'Track Voting',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/track_vote');
+              Navigator.pushNamed(context, AppRoutes.trackVote);
             },
           ),
           _buildDrawerItem(
@@ -258,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'Control Delegation',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/control_delegation');
+              Navigator.pushNamed(context, AppRoutes.controlDelegation);
             },
           ),
           _buildDrawerItem(
@@ -266,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'Create Playlist',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/enhanced_playlist_editor');
+              Navigator.pushNamed(context, AppRoutes.playlistEditor);
             },
           ),
           const Divider(color: MusicColors.surfaceVariant),
@@ -341,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'API Documentation',
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/api_docs');
+              Navigator.pushNamed(context, AppRoutes.apiDocs);
             },
           ),
           const Divider(color: MusicColors.surfaceVariant),
@@ -450,81 +446,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-  
-  void _showCreateEventDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: MusicColors.surface,
-        title: const Text(
-          'Create New Event',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'Event creation would be implemented here',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pushNamed('/track_vote');
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: MusicColors.primary,
-            ),
-            child: const Text('CREATE DEMO EVENT'),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  void _showCreatePlaylistDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: MusicColors.surface,
-        title: const Text(
-          'Create New Playlist',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'How would you like to create your playlist?',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pushNamed('/enhanced_playlist_editor');
-            },
-            child: const Text('ENHANCED EDITOR'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pushNamed('/playlist_editor');
-            },
-            child: const Text('SIMPLE EDITOR'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pushNamed('/track_selection');
-            },
-            child: const Text('TRACK SELECTION'),
           ),
         ],
       ),

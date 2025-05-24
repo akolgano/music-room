@@ -1,15 +1,16 @@
 // lib/widgets/api_error_widget.dart
 import 'package:flutter/material.dart';
+import '../core/theme.dart';
 
 class ApiErrorWidget extends StatelessWidget {
   final String message;
-  final VoidCallback onRetry;
+  final VoidCallback? onRetry;
   final bool isRetrying;
 
   const ApiErrorWidget({
     Key? key,
     required this.message,
-    required this.onRetry,
+    this.onRetry,
     this.isRetrying = false,
   }) : super(key: key);
 
@@ -22,33 +23,51 @@ class ApiErrorWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isRetrying ? Icons.refresh : Icons.cloud_off,
+              Icons.error_outline,
               size: 64,
-              color: Colors.grey,
+              color: Colors.white.withOpacity(0.5),
             ),
             const SizedBox(height: 16),
-            Text(
-              isRetrying ? 'Retrying...' : 'Connection Error',
-              style: const TextStyle(
+            const Text(
+              'Connection Error',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-            if (!isRetrying)
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+              style: const TextStyle(
+                color: AppTheme.onSurfaceVariant,
+                fontSize: 14,
               ),
-            if (isRetrying)
-              const CircularProgressIndicator(),
+              textAlign: TextAlign.center,
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 24),
+              isRetrying
+                  ? const Column(
+                      children: [
+                        CircularProgressIndicator(color: AppTheme.primary),
+                        SizedBox(height: 12),
+                        Text(
+                          'Retrying...',
+                          style: TextStyle(color: AppTheme.primary),
+                        ),
+                      ],
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: onRetry,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.black,
+                      ),
+                    ),
+            ],
           ],
         ),
       ),
