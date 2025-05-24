@@ -34,9 +34,9 @@ class AllScreensDemo extends StatelessWidget {
           ),
           _buildScreenButton(
             context,
-            'Enhanced Playlist Editor',
+            'Playlist Editor',
             Icons.playlist_add,
-            AppRoutes.enhancedPlaylistEditor,
+            AppRoutes.playlistEditor,
           ),
           _buildScreenButton(
             context,

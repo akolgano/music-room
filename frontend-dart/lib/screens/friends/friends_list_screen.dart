@@ -1,10 +1,10 @@
 // lib/screens/friends/friends_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/theme.dart';
+import '../../core/theme.dart';
 import '../../providers/friend_provider.dart';
-import '../../widgets/common/base_widgets.dart';
-import '../base_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/common_widgets.dart';
 import '../../utils/dialog_helper.dart';
 
 class FriendsListScreen extends StatefulWidget {
@@ -14,27 +14,9 @@ class FriendsListScreen extends StatefulWidget {
   State<FriendsListScreen> createState() => _FriendsListScreenState();
 }
 
-class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
+class _FriendsListScreenState extends State<FriendsListScreen> {
   List<int> _friends = [];
-
-  @override
-  String get screenTitle => 'Friends';
-
-  @override
-  PreferredSizeWidget? buildAppBar() => AppBar(
-    backgroundColor: AppTheme.background,
-    title: Text(screenTitle),
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.person_add),
-        onPressed: () => Navigator.pushNamed(context, '/add_friend').then((_) => _loadFriends()),
-      ),
-      IconButton(
-        icon: const Icon(Icons.notifications),
-        onPressed: () => Navigator.pushNamed(context, '/friend_requests').then((_) => _loadFriends()),
-      ),
-    ],
-  );
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -43,50 +25,110 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
   }
 
   Future<void> _loadFriends() async {
-    await runAsync(() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      await friendProvider.fetchFriends(auth.token!);
+      
+      await friendProvider.fetchFriends(authProvider.token!);
       setState(() => _friends = friendProvider.friends);
-    });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading friends: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    
+    setState(() => _isLoading = false);
   }
 
   Future<void> _removeFriend(int friendId) async {
-    final confirm = await DialogHelper.showConfirm(
-      context,
-      title: 'Remove Friend',
-      message: 'Are you sure you want to remove this friend?',
-      confirmText: 'Remove',
-      isDangerous: true,
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('Remove Friend', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to remove this friend?',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
     );
     
     if (confirm == true) {
-      await runAsync(() async {
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-        await friendProvider.removeFriend(auth.token!, friendId);
-        showSuccess('Friend removed');
+        
+        await friendProvider.removeFriend(authProvider.token!, friendId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Friend removed'),
+            backgroundColor: Colors.green,
+          ),
+        );
         _loadFriends();
-      });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to remove friend: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   @override
-  Widget buildBody() {
-    return _friends.isEmpty
-        ? EmptyStateWidget(
-            icon: Icons.people,
-            title: 'No friends found',
-            buttonText: 'Add Friends',
-            onButtonPressed: () => Navigator.pushNamed(context, '/add_friend').then((_) => _loadFriends()),
-          )
-        : RefreshIndicator(
-            onRefresh: _loadFriends,
-            color: AppTheme.primary,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(bottom: 16),
-              itemCount: _friends.length,
-              itemBuilder: (ctx, i) => _buildFriendItem(_friends[i]),
-            ),
-          );
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: const Text('Friends'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add),
+            onPressed: () => Navigator.pushNamed(context, '/add_friend').then((_) => _loadFriends()),
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () => Navigator.pushNamed(context, '/friend_requests').then((_) => _loadFriends()),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+          : _friends.isEmpty
+              ? const EmptyState(
+                  icon: Icons.people,
+                  title: 'No friends found',
+                  subtitle: 'Add friends to start sharing music!',
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadFriends,
+                  color: AppTheme.primary,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: _friends.length,
+                    itemBuilder: (ctx, i) => _buildFriendItem(_friends[i]),
+                  ),
+                ),
+    );
   }
 
   Widget _buildFriendItem(int friendId) {

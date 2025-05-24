@@ -2,79 +2,54 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/music_provider.dart';
+import '../providers/app_provider.dart';
+import '../core/theme.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
-  bool isLoading = false;
-  String? errorMessage;
-
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
-  MusicProvider get music => Provider.of<MusicProvider>(context, listen: false);
-
+  AppProvider get app => Provider.of<AppProvider>(context, listen: false);
+  
   String get screenTitle;
-  Widget buildBody();
+  Widget buildContent();
   
   PreferredSizeWidget? buildAppBar() => AppBar(
+    backgroundColor: AppTheme.background,
     title: Text(screenTitle),
-    backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
   );
+
+  List<Widget> get actions => [];
+
+  Widget? get floatingActionButton => null;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: buildAppBar(),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: isLoading ? const Center(child: CircularProgressIndicator()) : buildBody(),
+      body: buildContent(),
+      floatingActionButton: floatingActionButton,
     );
   }
 
-  Future<void> runAsync(Future<void> Function() operation) async {
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
+  void showSuccess(String message) => showSnackBar(context, message);
+  void showError(String message) => showSnackBar(context, message, isError: true);
 
+  void showSnackBar(BuildContext context, String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppTheme.error : Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<T?> runAsync<T>(Future<T> Function() operation) async {
     try {
-      await operation();
-    } catch (error) {
-      setState(() {
-        errorMessage = error.toString();
-      });
-      showError(error.toString());
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+      return await operation();
+    } catch (e) {
+      showError(e.toString());
+      return null;
     }
-  }
-
-  void showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void showInfo(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 }
