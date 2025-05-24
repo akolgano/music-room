@@ -1,285 +1,233 @@
-// lib/providers/music_provider.dart - ENHANCED VERSION with missing methods
-import 'dart:convert';
+// lib/providers/music_provider.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 import '../models/models.dart';
 
 class MusicProvider with ChangeNotifier {
-  final String _apiBaseUrl = dotenv.env['API_BASE_URL'] ?? '';
+  final ApiService _apiService = ApiService();
   
   List<Playlist> _playlists = [];
   List<Track> _searchResults = [];
-  List<Event> _events = []; 
+  List<Event> _events = [];
   bool _isLoading = false;
-  bool _isRetrying = false; 
   String? _errorMessage;
+  bool _isRetrying = false;
+  bool _hasConnectionError = false;
 
-  List<Playlist> get playlists => [..._playlists];
-  List<Track> get searchResults => [..._searchResults];
-  List<Event> get events => [..._events]; 
+  List<Playlist> get playlists => List.unmodifiable(_playlists);
+  List<Track> get searchResults => List.unmodifiable(_searchResults);
+  List<Event> get events => List.unmodifiable(_events);
   bool get isLoading => _isLoading;
-  bool get isRetrying => _isRetrying; 
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
-  bool get hasConnectionError => _errorMessage?.contains('Connection') ?? false; 
+  bool get isRetrying => _isRetrying;
+  bool get hasConnectionError => _hasConnectionError;
 
-  Future<T?> _apiCall<T>(Future<T> Function() call) async {
-    _isLoading = true;
+  void clearError() {
     _errorMessage = null;
+    _hasConnectionError = false;
     notifyListeners();
-    
+  }
+
+  Future<void> fetchUserPlaylists(String token) async {
     try {
-      final result = await call();
-      return result;
+      _isLoading = true;
+      _hasConnectionError = false;
+      _isRetrying = false;
+      notifyListeners();
+
+      _playlists = await _apiService.getPlaylists(token: token, publicOnly: false);
+      _errorMessage = null;
     } catch (e) {
-      _errorMessage = 'Connection error. Please check your internet.';
-      return null;
+      _errorMessage = e.toString();
+      _hasConnectionError = true;
+      _startRetryTimer(token);
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<T?> _apiCallWithRetry<T>(Future<T> Function() call) async {
-    _isRetrying = true;
-    _errorMessage = null;
-    notifyListeners();
-    
+  Future<void> fetchPublicPlaylists(String token) async {
     try {
-      final result = await call();
-      return result;
-    } catch (e) {
-      _errorMessage = 'Connection error. Please check your internet.';
-      return null;
-    } finally {
+      _isLoading = true;
+      _hasConnectionError = false;
       _isRetrying = false;
+      notifyListeners();
+
+      _playlists = await _apiService.getPlaylists(token: token, publicOnly: true);
+      _errorMessage = null;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _hasConnectionError = true;
+      _startRetryTimer(token);
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  Map<String, String> _getHeaders([String? token]) => {
-    'Content-Type': 'application/json',
-    if (token != null) 'Authorization': 'Token $token',
-  };
-
-  void clearError() {
-    _errorMessage = null;
+  void _startRetryTimer(String token) {
+    _isRetrying = true;
     notifyListeners();
-  }
-
-  Future<void> fetchPublicPlaylists() async {
-    await _apiCall(() async {
-      final response = await http.get(Uri.parse('$_apiBaseUrl/playlists/public_playlists/'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _playlists = (data['playlists'] as List).map((p) => Playlist.fromJson(p)).toList();
-      } else throw Exception('Failed to load playlists');
+    
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_isRetrying) {
+        fetchUserPlaylists(token).catchError((_) => fetchPublicPlaylists(token));
+      }
     });
   }
 
-  Future<void> fetchUserPlaylists(String token) async {
-    await _apiCall(() async {
-      final response = await http.get(
-        Uri.parse('$_apiBaseUrl/playlists/saved_playlists/'),
-        headers: _getHeaders(token),
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _playlists = (data['playlists'] as List).map((p) => Playlist.fromJson(p)).toList();
-      } else throw Exception('Failed to load playlists');
-    });
+  Future<Playlist?> getPlaylistDetails(String id, String token) async {
+    if (id.isEmpty || id == 'null') {
+      _errorMessage = 'Invalid playlist ID: $id';
+      notifyListeners();
+      print('MusicProvider: Invalid playlist ID: $id');
+      return null;
+    }
+    
+    try {
+      print('MusicProvider: Getting playlist details for ID: $id');
+      return await _apiService.getPlaylist(id, token);
+    } catch (e) {
+      _errorMessage = e.toString();
+      print('MusicProvider: Error getting playlist details: $e');
+      notifyListeners();
+      return null;
+    }
   }
 
   Future<String?> createPlaylist(String name, String description, bool isPublic, String token) async {
-    return await _apiCall(() async {
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/playlists/playlists'),
-        headers: _getHeaders(token),
-        body: json.encode({'name': name, 'description': description, 'public': isPublic}),
-      );
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        await fetchUserPlaylists(token);
-        return data['playlist_id'].toString();
-      } else throw Exception('Failed to create playlist');
-    });
+    try {
+      final id = await _apiService.createPlaylist(name, description, isPublic, token);
+      await fetchUserPlaylists(token);
+      return id;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
   }
 
-  Future<String?> createNewPlaylist(String name, String description, bool isPublic, String token) async {
-    return await createPlaylist(name, description, isPublic, token);
+  Future<bool> updatePlaylist(String id, String name, String description, bool isPublic, String token) async {
+    if (id.isEmpty || id == 'null') {
+      _errorMessage = 'Invalid playlist ID: $id';
+      notifyListeners();
+      print('MusicProvider: Invalid playlist ID for update: $id');
+      return false;
+    }
+    
+    try {
+      print('MusicProvider: Updating playlist ID: $id');
+      await _apiService.updatePlaylist(id, name, description, isPublic, token);
+      await fetchUserPlaylists(token);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      print('MusicProvider: Error updating playlist: $e');
+      notifyListeners();
+      return false;
+    }
   }
 
-  Future<bool> updatePlaylist(String playlistId, String name, String description, bool isPublic, String token) async {
-    final result = await _apiCall(() async {
-      final response = await http.put(
-        Uri.parse('$_apiBaseUrl/playlists/playlists/$playlistId'),
-        headers: _getHeaders(token),
-        body: json.encode({'name': name, 'description': description, 'public': isPublic}),
-      );
-      if (response.statusCode == 200) {
-        await fetchUserPlaylists(token);
-        return true;
-      } else throw Exception('Failed to update playlist');
-    });
-    return result ?? false;
+  Future<bool> deletePlaylist(String id, String token) async {
+    if (id.isEmpty || id == 'null') {
+      _errorMessage = 'Invalid playlist ID: $id';
+      notifyListeners();
+      print('MusicProvider: Invalid playlist ID for deletion: $id');
+      return false;
+    }
+    
+    try {
+      print('MusicProvider: Deleting playlist ID: $id');
+      await _apiService.deletePlaylist(id, token);
+      await fetchUserPlaylists(token);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      print('MusicProvider: Error deleting playlist: $e');
+      notifyListeners();
+      return false;
+    }
   }
 
-  Future<bool> deletePlaylist(String playlistId, String token) async {
-    final result = await _apiCall(() async {
-      final response = await http.delete(
-        Uri.parse('$_apiBaseUrl/playlists/playlists/$playlistId'),
-        headers: _getHeaders(token),
-      );
-      if ([200, 204].contains(response.statusCode)) {
-        await fetchUserPlaylists(token);
-        return true;
-      } else throw Exception('Failed to delete playlist');
-    });
-    return result ?? false;
-  }
-
-  Future<Playlist?> getPlaylistDetails(String playlistId, String token) async {
-    return await _apiCall(() async {
-      final response = await http.get(
-        Uri.parse('$_apiBaseUrl/playlists/playlists/$playlistId'),
-        headers: _getHeaders(token),
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Playlist.fromJson(data['playlist'][0]);
-      } else throw Exception('Failed to load playlist');
-    });
-  }
-
-  Future<void> searchTracks(String query, {bool deezer = true}) async {
-    await _apiCall(() async {
-      final endpoint = deezer ? '/deezer/search/' : '/tracks/search/';
-      final param = deezer ? 'q' : 'query';
-      final response = await http.get(Uri.parse('$_apiBaseUrl$endpoint?$param=$query'));
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final tracks = deezer ? data['data'] : data['tracks'];
-        _searchResults = (tracks as List).map((t) => Track.fromJson(t)).toList();
-      } else throw Exception('Failed to search tracks');
-    });
+  Future<void> searchTracks(String query) async {
+    try {
+      _searchResults = await _apiService.searchTracks(query, deezer: false);
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
   }
 
   Future<void> searchDeezerTracks(String query) async {
-    await searchTracks(query, deezer: true);
+    try {
+      _searchResults = await _apiService.searchTracks(query, deezer: true);
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
   }
 
   Future<Track?> getDeezerTrack(String trackId) async {
-    return await _apiCall(() async {
-      final response = await http.get(Uri.parse('$_apiBaseUrl/deezer/track/$trackId/'));
-      if (response.statusCode == 200) {
-        return Track.fromJson(json.decode(response.body));
-      } else throw Exception('Failed to get track');
-    });
+    try {
+      return await _apiService.getDeezerTrack(trackId);
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
   }
 
   Future<String?> getDeezerTrackPreviewUrl(String trackId) async {
-    final track = await getDeezerTrack(trackId);
-    return track?.previewUrl;
+    try {
+      final track = await _apiService.getDeezerTrack(trackId);
+      return track.previewUrl;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
   }
 
   Future<bool> addTrackFromDeezer(String trackId, String token) async {
-    final result = await _apiCall(() async {
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/tracks/add_from_deezer/$trackId/'),
-        headers: _getHeaders(token),
-      );
-      return [200, 201].contains(response.statusCode);
-    });
-    return result ?? false;
+    try {
+      await _apiService.addTrackFromDeezer(trackId, token);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> addTrackToPlaylist(String playlistId, String trackId, String token) async {
-    final result = await _apiCall(() async {
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/playlists/to_playlist/$playlistId/add_track/$trackId/'),
-        headers: _getHeaders(token),
-      );
-      if (response.statusCode == 200) {
-        await fetchUserPlaylists(token);
-        return true;
-      } else throw Exception('Failed to add track');
-    });
-    return result ?? false;
-  }
-
-  Future<bool> addTracksToPlaylist(String playlistId, List<String> trackIds, String token) async {
-    final result = await _apiCall(() async {
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/playlists/playlists/$playlistId/tracks'),
-        headers: _getHeaders(token),
-        body: json.encode({'track_ids': trackIds}),
-      );
-      if (response.statusCode == 200) {
-        await fetchUserPlaylists(token);
-        return true;
-      } else throw Exception('Failed to add tracks');
-    });
-    return result ?? false;
-  }
-
-  Future<String?> saveSharedPlaylist(
-    String name,
-    String description,
-    bool isPublic,
-    List<String> trackIds,
-    String token,
-  ) async {
-    return await _apiCall(() async {
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/playlists/save_playlist/'),
-        headers: _getHeaders(token),
-        body: json.encode({
-          'name': name,
-          'description': description,
-          'public': isPublic,
-          'track_ids': trackIds,
-        }),
-      );
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        await fetchUserPlaylists(token);
-        return data['playlist_id'].toString();
-      } else throw Exception('Failed to save playlist');
-    });
-  }
-
-  Future<void> fetchEvents() async {
-    await _apiCall(() async {
-      _events = [
-        Event(
-          id: '1',
-          name: 'Sample Music Event',
-          description: 'A demo event for music voting',
-          isPublic: true,
-          creator: 'Demo User',
-          startTime: DateTime.now(),
-          endTime: DateTime.now().add(const Duration(hours: 2)),
-          location: 'Virtual',
-        ),
-      ];
-    });
-  }
-
-  Future<String?> createEvent(String name, String description, bool isPublic, String token) async {
-    return await _apiCall(() async {
-      final newEvent = Event(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        description: description,
-        isPublic: isPublic,
-        creator: 'Current User',
-        startTime: DateTime.now(),
-        endTime: DateTime.now().add(const Duration(hours: 2)),
-      );
-      _events.add(newEvent);
-      return newEvent.id;
-    });
+    if (playlistId.isEmpty || playlistId == 'null') {
+      _errorMessage = 'Invalid playlist ID: $playlistId';
+      notifyListeners();
+      print('MusicProvider: Invalid playlist ID for adding track: $playlistId');
+      return false;
+    }
+    
+    if (trackId.isEmpty || trackId == 'null') {
+      _errorMessage = 'Invalid track ID: $trackId';
+      notifyListeners();
+      print('MusicProvider: Invalid track ID: $trackId');
+      return false;
+    }
+    
+    try {
+      print('MusicProvider: Adding track $trackId to playlist $playlistId');
+      await _apiService.addTrackToPlaylist(playlistId, trackId, token);
+      await fetchUserPlaylists(token);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      print('MusicProvider: Error adding track to playlist: $e');
+      notifyListeners();
+      return false;
+    }
   }
 }

@@ -1,4 +1,4 @@
-// screens/music/deezer_track_detail_screen.dart
+// lib/screens/music/deezer_track_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -6,6 +6,7 @@ import '../../providers/music_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../models/track.dart';
 import '../../widgets/music_player_widget.dart';
+import '../../core/theme.dart';
 import 'track_search_screen.dart';
 
 class DeezerTrackDetailScreen extends StatefulWidget {
@@ -74,24 +75,26 @@ class _DeezerTrackDetailScreenState extends State<DeezerTrackDetailScreen> {
     final bool isCurrentTrack = _track != null && playerService.currentTrack?.id == _track!.id;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
         title: const Text('Track Details'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : _errorMessage != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
                       const SizedBox(height: 16),
-                      Text(
+                      const Text(
                         'Error loading track details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       const SizedBox(height: 8),
-                      Text(_errorMessage!),
+                      Text(_errorMessage!, style: const TextStyle(color: Colors.white)),
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: _loadTrackDetails,
@@ -101,7 +104,7 @@ class _DeezerTrackDetailScreenState extends State<DeezerTrackDetailScreen> {
                   ),
                 )
               : _track == null
-                  ? const Center(child: Text('Track not found'))
+                  ? const Center(child: Text('Track not found', style: TextStyle(color: Colors.white)))
                   : Column(
                       children: [
                         Expanded(
@@ -132,28 +135,28 @@ class _DeezerTrackDetailScreenState extends State<DeezerTrackDetailScreen> {
                                                 ),
                                               ),
                                             )
-                                          : Icon(Icons.music_note, size: 80, color: Colors.indigo),
+                                          : const Icon(Icons.music_note, size: 80, color: AppTheme.primary),
                                       const SizedBox(height: 16),
                                       Text(
                                         _track!.name,
-                                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                                         textAlign: TextAlign.center,
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
                                         _track!.artist,
-                                        style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+                                        style: const TextStyle(fontSize: 18, color: AppTheme.onSurfaceVariant),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
                                         'Album: ${_track!.album}',
-                                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                                        style: const TextStyle(fontSize: 16, color: AppTheme.onSurfaceVariant),
                                       ),
                                     ],
                                   ),
                                 ),
                                 const SizedBox(height: 32),
-                                const Divider(),
+                                const Divider(color: AppTheme.surfaceVariant),
                                 const SizedBox(height: 16),
                                 ElevatedButton.icon(
                                   onPressed: isCurrentTrack 
@@ -218,7 +221,7 @@ class _DeezerTrackDetailScreenState extends State<DeezerTrackDetailScreen> {
                                   label: const Text('Add to Playlist'),
                                   style: ElevatedButton.styleFrom(
                                     minimumSize: const Size(double.infinity, 50),
-                                    backgroundColor: Colors.indigo[300],
+                                    backgroundColor: AppTheme.primary,
                                   ),
                                 ),
                                 if (_track?.url != null && _track!.url.isNotEmpty) ...[

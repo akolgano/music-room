@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/playlist.dart';
-import '../music/enhanced_playlist_editor_screen.dart';
+import '../../core/constants.dart';
+import '../music/playlist_editor_screen.dart';
 import '../../widgets/api_error_widget.dart';
 import '../../widgets/common/base_widgets.dart';
 
@@ -25,10 +26,12 @@ class PlaylistsTab extends StatelessWidget {
       return ApiErrorWidget(
         message: musicProvider.errorMessage ?? 'Failed to connect to server',
         onRetry: () {
-          if (authProvider.isLoggedIn) {
-            musicProvider.fetchUserPlaylists(authProvider.token!);
-          } else {
-            musicProvider.fetchPublicPlaylists();
+          if (authProvider.isLoggedIn && authProvider.token != null) {
+            if (authProvider.isLoggedIn) {
+              musicProvider.fetchUserPlaylists(authProvider.token!);
+            } else {
+              musicProvider.fetchPublicPlaylists(authProvider.token!);
+            }
           }
         },
         isRetrying: musicProvider.isRetrying,
@@ -53,7 +56,7 @@ class PlaylistsTab extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildQuickActionsBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -62,7 +65,7 @@ class PlaylistsTab extends StatelessWidget {
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamed('/enhanced_playlist_editor');
+                Navigator.of(context).pushNamed(AppRoutes.playlistEditor);
               },
               icon: const Icon(Icons.add),
               label: const Text('New'),
@@ -75,7 +78,7 @@ class PlaylistsTab extends StatelessWidget {
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamed('/public_playlists');
+                Navigator.of(context).pushNamed(AppRoutes.publicPlaylists);
               },
               icon: const Icon(Icons.public),
               label: const Text('Discover'),
@@ -88,7 +91,7 @@ class PlaylistsTab extends StatelessWidget {
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamed('/track_selection');
+                Navigator.of(context).pushNamed(AppRoutes.trackSelection);
               },
               icon: const Icon(Icons.search),
               label: const Text('Tracks'),
@@ -101,7 +104,7 @@ class PlaylistsTab extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildPlaylistItem(BuildContext context, Playlist playlist) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -128,7 +131,7 @@ class PlaylistsTab extends StatelessWidget {
               icon: const Icon(Icons.share),
               onPressed: () {
                 Navigator.of(context).pushNamed(
-                  '/playlist_sharing',
+                  AppRoutes.playlistSharing,
                   arguments: playlist,
                 );
               },
@@ -136,20 +139,40 @@ class PlaylistsTab extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
-                Navigator.of(context).pushNamed(
-                  '/enhanced_playlist_editor',
-                  arguments: playlist.id,
-                );
+                if (playlist.id.isNotEmpty && playlist.id != 'null') {
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.playlistEditor,
+                    arguments: playlist.id,
+                  );
+                } else {
+                  print('Warning: Invalid playlist ID for editing: ${playlist.id}');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Cannot edit playlist: Invalid ID'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
             ),
           ],
         ),
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => EnhancedPlaylistEditorScreen(playlistId: playlist.id),
-            ),
-          );
+          if (playlist.id.isNotEmpty && playlist.id != 'null') {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (ctx) => PlaylistEditorScreen(playlistId: playlist.id),
+              ),
+            );
+          } else {
+            print('Warning: Invalid playlist ID for viewing: ${playlist.id}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cannot open playlist: Invalid ID'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         },
       ),
     );

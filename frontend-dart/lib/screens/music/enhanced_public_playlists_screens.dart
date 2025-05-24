@@ -1,4 +1,4 @@
-// lib/screens/music/playlist_editor_screen.dart
+// lib/screens/music/enhanced_playlist_editor_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -8,16 +8,16 @@ import '../../models/track.dart';
 import '../../core/theme.dart';
 import '../../widgets/common_widgets.dart';
 
-class PlaylistEditorScreen extends StatefulWidget {
+class EnhancedPlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
 
-  const PlaylistEditorScreen({Key? key, this.playlistId}) : super(key: key);
+  const EnhancedPlaylistEditorScreen({Key? key, this.playlistId}) : super(key: key);
 
   @override
-  _PlaylistEditorScreenState createState() => _PlaylistEditorScreenState();
+  _EnhancedPlaylistEditorScreenState createState() => _EnhancedPlaylistEditorScreenState();
 }
 
-class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
+class _EnhancedPlaylistEditorScreenState extends State<EnhancedPlaylistEditorScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isPublic = false;
