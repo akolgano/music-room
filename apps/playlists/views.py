@@ -11,6 +11,7 @@ from django.db import models
 from django.db import transaction
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.forms.models import model_to_dict
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -176,32 +177,6 @@ def get_playlist_info(request, playlist_id):
         return JsonResponse({"error": "Playlist not found."}, status=404)
 
 
-@api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def remove_playlist_items(request, playlist_id):
-    try:
-        user = request.user
-        playlist = get_object_or_404(Playlist, id=playlist_id)
-        track_ids = request.data.get('track_ids', [])  
-        tracks = Track.objects.filter(id__in=track_ids)
-
-        if tracks.exists():
-            playlist.tracks.remove(*tracks)
-        else:
-            return JsonResponse({"error": "One or more tracks not found."}, status=404)
-
-        user.saved_playlists.add(playlist)
-        return JsonResponse({
-            "message": "Tracks deleted successfully.",
-            "playlist_id": playlist.id,
-            "tracks": [track.id for track in tracks]
-        }, status=200)
-    except Playlist.DoesNotExist:
-        return JsonResponse({"error": "Playlist not found."}, status=404)
-    except Track.DoesNotExist:
-        return JsonResponse({"error": "Track not found."}, status=404)
-
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -221,7 +196,10 @@ def playlist_tracks(request, playlist_id):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def add_track(request, playlist_id):
-    if request.method == "POST":
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+    try:
+        print('add_track starts')
         playlist = get_object_or_404(Playlist, id=playlist_id)
         data = json.loads(request.body)
 
@@ -230,9 +208,24 @@ def add_track(request, playlist_id):
 
         max_pos = PlaylistTrack.objects.filter(playlist=playlist).aggregate(models.Max('position'))['position__max'] or 0
         PlaylistTrack.objects.create(playlist=playlist, track=track, position=max_pos + 1)
-
+        tracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
+        # Broadcast
+        data = [{"id": t.id, "track": model_to_dict(t.track),"position": t.position} for t in tracks] 
+        channel_layer = get_channel_layer()
+        print(channel_layer)
+        async_to_sync(channel_layer.group_send)(
+            f'playlist_{playlist_id}',
+            {
+                'type': 'playlist.update',
+                'playlist_id': playlist_id,
+                'data': data,
+            }
+        )
         return JsonResponse({'status': 'track added'}, status=201)
-
+    except Playlist.DoesNotExist:
+        return JsonResponse({'error': 'Playlist not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 
 @api_view(['POST'])
@@ -274,7 +267,8 @@ def move_track_in_playlist(request):
             for i, pt in enumerate(tracks):
                 pt.position = i
             PlaylistTrack.objects.bulk_update(tracks, ['position'])
-        data = [{"id": t.id, "position": t.position} for t in tracks]
+        # Broadcast
+        data = [{"id": t.id, "track": model_to_dict(t.track),"position": t.position} for t in tracks]   
         channel_layer = get_channel_layer()
         print(channel_layer)
         async_to_sync(channel_layer.group_send)(
@@ -289,5 +283,58 @@ def move_track_in_playlist(request):
 
     except Playlist.DoesNotExist:
         return JsonResponse({'error': 'Playlist not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_track_from_playlist(request, playlist_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    try:
+        print('delete_track_from_playlist starts')
+        data = json.loads(request.body)
+
+        track_id = data['track_id']
+        playlist = Playlist.objects.get(id=playlist_id)
+        track_to_delete = PlaylistTrack.objects.get(playlist=playlist, id=track_id)
+        print(track_to_delete.id)
+        with transaction.atomic():
+            track_to_delete.delete()
+
+            # Reorder
+            remaining_tracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
+
+            TEMP_OFFSET = 1000
+            for i, pt in enumerate(remaining_tracks):
+                pt.position = i + TEMP_OFFSET
+            PlaylistTrack.objects.bulk_update(remaining_tracks, ['position'])
+
+            for i, pt in enumerate(remaining_tracks):
+                pt.position = i
+            PlaylistTrack.objects.bulk_update(remaining_tracks, ['position'])
+
+        # Broadcast
+        tracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
+        data = [{"id": t.id, "track": model_to_dict(t.track),"position": t.position} for t in tracks] 
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'playlist_{playlist_id}',
+            {
+                'type': 'playlist.update',
+                'playlist_id': playlist_id,
+                'data': data,
+            }
+        )
+
+        return JsonResponse({'message': 'Track deleted successfully'})
+
+    except Playlist.DoesNotExist:
+        return JsonResponse({'error': 'Playlist not found'}, status=404)
+    except PlaylistTrack.DoesNotExist:
+        return JsonResponse({'error': 'Track not found in playlist'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
