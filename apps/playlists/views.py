@@ -253,7 +253,6 @@ def move_track_in_playlist(request):
 
         playlist = Playlist.objects.get(id=playlist_id)
         tracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
-
         moving_slice = tracks[range_start:range_start + range_length]
         if not moving_slice:
             return JsonResponse({'error': 'Invalid range'}, status=400)
@@ -275,8 +274,6 @@ def move_track_in_playlist(request):
             for i, pt in enumerate(tracks):
                 pt.position = i
             PlaylistTrack.objects.bulk_update(tracks, ['position'])
-        updated_playlist = Playlist.objects.get(id=playlist_id)
-        utracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
         data = [{"id": t.id, "position": t.position} for t in tracks]
         channel_layer = get_channel_layer()
         print(channel_layer)
