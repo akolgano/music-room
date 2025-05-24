@@ -12,3 +12,5 @@ daphne
 pytest
 pytest-django
 pytest-asyncio
+#uvicorn
+#uvicorn[standard]
