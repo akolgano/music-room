@@ -30,5 +30,5 @@ fi
 
 echo "Starting development server..."
 #exec python manage.py runserver 0.0.0.0:8000
-#exec daphne -b 0.0.0.0 -p 8000 core.asgi:application
-exec uvicorn core.asgi:application --reload --host 0.0.0.0 --port 8000
+exec daphne -b 0.0.0.0 -p 8000 core.asgi:application
+#exec uvicorn core.asgi:application --reload --host 0.0.0.0 --port 8000
