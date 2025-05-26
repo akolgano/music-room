@@ -52,6 +52,7 @@ def get_user_saved_playlists(request):
         track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
 
         playlist_data.append({
+            'id': playlist.id,
             'name': playlist.name,
             'description': playlist.description,
             'public': playlist.public,
@@ -75,6 +76,7 @@ def get_all_shared_playlists(request):
         track_list = [{'name': track.name, 'artist': track.artist} for track in tracks]
 
         playlist_data.append({
+            'id': playlist.id,
             'name': playlist.name,
             'description': playlist.description,
             'public': playlist.public,
@@ -165,6 +167,7 @@ def get_playlist_info(request, playlist_id):
         track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
 
         playlist_data.append({
+            'id': playlist.id,
             'playlist_name': playlist.name,
             'description': playlist.description,
             'public': playlist.public,
