@@ -1,0 +1,10 @@
+  curl -X POST http://localhost:8000/playlists/1/change-visibility/ \
+   -H "Content-Type: application/json" \
+      -H "Authorization: Token 259a85097be0108dc1679cfeddca7e42733192f2" \
+      -d '{"track_id": 3}'
+
+
+  curl -X POST http://localhost:8000/playlists/1/invite-user/ \
+   -H "Content-Type: application/json" \
+      -H "Authorization: Token 259a85097be0108dc1679cfeddca7e42733192f2" \
+      -d '{"user_id": 1}'
