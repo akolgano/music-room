@@ -238,6 +238,7 @@ def add_track(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@check_access_to_playlist
 def move_track_in_playlist(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -297,6 +298,7 @@ def move_track_in_playlist(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@check_access_to_playlist
 def delete_track_from_playlist(request, playlist_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -352,11 +354,12 @@ def delete_track_from_playlist(request, playlist_id):
 def change_visibility(request, playlist_id):
     try:
         public = request.data.get('public', True)
+        #lets set True for now
         public = True
         playlist = Playlist.objects.get(id=playlist_id)
         playlist.public = public
         playlist.save()
-        print(playlist.users_saved)
+        print(playlist.users_saved.all())
         return JsonResponse({'message': 'Playlist visibility changed successfully'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)    
@@ -364,6 +367,7 @@ def change_visibility(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@check_access_to_playlist
 def invite_user(request, playlist_id):
     try:
         

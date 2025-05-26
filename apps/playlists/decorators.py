@@ -16,7 +16,7 @@ def check_access_to_playlist(view_func):
         except Playlist.DoesNotExist:
             return Response({'error': 'Playlist not found'}, status=404)
         print(playlist.public)
-        if user not in playlist.users_saved.all() and Playlist.public:
+        if user not in playlist.users_saved.all() and not playlist.public:
             return Response({'error': 'Permission denied for this playlist'}, status=403)
 
         return view_func(request, *args, **kwargs)
