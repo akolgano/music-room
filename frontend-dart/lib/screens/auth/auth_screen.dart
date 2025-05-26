@@ -4,6 +4,12 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../providers/auth_provider.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart';
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import './forgot_password_screen.dart';
+
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -16,6 +22,49 @@ class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLogin = true;
+
+  final googleSignInPlugin = GoogleSignInPlatform.instance as GoogleSignInPlugin;
+
+  @override                                                                 
+  void initState() {     
+    super.initState();
+    if (kIsWeb) {
+      _initializeGoogleSignInWeb();
+    }
+  }
+
+  Future<void> _initializeGoogleSignInWeb() async {
+    await googleSignInPlugin.initWithParams(
+      SignInInitParameters(
+        clientId: dotenv.env['GOOGLE_CLIENT_ID_WEB'],
+        scopes: ['email', 'profile', 'openid'],
+      ),
+    );
+
+    googleSignInPlugin.userDataEvents?.listen((GoogleSignInUserData? account) {
+      if (account != null) {
+        _googleLoginWeb(account);
+      }
+    });
+
+  }
+
+  Future<void> _googleLoginWeb(GoogleSignInUserData? account) async {
+    bool success = false;
+    success = await Provider.of<AuthProvider>(context, listen: false).googleLoginWeb(account);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login successful'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  
+  
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +167,61 @@ class _AuthScreenState extends State<AuthScreen> {
                     },
                     child: Text(_isLogin ? 'Create an account' : 'Already have an account? Sign in'),
                   ),
+                  const SizedBox(height: 16),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        if (kIsWeb)
+                          googleSignInPlugin.renderButton()
+                        else
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _loginWithSocial('Google'),
+                              icon: const Icon(Icons.g_mobiledata),
+                              label: const Text('GOOGLE'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(color: Colors.white),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(32),
+                                ),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _loginWithSocial('Facebook'),
+                            icon: const Icon(Icons.facebook),
+                            label: const Text('FACEBOOK'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              side: const BorderSide(color: Colors.white),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ForgotPasswordScreen(),
+                      ),
+                    );
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text('Forgot Password ?'),
+                  ),
                 ],
               ),
             ),
@@ -156,5 +260,28 @@ class _AuthScreenState extends State<AuthScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+    
+  
+  void _loginWithSocial(String provider) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    bool success = false;
+  
+      if (provider == "Facebook") {
+        success = await authProvider.facebookLogin();
+      }
+      else if (provider == "Google") {
+        success = await authProvider.googleLoginApp();
+      }
+
+      if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login successful'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      }
   }
 }

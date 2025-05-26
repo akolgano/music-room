@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -46,7 +47,8 @@ INSTALLED_APPS = [
     'apps.playlists',
     'apps.devices',
     'corsheaders',
-    'channels'
+    'channels',
+    'apps.remote_auth',
 ]
 
 MIDDLEWARE = [
@@ -181,3 +183,25 @@ CHANNEL_LAYERS = {
 
 REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
 REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+
+# Channel layer for Redis
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis', 6379)],
+        },
+    },
+}
+
+
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True

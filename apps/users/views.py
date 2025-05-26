@@ -17,6 +17,8 @@ from .serializers import UserSerializer, FriendSerializer
 from .models import Friendship
 from django.http import JsonResponse
 from django.db.models import Q
+from . import email_sender
+from . import utils
 
 User = get_user_model()
 
@@ -74,7 +76,6 @@ def test_token(request):
     return Response("passed!")
 
 
-
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -108,6 +109,7 @@ def get_friends_list(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -128,6 +130,7 @@ def send_friend_request(request, user_id):
         'friendship_id': friendship.id,
     }, status=200)
 
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -136,16 +139,67 @@ def accept_friend_request(request, friendship_id):
     friendship.status = 'accepted'
     friendship.save()
     return JsonResponse({
-            "message": f'You are now friends with {friendship.from_user.username}!',
+        "message": f'You are now friends with {friendship.from_user.username}!',
     }, status=200)
+
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def reject_friend_request(request, friendship_id):
     friendship = get_object_or_404(Friendship, id=friendship_id, to_user=request.user, status='pending')
-    
+
     friendship.delete()
     return JsonResponse({
-            "message": f'Friend request with {friendship.from_user.username} rejected!',
+        "message": f'Friend request with {friendship.from_user.username} rejected!',
     }, status=200)
+
+
+@api_view(['POST'])
+def forgot_password(request):
+    email = request.data.get('email')
+    if email is None:
+        return Response({"Invalid email."}, status=status.HTTP_404_NOT_FOUND)
+
+    user = utils.get_user(email)
+    if user is None:
+        return Response({"User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    otp = utils.create_otp_for_user(user)
+    if otp is None:
+        return Response({"OTP creation failed."}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        email_sender.send_forgot_password_email(otp.code, email, user.username)
+    except Exception:
+        return Response({"OTP email send failed."}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({'username': user.username, 'email': user.email}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def change_password(request):
+    email = request.data.get('email')
+    otp_code = request.data.get('otp')
+    password = request.data.get('password')
+
+    if email is None or otp_code is None or password is None:
+        return Response({"Invalid email, otp or password."}, status=status.HTTP_404_NOT_FOUND)
+
+    user = utils.get_user(email)
+    if user is None:
+        return Response({"User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    otp = utils.get_otp_user(user)
+    if otp is None:
+        return Response({"OTP not found or expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        if otp.code == otp_code:
+            user.set_password(password)
+            user.save()
+            return Response({'username': user.username, 'email': user.email}, status=status.HTTP_200_OK)
+        else:
+            return Response({"OTP not match"}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception:
+        return Response({"Change password failed !"}, status=status.HTTP_404_NOT_FOUND)

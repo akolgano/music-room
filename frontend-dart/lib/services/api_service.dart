@@ -185,6 +185,40 @@ class ApiService {
       (data) => data['message'],
     );
   }
+
+  Future<AuthResult> facebookLogin(String fbAccessToken) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/auth/facebook/login/'),
+        headers: _getHeaders(),
+        body: json.encode({'fbAccessToken': fbAccessToken,}),
+      ),
+      (data) => AuthResult.fromJson(data),
+    );
+  }
+
+  Future<AuthResult> googleLoginApp(String idToken) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/auth/google/login_app/'),
+        headers: _getHeaders(),
+        body: json.encode({'idToken': idToken}),
+      ),
+      (data) => AuthResult.fromJson(data),
+    );
+  }
+
+  Future<AuthResult> googleLoginWeb(String idToken) async {
+  return _handleRequest(
+    () => http.post(
+      Uri.parse('$_baseUrl/auth/google/login_web/'),
+      headers: _getHeaders(),
+      body: json.encode({'idToken': idToken}),
+    ),
+    (data) => AuthResult.fromJson(data),
+  );
+  }
+
 }
 
 class AuthResult {
@@ -205,3 +239,7 @@ class ApiException implements Exception {
   @override
   String toString() => message;
 }
+
+
+
+

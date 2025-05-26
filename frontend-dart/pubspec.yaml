@@ -11,7 +11,6 @@ dependencies:
   connectivity_plus: ^6.1.4
   flutter_facebook_auth: ^7.1.2
   uuid: ^4.5.1
-  google_sign_in: ^6.3.0
   intl: ^0.20.2
   just_audio: ^0.10.3
   just_audio_background: ^0.0.1-beta.16
@@ -22,6 +21,11 @@ dependencies:
   flutter_dotenv: ^5.0.2
   sentry_flutter: ^8.14.2
   cached_network_image: ^3.4.1
+  flutter_secure_storage: ^9.2.2
+  google_sign_in: ^6.3.0
+  google_sign_in_web: ^0.12.4+4
+  google_sign_in_platform_interface: ^2.5.0
+  js: ^0.6.7
 dev_dependencies:
   flutter_test:
     sdk: flutter
