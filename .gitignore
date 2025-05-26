@@ -27,3 +27,4 @@ django.log
 *.ap_
 *.dex
 output.json
+frontend-dart/.env
