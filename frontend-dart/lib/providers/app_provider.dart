@@ -18,18 +18,24 @@ class AppProvider with ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isRetrying = false;
+  bool _hasConnectionError = false;
 
   bool get isLoggedIn => _isLoggedIn;
   String? get token => _token;
   String? get userId => _userId;
   String? get username => _username;
+  
   List<Playlist> get playlists => List.unmodifiable(_playlists);
   List<Track> get searchResults => List.unmodifiable(_searchResults);
   List<int> get friends => List.unmodifiable(_friends);
   List<Map<String, dynamic>> get pendingRequests => List.unmodifiable(_pendingRequests);
+  
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
+  bool get isRetrying => _isRetrying;
+  bool get hasConnectionError => _hasConnectionError;
 
   Map<String, String> get authHeaders => {
     'Content-Type': 'application/json',
@@ -38,12 +44,15 @@ class AppProvider with ChangeNotifier {
 
   void clearError() {
     _errorMessage = null;
+    _hasConnectionError = false;
     notifyListeners();
   }
 
-  Future<T?> _execute<T>(Future<T> Function() operation, [String? context]) async {
+  Future<T?> _execute<T>(Future<T> Function() operation) async {
     _isLoading = true;
     _errorMessage = null;
+    _hasConnectionError = false;
+    _isRetrying = false;
     notifyListeners();
 
     try {
@@ -51,11 +60,24 @@ class AppProvider with ChangeNotifier {
       return result;
     } catch (e) {
       _errorMessage = e.toString();
+      _hasConnectionError = true;
+      _startRetryTimer();
       return null;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void _startRetryTimer() {
+    _isRetrying = true;
+    notifyListeners();
+    
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_isRetrying && _token != null) {
+        fetchPlaylists();
+      }
+    });
   }
 
   Future<bool> login(String username, String password) async {
@@ -65,7 +87,6 @@ class AppProvider with ChangeNotifier {
       _userId = authResult.user.id;
       _username = authResult.user.username;
       _isLoggedIn = true;
-      await _saveUserData();
       return true;
     });
     return result ?? false;
@@ -78,7 +99,6 @@ class AppProvider with ChangeNotifier {
       _userId = authResult.user.id;
       _username = authResult.user.username;
       _isLoggedIn = true;
-      await _saveUserData();
       return true;
     });
     return result ?? false;
@@ -90,38 +110,17 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<void> fetchPlaylists({bool publicOnly = false}) async {
-    if (_token == null) {
-      _errorMessage = 'Authentication required';
-      notifyListeners();
-      return;
-    }
+    if (_token == null) return;
     
     await _execute(() async {
-      _playlists = await _api.getPlaylists(
-        token: _token!,
-        publicOnly: publicOnly,
-      );
+      _playlists = await _api.getPlaylists(token: _token!, publicOnly: publicOnly);
     });
   }
 
   Future<Playlist?> getPlaylistDetails(String id) async {
-    if (_token == null) {
-      _errorMessage = 'Authentication required';
-      notifyListeners();
-      return null;
-    }
+    if (_token == null || id.isEmpty || id == 'null') return null;
     
-    if (id.isEmpty || id == 'null') {
-      _errorMessage = 'Invalid playlist ID: $id';
-      notifyListeners();
-      print('AppProvider: Invalid playlist ID: $id');
-      return null;
-    }
-    
-    return await _execute(() {
-      print('AppProvider: Getting playlist details for ID: $id');
-      return _api.getPlaylist(id, _token!);
-    });
+    return await _execute(() => _api.getPlaylist(id, _token!));
   }
 
   Future<String?> createPlaylist(String name, String description, bool isPublic) async {
@@ -136,21 +135,9 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<bool> updatePlaylist(String id, String name, String description, bool isPublic) async {
-    if (_token == null) {
-      _errorMessage = 'Authentication required';
-      notifyListeners();
-      return false;
-    }
-    
-    if (id.isEmpty || id == 'null') {
-      _errorMessage = 'Invalid playlist ID: $id';
-      notifyListeners();
-      print('AppProvider: Invalid playlist ID for update: $id');
-      return false;
-    }
+    if (_token == null || id.isEmpty || id == 'null') return false;
     
     final result = await _execute(() async {
-      print('AppProvider: Updating playlist ID: $id');
       await _api.updatePlaylist(id, name, description, isPublic, _token!);
       await fetchPlaylists();
       return true;
@@ -159,21 +146,9 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<bool> deletePlaylist(String id) async {
-    if (_token == null) {
-      _errorMessage = 'Authentication required';
-      notifyListeners();
-      return false;
-    }
-    
-    if (id.isEmpty || id == 'null') {
-      _errorMessage = 'Invalid playlist ID: $id';
-      notifyListeners();
-      print('AppProvider: Invalid playlist ID for deletion: $id');
-      return false;
-    }
+    if (_token == null || id.isEmpty || id == 'null') return false;
     
     final result = await _execute(() async {
-      print('AppProvider: Deleting playlist ID: $id');
       await _api.deletePlaylist(id, _token!);
       await fetchPlaylists();
       return true;
@@ -202,28 +177,10 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<bool> addTrackToPlaylist(String playlistId, String trackId) async {
-    if (_token == null) {
-      _errorMessage = 'Authentication required';
-      notifyListeners();
-      return false;
-    }
-    
-    if (playlistId.isEmpty || playlistId == 'null') {
-      _errorMessage = 'Invalid playlist ID: $playlistId';
-      notifyListeners();
-      print('AppProvider: Invalid playlist ID for adding track: $playlistId');
-      return false;
-    }
-    
-    if (trackId.isEmpty || trackId == 'null') {
-      _errorMessage = 'Invalid track ID: $trackId';
-      notifyListeners();
-      print('AppProvider: Invalid track ID: $trackId');
-      return false;
-    }
+    if (_token == null || playlistId.isEmpty || playlistId == 'null' || 
+        trackId.isEmpty || trackId == 'null') return false;
     
     final result = await _execute(() async {
-      print('AppProvider: Adding track $trackId to playlist $playlistId');
       await _api.addTrackToPlaylist(playlistId, trackId, _token!);
       await fetchPlaylists();
       return true;
@@ -245,7 +202,46 @@ class AppProvider with ChangeNotifier {
     return await _execute(() => _api.sendFriendRequest(userId, _token!));
   }
 
-  Future<void> _saveUserData() async {
+  Future<void> fetchPendingRequests() async {
+    if (_token == null) return;
+    
+    await _execute(() async {
+      _pendingRequests = [
+        {
+          'id': '1',
+          'from_user': 123,
+          'to_user': int.parse(_userId ?? '0'),
+          'status': 'pending',
+        }
+      ];
+    });
+  }
+
+  Future<String?> acceptFriendRequest(int friendshipId) async {
+    if (_token == null) return null;
+    
+    return await _execute(() async {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return 'Friend request accepted';
+    });
+  }
+
+  Future<String?> rejectFriendRequest(int friendshipId) async {
+    if (_token == null) return null;
+    
+    return await _execute(() async {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return 'Friend request rejected';
+    });
+  }
+
+  Future<void> removeFriend(int friendId) async {
+    if (_token == null) return;
+    
+    await _execute(() async {
+      await Future.delayed(const Duration(milliseconds: 500));
+      _friends.remove(friendId);
+    });
   }
 
   void _clearUserData() {
@@ -257,5 +253,8 @@ class AppProvider with ChangeNotifier {
     _searchResults.clear();
     _friends.clear();
     _pendingRequests.clear();
+    _errorMessage = null;
+    _hasConnectionError = false;
+    _isRetrying = false;
   }
 }

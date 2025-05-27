@@ -7,7 +7,7 @@ import '../../models/playlist.dart';
 import '../../core/constants.dart';
 import '../music/playlist_editor_screen.dart';
 import '../../widgets/api_error_widget.dart';
-import '../../widgets/common/base_widgets.dart';
+import '../../widgets/common_widgets.dart';
 
 class PlaylistsTab extends StatelessWidget {
   const PlaylistsTab({Key? key}) : super(key: key);
@@ -27,11 +27,7 @@ class PlaylistsTab extends StatelessWidget {
         message: musicProvider.errorMessage ?? 'Failed to connect to server',
         onRetry: () {
           if (authProvider.isLoggedIn && authProvider.token != null) {
-            if (authProvider.isLoggedIn) {
-              musicProvider.fetchUserPlaylists(authProvider.token!);
-            } else {
-              musicProvider.fetchPublicPlaylists(authProvider.token!);
-            }
+            musicProvider.fetchUserPlaylists(authProvider.token!);
           }
         },
         isRetrying: musicProvider.isRetrying,
@@ -43,7 +39,7 @@ class PlaylistsTab extends StatelessWidget {
         _buildQuickActionsBar(context),
         Expanded(
           child: playlists.isEmpty
-              ? const EmptyStateWidget(
+              ? const EmptyState(
                   icon: Icons.playlist_play,
                   title: 'No playlists found',
                   subtitle: 'Create your first playlist to get started',

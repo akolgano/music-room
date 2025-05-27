@@ -11,7 +11,6 @@ class AppRoutes {
   static const String trackVote = '/track_vote';
   static const String controlDelegation = '/control_delegation';
   static const String musicFeatures = '/music_features';
-  static const String apiDocs = '/api_docs';
   static const String playlistEditor = '/playlist_editor';
   static const String trackSelection = '/track_selection';
   static const String trackSearch = '/track_search';

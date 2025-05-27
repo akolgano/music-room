@@ -3,6 +3,29 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../models/models.dart';
 
+String? validateRequired(String? value, String fieldName) {
+  if (value?.isEmpty ?? true) return 'Please enter $fieldName';
+  return null;
+}
+
+String? validateEmail(String? value) {
+  if (value?.isEmpty ?? true) return 'Please enter an email';
+  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+    return 'Please enter a valid email';
+  }
+  return null;
+}
+
+void showSnackBar(BuildContext context, String message, {bool isError = false}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: isError ? AppTheme.error : Colors.green,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+}
+
 class StateWidget extends StatelessWidget {
   final bool isLoading;
   final String? error;
@@ -32,7 +55,7 @@ class StateWidget extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            Text(error!, textAlign: TextAlign.center),
+            Text(error!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white)),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -325,27 +348,4 @@ class TrackCard extends StatelessWidget {
         ? const Icon(Icons.check_circle, color: Colors.blue)
         : CircleAvatar(backgroundColor: Colors.grey[300], child: const Icon(Icons.music_note));
   }
-}
-
-String? validateRequired(String? value, String fieldName) {
-  if (value?.isEmpty ?? true) return 'Please enter $fieldName';
-  return null;
-}
-
-String? validateEmail(String? value) {
-  if (value?.isEmpty ?? true) return 'Please enter an email';
-  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
-    return 'Please enter a valid email';
-  }
-  return null;
-}
-
-void showSnackBar(BuildContext context, String message, {bool isError = false}) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(message),
-      backgroundColor: isError ? AppTheme.error : Colors.green,
-      behavior: SnackBarBehavior.floating,
-    ),
-  );
 }
