@@ -5,8 +5,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
 import '../../models/track.dart';
+import '../../models/playlist_track.dart';
 import '../../core/theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../utils/dialog_helper.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
@@ -23,7 +25,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
   bool _isPublic = false;
   bool _isLoading = false;
   Playlist? _playlist;
-  List<Track> _tracks = [];
+  List<PlaylistTrack> _playlistTracks = [];
 
   @override
   void initState() {
@@ -52,13 +54,13 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         _nameController.text = _playlist!.name;
         _descriptionController.text = _playlist!.description;
         _isPublic = _playlist!.isPublic;
-        _tracks = List.from(_playlist!.tracks);
+        
+        await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
+        _playlistTracks = List.from(musicProvider.playlistTracks);
       }
     } catch (e) {
       print('Error loading playlist: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading playlist: $e'), backgroundColor: Colors.red),
-      );
+      _showSnackBar('Error loading playlist: $e', isError: true);
     }
     
     setState(() => _isLoading = false);
@@ -66,9 +68,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
 
   Future<void> _savePlaylist() async {
     if (_nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a playlist name'), backgroundColor: Colors.orange),
-      );
+      _showSnackBar('Please enter a playlist name', isError: true);
       return;
     }
 
@@ -90,29 +90,142 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
           _isPublic,
           authProvider.token!,
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Playlist updated successfully'), backgroundColor: Colors.green),
-        );
+        _showSnackBar('Playlist updated successfully');
       } else {
-        await musicProvider.createPlaylist(
+        final playlistId = await musicProvider.createPlaylist(
           _nameController.text,
           _descriptionController.text,
           _isPublic,
           authProvider.token!,
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Playlist created successfully'), backgroundColor: Colors.green),
-        );
-        Navigator.of(context).pop();
+        if (playlistId != null) {
+          _showSnackBar('Playlist created successfully');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
+            ),
+          );
+          return;
+        }
       }
     } catch (e) {
       print('Error saving playlist: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving playlist: $e'), backgroundColor: Colors.red),
-      );
+      _showSnackBar('Error saving playlist: $e', isError: true);
     }
 
     setState(() => _isLoading = false);
+  }
+
+  Future<void> _toggleVisibility() async {
+    if (widget.playlistId == null || widget.playlistId!.isEmpty || widget.playlistId == 'null') {
+      return;
+    }
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+
+      bool newVisibility = !_isPublic;
+      await musicProvider.changePlaylistVisibility(
+        widget.playlistId!,
+        newVisibility,
+        authProvider.token!,
+      );
+      
+      setState(() => _isPublic = newVisibility);
+      _showSnackBar('Playlist visibility updated');
+    } catch (e) {
+      _showSnackBar('Error updating visibility: $e', isError: true);
+    }
+  }
+
+  Future<void> _removeTrack(PlaylistTrack track) async {
+    final confirm = await DialogHelper.showConfirm(
+      context,
+      title: 'Remove Track',
+      message: 'Are you sure you want to remove "${track.name}" from this playlist?',
+      confirmText: 'Remove',
+      isDangerous: true,
+    );
+
+    if (confirm == true && widget.playlistId != null) {
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+
+        await musicProvider.removeTrackFromPlaylist(
+          widget.playlistId!,
+          track.trackId,
+          authProvider.token!,
+        );
+
+        await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
+        setState(() {
+          _playlistTracks = List.from(musicProvider.playlistTracks);
+        });
+
+        _showSnackBar('Track removed from playlist');
+      } catch (e) {
+        _showSnackBar('Error removing track: $e', isError: true);
+      }
+    }
+  }
+
+  Future<void> _moveTrack(int oldIndex, int newIndex) async {
+    if (widget.playlistId == null || oldIndex == newIndex) return;
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+
+      await musicProvider.moveTrackInPlaylist(
+        widget.playlistId!,
+        oldIndex,
+        newIndex,
+        1, 
+        authProvider.token!,
+      );
+
+      await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
+      setState(() {
+        _playlistTracks = List.from(musicProvider.playlistTracks);
+      });
+
+      _showSnackBar('Track moved successfully');
+    } catch (e) {
+      _showSnackBar('Error moving track: $e', isError: true);
+    }
+  }
+
+  Future<void> _inviteUser() async {
+    if (widget.playlistId == null) return;
+
+    final userId = await DialogHelper.showTextInput(
+      context,
+      title: 'Invite User',
+      hintText: 'Enter user ID',
+    );
+
+    if (userId != null && userId.isNotEmpty) {
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+
+        await musicProvider.inviteUserToPlaylist(
+          widget.playlistId!,
+          userId,
+          authProvider.token!,
+        );
+
+        _showSnackBar('User invited to playlist successfully');
+      } catch (e) {
+        _showSnackBar('Error inviting user: $e', isError: true);
+      }
+    }
   }
 
   bool get _isEditMode => widget.playlistId != null && 
@@ -127,6 +240,18 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         backgroundColor: AppTheme.background,
         title: Text(_isEditMode ? 'Edit Playlist' : 'Create Playlist'),
         actions: [
+          if (_isEditMode) ...[
+            IconButton(
+              icon: Icon(_isPublic ? Icons.public : Icons.lock),
+              onPressed: _isLoading ? null : _toggleVisibility,
+              tooltip: _isPublic ? 'Make Private' : 'Make Public',
+            ),
+            IconButton(
+              icon: const Icon(Icons.person_add),
+              onPressed: _isLoading ? null : _inviteUser,
+              tooltip: 'Invite User',
+            ),
+          ],
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: _isLoading ? null : _savePlaylist,
@@ -140,64 +265,143 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppTextField(
-                    controller: _nameController,
-                    labelText: 'Playlist Name',
-                    validator: (value) => value?.isEmpty == true ? 'Please enter a name' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: _descriptionController,
-                    labelText: 'Description',
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 16),
-                  SwitchListTile(
-                    title: const Text('Public Playlist', style: TextStyle(color: Colors.white)),
-                    subtitle: Text(
-                      _isPublic ? 'Anyone can see this playlist' : 'Only you can see this playlist',
-                      style: const TextStyle(color: AppTheme.onSurfaceVariant),
-                    ),
-                    value: _isPublic,
-                    onChanged: (value) => setState(() => _isPublic = value),
-                    activeColor: AppTheme.primary,
-                  ),
+                  _buildPlaylistInfo(),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Tracks',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_tracks.isEmpty)
-                    const EmptyState(
-                      icon: Icons.music_note,
-                      title: 'No tracks added',
-                      subtitle: 'Add tracks to your playlist using the search feature',
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _tracks.length,
-                      itemBuilder: (context, index) {
-                        final track = _tracks[index];
-                        return TrackCard(
-                          track: track,
-                          onTap: () {},
-                        );
-                      },
-                    ),
-                  const SizedBox(height: 80),
+                  _buildTracksSection(),
+                  const SizedBox(height: 80), 
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final playlistId = _isEditMode ? widget.playlistId : null;
-          Navigator.of(context).pushNamed('/track_search', arguments: playlistId);
-        },
+      floatingActionButton: _isEditMode ? FloatingActionButton(
+        onPressed: () => _navigateToTrackSearch(),
         backgroundColor: AppTheme.primary,
         child: const Icon(Icons.add, color: Colors.black),
+        tooltip: 'Add Tracks',
+      ) : null,
+    );
+  }
+
+  Widget _buildPlaylistInfo() {
+    return Card(
+      color: AppTheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Playlist Information',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _nameController,
+              labelText: 'Playlist Name',
+              validator: (value) => value?.isEmpty == true ? 'Please enter a name' : null,
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _descriptionController,
+              labelText: 'Description',
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              title: const Text('Public Playlist', style: TextStyle(color: Colors.white)),
+              subtitle: Text(
+                _isPublic ? 'Anyone can see this playlist' : 'Only you can see this playlist',
+                style: const TextStyle(color: AppTheme.onSurfaceVariant),
+              ),
+              value: _isPublic,
+              onChanged: (value) => setState(() => _isPublic = value),
+              activeColor: AppTheme.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTracksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tracks',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            Text(
+              '${_playlistTracks.length} songs',
+              style: const TextStyle(color: AppTheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_playlistTracks.isEmpty)
+          const EmptyState(
+            icon: Icons.music_note,
+            title: 'No tracks added',
+            subtitle: 'Add tracks to your playlist using the + button',
+          )
+        else
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _playlistTracks.length,
+            onReorder: _moveTrack,
+            itemBuilder: (context, index) {
+              final track = _playlistTracks[index];
+              return Card(
+                key: ValueKey(track.trackId),
+                margin: const EdgeInsets.only(bottom: 8),
+                color: AppTheme.surface,
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppTheme.primary,
+                    child: Text(
+                      '${track.position}',
+                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  title: Text(
+                    track.name,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Text(
+                    'Position: ${track.position}',
+                    style: const TextStyle(color: AppTheme.onSurfaceVariant),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.drag_handle, color: AppTheme.onSurfaceVariant),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _removeTrack(track),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  void _navigateToTrackSearch() {
+    Navigator.of(context).pushNamed('/track_search', arguments: widget.playlistId);
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppTheme.error : Colors.green,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

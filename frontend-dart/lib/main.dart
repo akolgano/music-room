@@ -2,7 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'providers/providers.dart';
+import 'providers/app_provider.dart';
+import 'providers/auth_provider.dart';
+import 'providers/music_provider.dart';
+import 'providers/friend_provider.dart';
 import 'services/music_player_service.dart';
 import 'app.dart';
 

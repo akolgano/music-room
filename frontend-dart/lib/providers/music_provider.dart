@@ -4,11 +4,15 @@ import '../services/api_service.dart';
 import '../models/models.dart';
 
 class MusicProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService _api = ApiService();
   
   List<Playlist> _playlists = [];
   List<Track> _searchResults = [];
   List<Event> _events = [];
+  List<PlaylistTrack> _playlistTracks = [];
+  List<Device> _devices = [];
+  List<MusicControlDelegate> _delegates = [];
+  
   bool _isLoading = false;
   String? _errorMessage;
   bool _isRetrying = false;
@@ -17,6 +21,10 @@ class MusicProvider with ChangeNotifier {
   List<Playlist> get playlists => List.unmodifiable(_playlists);
   List<Track> get searchResults => List.unmodifiable(_searchResults);
   List<Event> get events => List.unmodifiable(_events);
+  List<PlaylistTrack> get playlistTracks => List.unmodifiable(_playlistTracks);
+  List<Device> get devices => List.unmodifiable(_devices);
+  List<MusicControlDelegate> get delegates => List.unmodifiable(_delegates);
+  
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
@@ -29,205 +37,210 @@ class MusicProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchUserPlaylists(String token) async {
-    try {
-      _isLoading = true;
-      _hasConnectionError = false;
-      _isRetrying = false;
-      notifyListeners();
+  Future<T?> _execute<T>(Future<T> Function() operation) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _hasConnectionError = false;
+    _isRetrying = false;
+    notifyListeners();
 
-      _playlists = await _apiService.getPlaylists(token: token, publicOnly: false);
-      _errorMessage = null;
+    try {
+      final result = await operation();
+      return result;
     } catch (e) {
       _errorMessage = e.toString();
       _hasConnectionError = true;
-      _startRetryTimer(token);
+      _startRetryTimer();
+      return null;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> fetchPublicPlaylists(String token) async {
-    try {
-      _isLoading = true;
-      _hasConnectionError = false;
-      _isRetrying = false;
-      notifyListeners();
-
-      _playlists = await _apiService.getPlaylists(token: token, publicOnly: true);
-      _errorMessage = null;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _hasConnectionError = true;
-      _startRetryTimer(token);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  void _startRetryTimer(String token) {
+  void _startRetryTimer() {
     _isRetrying = true;
     notifyListeners();
     
     Future.delayed(const Duration(seconds: 3), () {
       if (_isRetrying) {
-        fetchUserPlaylists(token).catchError((_) => fetchPublicPlaylists(token));
+        _isRetrying = false;
+        notifyListeners();
       }
     });
   }
 
+  Future<void> fetchUserPlaylists(String token) async {
+    await _execute(() async {
+      _playlists = await _api.getPlaylists(token: token, publicOnly: false);
+    });
+  }
+
+  Future<void> fetchPublicPlaylists(String token) async {
+    await _execute(() async {
+      _playlists = await _api.getPlaylists(token: token, publicOnly: true);
+    });
+  }
+
   Future<Playlist?> getPlaylistDetails(String id, String token) async {
-    if (id.isEmpty || id == 'null') {
-      _errorMessage = 'Invalid playlist ID: $id';
-      notifyListeners();
-      print('MusicProvider: Invalid playlist ID: $id');
-      return null;
-    }
+    if (id.isEmpty || id == 'null') return null;
     
-    try {
-      print('MusicProvider: Getting playlist details for ID: $id');
-      return await _apiService.getPlaylist(id, token);
-    } catch (e) {
-      _errorMessage = e.toString();
-      print('MusicProvider: Error getting playlist details: $e');
-      notifyListeners();
-      return null;
-    }
+    return await _execute(() => _api.getPlaylist(id, token));
+  }
+
+  Future<void> fetchPlaylistTracks(String playlistId, String token) async {
+    if (playlistId.isEmpty || playlistId == 'null') return;
+    
+    await _execute(() async {
+      _playlistTracks = await _api.getPlaylistTracks(playlistId, token);
+    });
   }
 
   Future<String?> createPlaylist(String name, String description, bool isPublic, String token) async {
-    try {
-      final id = await _apiService.createPlaylist(name, description, isPublic, token);
+    final result = await _execute(() async {
+      final id = await _api.createPlaylist(name, description, isPublic, token);
       await fetchUserPlaylists(token);
       return id;
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-      return null;
-    }
+    });
+    return result;
   }
 
   Future<bool> updatePlaylist(String id, String name, String description, bool isPublic, String token) async {
-    if (id.isEmpty || id == 'null') {
-      _errorMessage = 'Invalid playlist ID: $id';
-      notifyListeners();
-      print('MusicProvider: Invalid playlist ID for update: $id');
-      return false;
-    }
+    if (id.isEmpty || id == 'null') return false;
     
-    try {
-      print('MusicProvider: Updating playlist ID: $id');
-      await _apiService.updatePlaylist(id, name, description, isPublic, token);
+    final result = await _execute(() async {
+      await _api.updatePlaylist(id, name, description, isPublic, token);
       await fetchUserPlaylists(token);
       return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      print('MusicProvider: Error updating playlist: $e');
-      notifyListeners();
-      return false;
-    }
+    });
+    return result ?? false;
   }
 
   Future<bool> deletePlaylist(String id, String token) async {
-    if (id.isEmpty || id == 'null') {
-      _errorMessage = 'Invalid playlist ID: $id';
-      notifyListeners();
-      print('MusicProvider: Invalid playlist ID for deletion: $id');
-      return false;
-    }
+    if (id.isEmpty || id == 'null') return false;
     
-    try {
-      print('MusicProvider: Deleting playlist ID: $id');
-      await _apiService.deletePlaylist(id, token);
+    final result = await _execute(() async {
+      await _api.deletePlaylist(id, token);
       await fetchUserPlaylists(token);
       return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      print('MusicProvider: Error deleting playlist: $e');
-      notifyListeners();
-      return false;
-    }
+    });
+    return result ?? false;
+  }
+
+  Future<bool> addTrackToPlaylist(String playlistId, String trackId, String token) async {
+    if (playlistId.isEmpty || playlistId == 'null' || 
+        trackId.isEmpty || trackId == 'null') return false;
+    
+    final result = await _execute(() async {
+      await _api.addTrackToPlaylist(playlistId, trackId, token);
+      await fetchPlaylistTracks(playlistId, token); 
+      return true;
+    });
+    return result ?? false;
+  }
+
+  Future<bool> removeTrackFromPlaylist(String playlistId, String trackId, String token) async {
+    if (playlistId.isEmpty || playlistId == 'null') return false;
+    
+    final result = await _execute(() async {
+      await _api.removeTrackFromPlaylist(playlistId, trackId, token);
+      await fetchPlaylistTracks(playlistId, token); 
+      return true;
+    });
+    return result ?? false;
+  }
+
+  Future<bool> moveTrackInPlaylist(String playlistId, int rangeStart, int insertBefore, int rangeLength, String token) async {
+    if (playlistId.isEmpty || playlistId == 'null') return false;
+    
+    final result = await _execute(() async {
+      await _api.moveTrackInPlaylist(playlistId, rangeStart, insertBefore, rangeLength, token);
+      await fetchPlaylistTracks(playlistId, token); 
+      return true;
+    });
+    return result ?? false;
+  }
+
+  Future<bool> changePlaylistVisibility(String playlistId, bool isPublic, String token) async {
+    if (playlistId.isEmpty || playlistId == 'null') return false;
+    
+    final result = await _execute(() async {
+      await _api.changePlaylistVisibility(playlistId, isPublic, token);
+      await fetchUserPlaylists(token); 
+      return true;
+    });
+    return result ?? false;
+  }
+
+  Future<bool> inviteUserToPlaylist(String playlistId, String userId, String token) async {
+    if (playlistId.isEmpty || playlistId == 'null') return false;
+    
+    final result = await _execute(() async {
+      await _api.inviteUserToPlaylist(playlistId, userId, token);
+      return true;
+    });
+    return result ?? false;
   }
 
   Future<void> searchTracks(String query) async {
-    try {
-      _searchResults = await _apiService.searchTracks(query, deezer: false);
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-    }
+    await _execute(() async {
+      _searchResults = await _api.searchTracks(query, deezer: false);
+    });
   }
 
   Future<void> searchDeezerTracks(String query) async {
-    try {
-      _searchResults = await _apiService.searchTracks(query, deezer: true);
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-    }
+    await _execute(() async {
+      _searchResults = await _api.searchTracks(query, deezer: true);
+    });
   }
 
   Future<Track?> getDeezerTrack(String trackId) async {
-    try {
-      return await _apiService.getDeezerTrack(trackId);
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-      return null;
-    }
+    return await _execute(() => _api.getDeezerTrack(trackId));
   }
 
   Future<String?> getDeezerTrackPreviewUrl(String trackId) async {
     try {
-      final track = await _apiService.getDeezerTrack(trackId);
+      final track = await _api.getDeezerTrack(trackId);
       return track.previewUrl;
     } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
       return null;
     }
   }
 
   Future<bool> addTrackFromDeezer(String trackId, String token) async {
-    try {
-      await _apiService.addTrackFromDeezer(trackId, token);
+    final result = await _execute(() async {
+      await _api.addTrackFromDeezer(trackId, token);
       return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-      return false;
-    }
+    });
+    return result ?? false;
   }
 
-  Future<bool> addTrackToPlaylist(String playlistId, String trackId, String token) async {
-    if (playlistId.isEmpty || playlistId == 'null') {
-      _errorMessage = 'Invalid playlist ID: $playlistId';
-      notifyListeners();
-      print('MusicProvider: Invalid playlist ID for adding track: $playlistId');
-      return false;
-    }
-    
-    if (trackId.isEmpty || trackId == 'null') {
-      _errorMessage = 'Invalid track ID: $trackId';
-      notifyListeners();
-      print('MusicProvider: Invalid track ID: $trackId');
-      return false;
-    }
-    
-    try {
-      print('MusicProvider: Adding track $trackId to playlist $playlistId');
-      await _apiService.addTrackToPlaylist(playlistId, trackId, token);
-      await fetchUserPlaylists(token);
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      print('MusicProvider: Error adding track to playlist: $e');
-      notifyListeners();
-      return false;
-    }
+  Future<void> fetchDevices(String token) async {
+    await _execute(() async {
+      _devices = [];
+    });
+  }
+
+  Future<Device?> registerDevice(String uuid, String licenseKey, String deviceName, String token) async {
+    return await _execute(() => _api.registerDevice(uuid, licenseKey, deviceName, token));
+  }
+
+  Future<MusicControlDelegate?> delegateControl(String deviceUuid, String delegateUserId, bool canControl, String token) async {
+    final result = await _execute(() async {
+      final delegate = await _api.delegateControl(deviceUuid, delegateUserId, canControl, token);
+      _delegates.add(delegate);
+      return delegate;
+    });
+    return result;
+  }
+
+  Future<bool> checkControlPermission(String deviceUuid, String token) async {
+    final result = await _execute(() => _api.checkControlPermission(deviceUuid, token));
+    return result ?? false;
+  }
+
+  Future<void> fetchEvents() async {
+    _events = [];
+    notifyListeners();
   }
 }
