@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from django.http import JsonResponse
 from .models import Playlist, Track
 from apps.tracks.models import Track
+from apps.users.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +13,7 @@ from django.db import transaction
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.forms.models import model_to_dict
+from .decorators import check_access_to_playlist
 from apps.devices.decorators import require_device_control
 
 
@@ -179,6 +181,7 @@ def playlist_tracks(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@check_access_to_playlist
 #@require_device_control
 def add_track(request, playlist_id):
     if request.method != 'POST':
@@ -217,6 +220,7 @@ def add_track(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@check_access_to_playlist
 #@require_device_control
 def move_track_in_playlist(request):
     if request.method != 'POST':
@@ -277,6 +281,7 @@ def move_track_in_playlist(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@check_access_to_playlist
 #@require_device_control
 def delete_track_from_playlist(request, playlist_id):
     if request.method != 'POST':
@@ -326,3 +331,38 @@ def delete_track_from_playlist(request, playlist_id):
         return JsonResponse({'error': 'Track not found in playlist'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def change_visibility(request, playlist_id):
+    try:
+        public = request.data.get('public', True)
+        #lets set True for now
+        public = True
+        playlist = Playlist.objects.get(id=playlist_id)
+        playlist.public = public
+        playlist.save()
+        print(playlist.users_saved.all())
+        return JsonResponse({'message': 'Playlist visibility changed successfully'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)    
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@check_access_to_playlist
+def invite_user(request, playlist_id):
+    try:
+        
+        user_id=request.data.get('user_id')
+        playlist = Playlist.objects.get(id=playlist_id)
+        print(playlist.users_saved.all())
+        user_to_invite = User.objects.get(id=user_id)
+        if user_to_invite in playlist.users_saved.all():
+            return JsonResponse({'message': 'User already invited'}, status=200)
+        playlist.users_saved.add(user_to_invite)
+        print(playlist.users_saved.all())
+        return JsonResponse({'message': 'User invited to the playlist'}, status=201)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400) 
