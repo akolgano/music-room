@@ -1,17 +1,20 @@
 // lib/providers/friend_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../models/models.dart';
 
 class FriendProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService _api = ApiService();
   
   List<int> _friends = [];
   List<Map<String, dynamic>> _pendingRequests = [];
+  
   bool _isLoading = false;
   String? _errorMessage;
 
   List<int> get friends => List.unmodifiable(_friends);
   List<Map<String, dynamic>> get pendingRequests => List.unmodifiable(_pendingRequests);
+  
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
@@ -21,84 +24,84 @@ class FriendProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchFriends(String token) async {
-    try {
-      _isLoading = true;
-      notifyListeners();
+  Future<T?> _execute<T>(Future<T> Function() operation) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
-      _friends = await _apiService.getFriends(token);
-      _errorMessage = null;
+    try {
+      final result = await operation();
+      return result;
     } catch (e) {
       _errorMessage = e.toString();
+      return null;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  Future<void> fetchFriends(String token) async {
+    await _execute(() async {
+      _friends = await _api.getFriends(token);
+    });
+  }
+
   Future<String?> sendFriendRequest(String token, int userId) async {
-    try {
-      return await _apiService.sendFriendRequest(userId, token);
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-      rethrow;
-    }
+    return await _execute(() => _api.sendFriendRequest(userId, token));
   }
 
   Future<void> fetchPendingRequests(String token) async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
+    await _execute(() async {
       _pendingRequests = [
         {
           'id': '1',
           'from_user': 123,
-          'to_user': int.parse(token.hashCode.toString().substring(0, 3)),
+          'to_user': int.tryParse(token) ?? 0, 
           'status': 'pending',
+          'created_at': DateTime.now().toIso8601String(),
         }
       ];
-      _errorMessage = null;
-    } catch (e) {
-      _errorMessage = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    });
   }
 
   Future<String?> acceptFriendRequest(String token, int friendshipId) async {
-    try {
+    return await _execute(() async {
       await Future.delayed(const Duration(milliseconds: 500));
-      return 'Friend request accepted';
-    } catch (e) {
-      _errorMessage = e.toString();
+      
+      _pendingRequests.removeWhere((req) => 
+          int.tryParse(req['id']?.toString() ?? '0') == friendshipId);
+      
+      final fromUser = _pendingRequests.firstWhere(
+        (req) => int.tryParse(req['id']?.toString() ?? '0') == friendshipId,
+        orElse: () => {'from_user': friendshipId}
+      )['from_user'] as int?;
+      
+      if (fromUser != null && !_friends.contains(fromUser)) {
+        _friends.add(fromUser);
+      }
+      
       notifyListeners();
-      rethrow;
-    }
+      return 'Friend request accepted';
+    });
   }
 
   Future<String?> rejectFriendRequest(String token, int friendshipId) async {
-    try {
+    return await _execute(() async {
       await Future.delayed(const Duration(milliseconds: 500));
-      return 'Friend request rejected';
-    } catch (e) {
-      _errorMessage = e.toString();
+      
+      _pendingRequests.removeWhere((req) => 
+          int.tryParse(req['id']?.toString() ?? '0') == friendshipId);
+      
       notifyListeners();
-      rethrow;
-    }
+      return 'Friend request rejected';
+    });
   }
 
   Future<void> removeFriend(String token, int friendId) async {
-    try {
+    await _execute(() async {
       await Future.delayed(const Duration(milliseconds: 500));
       _friends.remove(friendId);
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString();
-      notifyListeners();
-      rethrow;
-    }
+    });
   }
 }

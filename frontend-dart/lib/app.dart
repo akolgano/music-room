@@ -33,7 +33,6 @@ class MusicRoomApp extends StatelessWidget {
         AppRoutes.trackVote: (context) => const MusicTrackVoteScreen(),
         AppRoutes.controlDelegation: (context) => const MusicControlDelegationScreen(),
         AppRoutes.musicFeatures: (context) => const MusicFeaturesScreen(),
-        AppRoutes.apiDocs: (context) => const ApiDocsScreen(),
         AppRoutes.playlistEditor: (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
           return PlaylistEditorScreen(playlistId: args is String ? args : null);

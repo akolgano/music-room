@@ -1,5 +1,6 @@
 // screens/music/control_delegation_screen.dart
 import 'package:flutter/material.dart';
+import '../../core/theme.dart';
 
 class MusicControlDelegationScreen extends StatelessWidget {
   const MusicControlDelegationScreen({Key? key}) : super(key: key);
@@ -7,11 +8,28 @@ class MusicControlDelegationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
         title: const Text('Music Control Delegation'),
       ),
       body: const Center(
-        child: Text('Music Control Delegation will be implemented here'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.admin_panel_settings, size: 64, color: AppTheme.primary),
+            SizedBox(height: 16),
+            Text(
+              'Control Delegation',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Coming Soon',
+              style: TextStyle(color: AppTheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }
