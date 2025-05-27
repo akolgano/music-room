@@ -109,11 +109,19 @@ curl -X GET http://localhost:8000/playlists/saved_playlists/ \
 curl -X GET http://localhost:8000/playlists/public_playlists/
 ```
 
-### 7. Add Track to Playlist
-```bash
-curl -X POST http://localhost:8000/playlists/to_playlist/1/add_track/1/ \
-  -H "Authorization: Token $AUTH_TOKEN"
-```
+### Data
 
-**Note**: Replace `AUTH_TOKEN` with the actual token you receive after login.
+API_BASE_URL=http://localhost:8000
+APP_NAME="Music Room"
+DEEZER_API_KEY=
+DEBUG_MODE=
+DEBUG=
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+JWT_SECRET=
+ENCRYPTION_KEY=
+SOCKET_URL=
+MUSIC_API_KEY=
 
