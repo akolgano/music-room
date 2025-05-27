@@ -37,11 +37,7 @@ def get_otp_user(user):
 
 def get_user(email):
     try:
-        users = User.objects.filter(email=email)
-        if users.count() == 1:
-            user = users.first()
-            return user
-        else:
-            return None
+        user = User.objects.get(email=email)
+        return user
     except Exception:
         return None

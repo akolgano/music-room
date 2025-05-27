@@ -1,7 +1,3 @@
-# from django.contrib.auth.models import AbstractUser
-
-# class CustomUser(AbstractUser):
-#     pass
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -28,10 +24,6 @@ class Friendship(models.Model):
     def __str__(self):
         return f"{self.from_user} -> {self.to_user}"
 
-
-#class CustomUser(AbstractUser):
-    # Add your custom field
-#    remote_user = models.TextField(blank=False, null=False)
 
 def get_expiry_time():
     return timezone.now() + timedelta(minutes=5)

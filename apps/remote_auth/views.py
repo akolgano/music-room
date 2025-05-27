@@ -28,13 +28,13 @@ def facebook_login(request):
     fbAccessToken = request.data.get('fbAccessToken')
 
     if not fbAccessToken:
-        return JsonResponse({"Access token not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Access token not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
     verifyAccessTokenUrl = f"https://graph.facebook.com/debug_token?input_token={fbAccessToken}&access_token={FACEBOOK_APP_ID}|{FACEBOOK_APP_SECRET}"
     veriifyResponse = requests.get(verifyAccessTokenUrl).json()
 
     if not veriifyResponse.get('data', {}).get('is_valid'):
-        return JsonResponse({"Invalid Facebook access token"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Invalid Facebook access token'}, status=status.HTTP_400_BAD_REQUEST)
 
     user_id = veriifyResponse['data']['user_id']
 
@@ -43,7 +43,7 @@ def facebook_login(request):
 
     email = user_info.get('email')
     username = user_info.get('name') or email.split('@')[0]
-    username = username.replace(" ", "_")
+    username = username.replace(' ', '_')
 
     userData = {
         'username': username,
@@ -62,14 +62,14 @@ def facebook_login(request):
                 'token': token.key,
                 'user': serializer.data
             }
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(response_data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         token, created = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(user)
         user.last_activity = timezone.now()
         user.save()
-        return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
+        return JsonResponse({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
 
 
 def get_user(username, email):
@@ -87,24 +87,24 @@ def google_login_web(request):
     idToken = request.data.get('idToken')
 
     if not idToken:
-        return JsonResponse({"idToken token not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'idToken token not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         idInfo = id_token.verify_oauth2_token(idToken, google_requests.Request(), GOOGLE_CLIENT_ID_WEB)
 
     except ValueError:
-        return JsonResponse({"Invalid idToken"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Invalid idToken'}, status=status.HTTP_400_BAD_REQUEST)
 
     username = idInfo['name'] or idInfo['email'].split('@')[0]
     email = idInfo['email']
 
     if not username:
-        return JsonResponse({"Username not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Username not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not email:
-        return JsonResponse({"Email not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Email not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-    username = username.replace(" ", "_")
+    username = username.replace(' ', '_')
 
     userData = {
         'username': username,
@@ -123,14 +123,14 @@ def google_login_web(request):
                 'token': token.key,
                 'user': serializer.data
             }
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(response_data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         token, created = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(user)
         user.last_activity = timezone.now()
         user.save()
-        return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
+        return JsonResponse({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -138,23 +138,23 @@ def google_login_app(request):
     idToken = request.data.get('idToken')
 
     if not idToken:
-        return JsonResponse({"idToken token not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'idToken token not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         idInfo = id_token.verify_oauth2_token(idToken, google_requests.Request(), GOOGLE_CLIENT_ID_APP)
     except ValueError:
-        return JsonResponse({"Invalid idToken"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Invalid idToken'}, status=status.HTTP_400_BAD_REQUEST)
 
     username = idInfo['name'] or idInfo['email'].split('@')[0]
     email = idInfo['email']
 
     if not username:
-        return JsonResponse({"Username not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Username not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not email:
-        return JsonResponse({"Email not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Email not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-    username = username.replace(" ", "_")
+    username = username.replace(' ', '_')
 
     userData = {
         'username': username,
@@ -173,11 +173,11 @@ def google_login_app(request):
                 'token': token.key,
                 'user': serializer.data
             }
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(response_data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         token, created = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(user)
         user.last_activity = timezone.now()
         user.save()
-        return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
+        return JsonResponse({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
