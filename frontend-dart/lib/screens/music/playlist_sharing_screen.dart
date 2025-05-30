@@ -52,32 +52,39 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final musicProvider = Provider.of<MusicProvider>(context, listen: false);
       
-      await musicProvider.updatePlaylist(
+      final success = await musicProvider.changePlaylistVisibility(
         widget.playlist.id,
-        widget.playlist.name,
-        widget.playlist.description,
         !_isPublic,
         authProvider.token!,
       );
       
-      setState(() {
-        _isPublic = !_isPublic;
+      if (success) {
+        setState(() {
+          _isPublic = !_isPublic;
+          
+          if (_isPublic) {
+            _generateShareLink();
+          } else {
+            _shareLink = null;
+          }
+        });
         
-        if (_isPublic) {
-          _generateShareLink();
-        } else {
-          _shareLink = null;
-        }
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isPublic 
-              ? 'Playlist is now public and can be shared' 
-              : 'Playlist is now private'),
-          backgroundColor: Colors.green,
-        ),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isPublic 
+                ? 'Playlist is now public and can be shared' 
+                : 'Playlist is now private'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update playlist visibility'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

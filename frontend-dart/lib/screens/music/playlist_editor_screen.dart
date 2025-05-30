@@ -1,8 +1,10 @@
 // lib/screens/music/playlist_editor_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
+import '../../services/websocket_service.dart';
 import '../../models/playlist.dart';
 import '../../models/track.dart';
 import '../../models/playlist_track.dart';
@@ -26,13 +28,47 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
   bool _isLoading = false;
   Playlist? _playlist;
   List<PlaylistTrack> _playlistTracks = [];
+  
+  late WebSocketService _webSocketService;
+  StreamSubscription<List<PlaylistTrack>>? _tracksSubscription;
+  StreamSubscription<String>? _connectionSubscription;
+  bool _isWebSocketConnected = false;
 
   @override
   void initState() {
     super.initState();
+    _webSocketService = WebSocketService();
+    _setupWebSocketListeners();
+    
     if (widget.playlistId != null && widget.playlistId!.isNotEmpty && widget.playlistId != 'null') {
       _loadPlaylist();
     }
+  }
+
+  void _setupWebSocketListeners() {
+    _tracksSubscription = _webSocketService.playlistTracksStream.listen(
+      (tracks) {
+        print('Received real-time track update: ${tracks.length} tracks');
+        setState(() {
+          _playlistTracks = tracks;
+        });
+      },
+    );
+
+    _connectionSubscription = _webSocketService.connectionStatusStream.listen(
+      (status) {
+        print('WebSocket status: $status');
+        setState(() {
+          _isWebSocketConnected = _webSocketService.isConnected;
+        });
+        
+        if (status.contains('Connected')) {
+          _showSnackBar('Real-time sync enabled', isError: false);
+        } else if (status.contains('error') || status.contains('failed')) {
+          _showSnackBar('Real-time sync unavailable', isError: true);
+        }
+      },
+    );
   }
 
   Future<void> _loadPlaylist() async {
@@ -57,6 +93,8 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         
         await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
         _playlistTracks = List.from(musicProvider.playlistTracks);
+        
+        await _connectToWebSocket();
       }
     } catch (e) {
       print('Error loading playlist: $e');
@@ -66,7 +104,18 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     setState(() => _isLoading = false);
   }
 
-  Future<void> _savePlaylist() async {
+  Future<void> _connectToWebSocket() async {
+    if (widget.playlistId != null && widget.playlistId!.isNotEmpty && widget.playlistId != 'null') {
+      try {
+        await _webSocketService.connectToPlaylist(widget.playlistId!);
+        print('Connected to WebSocket for playlist ${widget.playlistId}');
+      } catch (e) {
+        print('Failed to connect to WebSocket: $e');
+      }
+    }
+  }
+
+  Future<void> _createPlaylist() async {
     if (_nameController.text.isEmpty) {
       _showSnackBar('Please enter a playlist name', isError: true);
       return;
@@ -78,39 +127,24 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final musicProvider = Provider.of<MusicProvider>(context, listen: false);
 
-      bool isEditing = widget.playlistId != null && 
-                      widget.playlistId!.isNotEmpty && 
-                      widget.playlistId != 'null';
-
-      if (isEditing) {
-        await musicProvider.updatePlaylist(
-          widget.playlistId!,
-          _nameController.text,
-          _descriptionController.text,
-          _isPublic,
-          authProvider.token!,
+      final playlistId = await musicProvider.createPlaylist(
+        _nameController.text,
+        _descriptionController.text,
+        _isPublic,
+        authProvider.token!,
+      );
+      if (playlistId != null) {
+        _showSnackBar('Playlist created successfully');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
+          ),
         );
-        _showSnackBar('Playlist updated successfully');
-      } else {
-        final playlistId = await musicProvider.createPlaylist(
-          _nameController.text,
-          _descriptionController.text,
-          _isPublic,
-          authProvider.token!,
-        );
-        if (playlistId != null) {
-          _showSnackBar('Playlist created successfully');
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
-            ),
-          );
-          return;
-        }
+        return;
       }
     } catch (e) {
-      print('Error saving playlist: $e');
-      _showSnackBar('Error saving playlist: $e', isError: true);
+      print('Error creating playlist: $e');
+      _showSnackBar('Error creating playlist: $e', isError: true);
     }
 
     setState(() => _isLoading = false);
@@ -159,12 +193,14 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
           authProvider.token!,
         );
 
-        await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
-        setState(() {
-          _playlistTracks = List.from(musicProvider.playlistTracks);
-        });
-
         _showSnackBar('Track removed from playlist');
+        
+        if (!_isWebSocketConnected) {
+          await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
+          setState(() {
+            _playlistTracks = List.from(musicProvider.playlistTracks);
+          });
+        }
       } catch (e) {
         _showSnackBar('Error removing track: $e', isError: true);
       }
@@ -190,12 +226,14 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         authProvider.token!,
       );
 
-      await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
-      setState(() {
-        _playlistTracks = List.from(musicProvider.playlistTracks);
-      });
-
       _showSnackBar('Track moved successfully');
+      
+      if (!_isWebSocketConnected) {
+        await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
+        setState(() {
+          _playlistTracks = List.from(musicProvider.playlistTracks);
+        });
+      }
     } catch (e) {
       _showSnackBar('Error moving track: $e', isError: true);
     }
@@ -238,7 +276,30 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.background,
-        title: Text(_isEditMode ? 'Edit Playlist' : 'Create Playlist'),
+        title: Row(
+          children: [
+            Text(_isEditMode ? 'Playlist Details' : 'Create Playlist'),
+            if (_isEditMode) ...[
+              const SizedBox(width: 8),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: _isWebSocketConnected ? Colors.green : Colors.orange,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                _isWebSocketConnected ? 'Live' : 'Offline',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: _isWebSocketConnected ? Colors.green : Colors.orange,
+                ),
+              ),
+            ],
+          ],
+        ),
         actions: [
           if (_isEditMode) ...[
             IconButton(
@@ -251,11 +312,13 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
               onPressed: _isLoading ? null : _inviteUser,
               tooltip: 'Invite User',
             ),
+          ] else ...[
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: _isLoading ? null : _createPlaylist,
+              tooltip: 'Create Playlist',
+            ),
           ],
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _isLoading ? null : _savePlaylist,
-          ),
         ],
       ),
       body: _isLoading
@@ -267,7 +330,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
                 children: [
                   _buildPlaylistInfo(),
                   const SizedBox(height: 24),
-                  _buildTracksSection(),
+                  if (_isEditMode) _buildTracksSection(),
                   const SizedBox(height: 80), 
                 ],
               ),
@@ -289,33 +352,61 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Playlist Information',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            Text(
+              _isEditMode ? 'Playlist Information' : 'New Playlist',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _nameController,
               labelText: 'Playlist Name',
               validator: (value) => value?.isEmpty == true ? 'Please enter a name' : null,
+              onChanged: _isEditMode ? null : (_) {},
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _descriptionController,
               labelText: 'Description',
               maxLines: 3,
+              onChanged: _isEditMode ? null : (_) {},
             ),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: const Text('Public Playlist', style: TextStyle(color: Colors.white)),
-              subtitle: Text(
-                _isPublic ? 'Anyone can see this playlist' : 'Only you can see this playlist',
-                style: const TextStyle(color: AppTheme.onSurfaceVariant),
+            if (_isEditMode) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceVariant,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isPublic ? Icons.public : Icons.lock,
+                      color: _isPublic ? Colors.green : Colors.orange,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _isPublic ? 'Public - Anyone can see this playlist' : 'Private - Only you can see this playlist',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              value: _isPublic,
-              onChanged: (value) => setState(() => _isPublic = value),
-              activeColor: AppTheme.primary,
-            ),
+            ] else ...[
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: const Text('Public Playlist', style: TextStyle(color: Colors.white)),
+                subtitle: Text(
+                  _isPublic ? 'Anyone can see this playlist' : 'Only you can see this playlist',
+                  style: const TextStyle(color: AppTheme.onSurfaceVariant),
+                ),
+                value: _isPublic,
+                onChanged: (value) => setState(() => _isPublic = value),
+                activeColor: AppTheme.primary,
+              ),
+            ],
           ],
         ),
       ),
@@ -333,9 +424,18 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
               'Tracks',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
-            Text(
-              '${_playlistTracks.length} songs',
-              style: const TextStyle(color: AppTheme.onSurfaceVariant),
+            Row(
+              children: [
+                Text(
+                  '${_playlistTracks.length} songs',
+                  style: const TextStyle(color: AppTheme.onSurfaceVariant),
+                ),
+                if (_isWebSocketConnected) ...[
+                  const SizedBox(width: 8),
+                  const Icon(Icons.sync, color: Colors.green, size: 16),
+                  const Text(' Live', style: TextStyle(color: Colors.green, fontSize: 12)),
+                ],
+              ],
             ),
           ],
         ),
@@ -410,6 +510,11 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _tracksSubscription?.cancel();
+    _connectionSubscription?.cancel();
+    
+    _webSocketService.disconnect();
+    
     super.dispose();
   }
 }
