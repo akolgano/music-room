@@ -15,7 +15,7 @@ class DeezerTrackDetailScreen extends StatefulWidget {
   const DeezerTrackDetailScreen({Key? key, required this.trackId}) : super(key: key);
 
   @override
-  _DeezerTrackDetailScreenState createState() => _DeezerTrackDetailScreenState();
+  State<DeezerTrackDetailScreen> createState() => _DeezerTrackDetailScreenState();
 }
 
 class _DeezerTrackDetailScreenState extends State<DeezerTrackDetailScreen> {
