@@ -9,20 +9,25 @@ import '../base_screen.dart';
 class PlaylistsScreen extends StatefulWidget {
   final bool publicOnly;
   const PlaylistsScreen({Key? key, this.publicOnly = false}) : super(key: key);
-  @override State<PlaylistsScreen> createState() => _PlaylistsScreenState();
+
+  @override 
+  State<PlaylistsScreen> createState() => _PlaylistsScreenState();
 }
 
 class _PlaylistsScreenState extends BaseScreen<PlaylistsScreen> {
   final _searchController = TextEditingController();
   List<Playlist> _filteredPlaylists = [];
 
-  @override String get screenTitle => widget.publicOnly ? 'Public Playlists' : 'Your Playlists';
+  @override 
+  String get screenTitle => widget.publicOnly ? 'Public Playlists' : 'Your Playlists';
   
-  @override List<Widget> get actions => [
+  @override 
+  List<Widget> get actions => [
     IconButton(icon: const Icon(Icons.refresh), onPressed: _loadPlaylists),
   ];
 
-  @override Widget? get floatingActionButton => !widget.publicOnly 
+  @override 
+  Widget? get floatingActionButton => !widget.publicOnly 
       ? FloatingActionButton(
           onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           child: const Icon(Icons.add),
@@ -89,7 +94,8 @@ class _PlaylistsScreenState extends BaseScreen<PlaylistsScreen> {
     showSuccess('Added to Your Library');
   }
 
-  @override void dispose() {
+  @override 
+  void dispose() {
     _searchController.dispose();
     super.dispose();
   }

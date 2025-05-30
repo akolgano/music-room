@@ -1,4 +1,4 @@
-// widgets/music_player_widget.dart
+// lib/widgets/music_player_widget.dart
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

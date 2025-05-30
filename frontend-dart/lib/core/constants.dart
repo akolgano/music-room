@@ -2,6 +2,21 @@
 class AppConstants {
   static const String appName = 'Music Room';
   static const String version = '1.0.0';
+  
+  static const String defaultApiBaseUrl = 'http://localhost:8000';
+  static const String contentTypeJson = 'application/json';
+  static const String authorizationPrefix = 'Token';
+  
+  static const Duration retryDelay = Duration(seconds: 3);
+  static const Duration connectionTimeout = Duration(seconds: 30);
+  static const int defaultPageSize = 25;
+  static const int maxSearchResults = 100;
+  static const int minPasswordLength = 8;
+  
+  static const String googleDocMimeType = 'application/vnd.google-apps.document';
+  static const String googleFolderMimeType = 'application/vnd.google-apps.folder';
+  
+  static const String emailRegexPattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
 }
 
 class AppRoutes {

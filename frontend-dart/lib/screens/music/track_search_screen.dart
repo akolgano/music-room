@@ -21,7 +21,7 @@ class TrackSearchScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _TrackSearchScreenState createState() => _TrackSearchScreenState();
+  State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
 
 class _TrackSearchScreenState extends State<TrackSearchScreen> {
@@ -347,7 +347,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       }
 
       await musicProvider.addTrackToPlaylist(widget.playlistId!, track.id, authProvider.token!);
-
       _showSnackBar('Added "${track.name}" to playlist');
     } catch (error) {
       _showSnackBar('Failed to add track: $error', isError: true);
@@ -382,7 +381,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         if (track.deezerTrackId != null && _searchDeezer) {
           await musicProvider.addTrackFromDeezer(track.deezerTrackId!, authProvider.token!);
         }
-
         await musicProvider.addTrackToPlaylist(widget.playlistId!, track.id, authProvider.token!);
       }
 
