@@ -1,9 +1,10 @@
-// screens/music/playlist_sharing_screen.dart
+// lib/screens/music/playlist_sharing_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/playlist.dart';
+import '../../core/theme.dart';
 
 class PlaylistSharingScreen extends StatefulWidget {
   final Playlist playlist;
@@ -11,7 +12,7 @@ class PlaylistSharingScreen extends StatefulWidget {
   const PlaylistSharingScreen({Key? key, required this.playlist}) : super(key: key);
 
   @override
-  _PlaylistSharingScreenState createState() => _PlaylistSharingScreenState();
+  State<PlaylistSharingScreen> createState() => _PlaylistSharingScreenState();
 }
 
 class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
@@ -110,17 +111,20 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
         title: const Text('Share Playlist'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
+                    color: AppTheme.surface,
                     elevation: 4,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -131,35 +135,38 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                             widget.playlist.name,
                             style: const TextStyle(
                               fontSize: 22, 
-                              fontWeight: FontWeight.bold
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Created by: ${widget.playlist.creator}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14, 
-                              color: Colors.grey[600]
+                              color: AppTheme.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             '${widget.playlist.tracks.length} tracks',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14, 
-                              color: Colors.grey[600]
+                              color: AppTheme.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(height: 16),
                           SwitchListTile(
-                            title: const Text('Public Playlist'),
+                            title: const Text('Public Playlist', style: TextStyle(color: Colors.white)),
                             subtitle: Text(
                               _isPublic
                                   ? 'Anyone with the link can view this playlist'
-                                  : 'Only you can see this playlist'
+                                  : 'Only you can see this playlist',
+                              style: const TextStyle(color: AppTheme.onSurfaceVariant),
                             ),
                             value: _isPublic,
                             onChanged: (value) => _togglePublicStatus(),
+                            activeColor: AppTheme.primary,
                           ),
                         ],
                       ),
@@ -171,11 +178,13 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                       'Share Options',
                       style: TextStyle(
                         fontSize: 18, 
-                        fontWeight: FontWeight.bold
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Card(
+                      color: AppTheme.surface,
                       elevation: 2,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -185,25 +194,28 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                             const Text(
                               'Playlist Link:',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                color: AppTheme.surfaceVariant,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: Text(_shareLink ?? 'Generating link...'),
+                                    child: Text(
+                                      _shareLink ?? 'Generating link...',
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.copy),
+                                    icon: const Icon(Icons.copy, color: Colors.white),
                                     onPressed: () {
-                                      // In a real app, copy to clipboard
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(
                                           content: Text('Link copied to clipboard')
@@ -218,7 +230,8 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                             const Text(
                               'Share via:',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -236,7 +249,7 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                                   color: Colors.red,
                                 ),
                                 _buildShareButton(
-                                  icon: Icons.social_distance,
+                                  icon: Icons.share,
                                   label: 'Social',
                                   color: Colors.purple,
                                 ),
@@ -256,26 +269,28 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                       'Who can see this playlist',
                       style: TextStyle(
                         fontSize: 18, 
-                        fontWeight: FontWeight.bold
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Card(
+                      color: AppTheme.surface,
                       elevation: 2,
                       child: Column(
                         children: [
                           ListTile(
-                            leading: const Icon(Icons.public),
-                            title: const Text('Public'),
-                            subtitle: const Text('Anyone with the link'),
+                            leading: const Icon(Icons.public, color: Colors.white),
+                            title: const Text('Public', style: TextStyle(color: Colors.white)),
+                            subtitle: const Text('Anyone with the link', style: TextStyle(color: AppTheme.onSurfaceVariant)),
                             selected: true,
-                            selectedColor: Theme.of(context).primaryColor,
+                            selectedTileColor: AppTheme.primary.withOpacity(0.1),
                           ),
-                          const Divider(height: 1),
+                          const Divider(height: 1, color: AppTheme.surfaceVariant),
                           ListTile(
-                            leading: const Icon(Icons.group),
-                            title: const Text('Friends Only'),
-                            subtitle: const Text('Only people you follow'),
+                            leading: const Icon(Icons.group, color: Colors.white),
+                            title: const Text('Friends Only', style: TextStyle(color: Colors.white)),
+                            subtitle: const Text('Only people you follow', style: TextStyle(color: AppTheme.onSurfaceVariant)),
                             enabled: false,
                             onTap: () {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -285,11 +300,11 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                               );
                             },
                           ),
-                          const Divider(height: 1),
+                          const Divider(height: 1, color: AppTheme.surfaceVariant),
                           ListTile(
-                            leading: const Icon(Icons.lock),
-                            title: const Text('Private'),
-                            subtitle: const Text('Only you'),
+                            leading: const Icon(Icons.lock, color: Colors.white),
+                            title: const Text('Private', style: TextStyle(color: Colors.white)),
+                            subtitle: const Text('Only you', style: TextStyle(color: AppTheme.onSurfaceVariant)),
                             onTap: () => _togglePublicStatus(),
                           ),
                         ],
@@ -312,12 +327,14 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                             SizedBox(height: 8),
                             Text(
                               'Enable public sharing to generate a share link',
                               textAlign: TextAlign.center,
+                              style: TextStyle(color: AppTheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -350,7 +367,7 @@ class _PlaylistSharingScreenState extends State<PlaylistSharingScreen> {
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 12, color: Colors.white),
             ),
           ],
         ),

@@ -10,7 +10,7 @@ class FriendRequestScreen extends StatefulWidget {
   const FriendRequestScreen({Key? key}) : super(key: key);
 
   @override
-  _FriendRequestScreenState createState() => _FriendRequestScreenState();
+  State<FriendRequestScreen> createState() => _FriendRequestScreenState();
 }
 
 class _FriendRequestScreenState extends State<FriendRequestScreen> {
@@ -31,7 +31,6 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-
       await friendProvider.fetchPendingRequests(authProvider.token!);
       setState(() {
         _pendingRequests = friendProvider.pendingRequests;

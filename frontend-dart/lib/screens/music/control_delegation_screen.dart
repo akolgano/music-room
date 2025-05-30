@@ -1,4 +1,4 @@
-// screens/music/control_delegation_screen.dart
+// lib/screens/music/control_delegation_screen.dart
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 

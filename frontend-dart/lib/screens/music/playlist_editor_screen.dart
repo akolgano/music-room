@@ -16,7 +16,7 @@ class PlaylistEditorScreen extends StatefulWidget {
   const PlaylistEditorScreen({Key? key, this.playlistId}) : super(key: key);
 
   @override
-  _PlaylistEditorScreenState createState() => _PlaylistEditorScreenState();
+  State<PlaylistEditorScreen> createState() => _PlaylistEditorScreenState();
 }
 
 class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {

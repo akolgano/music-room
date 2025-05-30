@@ -106,7 +106,6 @@ class AuthProvider with ChangeNotifier {
   }
 
   bool get hasValidToken => _token != null && _token!.isNotEmpty;
-
   String get displayName => _username ?? 'User';
 
   void _clearUserData() {
