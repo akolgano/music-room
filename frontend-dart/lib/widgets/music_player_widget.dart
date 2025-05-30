@@ -40,62 +40,138 @@ class MusicPlayerWidget extends StatelessWidget {
   Widget _buildMiniPlayer(BuildContext context, MusicPlayerService playerService, Track track) {
     return Container(
       color: MusicColors.surface,
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: MusicColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: const Icon(
-            Icons.music_note,
-            color: Colors.white,
-            size: 20,
-          ),
-        ),
-        title: Text(
-          track.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-        subtitle: Text(
-          track.artist,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
-            fontSize: 12,
-          ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(
-                playerService.isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: MusicColors.primary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.music_note, size: 12, color: MusicColors.primary),
+                    SizedBox(width: 4),
+                    Text(
+                      'NOW PLAYING',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: MusicColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              onPressed: () {
-                playerService.togglePlay();
-              },
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.close,
-                color: Colors.white,
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/player');
+                },
+                icon: const Icon(Icons.expand_less, size: 16, color: Colors.white),
+                label: const Text('Full Player', style: TextStyle(fontSize: 10, color: Colors.white)),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                ),
               ),
-              onPressed: () {
-                playerService.stop();
-              },
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: MusicColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(
+                  Icons.music_note,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      track.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      track.artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      playerService.togglePlay();
+                    },
+                    icon: Icon(
+                      playerService.isPlaying ? Icons.pause : Icons.play_arrow,
+                      size: 16,
+                    ),
+                    label: Text(
+                      playerService.isPlaying ? 'Pause' : 'Play',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MusicColors.primary,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: () {
+                      playerService.stop();
+                    },
+                    icon: const Icon(Icons.stop, size: 16, color: Colors.white),
+                    label: const Text('Stop', style: TextStyle(fontSize: 10, color: Colors.white)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Column(
+            children: [
+              _buildProgressBar(playerService),
+              const SizedBox(height: 4),
+              _buildTimeLabels(playerService),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -107,26 +183,65 @@ class MusicPlayerWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showTrackInfo) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: MusicColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: MusicColors.primary.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.music_note, size: 16, color: MusicColors.primary),
+                  SizedBox(width: 6),
+                  Text(
+                    'NOW PLAYING',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: MusicColors.primary,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             _buildTrackImage(track),
             const SizedBox(height: 16),
             Text(
               track.name,
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(
-              '${track.artist} • ${track.album}',
+              'by ${track.artist}',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.white.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),
+            if (track.album.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                'from ${track.album}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.5),
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
             const SizedBox(height: 24),
           ],
           _buildProgressBar(playerService),
@@ -134,6 +249,8 @@ class MusicPlayerWidget extends StatelessWidget {
           _buildTimeLabels(playerService),
           const SizedBox(height: 24),
           _buildControls(playerService),
+          const SizedBox(height: 16),
+          _buildSecondaryControls(),
         ],
       ),
     );
@@ -142,8 +259,8 @@ class MusicPlayerWidget extends StatelessWidget {
   Widget _buildTrackImage(Track track) {
     if (track.imageUrl != null && track.imageUrl!.isNotEmpty) {
       return Container(
-        width: 200,
-        height: 200,
+        width: 180,
+        height: 180,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
@@ -161,8 +278,8 @@ class MusicPlayerWidget extends StatelessWidget {
       );
     } else {
       return Container(
-        width: 200,
-        height: 200,
+        width: 180,
+        height: 180,
         decoration: BoxDecoration(
           color: MusicColors.surfaceVariant,
           borderRadius: BorderRadius.circular(8),
@@ -174,10 +291,23 @@ class MusicPlayerWidget extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(
-          Icons.music_note,
-          size: 80,
-          color: Colors.white.withOpacity(0.5),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.music_note,
+              size: 60,
+              color: Colors.white.withOpacity(0.5),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No Cover Art',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -236,60 +366,188 @@ class MusicPlayerWidget extends StatelessWidget {
 
   Widget _buildControls(MusicPlayerService playerService) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        IconButton(
-          icon: Icon(
-            Icons.shuffle,
-            color: Colors.white.withOpacity(0.7),
-            size: 24,
-          ),
-          onPressed: () {
-          },
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.skip_previous,
-            color: Colors.white,
-            size: 32,
-          ),
-          onPressed: () {
-          },
-        ),
-        const SizedBox(width: 8),
-        Container(
-          width: 56,
-          height: 56,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            icon: Icon(
-              playerService.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.black,
-              size: 32,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.shuffle,
+                color: Colors.white.withOpacity(0.7),
+                size: 24,
+              ),
+              onPressed: () {
+              },
+              tooltip: 'Shuffle tracks',
             ),
-            onPressed: () {
-              playerService.togglePlay();
-            },
-          ),
+            Text(
+              'Shuffle',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.white.withOpacity(0.7),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        IconButton(
-          icon: const Icon(
-            Icons.skip_next,
-            color: Colors.white,
-            size: 32,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.skip_previous,
+                color: Colors.white,
+                size: 32,
+              ),
+              onPressed: () {
+              },
+              tooltip: 'Previous track',
+            ),
+            Text(
+              'Previous',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.white.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: Icon(
+                  playerService.isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: Colors.black,
+                  size: 32,
+                ),
+                onPressed: () {
+                  playerService.togglePlay();
+                },
+                tooltip: playerService.isPlaying ? 'Pause music' : 'Play music',
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              playerService.isPlaying ? 'Pause' : 'Play',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.skip_next,
+                color: Colors.white,
+                size: 32,
+              ),
+              onPressed: () {
+              },
+              tooltip: 'Next track',
+            ),
+            Text(
+              'Next',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.white.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.repeat,
+                color: Colors.white.withOpacity(0.7),
+                size: 24,
+              ),
+              onPressed: () {
+              },
+              tooltip: 'Repeat mode',
+            ),
+            Text(
+              'Repeat',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.white.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSecondaryControls() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        TextButton.icon(
+          icon: Icon(
+            Icons.favorite_border,
+            color: Colors.white.withOpacity(0.7),
+            size: 20,
+          ),
+          label: Text(
+            'Like',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 12,
+            ),
           ),
           onPressed: () {
           },
         ),
-        IconButton(
+        TextButton.icon(
           icon: Icon(
-            Icons.repeat,
+            Icons.playlist_add,
             color: Colors.white.withOpacity(0.7),
-            size: 24,
+            size: 20,
+          ),
+          label: Text(
+            'Add to Playlist',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 12,
+            ),
+          ),
+          onPressed: () {
+          },
+        ),
+        TextButton.icon(
+          icon: Icon(
+            Icons.share,
+            color: Colors.white.withOpacity(0.7),
+            size: 20,
+          ),
+          label: Text(
+            'Share',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 12,
+            ),
           ),
           onPressed: () {
           },
