@@ -56,13 +56,21 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(_pageTitles[_selectedIndex], 
                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+          TextButton.icon(
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            label: const Text('Alerts', style: TextStyle(color: Colors.white, fontSize: 12)),
             onPressed: () => _showSnackBar('Notifications coming soon!'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
+          TextButton.icon(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            label: const Text('Menu', style: TextStyle(color: Colors.white, fontSize: 12)),
             onPressed: () => Scaffold.of(context).openEndDrawer(),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
           ),
         ],
       ),
@@ -75,11 +83,19 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
       floatingActionButton: _selectedIndex == 1 
-          ? FloatingActionButton(
-              onPressed: () => Navigator.of(context).pushNamed(AppRoutes.playlistEditor),
-              backgroundColor: AppTheme.primary,
-              child: const Icon(Icons.add, color: Colors.black),
-            ) : null,
+          ? _buildVerboseFloatingActionButton()
+          : null,
+    );
+  }
+
+  Widget _buildVerboseFloatingActionButton() {
+    return FloatingActionButton.extended(
+      onPressed: () => Navigator.of(context).pushNamed(AppRoutes.playlistEditor),
+      backgroundColor: AppTheme.primary,
+      foregroundColor: Colors.black,
+      icon: const Icon(Icons.add),
+      label: const Text('New Playlist'),
+      tooltip: 'Create a new playlist',
     );
   }
 
@@ -87,23 +103,48 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: double.infinity,
       color: musicProvider.isRetrying ? AppTheme.primary.withOpacity(0.1) : AppTheme.error.withOpacity(0.1),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Icon(musicProvider.isRetrying ? Icons.refresh : Icons.error_outline,
                color: musicProvider.isRetrying ? AppTheme.primary : AppTheme.error),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              musicProvider.isRetrying 
-                  ? 'Retrying connection...' 
-                  : 'Connection error: ${musicProvider.errorMessage}',
-              style: TextStyle(color: musicProvider.isRetrying ? AppTheme.primary : AppTheme.error),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  musicProvider.isRetrying 
+                      ? 'Reconnecting to Music Service...' 
+                      : 'Connection Problem',
+                  style: TextStyle(
+                    color: musicProvider.isRetrying ? AppTheme.primary : AppTheme.error,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                if (!musicProvider.isRetrying)
+                  Text(
+                    'Unable to connect to the music server. Check your internet connection.',
+                    style: TextStyle(
+                      color: AppTheme.error,
+                      fontSize: 12,
+                    ),
+                  ),
+              ],
             ),
           ),
           if (!musicProvider.isRetrying)
-            IconButton(
-              icon: Icon(Icons.refresh, color: AppTheme.error),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.error,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                textStyle: const TextStyle(fontSize: 12),
+              ),
               onPressed: () {
                 final authProvider = Provider.of<AuthProvider>(context, listen: false);
                 if (authProvider.token != null) {
@@ -113,8 +154,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           if (musicProvider.isRetrying)
             const SizedBox(
-              width: 24, height: 24, 
-              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary)),
+              width: 20, height: 20, 
+              child: CircularProgressIndicator(
+                strokeWidth: 2, 
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+              ),
             ),
         ],
       ),
@@ -140,51 +184,84 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 10),
                 const Text('Music Room', 
                            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                Text(authProvider.username ?? 'Guest', 
+                Text('Welcome, ${authProvider.username ?? 'Guest'}!', 
                      style: const TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 14)),
               ],
             ),
           ),
-          ..._buildDrawerItems(authProvider, musicProvider),
+          _DrawerItem(
+            Icons.home, 
+            'Home Dashboard', 
+            'Your music overview and activities',
+            selected: _selectedIndex == 0, 
+            onTap: () => _selectTab(0)
+          ),
+          _DrawerItem(
+            Icons.library_music, 
+            'My Music Library', 
+            'Browse your playlists and saved music',
+            selected: _selectedIndex == 1, 
+            onTap: () => _selectTab(1)
+          ),
+          const Divider(color: AppTheme.surfaceVariant),
+          _DrawerItem(
+            Icons.public, 
+            'Discover Public Playlists', 
+            'Explore music shared by other users',
+            onTap: () => _navigateAndPop(AppRoutes.publicPlaylists)
+          ),
+          _DrawerItem(
+            Icons.how_to_vote, 
+            'Collaborative Voting', 
+            'Vote on tracks for group playlists',
+            onTap: () => _navigateAndPop(AppRoutes.trackVote)
+          ),
+          _DrawerItem(
+            Icons.admin_panel_settings, 
+            'Music Control Sharing', 
+            'Let friends control your music',
+            onTap: () => _navigateAndPop(AppRoutes.controlDelegation)
+          ),
+          _DrawerItem(
+            Icons.add_circle_outline, 
+            'Create New Playlist', 
+            'Start building a new music collection',
+            onTap: () => _navigateAndPop(AppRoutes.playlistEditor)
+          ),
+          const Divider(color: AppTheme.surfaceVariant),
+          _DrawerItem(
+            Icons.person_outline, 
+            'My Profile', 
+            'View and edit your account settings',
+            selected: _selectedIndex == 2, 
+            onTap: () => _selectTab(2)
+          ),
+          _DrawerItem(
+            Icons.settings, 
+            'App Settings', 
+            'Customize your Music Room experience',
+            onTap: () => _showSnackBar('Settings menu coming soon!')
+          ),
+          const Divider(color: AppTheme.surfaceVariant),
+          _DrawerItem(
+            Icons.people_outline, 
+            'Friends & Social', 
+            'Connect with other music lovers',
+            onTap: () => _navigateAndPop(AppRoutes.friends)
+          ),
+          const Divider(color: AppTheme.surfaceVariant),
+          _DrawerItem(
+            Icons.logout, 
+            'Sign Out', 
+            'Log out of your account',
+            onTap: () => _showLogoutDialog(authProvider)
+          ),
         ],
       ),
     );
   }
 
-  List<Widget> _buildDrawerItems(AuthProvider authProvider, MusicProvider musicProvider) {
-    final items = [
-      _DrawerItem(Icons.home, 'Home', selected: _selectedIndex == 0, 
-                  onTap: () => _selectTab(0)),
-      _DrawerItem(Icons.library_music, 'Your Library', selected: _selectedIndex == 1, 
-                  onTap: () => _selectTab(1)),
-      const Divider(color: AppTheme.surfaceVariant),
-      _DrawerItem(Icons.public, 'Discover Playlists', 
-                  onTap: () => _navigateAndPop(AppRoutes.publicPlaylists)),
-      _DrawerItem(Icons.how_to_vote, 'Track Voting', 
-                  onTap: () => _navigateAndPop(AppRoutes.trackVote)),
-      _DrawerItem(Icons.people, 'Control Delegation', 
-                  onTap: () => _navigateAndPop(AppRoutes.controlDelegation)),
-      _DrawerItem(Icons.add, 'Create Playlist', 
-                  onTap: () => _navigateAndPop(AppRoutes.playlistEditor)),
-      const Divider(color: AppTheme.surfaceVariant),
-      _DrawerItem(Icons.person, 'Profile', selected: _selectedIndex == 2, 
-                  onTap: () => _selectTab(2)),
-      _DrawerItem(Icons.settings, 'Settings', 
-                  onTap: () => _showSnackBar('Settings coming soon!')),
-      const Divider(color: AppTheme.surfaceVariant),
-      _DrawerItem(Icons.people, 'Friends', 
-                  subtitle: 'Connect with other users',
-                  onTap: () => _navigateAndPop(AppRoutes.friends)),
-      const Divider(color: AppTheme.surfaceVariant),
-      _DrawerItem(Icons.logout, 'Logout', 
-                  onTap: () => _showLogoutDialog(authProvider)),
-    ];
-    
-    return items;
-  }
-
-  Widget _DrawerItem(IconData icon, String title, {
-    String? subtitle,
+  Widget _DrawerItem(IconData icon, String title, String description, {
     bool selected = false,
     required VoidCallback onTap,
   }) {
@@ -194,8 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
         color: selected ? AppTheme.primary : Colors.white,
         fontWeight: selected ? FontWeight.bold : FontWeight.normal,
       )),
-      subtitle: subtitle != null ? Text(subtitle, 
-                                      style: const TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 12)) : null,
+      subtitle: Text(description, 
+                    style: const TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 12)),
       selected: selected,
       onTap: onTap,
     );
@@ -216,19 +293,31 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surface,
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
-        content: const Text('Are you sure you want to logout?', 
-                           style: TextStyle(color: Colors.white)),
+        title: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Are you sure you want to sign out?', 
+                 style: TextStyle(color: Colors.white)),
+            SizedBox(height: 8),
+            Text('You\'ll need to sign in again to access your playlists and music.', 
+                 style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 12)),
+          ],
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('CANCEL')),
           TextButton(
+            onPressed: () => Navigator.of(ctx).pop(), 
+            child: const Text('Stay Signed In')
+          ),
+          ElevatedButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pop();
               authProvider.logout();
             },
-            style: TextButton.styleFrom(foregroundColor: AppTheme.error),
-            child: const Text('LOGOUT'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -247,10 +336,25 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppTheme.surface,
         selectedItemColor: AppTheme.primary,
         unselectedItemColor: AppTheme.onSurfaceVariant,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(fontSize: 11),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.library_music), label: 'Library'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home), 
+            label: 'Home',
+            tooltip: 'Go to home dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.library_music), 
+            label: 'My Library',
+            tooltip: 'Browse your music library',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person), 
+            label: 'Profile',
+            tooltip: 'View your profile',
+          ),
         ],
       ),
     );
@@ -276,15 +380,22 @@ class _EventsTab extends StatelessWidget {
           children: [
             Icon(Icons.event, size: 64, color: Colors.white.withOpacity(0.5)),
             const SizedBox(height: 16),
-            const Text('Events Coming Soon', style: TextStyle(fontSize: 18, color: Colors.white)),
+            const Text('Music Events Coming Soon', 
+                       style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Collaborative music events will be added in a future update', 
+            Text('Join collaborative music events with friends. Create listening parties, vote on tracks, and share musical experiences together.', 
                  style: TextStyle(color: Colors.white.withOpacity(0.7)), 
                  textAlign: TextAlign.center),
             const SizedBox(height: 24),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () => Navigator.of(context).pushNamed(AppRoutes.musicFeatures),
-              child: const Text('Explore Music Features'),
+              icon: const Icon(Icons.explore),
+              label: const Text('Explore Music Features'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
             ),
           ],
         ),
