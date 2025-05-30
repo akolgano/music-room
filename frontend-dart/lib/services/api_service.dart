@@ -138,7 +138,7 @@ class ApiService {
     
     await _handleRequest(
       () => http.post(
-        Uri.parse('$_baseUrl${ApiEndpoints.addToPlaylist}/$playlistId/add/'),
+        Uri.parse('$_baseUrl/playlists/$playlistId/add/'),
         headers: _getHeaders(token),
         body: json.encode({'track_id': trackId}),
       ),
@@ -188,7 +188,7 @@ class ApiService {
     
     await _handleRequest(
       () => http.post(
-        Uri.parse('$_baseUrl${ApiEndpoints.addToPlaylist}/$playlistId${ApiEndpoints.changeVisibility}'),
+        Uri.parse('$_baseUrl/playlists/$playlistId/change-visibility/'),
         headers: _getHeaders(token),
         body: json.encode({'public': isPublic}),
       ),
@@ -203,36 +203,10 @@ class ApiService {
     
     await _handleRequest(
       () => http.post(
-        Uri.parse('$_baseUrl${ApiEndpoints.addToPlaylist}/$playlistId${ApiEndpoints.inviteUser}'),
+        Uri.parse('$_baseUrl/playlists/$playlistId/invite-user/'),
         headers: _getHeaders(token),
         body: json.encode({'user_id': userId}),
       ),
-      (_) => null,
-    );
-  }
-
-  Future<void> updatePlaylist(String id, String name, String description, bool isPublic, String token) async {
-    if (id.isEmpty || id == 'null') {
-      throw ApiException('${AppStrings.invalidId}: $id');
-    }
-    
-    await _handleRequest(
-      () => http.put(
-        Uri.parse('$_baseUrl${ApiEndpoints.playlists}/$id'),
-        headers: _getHeaders(token),
-        body: json.encode({'name': name, 'description': description, 'public': isPublic}),
-      ),
-      (_) => null,
-    );
-  }
-
-  Future<void> deletePlaylist(String id, String token) async {
-    if (id.isEmpty || id == 'null') {
-      throw ApiException('${AppStrings.invalidId}: $id');
-    }
-    
-    await _handleRequest(
-      () => http.delete(Uri.parse('$_baseUrl${ApiEndpoints.playlists}/$id'), headers: _getHeaders(token)),
       (_) => null,
     );
   }
