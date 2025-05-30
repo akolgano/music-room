@@ -105,28 +105,6 @@ class MusicProvider with ChangeNotifier {
     return result;
   }
 
-  Future<bool> updatePlaylist(String id, String name, String description, bool isPublic, String token) async {
-    if (id.isEmpty || id == 'null') return false;
-    
-    final result = await _execute(() async {
-      await _api.updatePlaylist(id, name, description, isPublic, token);
-      await fetchUserPlaylists(token);
-      return true;
-    });
-    return result ?? false;
-  }
-
-  Future<bool> deletePlaylist(String id, String token) async {
-    if (id.isEmpty || id == 'null') return false;
-    
-    final result = await _execute(() async {
-      await _api.deletePlaylist(id, token);
-      await fetchUserPlaylists(token);
-      return true;
-    });
-    return result ?? false;
-  }
-
   Future<bool> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     if (playlistId.isEmpty || playlistId == 'null' || 
         trackId.isEmpty || trackId == 'null') return false;
