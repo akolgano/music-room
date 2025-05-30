@@ -228,25 +228,143 @@ class PlaylistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ItemCard(
-      leading: _buildCover(),
-      title: playlist.name,
-      subtitle: '${playlist.tracks.length} songs • ${playlist.creator}',
-      badges: playlist.isPublic ? [_buildPublicBadge()] : null,
-      actions: [
-        if (onPlay != null) _buildPlayButton(onPlay!),
-        if (onShare != null) IconButton(icon: const Icon(Icons.share, color: Colors.white), onPressed: onShare),
-      ],
-      onTap: onTap,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: AppTheme.surface,
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  _buildCover(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          playlist.name,
+                          style: const TextStyle(
+                            fontSize: 16, 
+                            fontWeight: FontWeight.bold, 
+                            color: Colors.white
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Created by ${playlist.creator}',
+                          style: const TextStyle(
+                            fontSize: 12, 
+                            color: AppTheme.onSurfaceVariant
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.music_note, 
+                              size: 14, 
+                              color: AppTheme.onSurfaceVariant
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${playlist.tracks.length} songs',
+                              style: const TextStyle(
+                                fontSize: 12, 
+                                color: AppTheme.onSurfaceVariant
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            if (playlist.isPublic) _buildPublicBadge(),
+                          ],
+                        ),
+                        if (playlist.description.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            playlist.description,
+                            style: const TextStyle(
+                              fontSize: 11, 
+                              color: AppTheme.onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (onTap != null)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onTap,
+                        icon: const Icon(Icons.library_music, size: 16),
+                        label: const Text('View'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: AppTheme.onSurfaceVariant),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                  if (onTap != null && onPlay != null) const SizedBox(width: 8),
+                  if (onPlay != null)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: onPlay,
+                        icon: const Icon(Icons.play_arrow, size: 16),
+                        label: const Text('Play'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primary,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                  if (onPlay != null && onShare != null) const SizedBox(width: 8),
+                  if (onShare != null)
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: onShare,
+                        icon: const Icon(Icons.share, size: 16),
+                        label: const Text('Share'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.onSurfaceVariant,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildCover() {
     if (playlist.imageUrl?.isNotEmpty == true) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Image.network(playlist.imageUrl!, width: 64, height: 64, fit: BoxFit.cover,
-               errorBuilder: (_, __, ___) => _buildFallbackCover()),
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          playlist.imageUrl!, 
+          width: 60, 
+          height: 60, 
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildFallbackCover()
+        ),
       );
     }
     return _buildFallbackCover();
@@ -256,34 +374,39 @@ class PlaylistCard extends StatelessWidget {
     final colors = [Colors.purple, Colors.pink, Colors.blue, Colors.teal, Colors.orange, Colors.red];
     final color = colors[playlist.id.hashCode % colors.length];
     return Container(
-      width: 64, height: 64,
+      width: 60, 
+      height: 60,
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [color, color.withOpacity(0.6)]),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: const Icon(Icons.music_note, color: Colors.white, size: 30),
+      child: const Icon(Icons.library_music, color: Colors.white, size: 24),
     );
   }
 
   Widget _buildPublicBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: AppTheme.primary.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.5)),
       ),
-      child: const Text('PUBLIC', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-    );
-  }
-
-  Widget _buildPlayButton(VoidCallback onPressed) {
-    return IconButton(
-      icon: Container(
-        decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
-        padding: const EdgeInsets.all(4.0),
-        child: const Icon(Icons.play_arrow, color: Colors.black, size: 20),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(Icons.public, size: 10, color: AppTheme.primary),
+          SizedBox(width: 2),
+          Text(
+            'PUBLIC', 
+            style: TextStyle(
+              fontSize: 9, 
+              fontWeight: FontWeight.bold, 
+              color: AppTheme.primary
+            )
+          ),
+        ],
       ),
-      onPressed: onPressed,
     );
   }
 }
@@ -310,25 +433,115 @@ class TrackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ItemCard(
-      leading: _buildLeading(),
-      title: track.name,
-      subtitle: '${track.artist} - ${track.album}',
-      actions: [
-        if (onSelectionChanged != null)
-          Checkbox(value: isSelected, onChanged: onSelectionChanged)
-        else ...[
-          if (onPlay != null)
-            IconButton(
-              icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow,
-                        color: isPlaying ? AppTheme.primary : Colors.white),
-              onPressed: onPlay,
-            ),
-          if (onAdd != null)
-            IconButton(icon: const Icon(Icons.add, color: Colors.white), onPressed: onAdd),
-        ],
-      ],
-      onTap: onTap,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      color: isSelected ? AppTheme.primary.withOpacity(0.1) : AppTheme.surface,
+      elevation: isSelected ? 4 : 1,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  _buildLeading(),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          track.name,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          track.artist,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (track.album.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'Album: ${track.album}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.onSurfaceVariant.withOpacity(0.7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (onSelectionChanged != null)
+                    Checkbox(
+                      value: isSelected, 
+                      onChanged: onSelectionChanged,
+                      activeColor: AppTheme.primary,
+                    )
+                ],
+              ),
+              if (onSelectionChanged == null && (onPlay != null || onAdd != null)) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    if (onPlay != null)
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: onPlay,
+                          icon: Icon(
+                            isPlaying ? Icons.pause : Icons.play_arrow,
+                            size: 16,
+                            color: isPlaying ? AppTheme.primary : Colors.white,
+                          ),
+                          label: Text(
+                            isPlaying ? 'Pause' : 'Preview',
+                            style: TextStyle(
+                              color: isPlaying ? AppTheme.primary : Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                          ),
+                        ),
+                      ),
+                    if (onPlay != null && onAdd != null) 
+                      const SizedBox(width: 8),
+                    if (onAdd != null)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: onAdd,
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('Add', style: TextStyle(fontSize: 12)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -336,16 +549,39 @@ class TrackCard extends StatelessWidget {
     if (track.imageUrl?.isNotEmpty == true) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: Image.network(track.imageUrl!, width: 50, height: 50, fit: BoxFit.cover,
-               errorBuilder: (_, __, ___) => _buildFallbackImage()),
+        child: Image.network(
+          track.imageUrl!, 
+          width: 40, 
+          height: 40, 
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildFallbackImage()
+        ),
       );
     }
     return _buildFallbackImage();
   }
 
   Widget _buildFallbackImage() {
-    return isSelected
-        ? const Icon(Icons.check_circle, color: Colors.blue)
-        : CircleAvatar(backgroundColor: Colors.grey[300], child: const Icon(Icons.music_note));
+    if (isSelected) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppTheme.primary,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Icon(Icons.check_circle, color: Colors.white),
+      );
+    }
+    
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Icon(Icons.music_note, color: AppTheme.onSurfaceVariant, size: 20),
+    );
   }
 }

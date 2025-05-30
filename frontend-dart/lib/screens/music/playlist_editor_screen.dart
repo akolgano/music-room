@@ -41,7 +41,9 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     _setupWebSocketListeners();
     
     if (widget.playlistId != null && widget.playlistId!.isNotEmpty && widget.playlistId != 'null') {
-      _loadPlaylist();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadPlaylist();
+      });
     }
   }
 
@@ -63,9 +65,9 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         });
         
         if (status.contains('Connected')) {
-          _showSnackBar('Real-time sync enabled', isError: false);
+          _showSnackBar('Real-time collaboration is now active', isError: false);
         } else if (status.contains('error') || status.contains('failed')) {
-          _showSnackBar('Real-time sync unavailable', isError: true);
+          _showSnackBar('Real-time sync unavailable - changes will save normally', isError: false);
         }
       },
     );
@@ -98,7 +100,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
       }
     } catch (e) {
       print('Error loading playlist: $e');
-      _showSnackBar('Error loading playlist: $e', isError: true);
+      _showSnackBar('Unable to load playlist. Please check your connection and try again.', isError: true);
     }
     
     setState(() => _isLoading = false);
@@ -117,7 +119,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
 
   Future<void> _createPlaylist() async {
     if (_nameController.text.isEmpty) {
-      _showSnackBar('Please enter a playlist name', isError: true);
+      _showSnackBar('Please give your playlist a name before creating it', isError: true);
       return;
     }
 
@@ -134,7 +136,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         authProvider.token!,
       );
       if (playlistId != null) {
-        _showSnackBar('Playlist created successfully');
+        _showSnackBar('Playlist "${_nameController.text}" created successfully!');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
@@ -144,10 +146,505 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
       }
     } catch (e) {
       print('Error creating playlist: $e');
-      _showSnackBar('Error creating playlist: $e', isError: true);
+      _showSnackBar('Failed to create playlist. Please try again.', isError: true);
     }
 
     setState(() => _isLoading = false);
+  }
+
+  bool get _isEditMode => widget.playlistId != null && 
+                         widget.playlistId!.isNotEmpty && 
+                         widget.playlistId != 'null';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: Row(
+          children: [
+            Icon(
+              _isEditMode ? Icons.edit : Icons.add,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(_isEditMode ? 'Edit Playlist' : 'Create New Playlist'),
+            if (_isEditMode) ...[
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _isWebSocketConnected ? Colors.green.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _isWebSocketConnected ? Colors.green : Colors.orange,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isWebSocketConnected ? Icons.sync : Icons.sync_disabled,
+                      size: 12,
+                      color: _isWebSocketConnected ? Colors.green : Colors.orange,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _isWebSocketConnected ? 'Live Sync' : 'Offline',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: _isWebSocketConnected ? Colors.green : Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: _buildAppBarActions(),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!_isEditMode) _buildCreatePlaylistHeader(),
+                  _buildPlaylistInfo(),
+                  const SizedBox(height: 24),
+                  if (_isEditMode) _buildTracksSection(),
+                  const SizedBox(height: 100), 
+                ],
+              ),
+            ),
+      floatingActionButton: _isEditMode ? _buildFloatingActionButton() : null,
+    );
+  }
+
+  List<Widget> _buildAppBarActions() {
+    if (!_isEditMode) {
+      return [
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.save, size: 18),
+            label: const Text('Create'),
+            onPressed: _isLoading ? null : _createPlaylist,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    return [
+      Padding(
+        padding: const EdgeInsets.only(right: 4),
+        child: TextButton.icon(
+          icon: Icon(_isPublic ? Icons.public : Icons.lock, size: 18),
+          label: Text(_isPublic ? 'Public' : 'Private', style: const TextStyle(fontSize: 12)),
+          onPressed: _isLoading ? null : _toggleVisibility,
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          ),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: TextButton.icon(
+          icon: const Icon(Icons.person_add, size: 18),
+          label: const Text('Invite', style: TextStyle(fontSize: 12)),
+          onPressed: _isLoading ? null : _inviteUser,
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildCreatePlaylistHeader() {
+    return Card(
+      color: AppTheme.primary.withOpacity(0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: const [
+                Icon(Icons.lightbulb, color: AppTheme.primary, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Getting Started',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Create your custom playlist by giving it a name and description. You can add songs later!',
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              '• Make it public to share with friends\n• Keep it private for personal use\n• Add a description to help others understand your playlist',
+              style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaylistInfo() {
+    return Card(
+      color: AppTheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  _isEditMode ? Icons.edit : Icons.create,
+                  color: AppTheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _isEditMode ? 'Playlist Details' : 'Playlist Information',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _nameController,
+              labelText: 'Playlist Name *',
+              hintText: 'e.g., My Favorite Songs, Workout Mix, Road Trip Hits',
+              validator: (value) => value?.isEmpty == true ? 'Please enter a name for your playlist' : null,
+              onChanged: _isEditMode ? null : (_) {},
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _descriptionController,
+              labelText: 'Description (Optional)',
+              hintText: 'Tell others what this playlist is about...',
+              maxLines: 3,
+              onChanged: _isEditMode ? null : (_) {},
+            ),
+            const SizedBox(height: 16),
+            
+            if (_isEditMode) 
+              _buildVisibilityDisplay()
+            else
+              _buildVisibilitySelector(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVisibilityDisplay() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _isPublic ? Colors.green.withOpacity(0.5) : Colors.orange.withOpacity(0.5),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _isPublic ? Icons.public : Icons.lock,
+            color: _isPublic ? Colors.green : Colors.orange,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _isPublic ? 'Public Playlist' : 'Private Playlist',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  _isPublic 
+                      ? 'Anyone can discover and listen to this playlist'
+                      : 'Only you can see and play this playlist',
+                  style: const TextStyle(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: _toggleVisibility,
+            child: Text(
+              'Change to ${_isPublic ? 'Private' : 'Public'}',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVisibilitySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Who can see this playlist?',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SwitchListTile(
+          title: Text(
+            _isPublic ? 'Public - Anyone can find it' : 'Private - Just for you',
+            style: const TextStyle(color: Colors.white),
+          ),
+          subtitle: Text(
+            _isPublic 
+                ? 'Your playlist will appear in public searches and can be shared'
+                : 'Your playlist will only be visible to you',
+            style: const TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 12),
+          ),
+          value: _isPublic,
+          onChanged: (value) => setState(() => _isPublic = value),
+          activeColor: AppTheme.primary,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTracksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          color: AppTheme.surface,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.queue_music, color: AppTheme.primary, size: 20),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Playlist Tracks',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_playlistTracks.length} songs',
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _isWebSocketConnected 
+                      ? 'Real-time sync active - changes appear instantly for all collaborators'
+                      : 'Changes will be saved when you make them',
+                  style: TextStyle(
+                    color: _isWebSocketConnected ? Colors.green : AppTheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        if (_playlistTracks.isEmpty)
+          _buildEmptyTracksState()
+        else
+          _buildTracksList(),
+      ],
+    );
+  }
+
+  Widget _buildEmptyTracksState() {
+    return Card(
+      color: AppTheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          children: [
+            Icon(
+              Icons.music_note_outlined,
+              size: 48,
+              color: Colors.white.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No tracks yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Start building your playlist by adding some music!',
+              style: TextStyle(color: AppTheme.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _navigateToTrackSearch,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add Your First Song'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTracksList() {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _playlistTracks.length,
+      onReorder: _moveTrack,
+      itemBuilder: (context, index) {
+        final track = _playlistTracks[index];
+        return Card(
+          key: ValueKey(track.trackId),
+          margin: const EdgeInsets.only(bottom: 8),
+          color: AppTheme.surface,
+          child: ListTile(
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.drag_handle, color: AppTheme.onSurfaceVariant),
+                    Text(
+                      'Drag',
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: AppTheme.onSurfaceVariant.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            title: Text(
+              track.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: Text(
+              'Track position: ${track.position}',
+              style: const TextStyle(color: AppTheme.onSurfaceVariant),
+            ),
+            trailing: TextButton.icon(
+              onPressed: () => _removeTrack(track),
+              icon: const Icon(Icons.delete, color: Colors.red, size: 16),
+              label: const Text('Remove', style: TextStyle(color: Colors.red, fontSize: 12)),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    return FloatingActionButton.extended(
+      onPressed: _navigateToTrackSearch,
+      backgroundColor: AppTheme.primary,
+      foregroundColor: Colors.black,
+      icon: const Icon(Icons.add),
+      label: const Text('Add Songs'),
+      tooltip: 'Search and add songs to your playlist',
+    );
   }
 
   Future<void> _toggleVisibility() async {
@@ -167,9 +664,9 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
       );
       
       setState(() => _isPublic = newVisibility);
-      _showSnackBar('Playlist visibility updated');
+      _showSnackBar('Playlist is now ${newVisibility ? 'public' : 'private'}');
     } catch (e) {
-      _showSnackBar('Error updating visibility: $e', isError: true);
+      _showSnackBar('Unable to change visibility. Please try again.', isError: true);
     }
   }
 
@@ -202,7 +699,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
           });
         }
       } catch (e) {
-        _showSnackBar('Error removing track: $e', isError: true);
+        _showSnackBar('Unable to remove track. Please try again.', isError: true);
       }
     }
   }
@@ -235,7 +732,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         });
       }
     } catch (e) {
-      _showSnackBar('Error moving track: $e', isError: true);
+      _showSnackBar('Unable to move track. Please try again.', isError: true);
     }
   }
 
@@ -244,8 +741,8 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
 
     final userId = await DialogHelper.showTextInput(
       context,
-      title: 'Invite User',
-      hintText: 'Enter user ID',
+      title: 'Invite User to Playlist',
+      hintText: 'Enter user ID or username',
     );
 
     if (userId != null && userId.isNotEmpty) {
@@ -259,237 +756,11 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
           authProvider.token!,
         );
 
-        _showSnackBar('User invited to playlist successfully');
+        _showSnackBar('User invited to collaborate on this playlist!');
       } catch (e) {
-        _showSnackBar('Error inviting user: $e', isError: true);
+        _showSnackBar('Unable to invite user. Please check the ID and try again.', isError: true);
       }
     }
-  }
-
-  bool get _isEditMode => widget.playlistId != null && 
-                         widget.playlistId!.isNotEmpty && 
-                         widget.playlistId != 'null';
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: Row(
-          children: [
-            Text(_isEditMode ? 'Playlist Details' : 'Create Playlist'),
-            if (_isEditMode) ...[
-              const SizedBox(width: 8),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: _isWebSocketConnected ? Colors.green : Colors.orange,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                _isWebSocketConnected ? 'Live' : 'Offline',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: _isWebSocketConnected ? Colors.green : Colors.orange,
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          if (_isEditMode) ...[
-            IconButton(
-              icon: Icon(_isPublic ? Icons.public : Icons.lock),
-              onPressed: _isLoading ? null : _toggleVisibility,
-              tooltip: _isPublic ? 'Make Private' : 'Make Public',
-            ),
-            IconButton(
-              icon: const Icon(Icons.person_add),
-              onPressed: _isLoading ? null : _inviteUser,
-              tooltip: 'Invite User',
-            ),
-          ] else ...[
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: _isLoading ? null : _createPlaylist,
-              tooltip: 'Create Playlist',
-            ),
-          ],
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPlaylistInfo(),
-                  const SizedBox(height: 24),
-                  if (_isEditMode) _buildTracksSection(),
-                  const SizedBox(height: 80), 
-                ],
-              ),
-            ),
-      floatingActionButton: _isEditMode ? FloatingActionButton(
-        onPressed: () => _navigateToTrackSearch(),
-        backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.add, color: Colors.black),
-        tooltip: 'Add Tracks',
-      ) : null,
-    );
-  }
-
-  Widget _buildPlaylistInfo() {
-    return Card(
-      color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _isEditMode ? 'Playlist Information' : 'New Playlist',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              controller: _nameController,
-              labelText: 'Playlist Name',
-              validator: (value) => value?.isEmpty == true ? 'Please enter a name' : null,
-              onChanged: _isEditMode ? null : (_) {},
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              controller: _descriptionController,
-              labelText: 'Description',
-              maxLines: 3,
-              onChanged: _isEditMode ? null : (_) {},
-            ),
-            if (_isEditMode) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _isPublic ? Icons.public : Icons.lock,
-                      color: _isPublic ? Colors.green : Colors.orange,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _isPublic ? 'Public - Anyone can see this playlist' : 'Private - Only you can see this playlist',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ] else ...[
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('Public Playlist', style: TextStyle(color: Colors.white)),
-                subtitle: Text(
-                  _isPublic ? 'Anyone can see this playlist' : 'Only you can see this playlist',
-                  style: const TextStyle(color: AppTheme.onSurfaceVariant),
-                ),
-                value: _isPublic,
-                onChanged: (value) => setState(() => _isPublic = value),
-                activeColor: AppTheme.primary,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTracksSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Tracks',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            Row(
-              children: [
-                Text(
-                  '${_playlistTracks.length} songs',
-                  style: const TextStyle(color: AppTheme.onSurfaceVariant),
-                ),
-                if (_isWebSocketConnected) ...[
-                  const SizedBox(width: 8),
-                  const Icon(Icons.sync, color: Colors.green, size: 16),
-                  const Text(' Live', style: TextStyle(color: Colors.green, fontSize: 12)),
-                ],
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (_playlistTracks.isEmpty)
-          const EmptyState(
-            icon: Icons.music_note,
-            title: 'No tracks added',
-            subtitle: 'Add tracks to your playlist using the + button',
-          )
-        else
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _playlistTracks.length,
-            onReorder: _moveTrack,
-            itemBuilder: (context, index) {
-              final track = _playlistTracks[index];
-              return Card(
-                key: ValueKey(track.trackId),
-                margin: const EdgeInsets.only(bottom: 8),
-                color: AppTheme.surface,
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: AppTheme.primary,
-                    child: Text(
-                      '${track.position}',
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  title: Text(
-                    track.name,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-                  ),
-                  subtitle: Text(
-                    'Position: ${track.position}',
-                    style: const TextStyle(color: AppTheme.onSurfaceVariant),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.drag_handle, color: AppTheme.onSurfaceVariant),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _removeTrack(track),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-      ],
-    );
   }
 
   void _navigateToTrackSearch() {
@@ -502,6 +773,11 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         content: Text(message),
         backgroundColor: isError ? AppTheme.error : Colors.green,
         behavior: SnackBarBehavior.floating,
+        action: isError ? SnackBarAction(
+          label: 'Dismiss',
+          textColor: Colors.white,
+          onPressed: () {},
+        ) : null,
       ),
     );
   }
@@ -512,9 +788,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     _descriptionController.dispose();
     _tracksSubscription?.cancel();
     _connectionSubscription?.cancel();
-    
     _webSocketService.disconnect();
-    
     super.dispose();
   }
 }
