@@ -1,4 +1,4 @@
-// lib/providers/app_provider.dart
+// lib/providers/app_provider.dart - Updated version
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
@@ -130,28 +130,6 @@ class AppProvider with ChangeNotifier {
       return id;
     });
     return result;
-  }
-
-  Future<bool> updatePlaylist(String id, String name, String description, bool isPublic) async {
-    if (_token == null || id.isEmpty || id == 'null') return false;
-    
-    final result = await _execute(() async {
-      await _api.updatePlaylist(id, name, description, isPublic, _token!);
-      await fetchPlaylists();
-      return true;
-    });
-    return result ?? false;
-  }
-
-  Future<bool> deletePlaylist(String id) async {
-    if (_token == null || id.isEmpty || id == 'null') return false;
-    
-    final result = await _execute(() async {
-      await _api.deletePlaylist(id, _token!);
-      await fetchPlaylists();
-      return true;
-    });
-    return result ?? false;
   }
 
   Future<void> searchTracks(String query, {bool deezer = true}) async {

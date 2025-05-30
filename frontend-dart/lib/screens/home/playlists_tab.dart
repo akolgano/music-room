@@ -132,25 +132,6 @@ class PlaylistsTab extends StatelessWidget {
                 );
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                if (playlist.id.isNotEmpty && playlist.id != 'null') {
-                  Navigator.of(context).pushNamed(
-                    AppRoutes.playlistEditor,
-                    arguments: playlist.id,
-                  );
-                } else {
-                  print('Warning: Invalid playlist ID for editing: ${playlist.id}');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Cannot edit playlist: Invalid ID'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-            ),
           ],
         ),
         onTap: () {
