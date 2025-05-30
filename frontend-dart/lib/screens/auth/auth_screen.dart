@@ -2,12 +2,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
+import '../../core/app_strings.dart';
+import '../../core/constants.dart';
+import '../../core/dimensions.dart';
 import '../../widgets/common_widgets.dart';
 import '../../providers/auth_provider.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
-  @override State<AuthScreen> createState() => _AuthScreenState();
+
+  @override 
+  State<AuthScreen> createState() => _AuthScreenState();
 }
 
 class _AuthScreenState extends State<AuthScreen> {
@@ -23,14 +28,20 @@ class _AuthScreenState extends State<AuthScreen> {
       backgroundColor: AppTheme.background,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppDimensions.paddingLarge),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 450),
             child: Column(
               children: [
-                const Icon(Icons.music_note, size: 80, color: AppTheme.primary),
-                const SizedBox(height: 20),
-                const Text('Music Room', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+                Icon(Icons.music_note, 
+                     size: AppDimensions.iconXXXLarge, 
+                     color: AppTheme.primary),
+                const SizedBox(height: AppDimensions.paddingLarge),
+                Text(AppStrings.appName, 
+                     style: TextStyle(
+                       fontSize: AppDimensions.textHeading, 
+                       fontWeight: FontWeight.bold, 
+                       color: Colors.white)),
                 const SizedBox(height: 40),
                 _buildForm(),
               ],
@@ -47,76 +58,85 @@ class _AuthScreenState extends State<AuthScreen> {
         return Card(
           color: AppTheme.surface,
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppDimensions.paddingLarge),
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
-                  Text(_isLogin ? 'Sign In' : 'Create Account', 
-                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const SizedBox(height: 24),
+                  Text(_isLogin ? AppStrings.signIn : AppStrings.createAccount, 
+                       style: TextStyle(
+                         fontSize: AppDimensions.textTitle, 
+                         fontWeight: FontWeight.bold, 
+                         color: Colors.white)),
+                  const SizedBox(height: AppDimensions.paddingLarge),
                   
                   if (authProvider.hasError) ...[
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                       decoration: BoxDecoration(
                         color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                         border: Border.all(color: Colors.red.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                          const SizedBox(width: 8),
+                          const Icon(Icons.error_outline, 
+                                   color: Colors.red, 
+                                   size: AppDimensions.iconMedium),
+                          const SizedBox(width: AppDimensions.paddingSmall),
                           Expanded(
                             child: Text(
-                              authProvider.errorMessage ?? 'An error occurred',
-                              style: const TextStyle(color: Colors.red, fontSize: 14),
+                              authProvider.errorMessage ?? AppStrings.somethingWentWrong,
+                              style: TextStyle(
+                                color: Colors.red, 
+                                fontSize: AppDimensions.textMedium),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppDimensions.paddingMedium),
                   ],
                   
                   AppTextField(
                     controller: _usernameController,
-                    labelText: 'Username',
-                    validator: (v) => validateRequired(v, 'username'),
+                    labelText: AppStrings.username,
+                    validator: (v) => _validateRequired(v, AppStrings.username),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.paddingMedium),
+                  
                   if (!_isLogin) ...[
                     AppTextField(
                       controller: _emailController,
-                      labelText: 'Email',
+                      labelText: AppStrings.email,
                       keyboardType: TextInputType.emailAddress,
-                      validator: validateEmail,
+                      validator: _validateEmail,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppDimensions.paddingMedium),
                   ],
+                  
                   AppTextField(
                     controller: _passwordController,
-                    labelText: 'Password',
+                    labelText: AppStrings.password,
                     obscureText: true,
-                    validator: (v) => v?.isEmpty ?? true ? 'Please enter password' : 
-                              v!.length < 8 ? 'Password must be at least 8 characters' : null,
+                    validator: _validatePassword,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppDimensions.paddingLarge),
                   
                   authProvider.isLoading
                       ? const CircularProgressIndicator(color: AppTheme.primary)
                       : ElevatedButton(
                           onPressed: _submit,
-                          child: Text(_isLogin ? 'SIGN IN' : 'SIGN UP'),
+                          child: Text(_isLogin ? AppStrings.signIn.toUpperCase() : AppStrings.signUp.toUpperCase()),
                         ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimensions.paddingMedium),
+                  
                   TextButton(
                     onPressed: () {
                       setState(() => _isLogin = !_isLogin);
                       authProvider.clearError();
                     },
-                    child: Text(_isLogin ? 'Create an account' : 'Already have an account? Sign in'),
+                    child: Text(_isLogin ? AppStrings.createAnAccount : AppStrings.alreadyHaveAccount),
                   ),
                 ],
               ),
@@ -125,6 +145,29 @@ class _AuthScreenState extends State<AuthScreen> {
         );
       },
     );
+  }
+
+  String? _validateRequired(String? value, String fieldName) {
+    if (value?.isEmpty ?? true) {
+      return '${AppStrings.pleaseEnter} ${fieldName.toLowerCase()}';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value?.isEmpty ?? true) return AppStrings.pleaseEnterEmail;
+    if (!RegExp(AppConstants.emailRegexPattern).hasMatch(value!)) {
+      return AppStrings.pleaseEnterValidEmail;
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value?.isEmpty ?? true) return AppStrings.pleaseEnterPassword;
+    if (value!.length < AppConstants.minPasswordLength) {
+      return AppStrings.passwordTooShort;
+    }
+    return null;
   }
 
   Future<void> _submit() async {
@@ -142,7 +185,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isLogin ? 'Login successful' : 'Account created successfully'),
+          content: Text(_isLogin ? AppStrings.loginSuccessful : AppStrings.accountCreated),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),

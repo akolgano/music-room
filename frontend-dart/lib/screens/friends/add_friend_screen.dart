@@ -8,7 +8,7 @@ class AddFriendScreen extends StatefulWidget {
   const AddFriendScreen({Key? key}) : super(key: key);
 
   @override
-  _AddFriendScreenState createState() => _AddFriendScreenState();
+  State<AddFriendScreen> createState() => _AddFriendScreenState();
 }
 
 class _AddFriendScreenState extends State<AddFriendScreen> {

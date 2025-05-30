@@ -10,12 +10,10 @@ class AppProvider with ChangeNotifier {
   String? _token;
   String? _userId;
   String? _username;
-
   List<Playlist> _playlists = [];
   List<Track> _searchResults = [];
   List<int> _friends = [];
   List<Map<String, dynamic>> _pendingRequests = [];
-
   bool _isLoading = false;
   String? _errorMessage;
   bool _isRetrying = false;

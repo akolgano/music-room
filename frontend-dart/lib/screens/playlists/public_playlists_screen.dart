@@ -12,7 +12,7 @@ class PublicPlaylistsScreen extends StatefulWidget {
   const PublicPlaylistsScreen({Key? key}) : super(key: key);
 
   @override
-  _PublicPlaylistsScreenState createState() => _PublicPlaylistsScreenState();
+  State<PublicPlaylistsScreen> createState() => _PublicPlaylistsScreenState();
 }
 
 class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
