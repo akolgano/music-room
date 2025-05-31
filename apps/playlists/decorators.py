@@ -9,7 +9,6 @@ def check_access_to_playlist(view_func):
         user = request.user
         playlist_id = kwargs.get('playlist_id')
         print('check_access_to_playlist')
-        print(playlist_id)
         if not playlist_id:
             return Response({'error': 'Missing playlist id'}, status=400)
 

@@ -275,7 +275,6 @@ def move_track_in_playlist(request):
     except Playlist.DoesNotExist:
         return JsonResponse({'error': 'Playlist not found'}, status=404)
     except Exception as e:
-        print(str(e))
         return JsonResponse({'error': str(e)}, status=400)
 
 
