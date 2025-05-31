@@ -1,5 +1,6 @@
 // lib/utils/dialog_helper.dart
 import 'package:flutter/material.dart';
+import '../core/theme.dart';
 
 class DialogHelper {
   static Future<bool?> showConfirm(
@@ -13,8 +14,9 @@ class DialogHelper {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -22,9 +24,7 @@ class DialogHelper {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: isDangerous
-                ? TextButton.styleFrom(foregroundColor: Colors.red)
-                : null,
+            style: isDangerous ? TextButton.styleFrom(foregroundColor: Colors.red) : null,
             child: Text(confirmText),
           ),
         ],
@@ -35,20 +35,19 @@ class DialogHelper {
   static Future<String?> showTextInput(
     BuildContext context, {
     required String title,
-    String? initialValue,
     String? hintText,
-    bool obscureText = false,
+    String? initialValue,
   }) {
     final controller = TextEditingController(text: initialValue);
-    
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(title),
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           decoration: InputDecoration(hintText: hintText),
-          obscureText: obscureText,
+          style: const TextStyle(color: Colors.white),
           autofocus: true,
         ),
         actions: [
