@@ -34,7 +34,7 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: primary,
         foregroundColor: Colors.white,
-        minimumSize: const Size(double.infinity, 50),
+        minimumSize: const Size(88, 50),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
       ),
     ),
@@ -50,5 +50,12 @@ class AppTheme {
         borderSide: const BorderSide(color: primary),
       ),
     ),
+  );
+
+  static ButtonStyle get fullWidthButtonStyle => ElevatedButton.styleFrom(
+    backgroundColor: primary,
+    foregroundColor: Colors.white,
+    minimumSize: const Size(double.infinity, 50),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
   );
 }

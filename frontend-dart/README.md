@@ -104,24 +104,8 @@ curl -X GET http://localhost:8000/playlists/saved_playlists/ \
   -H "Authorization: Token $AUTH_TOKEN"
 ```
 
-### 6. Get All Public Playlists
-```bash
-curl -X GET http://localhost:8000/playlists/public_playlists/
-```
+## Notes
 
-### Data
+.env value in slack
 
-API_BASE_URL=http://localhost:8000
-APP_NAME="Music Room"
-DEEZER_API_KEY=
-DEBUG_MODE=
-DEBUG=
-FACEBOOK_APP_ID=
-FACEBOOK_APP_SECRET=
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-JWT_SECRET=
-ENCRYPTION_KEY=
-SOCKET_URL=
-MUSIC_API_KEY=
-
+do check overall dart code length, dont let it exceed 10k lines thanks.

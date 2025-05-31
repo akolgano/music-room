@@ -106,23 +106,36 @@ class ApiService {
     );
   }
 
-  Future<List<PlaylistTrack>> getPlaylistTracks(String playlistId, String token) async {
-    if (playlistId.isEmpty || playlistId == 'null') {
-      throw ApiException('${AppStrings.invalidId}: $playlistId');
-    }
-    
-    return _handleRequest(
-      () => http.get(Uri.parse('$_baseUrl${ApiEndpoints.playlistTracks}/$playlistId/tracks/'), headers: _getHeaders(token)),
-      (data) => (data['tracks'] as List).map((t) => PlaylistTrack.fromJson(t)).toList(),
-    );
-  }
-
   Future<String> createPlaylist(String name, String description, bool isPublic, String token) async {
+    final body = {
+      'name': name,
+      'description': description,
+      'public': isPublic,
+    };
+    
     return _handleRequest(
       () => http.post(
         Uri.parse('$_baseUrl${ApiEndpoints.playlists}'),
         headers: _getHeaders(token),
-        body: json.encode({'name': name, 'description': description, 'public': isPublic}),
+        body: json.encode(body),
+      ),
+      (data) => data['playlist_id'].toString(),
+    );
+  }
+
+  Future<String> createPlaylistWithDevice(String name, String description, bool isPublic, String token, [String? deviceUuid]) async {
+    final body = {
+      'name': name,
+      'description': description,
+      'public': isPublic,
+      if (deviceUuid != null) 'device_uuid': deviceUuid,
+    };
+    
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl${ApiEndpoints.playlists}'),
+        headers: _getHeaders(token),
+        body: json.encode(body),
       ),
       (data) => data['playlist_id'].toString(),
     );
@@ -136,46 +149,90 @@ class ApiService {
       throw ApiException('${AppStrings.invalidId}: $trackId');
     }
     
+    final body = {'track_id': trackId};
+    
     await _handleRequest(
       () => http.post(
         Uri.parse('$_baseUrl/playlists/$playlistId/add/'),
         headers: _getHeaders(token),
-        body: json.encode({'track_id': trackId}),
+        body: json.encode(body),
       ),
       (_) => null,
     );
   }
 
-  Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) async {
+  Future<void> addTrackToPlaylistWithDevice(String playlistId, String trackId, String token, [String? deviceUuid]) async {
     if (playlistId.isEmpty || playlistId == 'null') {
       throw ApiException('${AppStrings.invalidId}: $playlistId');
     }
+    if (trackId.isEmpty || trackId == 'null') {
+      throw ApiException('${AppStrings.invalidId}: $trackId');
+    }
+    
+    final body = {
+      'track_id': trackId,
+      if (deviceUuid != null) 'device_uuid': deviceUuid,
+    };
+    
+    await _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/playlists/$playlistId/add/'),
+        headers: _getHeaders(token),
+        body: json.encode(body),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<List<PlaylistTrack>> getPlaylistTracks(String playlistId, String token) async {
+    if (playlistId.isEmpty || playlistId == 'null') {
+      throw ApiException('${AppStrings.invalidId}: $playlistId');
+    }
+    
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl${ApiEndpoints.playlistTracks}/$playlistId/tracks/'), headers: _getHeaders(token)),
+      (data) => (data['tracks'] as List).map((t) => PlaylistTrack.fromJson(t)).toList(),
+    );
+  }
+
+  Future<void> removeTrackFromPlaylistWithDevice(String playlistId, String trackId, String token, [String? deviceUuid]) async {
+    if (playlistId.isEmpty || playlistId == 'null') {
+      throw ApiException('${AppStrings.invalidId}: $playlistId');
+    }
+    
+    final body = {
+      'track_id': trackId,
+      if (deviceUuid != null) 'device_uuid': deviceUuid,
+    };
     
     await _handleRequest(
       () => http.post(
         Uri.parse('$_baseUrl${ApiEndpoints.removeFromPlaylist}/$playlistId/remove_tracks'),
         headers: _getHeaders(token),
-        body: json.encode({'track_id': trackId}),
+        body: json.encode(body),
       ),
       (_) => null,
     );
   }
 
-  Future<void> moveTrackInPlaylist(String playlistId, int rangeStart, int insertBefore, int rangeLength, String token) async {
+  Future<void> moveTrackInPlaylistWithDevice(String playlistId, int rangeStart, int insertBefore, int rangeLength, String token, [String? deviceUuid]) async {
     if (playlistId.isEmpty || playlistId == 'null') {
       throw ApiException('${AppStrings.invalidId}: $playlistId');
     }
+    
+    final body = {
+      'playlist_id': playlistId,
+      'range_start': rangeStart,
+      'insert_before': insertBefore,
+      'range_length': rangeLength,
+      if (deviceUuid != null) 'device_uuid': deviceUuid,
+    };
     
     await _handleRequest(
       () => http.post(
         Uri.parse('$_baseUrl${ApiEndpoints.moveTrack}'),
         headers: _getHeaders(token),
-        body: json.encode({
-          'playlist_id': playlistId,
-          'range_start': rangeStart,
-          'insert_before': insertBefore,
-          'range_length': rangeLength,
-        }),
+        body: json.encode(body),
       ),
       (_) => null,
     );
@@ -269,6 +326,20 @@ class ApiService {
     await _handleRequest(
       () => http.post(Uri.parse('$_baseUrl${ApiEndpoints.removeFriend}$userId/'), headers: _getHeaders(token)),
       (_) => null,
+    );
+  }
+
+  Future<List<Device>> getUserDevices(String token) async {
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl/devices/'), headers: _getHeaders(token)),
+      (data) => (data['devices'] as List).map((d) => Device.fromJson(d)).toList(),
+    );
+  }
+
+  Future<List<MusicControlDelegate>> getUserDelegates(String token) async {
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl/devices/delegates/'), headers: _getHeaders(token)),
+      (data) => (data['delegates'] as List).map((d) => MusicControlDelegate.fromJson(d)).toList(),
     );
   }
 
