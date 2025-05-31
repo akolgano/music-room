@@ -233,7 +233,6 @@ def move_track_in_playlist(request):
         range_start = data['range_start']
         insert_before = data['insert_before']
         range_length = data.get('range_length', 1)
-
         playlist = Playlist.objects.get(id=playlist_id)
         tracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
         moving_slice = tracks[range_start:range_start + range_length]
