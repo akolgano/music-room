@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/app_provider.dart';
 import '../core/theme.dart';
+import '../widgets/app_navigation_drawer.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
@@ -12,10 +13,16 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   String get screenTitle;
   Widget buildContent();
   
+  bool get showDrawer => true;
+  
   PreferredSizeWidget? buildAppBar() => AppBar(
     backgroundColor: AppTheme.background,
     title: Text(screenTitle),
+    leading: showDrawer ? null : _buildCustomLeading(),
+    actions: actions,
   );
+
+  Widget? _buildCustomLeading() => null;
 
   List<Widget> get actions => [];
 
@@ -26,6 +33,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: buildAppBar(),
+      drawer: showDrawer ? const AppNavigationDrawer() : null,
       body: buildContent(),
       floatingActionButton: floatingActionButton,
     );
