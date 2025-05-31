@@ -11,8 +11,8 @@ dependencies:
   cached_network_image: ^3.4.1
   connectivity_plus: ^6.1.4
   flutter_facebook_auth: ^7.1.2
-  uuid: ^4.5.1
   google_sign_in: ^6.3.0
+  uuid: ^4.5.1
   intl: ^0.20.2
   just_audio: ^0.10.3
   cupertino_icons: ^1.0.8

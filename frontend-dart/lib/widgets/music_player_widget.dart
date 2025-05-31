@@ -1,558 +1,284 @@
 // lib/widgets/music_player_widget.dart
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/music_player_service.dart';
-import '../models/track.dart';
-
-class MusicColors {
-  static const Color primary = Color(0xFF1DB954);
-  static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF282828);
-  static const Color surfaceVariant = Color(0xFF333333);
-  static const Color onSurface = Color(0xFFFFFFFF);
-  static const Color onSurfaceVariant = Color(0xFFB3B3B3);
-  static const Color error = Color(0xFFE91429);
-}
+import '../core/theme.dart';
+import '../core/constants.dart';
 
 class MusicPlayerWidget extends StatelessWidget {
-  final bool showTrackInfo;
   final bool mini;
+  final bool showTrackInfo;
 
   const MusicPlayerWidget({
     Key? key,
-    this.showTrackInfo = true,
     this.mini = false,
+    this.showTrackInfo = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final playerService = Provider.of<MusicPlayerService>(context);
-    final track = playerService.currentTrack;
+    return Consumer<MusicPlayerService>(
+      builder: (context, playerService, child) {
+        final track = playerService.currentTrack;
+        
+        if (track == null) {
+          return const SizedBox.shrink();
+        }
 
-    if (track == null) {
-      return const SizedBox.shrink();
-    }
+        if (mini) {
+          return _buildMiniPlayer(context, playerService, track);
+        }
 
-    return mini ? _buildMiniPlayer(context, playerService, track) : _buildFullPlayer(context, playerService, track);
+        return _buildFullPlayer(context, playerService, track);
+      },
+    );
   }
 
-  Widget _buildMiniPlayer(BuildContext context, MusicPlayerService playerService, Track track) {
+  Widget _buildMiniPlayer(BuildContext context, MusicPlayerService playerService, track) {
     return Container(
-      color: MusicColors.surface,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: MusicColors.primary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.music_note, size: 12, color: MusicColors.primary),
-                    SizedBox(width: 4),
-                    Text(
-                      'NOW PLAYING',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: MusicColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/player');
-                },
-                icon: const Icon(Icons.expand_less, size: 16, color: Colors.white),
-                label: const Text('Full Player', style: TextStyle(fontSize: 10, color: Colors.white)),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                ),
-              ),
-            ],
+      height: 64,
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: MusicColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Icon(
-                  Icons.music_note,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      track.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      track.artist,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceVariant,
+              image: track.imageUrl != null && track.imageUrl!.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(track.imageUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: track.imageUrl == null || track.imageUrl!.isEmpty
+                ? const Icon(Icons.music_note, color: Colors.white)
+                : null,
+          ),
+          
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      playerService.togglePlay();
-                    },
-                    icon: Icon(
-                      playerService.isPlaying ? Icons.pause : Icons.play_arrow,
-                      size: 16,
+                  Text(
+                    track.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
                     ),
-                    label: Text(
-                      playerService.isPlaying ? 'Pause' : 'Play',
-                      style: const TextStyle(fontSize: 10),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MusicColors.primary,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      minimumSize: Size.zero,
-                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 8),
-                  TextButton.icon(
-                    onPressed: () {
-                      playerService.stop();
-                    },
-                    icon: const Icon(Icons.stop, size: 16, color: Colors.white),
-                    label: const Text('Stop', style: TextStyle(fontSize: 10, color: Colors.white)),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      minimumSize: Size.zero,
+                  Text(
+                    track.artist,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Column(
-            children: [
-              _buildProgressBar(playerService),
-              const SizedBox(height: 4),
-              _buildTimeLabels(playerService),
-            ],
+          
+          IconButton(
+            icon: Icon(
+              playerService.isPlaying ? Icons.pause : Icons.play_arrow,
+              color: Colors.white,
+            ),
+            onPressed: playerService.togglePlay,
+          ),
+          
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.grey),
+            onPressed: playerService.stop,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFullPlayer(BuildContext context, MusicPlayerService playerService, Track track) {
+  Widget _buildFullPlayer(BuildContext context, MusicPlayerService playerService, track) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showTrackInfo) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: MusicColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: MusicColors.primary.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.music_note, size: 16, color: MusicColors.primary),
-                  SizedBox(width: 6),
-                  Text(
-                    'NOW PLAYING',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: MusicColors.primary,
-                      letterSpacing: 1.0,
-                    ),
+            Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceVariant,
+                    borderRadius: BorderRadius.circular(8),
+                    image: track.imageUrl != null && track.imageUrl!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(track.imageUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildTrackImage(track),
-            const SizedBox(height: 16),
-            Text(
-              track.name,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'by ${track.artist}',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (track.album.isNotEmpty) ...[
-              const SizedBox(height: 2),
-              Text(
-                'from ${track.album}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.5),
-                  fontStyle: FontStyle.italic,
+                  child: track.imageUrl == null || track.imageUrl!.isEmpty
+                      ? const Icon(Icons.music_note, color: Colors.white, size: 30)
+                      : null,
                 ),
-                textAlign: TextAlign.center,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        track.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        track.artist,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+          
+          Column(
+            children: [
+              SliderTheme(
+                data: SliderThemeData(
+                  trackHeight: 3.0,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+                  thumbColor: AppTheme.primary,
+                  activeTrackColor: AppTheme.primary,
+                  inactiveTrackColor: Colors.grey.withOpacity(0.3),
+                  overlayColor: AppTheme.primary.withOpacity(0.2),
+                ),
+                child: Slider(
+                  value: playerService.position.inMilliseconds.toDouble().clamp(
+                    0.0,
+                    playerService.duration.inMilliseconds.toDouble() > 0
+                        ? playerService.duration.inMilliseconds.toDouble()
+                        : 1.0,
+                  ),
+                  max: playerService.duration.inMilliseconds.toDouble() > 0
+                      ? playerService.duration.inMilliseconds.toDouble()
+                      : 1.0,
+                  onChanged: (value) {
+                    playerService.seekTo(Duration(milliseconds: value.round()));
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatDuration(playerService.position),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    Text(
+                      _formatDuration(playerService.duration),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
             ],
-            const SizedBox(height: 24),
-          ],
-          _buildProgressBar(playerService),
-          const SizedBox(height: 4),
-          _buildTimeLabels(playerService),
-          const SizedBox(height: 24),
-          _buildControls(playerService),
+          ),
+          
           const SizedBox(height: 16),
-          _buildSecondaryControls(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrackImage(Track track) {
-    if (track.imageUrl != null && track.imageUrl!.isNotEmpty) {
-      return Container(
-        width: 180,
-        height: 180,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          image: DecorationImage(
-            image: NetworkImage(track.imageUrl!),
-            fit: BoxFit.cover,
-          ),
-        ),
-      );
-    } else {
-      return Container(
-        width: 180,
-        height: 180,
-        decoration: BoxDecoration(
-          color: MusicColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.music_note,
-              size: 60,
-              color: Colors.white.withOpacity(0.5),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'No Cover Art',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  Widget _buildProgressBar(MusicPlayerService playerService) {
-    return SliderTheme(
-      data: const SliderThemeData(
-        trackHeight: 4.0,
-        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6.0),
-        overlayShape: RoundSliderOverlayShape(overlayRadius: 12.0),
-        trackShape: RoundedRectSliderTrackShape(),
-      ),
-      child: Slider(
-        value: playerService.position.inMilliseconds.toDouble().clamp(
-              0.0,
-              math.max(playerService.duration.inMilliseconds.toDouble(), 1.0),
-            ),
-        max: math.max(playerService.duration.inMilliseconds.toDouble(), 1.0),       
-        min: 0,
-        onChanged: (value) {
-          playerService.seekTo(Duration(milliseconds: value.round()));
-        },
-        activeColor: MusicColors.primary,
-        inactiveColor: Colors.white.withOpacity(0.3),
-      ),
-    );
-  }
-
-  Widget _buildTimeLabels(MusicPlayerService playerService) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            _formatDuration(playerService.position),
-            style: TextStyle(
-              fontSize: 12, 
-              color: Colors.white.withOpacity(0.7),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            _formatDuration(playerService.duration),
-            style: TextStyle(
-              fontSize: 12, 
-              color: Colors.white.withOpacity(0.7),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControls(MusicPlayerService playerService) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(
-                Icons.shuffle,
-                color: Colors.white.withOpacity(0.7),
-                size: 24,
-              ),
-              onPressed: () {
-              },
-              tooltip: 'Shuffle tracks',
-            ),
-            Text(
-              'Shuffle',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.white.withOpacity(0.7),
-              ),
-            ),
-          ],
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(
-                Icons.skip_previous,
-                color: Colors.white,
-                size: 32,
-              ),
-              onPressed: () {
-              },
-              tooltip: 'Previous track',
-            ),
-            Text(
-              'Previous',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.white.withOpacity(0.7),
-              ),
-            ),
-          ],
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: Icon(
-                  playerService.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.black,
-                  size: 32,
-                ),
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.skip_previous, color: Colors.white),
+                iconSize: 32,
                 onPressed: () {
-                  playerService.togglePlay();
                 },
-                tooltip: playerService.isPlaying ? 'Pause music' : 'Play music',
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              playerService.isPlaying ? 'Pause' : 'Play',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+              Container(
+                decoration: const BoxDecoration(
+                  color: AppTheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    playerService.isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.black,
+                  ),
+                  iconSize: 32,
+                  onPressed: playerService.togglePlay,
+                ),
               ),
-            ),
-          ],
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(
-                Icons.skip_next,
-                color: Colors.white,
-                size: 32,
+              IconButton(
+                icon: const Icon(Icons.skip_next, color: Colors.white),
+                iconSize: 32,
+                onPressed: () {
+                },
               ),
-              onPressed: () {
-              },
-              tooltip: 'Next track',
-            ),
-            Text(
-              'Next',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.white.withOpacity(0.7),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.favorite_border, color: Colors.white),
+                onPressed: () {
+                },
               ),
-            ),
-          ],
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(
-                Icons.repeat,
-                color: Colors.white.withOpacity(0.7),
-                size: 24,
+              IconButton(
+                icon: const Icon(Icons.stop, color: Colors.white),
+                onPressed: playerService.stop,
               ),
-              onPressed: () {
-              },
-              tooltip: 'Repeat mode',
-            ),
-            Text(
-              'Repeat',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.white.withOpacity(0.7),
+              IconButton(
+                icon: const Icon(Icons.fullscreen, color: Colors.white),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(AppRoutes.player);
+                },
               ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSecondaryControls() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        TextButton.icon(
-          icon: Icon(
-            Icons.favorite_border,
-            color: Colors.white.withOpacity(0.7),
-            size: 20,
+            ],
           ),
-          label: Text(
-            'Like',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 12,
-            ),
-          ),
-          onPressed: () {
-          },
-        ),
-        TextButton.icon(
-          icon: Icon(
-            Icons.playlist_add,
-            color: Colors.white.withOpacity(0.7),
-            size: 20,
-          ),
-          label: Text(
-            'Add to Playlist',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 12,
-            ),
-          ),
-          onPressed: () {
-          },
-        ),
-        TextButton.icon(
-          icon: Icon(
-            Icons.share,
-            color: Colors.white.withOpacity(0.7),
-            size: 20,
-          ),
-          label: Text(
-            'Share',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 12,
-            ),
-          ),
-          onPressed: () {
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 
