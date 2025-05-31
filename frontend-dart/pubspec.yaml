@@ -15,14 +15,13 @@ dependencies:
   google_sign_in: ^6.3.0
   intl: ^0.20.2
   just_audio: ^0.10.3
-  just_audio_background: ^0.0.1-beta.16
   cupertino_icons: ^1.0.8
   provider: ^6.0.5
   http: ^1.4.0
   shared_preferences: ^2.0.15
   flutter_dotenv: ^5.0.2
   sentry_flutter: ^8.14.2
-  web_socket_channel: ^2.4.0
+  web_socket_channel: ^3.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
