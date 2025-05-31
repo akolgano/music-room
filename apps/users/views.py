@@ -19,6 +19,10 @@ from django.http import JsonResponse
 from django.db.models import Q
 from . import email_sender
 from . import utils
+from .models import OneTimePasscode
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from apps.remote_auth.models import SocialNetwork
 
 User = get_user_model()
 
@@ -57,6 +61,11 @@ def logout_view(request):
 
 @api_view(['POST'])
 def signup(request):
+    email = request.data.get('email')
+    social = SocialNetwork.objects.filter(email=email).first()
+    if social:
+        return JsonResponse({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
@@ -158,48 +167,111 @@ def reject_friend_request(request, friendship_id):
 @api_view(['POST'])
 def forgot_password(request):
     email = request.data.get('email')
-    if email is None:
-        return JsonResponse({'error': 'Invalid email.'}, status=status.HTTP_404_NOT_FOUND)
+    if not email:
+        return JsonResponse({'error': 'Invalid email.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = utils.get_user(email)
-    if user is None:
+    user = User.objects.filter(email=email).first()
+    if not user:
         return JsonResponse({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+    if not user.has_usable_password():
+        return JsonResponse({'error': 'User passwords cannot be reset.'}, status=status.HTTP_400_BAD_REQUEST)
+
     otp = utils.create_otp_for_user(user)
-    if otp is None:
+    if not otp:
         return JsonResponse({'error': 'OTP creation failed.'}, status=status.HTTP_404_NOT_FOUND)
 
     try:
         email_sender.send_forgot_password_email(otp.code, email, user.username)
     except Exception:
-        return JsonResponse({'error': 'OTP email send failed.'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'error': 'OTP email send failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
     return JsonResponse({'username': user.username, 'email': user.email}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
-def change_password(request):
+def forgot_change_password(request):
     email = request.data.get('email')
     otp_code = request.data.get('otp')
     password = request.data.get('password')
 
-    if email is None or otp_code is None or password is None:
-        return JsonResponse({'error': 'Invalid email, otp or password.'}, status=status.HTTP_404_NOT_FOUND)
+    if not email or not otp_code or not password:
+        return JsonResponse({'error': 'Invalid email, otp or password.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = utils.get_user(email)
-    if user is None:
+    user = User.objects.filter(email=email).first()    
+    if not user:
         return JsonResponse({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    otp = utils.get_otp_user(user)
-    if otp is None:
+    if not user.has_usable_password():
+        return JsonResponse({'error': 'User passwords cannot be reset.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    otp = OneTimePasscode.objects.filter(user=user, expired_at__gt=timezone.now()).first()
+    if not otp:
         return JsonResponse({'error': 'OTP not found or expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        if otp.code == otp_code:
-            user.set_password(password)
-            user.save()
-            return JsonResponse({'username': user.username, 'email' : user.email}, status=status.HTTP_200_OK)
-        else:
-            return JsonResponse({'error': 'OTP not match'}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception:
-        return JsonResponse({'error': 'Change password failed !'}, status=status.HTTP_404_NOT_FOUND)
+        validate_password(password)
+    except ValidationError as e:
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    if otp.code == otp_code:
+        user.set_password(password)
+        user.save()
+        return JsonResponse({'username': user.username, 'email' : user.email}, status=status.HTTP_200_OK)
+    else:
+        return JsonResponse({'error': 'OTP not match'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def user_password_change(request):
+    current_password = request.data.get('currentPassword')
+    new_password = request.data.get('newPassword')
+    user = request.user
+
+    if not user.has_usable_password():
+        return JsonResponse({'error': 'User passwords cannot be change.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.check_password(current_password):
+        return JsonResponse({'error': 'Current passwords not match.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        validate_password(new_password)
+    except ValidationError as e:
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.set_password(new_password)
+    user.save()
+    return JsonResponse({'username': user.username, 'email' : user.email}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_user(request):
+    user = request.user
+
+    try:
+        data = {
+            'username': user.username,
+            'id': user.id,
+            'email': user.email,
+            'has_social_account': False,
+            'is_password_usable': user.has_usable_password(),        
+        }
+        social = SocialNetwork.objects.filter(user=user).first()
+        if social:
+            data.update({
+                'has_social_account': True,
+                'social': {
+                    'type': social.type,
+                    'social_id': social.social_id,
+                    'social_email': social.email,
+                    'social_name': social.name
+                }
+            })
+        return JsonResponse(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

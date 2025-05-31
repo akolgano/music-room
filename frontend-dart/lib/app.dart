@@ -9,8 +9,10 @@ import 'widgets/music_player_widget.dart';
 import 'screens/screens.dart';
 import 'core/constants.dart';
 
+
 class MusicRoomApp extends StatelessWidget {
   const MusicRoomApp({Key? key}) : super(key: key);
+
 
   @override
   Widget build(BuildContext context) {

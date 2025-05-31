@@ -6,14 +6,9 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-def generate_otp():
-    otp_code = secrets.randbelow(900000) + 100000
-    return otp_code
-
-
 def create_otp_for_user(user):
     try:
-        otp_code = generate_otp()
+        otp_code = secrets.randbelow(900000) + 100000
 
         OneTimePasscode.objects.filter(user=user).delete()
 
@@ -22,22 +17,5 @@ def create_otp_for_user(user):
             code=otp_code
         )
         return otp
-    except Exception:
-        return None
-
-
-def get_otp_user(user):
-    try:
-        otp = OneTimePasscode.objects.get(user=user, expired_at__gt=timezone.now())
-        return otp
-    except OneTimePasscode.DoesNotExist:
-        return None
-    return None
-
-
-def get_user(email):
-    try:
-        user = User.objects.get(email=email)
-        return user
     except Exception:
         return None

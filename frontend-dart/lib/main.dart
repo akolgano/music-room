@@ -37,6 +37,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => MusicProvider()),
         ChangeNotifierProvider(create: (_) => FriendProvider()),
         ChangeNotifierProvider(create: (_) => MusicPlayerService()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: const MusicRoomApp(),
     ),

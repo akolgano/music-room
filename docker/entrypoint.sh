@@ -13,6 +13,7 @@ export PYTHONPATH=/app
 
 echo "Applying migrations..."
 python manage.py makemigrations
+python manage.py makemigrations remote_auth
 python manage.py migrate
 
 SUPERUSER_EXISTS=$(python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username='$DJANGO_SUPERUSER_USERNAME').exists())")

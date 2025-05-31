@@ -160,7 +160,7 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      final authResult = await _apiService.googleLoginWeb(idToken);
+      final authResult = await _apiService.googleLogin('web', idToken);
       _token = authResult.token;
       _userId = authResult.user.id;
       _username = authResult.user.username;
@@ -204,7 +204,7 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      final authResult = await _apiService.googleLoginApp(idToken);
+      final authResult = await _apiService.googleLogin('app', idToken);
       _token = authResult.token;
       _userId = authResult.user.id;
       _username = authResult.user.username;
@@ -241,11 +241,11 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> changePassword(String email, String otpStr, String password) async {
+  Future<void> forgotChangePassword(String email, String otpStr, String password) async {
     try {
       int otp = int.parse(otpStr);
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl/users/change_password/'),
+        Uri.parse('$_apiBaseUrl/users/forgot_change_password/'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': email,
