@@ -7,7 +7,9 @@ def check_access_to_playlist(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         user = request.user
-        playlist_id = kwargs['playlist_id']
+        playlist_id = kwargs.get('playlist_id')
+        print('check_access_to_playlist')
+        print(playlist_id)
         if not playlist_id:
             return Response({'error': 'Missing playlist id'}, status=400)
 

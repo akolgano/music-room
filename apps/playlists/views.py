@@ -80,7 +80,7 @@ def get_all_shared_playlists(request):
     playlist_data = []
     for playlist in playlists:
         tracks = playlist.tracks.all()
-        track_list = [{'name': track.name, 'artist': track.artist} for track in tracks]
+        track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
 
         playlist_data.append({
             'id': playlist.id,
@@ -220,7 +220,7 @@ def add_track(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@check_access_to_playlist
+#@check_access_to_playlist
 #@require_device_control
 def move_track_in_playlist(request):
     if request.method != 'POST':
@@ -275,6 +275,7 @@ def move_track_in_playlist(request):
     except Playlist.DoesNotExist:
         return JsonResponse({'error': 'Playlist not found'}, status=404)
     except Exception as e:
+        print(str(e))
         return JsonResponse({'error': str(e)}, status=400)
 
 
