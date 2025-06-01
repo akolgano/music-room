@@ -23,16 +23,6 @@ class AppDimensions {
   static const double buttonHeightSmall = 40.0;
   static const double buttonHeightLarge = 60.0;
   
-  static const double avatarSmall = 32.0;
-  static const double avatarMedium = 50.0;
-  static const double avatarLarge = 80.0;
-  static const double avatarXLarge = 100.0;
-  
-  static const double albumArtSmall = 50.0;
-  static const double albumArtMedium = 100.0;
-  static const double albumArtLarge = 200.0;
-  static const double albumArtXLarge = 320.0;
-  
   static const double textSmall = 12.0;
   static const double textMedium = 14.0;
   static const double textLarge = 16.0;

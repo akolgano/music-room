@@ -2,13 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/app_provider.dart';
 import '../core/theme.dart';
 import '../widgets/app_navigation_drawer.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
-  AppProvider get app => Provider.of<AppProvider>(context, listen: false);
   
   String get screenTitle;
   Widget buildContent();
