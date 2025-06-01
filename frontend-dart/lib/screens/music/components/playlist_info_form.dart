@@ -1,7 +1,7 @@
 // lib/screens/music/components/playlist_info_form.dart
 import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
-import '../../../widgets/unified_widgets.dart';
+import '../../../widgets/common_widgets.dart';
 
 class PlaylistInfoForm extends StatelessWidget {
   final TextEditingController nameController;
@@ -32,53 +32,19 @@ class PlaylistInfoForm extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  isEditMode ? Icons.edit : Icons.add,
-                  color: AppTheme.primary,
-                  size: 20,
-                ),
+                Icon(isEditMode ? Icons.edit : Icons.add, color: AppTheme.primary, size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  isEditMode ? 'Playlist Details' : 'Create New Playlist',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                Text(isEditMode ? 'Playlist Details' : 'Create New Playlist', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
               ],
             ),
             const SizedBox(height: 16),
-            AppTextField(
-              controller: nameController,
-              labelText: 'Playlist Name',
-              prefixIcon: Icons.title,
-              validator: (value) {
-                if (value?.isEmpty ?? true) {
-                  return 'Please enter a playlist name';
-                }
-                return null;
-              },
-            ),
+            AppTextField(controller: nameController, labelText: 'Playlist Name', prefixIcon: Icons.title, validator: (value) => (value?.isEmpty ?? true) ? 'Please enter a playlist name' : null),
             const SizedBox(height: 16),
-            AppTextField(
-              controller: descriptionController,
-              labelText: 'Description (optional)',
-              prefixIcon: Icons.description,
-              maxLines: 3,
-            ),
+            AppTextField(controller: descriptionController, labelText: 'Description (optional)', prefixIcon: Icons.description, maxLines: 3),
             const SizedBox(height: 16),
             SwitchListTile(
-              title: Text(
-                isPublic ? 'Public Playlist' : 'Private Playlist',
-                style: const TextStyle(color: Colors.white),
-              ),
-              subtitle: Text(
-                isPublic
-                    ? 'Anyone can view and add to this playlist'
-                    : 'Only you can view and edit this playlist',
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
+              title: Text(isPublic ? 'Public Playlist' : 'Private Playlist', style: const TextStyle(color: Colors.white)),
+              subtitle: Text(isPublic ? 'Anyone can view and add to this playlist' : 'Only you can view and edit this playlist', style: const TextStyle(color: Colors.grey, fontSize: 12)),
               value: isPublic,
               onChanged: onVisibilityChanged,
               activeColor: AppTheme.primary,

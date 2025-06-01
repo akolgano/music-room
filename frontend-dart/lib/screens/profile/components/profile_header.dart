@@ -1,167 +1,157 @@
 // lib/screens/profile/components/profile_header.dart
 import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
-import '../../../models/playlist_track.dart';
+import '../../../providers/auth_provider.dart';
 
-class PlaylistTracksSection extends StatelessWidget {
-  final List<PlaylistTrack> tracks;
-  final bool isWebSocketConnected;
-  final Function(PlaylistTrack) onRemoveTrack;
-  final Function(int, int) onMoveTrack;
-  final VoidCallback onAddTracks;
+class ProfileHeader extends StatelessWidget {
+  final AuthProvider authProvider;
 
-  const PlaylistTracksSection({
+  const ProfileHeader({
     Key? key,
-    required this.tracks,
-    required this.isWebSocketConnected,
-    required this.onRemoveTrack,
-    required this.onMoveTrack,
-    required this.onAddTracks,
+    required this.authProvider,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Stack(
               children: [
-                const Icon(Icons.queue_music, color: AppTheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Tracks (${tracks.length})',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                if (isWebSocketConnected)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.sync, color: Colors.green, size: 14),
-                        SizedBox(width: 4),
-                        Text(
-                          'Live',
-                          style: TextStyle(color: Colors.green, fontSize: 10),
-                        ),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppTheme.primary,
+                        AppTheme.primary.withOpacity(0.7),
                       ],
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (tracks.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(32),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.music_note,
-                        size: 48,
-                        color: Colors.white.withOpacity(0.5),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No tracks added yet',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Add some songs to get started!',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: onAddTracks,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Songs'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: Colors.black,
-                        ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primary.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 50,
+                    color: Colors.black,
+                  ),
                 ),
-              )
-            else
-              ReorderableListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: tracks.length,
-                onReorder: onMoveTrack,
-                itemBuilder: (context, index) {
-                  final track = tracks[index];
-                  return Card(
-                    key: ValueKey(track.trackId),
-                    margin: const EdgeInsets.only(bottom: 8),
-                    color: AppTheme.surfaceVariant,
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      title: Text(
-                        track.name,
-                        style: const TextStyle(color: Colors.white),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        'Position: ${track.position}',
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.drag_handle,
-                            color: Colors.grey.withOpacity(0.7),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-                            onPressed: () => onRemoveTrack(track),
-                            tooltip: 'Remove track',
-                          ),
-                        ],
-                      ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.surface, width: 2),
                     ),
-                  );
-                },
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              authProvider.displayName,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.tag,
+                    color: AppTheme.primary,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'ID: ${authProvider.userId ?? "Unknown"}',
+                    style: const TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStatItem('Playlists', '12', Icons.playlist_play),
+                _buildStatItem('Friends', '8', Icons.people),
+                _buildStatItem('Tracks', '147', Icons.music_note),
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String count, IconData icon) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceVariant,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: AppTheme.primary, size: 20),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          count,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
     );
   }
 }
