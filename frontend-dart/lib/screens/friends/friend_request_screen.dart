@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
-import '../../models/friendship.dart';
-import '../../core/theme.dart'; 
+import '../../core/theme.dart';
+import '../../widgets/unified_widgets.dart';
 
 class FriendRequestScreen extends StatefulWidget {
   const FriendRequestScreen({Key? key}) : super(key: key);
@@ -24,29 +24,18 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
   }
 
   Future<void> _loadPendingRequests() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       await friendProvider.fetchPendingRequests(authProvider.token!);
-      setState(() {
-        _pendingRequests = friendProvider.pendingRequests;
-      });
+      setState(() => _pendingRequests = friendProvider.pendingRequests);
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to load pending requests: ${error.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SnackBarUtils.showError(context, 'Failed to load pending requests');
     }
 
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -58,36 +47,12 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
         title: const Text('Friend Requests'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+          ? const LoadingWidget()
           : _pendingRequests.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.mail,
-                        size: 64,
-                        color: Colors.white.withOpacity(0.5),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No pending friend requests',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'When someone sends you a friend request, it will appear here',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+              ? const EmptyState(
+                  icon: Icons.mail,
+                  title: 'No pending friend requests',
+                  subtitle: 'When someone sends you a friend request, it will appear here',
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -101,42 +66,25 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.surface,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: Colors.blue.withOpacity(0.2),
-                  child: const Icon(Icons.person, color: Colors.white),
+                const CircleAvatar(
+                  backgroundColor: Colors.blue,
+                  child: Icon(Icons.person, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'User ID: ${request['from_user'] ?? 'Unknown'}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                      Text('User ID: ${request['from_user'] ?? 'Unknown'}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 4),
-                      Text(
-                        'Status: ${request['status'] ?? 'pending'}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.7),
-                        ),
-                      ),
+                      Text('Status: ${request['status'] ?? 'pending'}', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.7))),
                     ],
                   ),
                 ),
@@ -151,7 +99,6 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   ),
                   child: const Text('REJECT'),
                 ),
@@ -161,7 +108,6 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   ),
                   child: const Text('ACCEPT'),
                 ),
@@ -178,26 +124,11 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       
-      final message = await friendProvider.acceptFriendRequest(
-        authProvider.token!,
-        int.parse(friendshipId),
-      );
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message ?? 'Friend request accepted'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
+      final message = await friendProvider.acceptFriendRequest(authProvider.token!, int.parse(friendshipId));
+      SnackBarUtils.showSuccess(context, message ?? 'Friend request accepted');
       _loadPendingRequests();
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to accept request: ${error.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SnackBarUtils.showError(context, 'Failed to accept request');
     }
   }
 
@@ -206,26 +137,11 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       
-      final message = await friendProvider.rejectFriendRequest(
-        authProvider.token!,
-        int.parse(friendshipId),
-      );
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message ?? 'Friend request rejected'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      
+      final message = await friendProvider.rejectFriendRequest(authProvider.token!, int.parse(friendshipId));
+      SnackBarUtils.showSuccess(context, message ?? 'Friend request rejected');
       _loadPendingRequests();
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to reject request: ${error.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SnackBarUtils.showError(context, 'Failed to reject request');
     }
   }
 }

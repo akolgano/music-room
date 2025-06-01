@@ -1,7 +1,7 @@
 // lib/screens/friends/components/friends_tab_view.dart
 import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
-import '../../../widgets/unified_widgets.dart';
+import '../../../widgets/empty_state_widget.dart'; 
 
 class FriendsTabView extends StatelessWidget {
   final List<int> friends;
@@ -22,7 +22,7 @@ class FriendsTabView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (friends.isEmpty) {
-      return EmptyState(
+      return EmptyState( 
         icon: Icons.people,
         title: 'No friends yet',
         subtitle: 'Add friends to start sharing music together!',

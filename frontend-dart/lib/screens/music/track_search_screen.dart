@@ -4,9 +4,10 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
+import '../../services/music_player_service.dart';
 import '../../core/theme.dart';
+import '../../core/app_strings.dart';
 import '../../widgets/unified_widgets.dart';
-import '../../widgets/app_navigation_drawer.dart';
 import '../../models/track.dart';
 
 class TrackSearchScreen extends StatefulWidget {
@@ -39,9 +40,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     
     if (widget.initialTrack != null) {
       _searchController.text = widget.initialTrack!.name;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _performSearch();
-      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _performSearch());
     }
   }
 
@@ -54,16 +53,15 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.background,
-        title: Text(widget.playlistId != null ? 'Add Music to Playlist' : 'Search for Music'),
+        title: Text(widget.playlistId != null ? 'Add Music to Playlist' : AppStrings.searchTracks),
         actions: [
           if (widget.playlistId != null)
             TextButton(
               onPressed: () => setState(() => _isMultiSelectMode = !_isMultiSelectMode),
-              child: Text(_isMultiSelectMode ? 'Cancel' : 'Multi-Select'),
+              child: Text(_isMultiSelectMode ? AppStrings.cancel : 'Multi-Select'),
             ),
         ],
       ),
-      drawer: const AppNavigationDrawer(), 
       body: Column(
         children: [
           _buildSearchHeader(),
@@ -77,20 +75,40 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   Widget _buildSearchHeader() {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(color: AppTheme.surface),
       child: Row(
         children: [
           Expanded(
-            child: AppTextField(
-              controller: _searchController,
-              labelText: 'Search for tracks',
-              prefixIcon: Icons.search,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceVariant,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: AppStrings.searchForTracks,
+                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.primary),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                onSubmitted: (_) => _performSearch(),
+              ),
             ),
           ),
           const SizedBox(width: 8),
           ElevatedButton(
-            onPressed: _performSearch,
-            child: const Text('Search'),
+            onPressed: _isLoading ? null : _performSearch,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            ),
+            child: _isLoading 
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                : const Text(AppStrings.search, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -102,24 +120,14 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          const Text('Search in:', style: TextStyle(color: Colors.white)),
+          const Text('Search in:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
           const SizedBox(width: 16),
           Expanded(
             child: Row(
               children: [
-                Radio<bool>(
-                  value: true,
-                  groupValue: _searchDeezer,
-                  onChanged: (value) => setState(() => _searchDeezer = value!),
-                ),
-                const Text('Deezer', style: TextStyle(color: Colors.white)),
-                const SizedBox(width: 16),
-                Radio<bool>(
-                  value: false,
-                  groupValue: _searchDeezer,
-                  onChanged: (value) => setState(() => _searchDeezer = value!),
-                ),
-                const Text('Local', style: TextStyle(color: Colors.white)),
+                _buildModeButton(true, AppStrings.deezer, Icons.music_note),
+                const SizedBox(width: 8),
+                _buildModeButton(false, AppStrings.local, Icons.library_music),
               ],
             ),
           ),
@@ -128,17 +136,58 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     );
   }
 
+  Widget _buildModeButton(bool isDeezer, String label, IconData icon) {
+    final isSelected = _searchDeezer == isDeezer;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _searchDeezer = isDeezer),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.primary.withOpacity(0.2) : AppTheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: isSelected ? AppTheme.primary : Colors.transparent),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: isSelected ? AppTheme.primary : Colors.white, size: 16),
+              const SizedBox(width: 4),
+              Text(label, style: TextStyle(
+                color: isSelected ? AppTheme.primary : Colors.white,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSelectionBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: AppTheme.primary.withOpacity(0.1),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+      ),
       child: Row(
         children: [
-          Text('${_selectedTracks.length} selected', style: const TextStyle(color: Colors.white)),
+          const Icon(Icons.check_circle, color: AppTheme.primary, size: 24),
+          const SizedBox(width: 8),
+          Text('${_selectedTracks.length} selected', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
           const Spacer(),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: _addSelectedTracks,
-            child: const Text('Add Selected'),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Add Selected'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
           ),
         ],
       ),
@@ -147,39 +196,90 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   Widget _buildResults(List tracks) {
     if (_isLoading) {
-      return const LoadingWidget(message: 'Searching...');
+      return const LoadingWidget(message: AppStrings.loading);
     }
 
     if (_searchController.text.isEmpty) {
-      return const EmptyState(
-        icon: Icons.search,
-        title: 'Ready to find music?',
-        subtitle: 'Enter a song title, artist name, or album to get started',
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search, size: 64, color: AppTheme.primary),
+            SizedBox(height: 16),
+            Text('Ready to find music?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+            SizedBox(height: 8),
+            Text('Enter a song title, artist name, or album to get started', style: TextStyle(color: Colors.grey), textAlign: TextAlign.center),
+          ],
+        ),
       );
     }
 
     if (tracks.isEmpty) {
-      return const EmptyState(
-        icon: Icons.search_off,
-        title: 'No songs found',
-        subtitle: 'Try different search terms',
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(AppStrings.noTracksFound, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 8),
+            const Text(AppStrings.tryDifferentKeywords, style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                _searchController.clear();
+                setState(() {});
+              },
+              child: const Text('Clear Search'),
+            ),
+          ],
+        ),
       );
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 16),
       itemCount: tracks.length,
-      itemBuilder: (ctx, i) => TrackCard(
-        track: tracks[i],
-        isSelected: _selectedTracks.contains(tracks[i].id),
-        onTap: () => _handleTrackTap(tracks[i]),
-        onSelectionChanged: _isMultiSelectMode 
-            ? (value) => _toggleSelection(tracks[i].id)
-            : null,
-        onAdd: !_isMultiSelectMode && widget.playlistId != null 
-            ? () => _addSingleTrack(tracks[i]) 
-            : null,
-      ),
+      itemBuilder: (ctx, i) {
+        final track = tracks[i];
+        return TrackCard(
+          track: track,
+          isSelected: _selectedTracks.contains(track.id),
+          showImage: _searchDeezer,
+          onTap: () => _handleTrackTap(track),
+          onSelectionChanged: _isMultiSelectMode ? (value) => _toggleSelection(track.id) : null,
+          onAdd: !_isMultiSelectMode && widget.playlistId != null ? () => _addSingleTrack(track) : null,
+          onPlay: _searchDeezer ? () => _playPreview(track) : null,
+        );
+      },
     );
+  }
+
+  Future<void> _playPreview(Track track) async {
+    try {
+      final playerService = Provider.of<MusicPlayerService>(context, listen: false);
+      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+      
+      if (playerService.currentTrack?.id == track.id) {
+        await playerService.togglePlay();
+        return;
+      }
+      
+      String? previewUrl = track.previewUrl;
+      
+      if (previewUrl == null && track.deezerTrackId != null) {
+        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
+      }
+      
+      if (previewUrl != null && previewUrl.isNotEmpty) {
+        await playerService.playTrack(track, previewUrl);
+        showAppSnackBar(context, 'Playing preview of "${track.name}"');
+      } else {
+        showAppSnackBar(context, AppStrings.noPreviewAvailable, isError: true);
+      }
+    } catch (error) {
+      showAppSnackBar(context, 'Failed to play preview', isError: true);
+    }
   }
 
   void _performSearch() async {
@@ -203,7 +303,11 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     if (_isMultiSelectMode) {
       _toggleSelection(track.id);
     } else if (widget.playlistId == null) {
-      Navigator.pushNamed(context, '/deezer_track_detail', arguments: track.id);
+      showAppSnackBar(context, 'Track details coming soon!');
+    } else {
+      if (_searchDeezer) {
+        _playPreview(track);
+      }
     }
   }
 

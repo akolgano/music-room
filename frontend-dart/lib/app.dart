@@ -2,12 +2,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
-import 'models/playlist.dart';
+import 'core/constants.dart';
 import 'providers/auth_provider.dart';
 import 'services/music_player_service.dart';
 import 'widgets/music_player_widget.dart';
-import 'screens/screens.dart';
-import 'core/constants.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/auth/auth_screen.dart';
+import 'screens/profile/profile_screen.dart';
+import 'screens/music/track_search_screen.dart';
+import 'screens/music/playlist_editor_screen.dart';
+import 'screens/playlists/public_playlists_screen.dart';
+import 'screens/friends/friends_list_screen.dart';
+import 'screens/friends/add_friend_screen.dart';
+import 'screens/friends/friend_request_screen.dart';
 
 class MusicRoomApp extends StatelessWidget {
   const MusicRoomApp({Key? key}) : super(key: key);
@@ -30,36 +37,15 @@ class MusicRoomApp extends StatelessWidget {
         AppRoutes.home: (context) => const HomeScreen(),
         AppRoutes.auth: (context) => const AuthScreen(),
         AppRoutes.profile: (context) => const ProfileScreen(),
-        AppRoutes.trackVote: (context) => const MusicTrackVoteScreen(),
-        AppRoutes.controlDelegation: (context) => const MusicControlDelegationScreen(),
-        AppRoutes.musicFeatures: (context) => const MusicFeaturesScreen(),
         AppRoutes.playlistEditor: (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
           return PlaylistEditorScreen(playlistId: args is String ? args : null);
         },
-        AppRoutes.trackSelection: (context) {
-          final args = ModalRoute.of(context)?.settings.arguments;
-          return TrackSelectionScreen(playlistId: args is String ? args : null);
-        },
         AppRoutes.trackSearch: (context) => const TrackSearchScreen(),
         AppRoutes.publicPlaylists: (context) => const PublicPlaylistsScreen(),
-        AppRoutes.playlistSharing: (context) {
-          final args = ModalRoute.of(context)?.settings.arguments;
-          return args is Playlist 
-            ? PlaylistSharingScreen(playlist: args)
-            : const HomeScreen();
-        },
-        AppRoutes.deezerTrackDetail: (context) {
-          final trackId = ModalRoute.of(context)!.settings.arguments as String;
-          return DeezerTrackDetailScreen(trackId: trackId);
-        },
-        AppRoutes.player: (context) => const PlayerScreen(),
         AppRoutes.friends: (context) => const FriendsListScreen(),
         AppRoutes.addFriend: (context) => const AddFriendScreen(),
         AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
-        '/playlists': (context) => const PlaylistsScreen(publicOnly: false),
-        '/public_playlists': (context) => const PlaylistsScreen(publicOnly: true),
-        '/track_search': (context) => const TrackSearchScreen(),
       },
     );
   }
@@ -98,27 +84,11 @@ class _AppScaffold extends StatelessWidget {
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 40, height: 5,
-              decoration: BoxDecoration(
-                color: AppTheme.onSurfaceVariant,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const MusicPlayerWidget(showTrackInfo: true),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushNamed(AppRoutes.player);
-              },
-              child: const Text('FULL SCREEN PLAYER'),
-            ),
-            const SizedBox(height: 32),
+            MusicPlayerWidget(showTrackInfo: true),
+            SizedBox(height: 32),
           ],
         ),
       ),

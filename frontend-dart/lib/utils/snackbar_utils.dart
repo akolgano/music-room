@@ -53,7 +53,7 @@ class SnackBarUtils {
   }
 
   static void _showSnackBar(
-    BuildContext context, 
+    BuildContext context,
     String message, {
     required Color backgroundColor,
   }) {
