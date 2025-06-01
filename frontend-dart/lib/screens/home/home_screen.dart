@@ -5,8 +5,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../core/theme.dart';
 import '../../core/constants.dart';
+import '../../core/app_strings.dart';
 import '../../widgets/unified_widgets.dart';
-import '../../widgets/app_navigation_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,7 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  int _selectedIndex = 0;
   late TabController _tabController;
   
   @override
@@ -41,14 +40,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.background,
-        title: Text(_getTitle()),
+        title: const Text(AppConstants.appName),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primary,
           unselectedLabelColor: Colors.grey,
           indicatorColor: AppTheme.primary,
           tabs: const [
-            Tab(icon: Icon(Icons.home), text: 'Dashboard'),
+            Tab(icon: Icon(Icons.home), text: 'Home'),
             Tab(icon: Icon(Icons.library_music), text: 'Library'),
             Tab(icon: Icon(Icons.person), text: 'Profile'),
           ],
@@ -57,16 +56,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
-            tooltip: 'Search Music',
           ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-            tooltip: 'Create Playlist',
           ),
         ],
       ),
-      drawer: const AppNavigationDrawer(),
+      drawer: _buildDrawer(),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -75,35 +72,75 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _buildProfile(),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
-  String _getTitle() {
-    return 'Music Room';
-  }
-
-  Widget? _buildFloatingActionButton() {
-    switch (_tabController.index) {
-      case 1: 
-        return FloatingActionButton.extended(
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.black,
-          icon: const Icon(Icons.add),
-          label: const Text('New Playlist'),
-        );
-      case 0: 
-        return FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.black,
-          child: const Icon(Icons.search),
-          tooltip: 'Search Music',
-        );
-      default:
-        return null;
-    }
+  Widget _buildDrawer() {
+    final auth = Provider.of<AuthProvider>(context);
+    
+    return Drawer(
+      backgroundColor: AppTheme.background,
+      child: ListView(
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: AppTheme.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.music_note, color: Colors.black, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  auth.displayName,
+                  style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'ID: ${auth.userId ?? "Unknown"}',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home, color: Colors.white),
+            title: const Text('Home', style: TextStyle(color: Colors.white)),
+            onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.library_music, color: Colors.white),
+            title: const Text('Playlists', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.publicPlaylists);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.people, color: Colors.white),
+            title: const Text('Friends', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.friends);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.search, color: Colors.white),
+            title: const Text('Search', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.trackSearch);
+            },
+          ),
+          const Divider(color: Colors.grey),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.orange),
+            title: const Text('Sign Out', style: TextStyle(color: Colors.orange)),
+            onTap: () {
+              Navigator.pop(context);
+              auth.logout();
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildDashboard() {
@@ -117,132 +154,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Card(
             color: AppTheme.primary.withOpacity(0.1),
             child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.music_note, color: Colors.black, size: 24),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome back, ${auth.displayName}!',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Ready to discover and share music?',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          const Text(
-            'Quick Actions',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 12),
-          
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.5,
-            children: [
-              _buildQuickActionCard(
-                'Search Music',
-                Icons.search,
-                Colors.blue,
-                () => Navigator.pushNamed(context, AppRoutes.trackSearch),
-              ),
-              _buildQuickActionCard(
-                'Create Playlist',
-                Icons.add_circle,
-                Colors.green,
-                () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-              ),
-              _buildQuickActionCard(
-                'Find Friends',
-                Icons.people,
-                Colors.purple,
-                () => Navigator.pushNamed(context, AppRoutes.friends),
-              ),
-              _buildQuickActionCard(
-                'Public Playlists',
-                Icons.public,
-                Colors.orange,
-                () => Navigator.pushNamed(context, AppRoutes.publicPlaylists),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          Card(
-            color: AppTheme.surface,
-            child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.history, color: AppTheme.primary, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Recent Activity',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Center(
+                  const Icon(Icons.music_note, color: AppTheme.primary, size: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.music_note, size: 48, color: Colors.grey),
-                        SizedBox(height: 8),
                         Text(
-                          'No recent activity',
-                          style: TextStyle(color: Colors.grey),
+                          'Welcome back, ${auth.displayName}!',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
-                        Text(
-                          'Start creating playlists to see your activity here',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
-                          textAlign: TextAlign.center,
+                        const Text(
+                          'Ready to discover and share music?',
+                          style: TextStyle(color: Colors.white70),
                         ),
                       ],
                     ),
@@ -251,44 +178,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+          const SizedBox(height: 32),
+          const Text(
+            'Quick Actions',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            children: [
+              _buildQuickActionCard(AppStrings.searchTracks, Icons.search, Colors.blue,
+                  () => Navigator.pushNamed(context, AppRoutes.trackSearch)),
+              _buildQuickActionCard(AppStrings.createPlaylist, Icons.add_circle, Colors.green,
+                  () => Navigator.pushNamed(context, AppRoutes.playlistEditor)),
+              _buildQuickActionCard('Find Friends', Icons.people, Colors.purple,
+                  () => Navigator.pushNamed(context, AppRoutes.friends)),
+              _buildQuickActionCard(AppStrings.publicPlaylists, Icons.public, Colors.orange,
+                  () => Navigator.pushNamed(context, AppRoutes.publicPlaylists)),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActionCard(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+  Widget _buildQuickActionCard(String title, IconData icon, Color color, VoidCallback onTap) {
     return Card(
       color: AppTheme.surface,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
+              Icon(icon, color: color, size: 32),
               const SizedBox(height: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -308,29 +243,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           return const EmptyState(
             icon: Icons.playlist_play,
             title: 'No playlists yet',
-            subtitle: 'Create your first playlist to get started',
+            subtitle: 'Create your first playlist to get started!',
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: _loadData,
-          color: AppTheme.primary,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: music.playlists.length,
-            itemBuilder: (context, index) {
-              final playlist = music.playlists[index];
-              return PlaylistCard(
-                playlist: playlist,
-                onTap: () => Navigator.pushNamed(
-                  context, 
-                  AppRoutes.playlistEditor, 
-                  arguments: playlist.id,
-                ),
-                onPlay: () => showAppSnackBar(context, 'Playing ${playlist.name}'),
-              );
-            },
-          ),
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: music.playlists.length,
+          itemBuilder: (context, index) {
+            final playlist = music.playlists[index];
+            return PlaylistCard(
+              playlist: playlist,
+              onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor, arguments: playlist.id),
+              onPlay: () => SnackBarUtils.showInfo(context, 'Playing ${playlist.name}'),
+            );
+          },
         );
       },
     );
@@ -349,14 +276,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Column(
               children: [
                 const CircleAvatar(
-                  radius: 40,
+                  radius: 50,
                   backgroundColor: AppTheme.primary,
-                  child: Icon(Icons.person, size: 40, color: Colors.black),
+                  child: Icon(Icons.person, size: 50, color: Colors.black),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   auth.displayName,
-                  style: const TextStyle(fontSize: 20, color: Colors.white),
+                  style: const TextStyle(fontSize: 24, color: Colors.white),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -368,26 +295,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
         const SizedBox(height: 16),
-        _buildProfileItem(
-          Icons.people, 
-          'Friends', 
-          () => Navigator.pushNamed(context, AppRoutes.friends),
-        ),
-        _buildProfileItem(
-          Icons.featured_play_list, 
-          'Music Features', 
-          () => Navigator.pushNamed(context, AppRoutes.musicFeatures),
-        ),
-        _buildProfileItem(
-          Icons.settings, 
-          'Settings', 
-          () => showAppSnackBar(context, 'Coming soon!'),
-        ),
-        _buildProfileItem(
-          Icons.help, 
-          'Help', 
-          () => showAppSnackBar(context, 'Coming soon!'),
-        ),
+        _buildProfileItem(Icons.people, AppStrings.friends,
+            () => Navigator.pushNamed(context, AppRoutes.friends)),
+        _buildProfileItem(Icons.settings, 'Settings',
+            () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
+        _buildProfileItem(Icons.help, 'Help',
+            () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
       ],
     );
   }

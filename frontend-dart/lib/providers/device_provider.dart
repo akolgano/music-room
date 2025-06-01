@@ -1,6 +1,7 @@
 // lib/providers/device_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../models/device.dart';
 
 class DeviceProvider with ChangeNotifier {
   final ApiService _api = ApiService();
@@ -68,9 +69,8 @@ class DeviceProvider with ChangeNotifier {
   }
 
   Future<void> fetchUserDevices(String token) async {
-    await _execute(() async {
-      _userDevices = await _api.getUserDevices(token);
-    });
+    final result = await _execute(() => _api.getUserDevices(token));
+    if (result != null) _userDevices = result;
   }
 
   Future<Device?> registerDevice(String uuid, String licenseKey, String deviceName, String token) async {
@@ -85,10 +85,6 @@ class DeviceProvider with ChangeNotifier {
       return device;
     });
     return result;
-  }
-
-  Future<MusicControlDelegate?> delegateControl(String deviceUuid, String delegateUserId, bool canControl, String token) async {
-    return await _execute(() => _api.delegateControl(deviceUuid, delegateUserId, canControl, token));
   }
 
   Future<bool> checkControlPermission(String deviceUuid, String token) async {

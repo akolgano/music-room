@@ -6,7 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../models/playlist.dart';
 import '../../core/theme.dart';
 import '../../core/constants.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/unified_widgets.dart';
 
 class PublicPlaylistsScreen extends StatefulWidget {
   const PublicPlaylistsScreen({Key? key}) : super(key: key);
@@ -32,13 +32,6 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
     if (authProvider.token != null) {
       await musicProvider.fetchPublicPlaylists(authProvider.token!);
       _filterPlaylists('');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please log in to view playlists'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
@@ -56,35 +49,20 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
   @override
   Widget build(BuildContext context) {
     final musicProvider = Provider.of<MusicProvider>(context);
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    if (musicProvider.isLoading) {
-      return Scaffold(
-        backgroundColor: AppTheme.background,
-        appBar: AppBar(
-          backgroundColor: AppTheme.background,
-          title: const Text('Public Playlists'),
-        ),
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
-      );
-    }
-
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         title: const Text('Public Playlists'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadPlaylists,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadPlaylists),
         ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: AppTextField(
               controller: _searchController,
               labelText: 'Search playlists',
@@ -93,50 +71,53 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
             ),
           ),
           Expanded(
-            child: musicProvider.hasConnectionError 
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Connection Error',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          musicProvider.errorMessage ?? 'Failed to load playlists',
-                          style: const TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _loadPlaylists,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  )
-                : _filteredPlaylists.isEmpty
-                    ? const EmptyState(
-                        icon: Icons.public,
-                        title: 'No public playlists found',
-                        subtitle: 'Be the first to create a public playlist!',
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadPlaylists,
-                        color: AppTheme.primary,
-                        child: ListView.builder(
-                          itemCount: _filteredPlaylists.length,
-                          itemBuilder: (_, i) => PlaylistCard(
-                            playlist: _filteredPlaylists[i],
-                            onTap: () => _viewPlaylist(_filteredPlaylists[i]),
-                            onPlay: () => _showPlayMessage(_filteredPlaylists[i]),
-                            onShare: () => _savePlaylist(_filteredPlaylists[i]),
+            child: musicProvider.isLoading
+                ? const LoadingWidget()
+                : musicProvider.hasConnectionError 
+                    ? _buildErrorView(musicProvider)
+                    : _filteredPlaylists.isEmpty
+                        ? const EmptyState(
+                            icon: Icons.public,
+                            title: 'No public playlists found',
+                            subtitle: 'Be the first to create a public playlist!',
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadPlaylists,
+                            color: AppTheme.primary,
+                            child: ListView.builder(
+                              itemCount: _filteredPlaylists.length,
+                              itemBuilder: (_, i) => PlaylistCard(
+                                playlist: _filteredPlaylists[i],
+                                onTap: () => _viewPlaylist(_filteredPlaylists[i]),
+                                onPlay: () => _showPlayMessage(_filteredPlaylists[i]),
+                                onShare: () => _savePlaylist(_filteredPlaylists[i]),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorView(MusicProvider musicProvider) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text('Connection Error', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const SizedBox(height: 8),
+          Text(
+            musicProvider.errorMessage ?? 'Failed to load playlists',
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _loadPlaylists,
+            child: const Text('Retry'),
           ),
         ],
       ),
@@ -147,33 +128,16 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
     if (playlist.id.isNotEmpty && playlist.id != 'null') {
       Navigator.of(context).pushNamed(AppRoutes.playlistEditor, arguments: playlist.id);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cannot view playlist: Invalid ID'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SnackBarUtils.showError(context, 'Cannot view playlist: Invalid ID');
     }
   }
 
   void _showPlayMessage(Playlist playlist) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Playing ${playlist.name}'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackBarUtils.showSuccess(context, 'Playing ${playlist.name}');
   }
 
   void _savePlaylist(Playlist playlist) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Added to Your Library'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackBarUtils.showSuccess(context, 'Added to Your Library');
   }
 
   @override

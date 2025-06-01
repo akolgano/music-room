@@ -2,25 +2,38 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
-import '../../widgets/widgets.dart';
+import '../../core/app_strings.dart';
+import '../../core/constants.dart';
+import '../../widgets/unified_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/validation.dart';
-import '../../utils/snackbar_utils.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
 
-  @override 
+  @override  
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  
   bool _isLogin = true;
   bool _isPasswordVisible = false;
+  
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_fadeController);
+    _fadeController.forward();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,22 +43,29 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Card(
-              color: AppTheme.surface,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 24),
-                      _buildForm(),
-                      const SizedBox(height: 24),
-                      _buildSubmitButton(),
-                      const SizedBox(height: 16),
-                      _buildToggleButton(),
-                    ],
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Card(
+                  color: AppTheme.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildHeader(),
+                          const SizedBox(height: 32),
+                          _buildForm(),
+                          const SizedBox(height: 32),
+                          _buildSubmitButton(),
+                          const SizedBox(height: 16),
+                          _buildToggleButton(),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -69,8 +89,16 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          _isLogin ? 'Welcome Back' : 'Join Music Room',
+          _isLogin ? 'Welcome Back' : 'Join ${AppConstants.appName}',
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _isLogin 
+            ? 'Sign in to continue your musical journey'
+            : 'Create an account to start sharing music',
+          style: const TextStyle(color: AppTheme.textSecondary),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -81,15 +109,15 @@ class _AuthScreenState extends State<AuthScreen> {
       children: [
         AppTextField(
           controller: _usernameController,
-          labelText: 'Username',
+          labelText: AppStrings.username,
           prefixIcon: Icons.person,
-          validator: (v) => Validators.required(v, 'username'),
+          validator: (v) => Validators.required(v, AppStrings.username.toLowerCase()),
         ),
         if (!_isLogin) ...[
           const SizedBox(height: 16),
           AppTextField(
             controller: _emailController,
-            labelText: 'Email',
+            labelText: AppStrings.email,
             prefixIcon: Icons.email,
             validator: Validators.email,
           ),
@@ -97,10 +125,21 @@ class _AuthScreenState extends State<AuthScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _passwordController,
-          labelText: 'Password',
+          labelText: AppStrings.password,
           prefixIcon: Icons.lock,
           obscureText: !_isPasswordVisible,
           validator: Validators.password,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Checkbox(
+              value: _isPasswordVisible,
+              onChanged: (value) => setState(() => _isPasswordVisible = value ?? false),
+              activeColor: AppTheme.primary,
+            ),
+            const Text('Show password', style: TextStyle(color: AppTheme.textSecondary)),
+          ],
         ),
       ],
     );
@@ -109,27 +148,50 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget _buildSubmitButton() {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
-        if (auth.isLoading) {
-          return const LoadingWidget(message: 'Please wait...');
-        }
-        
-        return ElevatedButton(
+        return AppButton(
+          text: _isLogin ? AppStrings.signIn : AppStrings.signUp,
+          icon: _isLogin ? Icons.login : Icons.person_add,
+          isLoading: auth.isLoading,
           onPressed: _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primary,
-            minimumSize: const Size(double.infinity, 50),
-          ),
-          child: Text(_isLogin ? 'Sign In' : 'Sign Up'),
         );
       },
     );
   }
 
   Widget _buildToggleButton() {
-    return TextButton(
-      onPressed: () => setState(() => _isLogin = !_isLogin),
-      child: Text(_isLogin ? 'Create an account' : 'Already have an account?'),
+    return Column(
+      children: [
+        const Divider(color: AppTheme.surfaceVariant),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _isLogin = !_isLogin;
+              _clearForm();
+            });
+          },
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(color: AppTheme.textSecondary),
+              children: [
+                TextSpan(text: _isLogin ? 'Don\'t have an account? ' : 'Already have an account? '),
+                TextSpan(
+                  text: _isLogin ? AppStrings.signUp : AppStrings.signIn,
+                  style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  void _clearForm() {
+    _usernameController.clear();
+    _emailController.clear();
+    _passwordController.clear();
+    _isPasswordVisible = false;
+    _formKey.currentState?.reset();
   }
 
   Future<void> _submit() async {
@@ -138,16 +200,26 @@ class _AuthScreenState extends State<AuthScreen> {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     bool success;
     
-    if (_isLogin) {
-      success = await auth.login(_usernameController.text, _passwordController.text);
-    } else {
-      success = await auth.signup(_usernameController.text, _emailController.text, _passwordController.text);
-    }
-    
-    if (success) {
-      SnackBarUtils.showSuccess(context, 'Welcome to Music Room!');
-    } else if (auth.hasError) {
-      SnackBarUtils.showError(context, auth.errorMessage!);
+    try {
+      if (_isLogin) {
+        success = await auth.login(_usernameController.text.trim(), _passwordController.text);
+      } else {
+        success = await auth.signup(
+          _usernameController.text.trim(), 
+          _emailController.text.trim(), 
+          _passwordController.text,
+        );
+      }
+      
+      if (mounted && success) {
+        SnackBarUtils.showSuccess(context, _isLogin ? AppStrings.loginSuccessful : AppStrings.accountCreated);
+      } else if (mounted && auth.hasError) {
+        SnackBarUtils.showError(context, auth.errorMessage!);
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarUtils.showError(context, 'An unexpected error occurred. Please try again.');
+      }
     }
   }
 
@@ -156,6 +228,7 @@ class _AuthScreenState extends State<AuthScreen> {
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 }

@@ -1,7 +1,11 @@
 // lib/widgets/unified_widgets.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
-import '../models/models.dart';
+import '../core/app_strings.dart';
+import '../models/track.dart';
+import '../models/playlist.dart';
+import '../services/music_player_service.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String? message;
@@ -48,9 +52,9 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: Colors.white.withOpacity(0.5)),
+            Icon(icon, size: 80, color: Colors.white.withOpacity(0.5)),
             const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontSize: 18, color: Colors.white)),
+            Text(title, style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600)),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
               Text(subtitle!, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
@@ -101,63 +105,51 @@ class AppTextField extends StatelessWidget {
         labelText: labelText,
         hintText: hintText,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.grey) : null,
-        filled: true,
-        fillColor: AppTheme.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppTheme.primary),
-        ),
       ),
     );
   }
 }
 
-void showAppSnackBar(BuildContext context, String message, {bool isError = false}) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(message),
-      backgroundColor: isError ? AppTheme.error : Colors.green,
-      behavior: SnackBarBehavior.floating,
-    ),
-  );
-}
+class AppButton extends StatelessWidget {
+  final String text;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+  final bool isSecondary;
+  final IconData? icon;
 
-class TrackCard extends StatelessWidget {
-  final Track track;
-  final bool isSelected;
-  final VoidCallback? onTap;
-  final VoidCallback? onAdd;
-  final ValueChanged<bool?>? onSelectionChanged;
-
-  const TrackCard({
+  const AppButton({
     Key? key,
-    required this.track,
-    this.isSelected = false,
-    this.onTap,
-    this.onAdd,
-    this.onSelectionChanged,
+    required this.text,
+    this.onPressed,
+    this.isLoading = false,
+    this.isSecondary = false,
+    this.icon,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: isSelected ? AppTheme.primary.withOpacity(0.1) : AppTheme.surface,
-      child: ListTile(
-        onTap: onTap,
-        leading: onSelectionChanged != null
-            ? Checkbox(value: isSelected, onChanged: onSelectionChanged)
-            : const Icon(Icons.music_note, color: Colors.white),
-        title: Text(track.name, style: const TextStyle(color: Colors.white)),
-        subtitle: Text(track.artist, style: const TextStyle(color: Colors.grey)),
-        trailing: onAdd != null
-            ? IconButton(icon: const Icon(Icons.add), onPressed: onAdd)
-            : null,
-      ),
+    if (isSecondary) {
+      return OutlinedButton.icon(
+        onPressed: isLoading ? null : onPressed,
+        icon: isLoading 
+          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+          : Icon(icon ?? Icons.check),
+        label: Text(text),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: Colors.white),
+          minimumSize: const Size(double.infinity, 50),
+        ),
+      );
+    }
+
+    return ElevatedButton.icon(
+      onPressed: isLoading ? null : onPressed,
+      icon: isLoading 
+        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+        : Icon(icon ?? Icons.check, size: 16),
+      label: Text(text),
+      style: AppTheme.fullWidthButtonStyle,
     );
   }
 }
@@ -168,13 +160,7 @@ class PlaylistCard extends StatelessWidget {
   final VoidCallback? onPlay;
   final VoidCallback? onShare;
 
-  const PlaylistCard({
-    Key? key,
-    required this.playlist,
-    this.onTap,
-    this.onPlay,
-    this.onShare,
-  }) : super(key: key);
+  const PlaylistCard({Key? key, required this.playlist, this.onTap, this.onPlay, this.onShare}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -187,8 +173,8 @@ class PlaylistCard extends StatelessWidget {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: AppTheme.primary,
-            borderRadius: BorderRadius.circular(8),
+            color: AppTheme.primary, 
+            borderRadius: BorderRadius.circular(8)
           ),
           child: const Icon(Icons.library_music, color: Colors.black),
         ),
@@ -204,4 +190,204 @@ class PlaylistCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class TrackCard extends StatelessWidget {
+  final Track track;
+  final bool isSelected;
+  final VoidCallback? onTap;
+  final VoidCallback? onAdd;
+  final VoidCallback? onPlay;
+  final ValueChanged<bool?>? onSelectionChanged;
+  final bool showImage;
+  final bool isPlaying;
+
+  const TrackCard({
+    Key? key,
+    required this.track,
+    this.isSelected = false,
+    this.onTap,
+    this.onAdd,
+    this.onPlay,
+    this.onSelectionChanged,
+    this.showImage = true,
+    this.isPlaying = false,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<MusicPlayerService>(
+      builder: (context, playerService, _) {
+        final isCurrentTrack = playerService.currentTrack?.id == track.id;
+        final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
+        
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          color: isSelected ? AppTheme.primary.withOpacity(0.1) : AppTheme.surface,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  _buildLeading(trackIsPlaying),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          track.name,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            decoration: trackIsPlaying ? TextDecoration.underline : null
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          track.artist,
+                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (track.album.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            track.album,
+                            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  _buildTrailing(trackIsPlaying),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLeading(bool trackIsPlaying) {
+    if (onSelectionChanged != null) {
+      return Checkbox(
+        value: isSelected,
+        onChanged: onSelectionChanged,
+        activeColor: AppTheme.primary,
+      );
+    }
+
+    if (showImage && track.imageUrl != null && track.imageUrl!.isNotEmpty) {
+      return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            children: [
+              Image.network(
+                track.imageUrl!,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
+              ),
+              if (trackIsPlaying)
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.equalizer, color: Colors.black, size: 24),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return _buildDefaultAlbumArt();
+  }
+
+  Widget _buildDefaultAlbumArt() {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+    );
+  }
+
+  Widget _buildTrailing(bool trackIsPlaying) {
+    List<Widget> actions = [];
+
+    if (onPlay != null) {
+      actions.add(IconButton(
+        icon: Icon(
+          trackIsPlaying ? Icons.pause : Icons.play_arrow,
+          color: AppTheme.primary,
+          size: 24,
+        ),
+        onPressed: onPlay,
+        tooltip: trackIsPlaying ? 'Pause' : 'Play Preview',
+      ));
+    }
+
+    if (onAdd != null) {
+      actions.add(IconButton(
+        icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
+        onPressed: onAdd,
+        tooltip: 'Add to Playlist',
+      ));
+    }
+
+    if (actions.isEmpty) return const SizedBox(width: 8);
+    if (actions.length == 1) return actions.first;
+
+    return Row(mainAxisSize: MainAxisSize.min, children: actions);
+  }
+}
+
+class SnackBarUtils {
+  static void showSuccess(BuildContext context, String message) =>
+      _showSnackBar(context, message, backgroundColor: Colors.green);
+  
+  static void showError(BuildContext context, String message) =>
+      _showSnackBar(context, message, backgroundColor: AppTheme.error);
+  
+  static void showInfo(BuildContext context, String message) =>
+      _showSnackBar(context, message, backgroundColor: Colors.blue);
+
+  static void _showSnackBar(BuildContext context, String message, {required Color backgroundColor}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+void showAppSnackBar(BuildContext context, String message, {bool isError = false}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: isError ? AppTheme.error : Colors.green,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
 }
