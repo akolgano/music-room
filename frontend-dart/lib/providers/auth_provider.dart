@@ -1,6 +1,13 @@
 // lib/providers/auth_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AuthProvider with ChangeNotifier {
   final ApiService _api = ApiService();
@@ -22,10 +29,24 @@ class AuthProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
 
+  String? _apiBaseUrl;
+  GoogleSignIn? googleSignIn;
+
   Map<String, String> get authHeaders => {
     'Content-Type': 'application/json',
     if (_token != null) 'Authorization': 'Token $_token',
   };
+
+  AuthProvider() {
+    _apiBaseUrl = dotenv.env['API_BASE_URL'];
+
+    if (!kIsWeb) {
+      googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile', 'openid'],
+      clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
+      );
+    }
+  }
 
   void clearError() {
     _errorMessage = null;
@@ -85,4 +106,160 @@ class AuthProvider with ChangeNotifier {
     _isLoggedIn = false;
     clearError();
   }
+
+
+  Future<bool> facebookLogin() async {
+    try{
+        _isLoading = true;
+        _errorMessage = null;
+        notifyListeners();
+
+        final LoginResult result = await FacebookAuth.instance.login();
+        if (result.status == LoginStatus.success) {
+          final fbAccessToken = result.accessToken!.tokenString;
+
+          final authResult = await _api.facebookLogin(fbAccessToken);
+
+          _token = authResult.token;
+          _userId = authResult.user.id;
+          _username = authResult.user.username;
+          _isLoggedIn = true;
+
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+        else {
+          _errorMessage = "Facebook login failed !";
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        }
+      } catch (e) {
+        _errorMessage = e.toString();
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+  }
+
+  Future<bool> googleLoginWeb(GoogleSignInUserData? account) async {
+    try{
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      var idToken = account?.idToken;
+
+      if (idToken == null) {
+        _errorMessage = "Google login failed !";
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final authResult = await _api.googleLogin('web', idToken);
+      _token = authResult.token;
+      _userId = authResult.user.id;
+      _username = authResult.user.username;
+      _isLoggedIn = true;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+
+
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+
+  }
+
+  Future<bool> googleLoginApp() async {
+    try{
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await googleSignIn?.signIn();
+
+      if (user == null) {
+        _errorMessage = "Google login failed !";
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final auth = await user.authentication;
+      final idToken = auth.idToken;
+
+      if (idToken == null) {
+        _errorMessage = "Google login failed !";
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final authResult = await _api.googleLogin('app', idToken);
+      _token = authResult.token;
+      _userId = authResult.user.id;
+      _username = authResult.user.username;
+      _isLoggedIn = true;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+
+    } catch (e) {
+        _errorMessage = e.toString();
+        _isLoading = false;
+        notifyListeners();
+        return false;
+    }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/users/forgot_password/'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+        }),
+      );
+
+      final responseData = json.decode(response.body);
+      if (response.statusCode != 200) {
+        throw responseData;
+      }
+      
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  Future<void> forgotChangePassword(String email, String otpStr, String password) async {
+    try {
+      int otp = int.parse(otpStr);
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/users/forgot_change_password/'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'otp': otp,
+          'password': password,
+        }),
+      );
+      
+      final responseData = json.decode(response.body);
+      if (response.statusCode != 200) {
+        throw responseData;
+      }
+
+    } catch (error) {
+      rethrow;
+    }
+  }
+
 }

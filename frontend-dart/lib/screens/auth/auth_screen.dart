@@ -7,6 +7,11 @@ import '../../core/constants.dart';
 import '../../widgets/unified_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/validation.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart';
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import './forgot_password_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -27,14 +32,52 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
+  final googleSignInPlugin = GoogleSignInPlatform.instance as GoogleSignInPlugin;
+
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_fadeController);
     _fadeController.forward();
+
+    if (kIsWeb) {
+      _initializeGoogleSignInWeb();
+    }
+
   }
 
+  Future<void> _initializeGoogleSignInWeb() async {
+    await googleSignInPlugin.initWithParams(
+      SignInInitParameters(
+        clientId: dotenv.env['GOOGLE_CLIENT_ID_WEB'],
+        scopes: ['email', 'profile', 'openid'],
+      ),
+    );
+
+    googleSignInPlugin.userDataEvents?.listen((GoogleSignInUserData? account) {
+      if (account != null) {
+        _googleLoginWeb(account);
+      }
+    });
+
+  }
+
+  Future<void> _googleLoginWeb(GoogleSignInUserData? account) async {
+    bool success = false;
+    success = await Provider.of<AuthProvider>(context, listen: false).googleLoginWeb(account);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login successful'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,6 +106,13 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           _buildSubmitButton(),
                           const SizedBox(height: 16),
                           _buildToggleButton(),
+                          
+                          const SizedBox(height: 16),
+                          _buildRemoteLoginRow(),
+
+                          const SizedBox(height: 16),
+                          _buildForgotPasswordButton(),
+
                         ],
                       ),
                     ),
@@ -186,6 +236,74 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildRemoteLoginRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        if (kIsWeb)
+          googleSignInPlugin.renderButton()
+        else
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _loginWithSocial('Google'),
+              icon: const Icon(Icons.g_mobiledata),
+              label: const Text('GOOGLE'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                side: const BorderSide(color: Colors.white),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                ),
+              ),
+            ),
+          ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => _loginWithSocial('Facebook'),
+            icon: const Icon(Icons.facebook),
+            label: const Text('FACEBOOK'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              side: const BorderSide(color: Colors.white),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildForgotPasswordButton() {
+    return Column(
+      children: [
+        const Divider(color: AppTheme.surfaceVariant),
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ForgotPasswordScreen(),
+              ),
+            );
+          },
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(color: AppTheme.textSecondary),
+              children: [
+                TextSpan(text: 'Forgot Password ?'),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   void _clearForm() {
     _usernameController.clear();
     _emailController.clear();
@@ -230,5 +348,27 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     _passwordController.dispose();
     _fadeController.dispose();
     super.dispose();
+  }
+
+    void _loginWithSocial(String provider) async {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      bool success = false;
+    
+      if (provider == "Facebook") {
+        success = await authProvider.facebookLogin();
+      }
+      else if (provider == "Google") {
+        success = await authProvider.googleLoginApp();
+      }
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login successful'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
   }
 }
