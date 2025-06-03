@@ -8,6 +8,11 @@ import 'providers/device_provider.dart';
 import 'providers/friend_provider.dart';
 import 'services/music_player_service.dart';
 import 'app.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb; 
+import 'providers/profile_provider.dart';
+
+final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +23,15 @@ void main() async {
     print('Warning: Could not load .env file: $e');
   }
   
+  if (kIsWeb) {
+    await FacebookAuth.instance.webAndDesktopInitialize(
+      appId: fbAppId.toString(),
+      cookie: true,
+      xfbml: true,
+      version: "v22.0", 
+  );
+  }
+
   runApp(MyApp());
 }
 
@@ -31,6 +45,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MusicProvider()),
         ChangeNotifierProvider(create: (_) => MusicPlayerService()),
         ChangeNotifierProvider(create: (_) => FriendProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: const MusicRoomApp(),
     );

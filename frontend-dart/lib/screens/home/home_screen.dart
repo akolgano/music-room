@@ -7,6 +7,9 @@ import '../../core/theme.dart';
 import '../../core/constants.dart';
 import '../../core/app_strings.dart';
 import '../../widgets/unified_widgets.dart';
+import '../profile/social_network_link_screen.dart';
+import '../profile/user_password_change_screen.dart';
+import '../../providers/profile_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -28,10 +31,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _loadData() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final music = Provider.of<MusicProvider>(context, listen: false);
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     
     if (auth.isLoggedIn && auth.token != null) {
       await music.fetchUserPlaylists(auth.token!);
     }
+
+    profileProvider.loadProfile(auth.token);
   }
   
   @override
@@ -265,6 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildProfile() {
     final auth = Provider.of<AuthProvider>(context);
+    final profileProvider = Provider.of<ProfileProvider>(context);
     
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -301,6 +308,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
         _buildProfileItem(Icons.help, 'Help',
             () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
+
+        if (profileProvider.isPasswordUsable) ...[
+          _buildProfileItem(Icons.password, 'Password Change',
+              () => 
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserPasswordChangeScreen(),
+                    ),
+                  )
+              ),
+        ],
+                      
+        _buildProfileItem(Icons.link, 'Link Social Network',
+            () => 
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SocialNetworkLinkScreen(),
+                  ),
+                )
+            ),
+
       ],
     );
   }
