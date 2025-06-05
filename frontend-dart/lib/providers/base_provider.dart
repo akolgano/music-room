@@ -30,4 +30,14 @@ mixin BaseProvider on ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners();
+  }
+
+  void setError(String error) {
+    _errorMessage = error;
+    notifyListeners();
+  }
 }

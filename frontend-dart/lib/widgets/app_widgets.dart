@@ -1,8 +1,112 @@
 // lib/widgets/app_widgets.dart
 import 'package:flutter/material.dart';
-import '../core/theme.dart';
-import '../core/dimensions.dart';
-import '../core/app_strings.dart';
+import 'package:provider/provider.dart';
+import '../core/app_core.dart';
+import '../models/models.dart';
+import '../services/music_player_service.dart';
+
+class LoadingWidget extends StatelessWidget {
+  final String? message;
+  const LoadingWidget({Key? key, this.message}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(color: AppTheme.primary),
+          if (message != null) ...[
+            const SizedBox(height: 16),
+            Text(message!, style: const TextStyle(color: Colors.white)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final String? buttonText;
+  final VoidCallback? onButtonPressed;
+
+  const EmptyState({
+    Key? key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.buttonText,
+    this.onButtonPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 80, color: Colors.white.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text(title, style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600)),
+            if (subtitle != null) ...[
+              const SizedBox(height: 8),
+              Text(subtitle!, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
+            ],
+            if (buttonText != null && onButtonPressed != null) ...[
+              const SizedBox(height: 24),
+              ElevatedButton(onPressed: onButtonPressed, child: Text(buttonText!)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AppTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String labelText;
+  final String? hintText;
+  final IconData? prefixIcon;
+  final bool obscureText;
+  final String? Function(String?)? validator;
+  final int maxLines;
+  final ValueChanged<String>? onChanged;
+
+  const AppTextField({
+    Key? key,
+    required this.controller,
+    required this.labelText,
+    this.hintText,
+    this.prefixIcon,
+    this.obscureText = false,
+    this.validator,
+    this.maxLines = 1,
+    this.onChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      validator: validator,
+      maxLines: maxLines,
+      onChanged: onChanged,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.grey) : null,
+      ),
+    );
+  }
+}
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -26,20 +130,13 @@ class AppButton extends StatelessWidget {
       return OutlinedButton.icon(
         onPressed: isLoading ? null : onPressed,
         icon: isLoading 
-            ? const SizedBox(
-                width: AppDimensions.iconSmall,
-                height: AppDimensions.iconSmall,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Icon(icon ?? Icons.check),
+          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+          : Icon(icon ?? Icons.check),
         label: Text(text),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white,
           side: const BorderSide(color: Colors.white),
-          minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusButton),
-          ),
+          minimumSize: const Size(double.infinity, 50),
         ),
       );
     }
@@ -47,177 +144,316 @@ class AppButton extends StatelessWidget {
     return ElevatedButton.icon(
       onPressed: isLoading ? null : onPressed,
       icon: isLoading 
-          ? const SizedBox(
-              width: AppDimensions.iconSmall,
-              height: AppDimensions.iconSmall,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.black,
-              ),
-            )
-          : Icon(icon ?? Icons.check, size: AppDimensions.iconSmall),
+        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+        : Icon(icon ?? Icons.check, size: 16),
       label: Text(text),
       style: AppTheme.fullWidthButtonStyle,
     );
   }
 }
 
-class AppCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
-  final Color? color;
+class PlaylistCard extends StatelessWidget {
+  final Playlist playlist;
+  final VoidCallback? onTap;
+  final VoidCallback? onPlay;
+  final VoidCallback? onShare;
 
-  const AppCard({
-    Key? key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.color,
-  }) : super(key: key);
+  const PlaylistCard({Key? key, required this.playlist, this.onTap, this.onPlay, this.onShare}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color ?? AppTheme.surface,
-      margin: margin ?? EdgeInsets.all(AppDimensions.paddingMedium),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-      ),
-      child: Padding(
-        padding: padding ?? EdgeInsets.all(AppDimensions.paddingMedium),
-        child: child,
-      ),
-    );
-  }
-}
-
-class AppListTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback? onTap;
-  final Color? iconColor;
-  final Widget? trailing;
-
-  const AppListTile({
-    Key? key,
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.onTap,
-    this.iconColor,
-    this.trailing,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        padding: EdgeInsets.all(AppDimensions.paddingSmall),
-        decoration: BoxDecoration(
-          color: (iconColor ?? AppTheme.primary).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-        ),
-        child: Icon(
-          icon, 
-          color: iconColor ?? AppTheme.primary,
-          size: AppDimensions.iconMedium,
-        ),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: subtitle != null 
-          ? Text(
-              subtitle!,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
-                fontSize: AppDimensions.textSmall,
-              ),
-            )
-          : null,
-      trailing: trailing ?? Icon(
-        Icons.chevron_right,
-        color: Colors.white.withOpacity(0.5),
-      ),
-      onTap: onTap,
-    );
-  }
-}
-
-class AppSection extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-  final EdgeInsetsGeometry? padding;
-
-  const AppSection({
-    Key? key,
-    required this.title,
-    required this.children,
-    this.padding,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: padding ?? EdgeInsets.only(
-            left: AppDimensions.paddingSmall, 
-            bottom: AppDimensions.paddingSmall,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: AppTheme.surface,
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: AppTheme.primary, 
+            borderRadius: BorderRadius.circular(8)
           ),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: AppDimensions.textLarge,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primary,
+          child: const Icon(Icons.library_music, color: Colors.black),
+        ),
+        title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
+        subtitle: Text('${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onPlay != null) IconButton(icon: const Icon(Icons.play_arrow), onPressed: onPlay),
+            if (onShare != null) IconButton(icon: const Icon(Icons.share), onPressed: onShare),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class TrackCard extends StatelessWidget {
+  final Track track;
+  final bool isSelected;
+  final VoidCallback? onTap;
+  final VoidCallback? onAdd;
+  final VoidCallback? onPlay;
+  final ValueChanged<bool?>? onSelectionChanged;
+  final bool showImage;
+
+  const TrackCard({
+    Key? key,
+    required this.track,
+    this.isSelected = false,
+    this.onTap,
+    this.onAdd,
+    this.onPlay,
+    this.onSelectionChanged,
+    this.showImage = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<MusicPlayerService>(
+      builder: (context, playerService, _) {
+        final isCurrentTrack = playerService.currentTrack?.id == track.id;
+        final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
+        
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          color: isSelected ? AppTheme.primary.withOpacity(0.1) : AppTheme.surface,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  _buildLeading(trackIsPlaying),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          track.name,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            decoration: trackIsPlaying ? TextDecoration.underline : null
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          track.artist,
+                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (track.album.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            track.album,
+                            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  _buildTrailing(trackIsPlaying),
+                ],
+              ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLeading(bool trackIsPlaying) {
+    if (onSelectionChanged != null) {
+      return Checkbox(
+        value: isSelected,
+        onChanged: onSelectionChanged,
+        activeColor: AppTheme.primary,
+      );
+    }
+
+    if (showImage && track.imageUrl != null && track.imageUrl!.isNotEmpty) {
+      return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            children: [
+              Image.network(
+                track.imageUrl!,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
+              ),
+              if (trackIsPlaying)
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.equalizer, color: Colors.black, size: 24),
+                ),
+            ],
+          ),
         ),
-        ...children,
-        SizedBox(height: AppDimensions.paddingMedium),
-      ],
+      );
+    }
+
+    return _buildDefaultAlbumArt();
+  }
+
+  Widget _buildDefaultAlbumArt() {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+    );
+  }
+
+  Widget _buildTrailing(bool trackIsPlaying) {
+    List<Widget> actions = [];
+
+    if (onPlay != null) {
+      actions.add(IconButton(
+        icon: Icon(
+          trackIsPlaying ? Icons.pause : Icons.play_arrow,
+          color: AppTheme.primary,
+          size: 24,
+        ),
+        onPressed: onPlay,
+        tooltip: trackIsPlaying ? 'Pause' : 'Play Preview',
+      ));
+    }
+
+    if (onAdd != null) {
+      actions.add(IconButton(
+        icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
+        onPressed: onAdd,
+        tooltip: 'Add to Playlist',
+      ));
+    }
+
+    if (actions.isEmpty) return const SizedBox(width: 8);
+    if (actions.length == 1) return actions.first;
+
+    return Row(mainAxisSize: MainAxisSize.min, children: actions);
+  }
+}
+
+class SnackBarUtils {
+  static void showSuccess(BuildContext context, String message) =>
+      _showSnackBar(context, message, backgroundColor: Colors.green);
+  
+  static void showError(BuildContext context, String message) =>
+      _showSnackBar(context, message, backgroundColor: AppTheme.error);
+  
+  static void showInfo(BuildContext context, String message) =>
+      _showSnackBar(context, message, backgroundColor: Colors.blue);
+
+  static void _showSnackBar(BuildContext context, String message, {required Color backgroundColor}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }
 
-class AppBadge extends StatelessWidget {
-  final String text;
-  final Color? backgroundColor;
-  final Color? textColor;
+void showAppSnackBar(BuildContext context, String message, {bool isError = false}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: isError ? AppTheme.error : Colors.green,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+}
 
-  const AppBadge({
-    Key? key,
-    required this.text,
-    this.backgroundColor,
-    this.textColor,
-  }) : super(key: key);
+class DialogUtils {
+  static Future<bool?> showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    String confirmText = AppStrings.confirm,
+    String cancelText = AppStrings.cancel,
+    bool isDangerous = false,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(cancelText),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: isDangerous
+                ? TextButton.styleFrom(foregroundColor: Colors.red)
+                : null,
+            child: Text(confirmText),
+          ),
+        ],
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingSmall,
-        vertical: AppDimensions.paddingXSmall,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor ?? AppTheme.primary.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: textColor ?? AppTheme.primary,
-          fontSize: AppDimensions.textSmall,
-          fontWeight: FontWeight.w500,
+  static Future<String?> showTextInputDialog(
+    BuildContext context, {
+    required String title,
+    String? initialValue,
+    String? hintText,
+    bool obscureText = false,
+  }) {
+    final controller = TextEditingController(text: initialValue);
+    
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.grey),
+          ),
+          style: const TextStyle(color: Colors.white),
+          obscureText: obscureText,
+          autofocus: true,
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(AppStrings.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text(AppStrings.ok),
+          ),
+        ],
       ),
     );
   }
