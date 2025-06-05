@@ -1,7 +1,7 @@
 // lib/services/music_player_service.dart
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import '../models/track.dart';
+import '../models/models.dart';
 
 class MusicPlayerService with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();

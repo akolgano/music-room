@@ -3,13 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
-import '../../core/theme.dart';
-import '../../core/constants.dart';
-import '../../core/app_strings.dart';
-import '../../widgets/unified_widgets.dart';
-import '../profile/social_network_link_screen.dart';
-import '../profile/user_password_change_screen.dart';
-import '../../providers/profile_provider.dart';
+import '../../core/app_core.dart';
+import '../../widgets/app_widgets.dart';
+import '../base_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -18,8 +14,23 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
+  
+  @override
+  String get screenTitle => AppConstants.appName;
+  
+  @override
+  List<Widget> get actions => [
+    IconButton(
+      icon: const Icon(Icons.search),
+      onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
+    ),
+    IconButton(
+      icon: const Icon(Icons.add),
+      onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+    ),
+  ];
   
   @override
   void initState() {
@@ -29,129 +40,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
   
   Future<void> _loadData() async {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
     final music = Provider.of<MusicProvider>(context, listen: false);
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    
     if (auth.isLoggedIn && auth.token != null) {
       await music.fetchUserPlaylists(auth.token!);
     }
+  }
 
-    profileProvider.loadProfile(auth.token);
+  @override
+  PreferredSizeWidget? buildAppBar() {
+    return AppBar(
+      backgroundColor: AppTheme.background,
+      title: Text(screenTitle),
+      bottom: TabBar(
+        controller: _tabController,
+        labelColor: AppTheme.primary,
+        unselectedLabelColor: Colors.grey,
+        indicatorColor: AppTheme.primary,
+        tabs: const [
+          Tab(icon: Icon(Icons.home), text: 'Home'),
+          Tab(icon: Icon(Icons.library_music), text: 'Library'),
+          Tab(icon: Icon(Icons.person), text: 'Profile'),
+        ],
+      ),
+      actions: actions,
+    );
   }
   
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text(AppConstants.appName),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.primary,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: AppTheme.primary,
-          tabs: const [
-            Tab(icon: Icon(Icons.home), text: 'Home'),
-            Tab(icon: Icon(Icons.library_music), text: 'Library'),
-            Tab(icon: Icon(Icons.person), text: 'Profile'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-          ),
-        ],
-      ),
-      drawer: _buildDrawer(),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildDashboard(),
-          _buildPlaylists(),
-          _buildProfile(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawer() {
-    final auth = Provider.of<AuthProvider>(context);
-    
-    return Drawer(
-      backgroundColor: AppTheme.background,
-      child: ListView(
-        children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(color: AppTheme.primary),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.music_note, color: Colors.black, size: 48),
-                const SizedBox(height: 16),
-                Text(
-                  auth.displayName,
-                  style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'ID: ${auth.userId ?? "Unknown"}',
-                  style: const TextStyle(color: Colors.black54),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.home, color: Colors.white),
-            title: const Text('Home', style: TextStyle(color: Colors.white)),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.library_music, color: Colors.white),
-            title: const Text('Playlists', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, AppRoutes.publicPlaylists);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.people, color: Colors.white),
-            title: const Text('Friends', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, AppRoutes.friends);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.search, color: Colors.white),
-            title: const Text('Search', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, AppRoutes.trackSearch);
-            },
-          ),
-          const Divider(color: Colors.grey),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.orange),
-            title: const Text('Sign Out', style: TextStyle(color: Colors.orange)),
-            onTap: () {
-              Navigator.pop(context);
-              auth.logout();
-            },
-          ),
-        ],
-      ),
+  Widget buildContent() {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        _buildDashboard(),
+        _buildPlaylists(),
+        _buildProfile(),
+      ],
     );
   }
 
   Widget _buildDashboard() {
-    final auth = Provider.of<AuthProvider>(context);
-    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -270,9 +197,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildProfile() {
-    final auth = Provider.of<AuthProvider>(context);
-    final profileProvider = Provider.of<ProfileProvider>(context);
-    
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -308,29 +232,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
         _buildProfileItem(Icons.help, 'Help',
             () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
-
-        if (profileProvider.isPasswordUsable) ...[
-          _buildProfileItem(Icons.password, 'Password Change',
-              () => 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => UserPasswordChangeScreen(),
-                    ),
-                  )
-              ),
-        ],
-                      
-        _buildProfileItem(Icons.link, 'Link Social Network',
-            () => 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SocialNetworkLinkScreen(),
-                  ),
-                )
-            ),
-
       ],
     );
   }

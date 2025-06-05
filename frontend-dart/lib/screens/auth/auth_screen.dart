@@ -1,12 +1,9 @@
 // lib/screens/auth/auth_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme.dart';
-import '../../core/app_strings.dart';
-import '../../core/constants.dart';
-import '../../widgets/unified_widgets.dart';
+import '../../core/app_core.dart';
+import '../../widgets/app_widgets.dart';
 import '../../providers/auth_provider.dart';
-import '../../utils/validation.dart';
 import 'package:google_sign_in_web/google_sign_in_web.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -44,7 +41,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     if (kIsWeb) {
       _initializeGoogleSignInWeb();
     }
-
   }
 
   Future<void> _initializeGoogleSignInWeb() async {
@@ -60,24 +56,15 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         _googleLoginWeb(account);
       }
     });
-
   }
 
   Future<void> _googleLoginWeb(GoogleSignInUserData? account) async {
-    bool success = false;
-    success = await Provider.of<AuthProvider>(context, listen: false).googleLoginWeb(account);
+    final success = await Provider.of<AuthProvider>(context, listen: false).googleLoginWeb(account);
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Login successful'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, AppStrings.loginSuccessful);
     }
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,13 +93,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           _buildSubmitButton(),
                           const SizedBox(height: 16),
                           _buildToggleButton(),
-                          
                           const SizedBox(height: 16),
-                          _buildRemoteLoginRow(),
-
+                          _buildSocialButtons(),
                           const SizedBox(height: 16),
                           _buildForgotPasswordButton(),
-
                         ],
                       ),
                     ),
@@ -236,7 +220,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildRemoteLoginRow() {
+  Widget _buildSocialButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -252,9 +236,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 side: const BorderSide(color: Colors.white),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(32),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
               ),
             ),
           ),
@@ -268,9 +250,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
               side: const BorderSide(color: Colors.white),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(32),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
             ),
           ),
         ),
@@ -286,19 +266,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ForgotPasswordScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
             );
           },
-          child: RichText(
-            text: TextSpan(
-              style: const TextStyle(color: AppTheme.textSecondary),
-              children: [
-                TextSpan(text: 'Forgot Password ?'),
-              ],
-            ),
-          ),
+          child: const Text('Forgot Password?', style: TextStyle(color: AppTheme.textSecondary)),
         ),
       ],
     );
@@ -341,6 +312,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     }
   }
 
+  void _loginWithSocial(String provider) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    bool success = false;
+  
+    if (provider == "Facebook") {
+      success = await authProvider.facebookLogin();
+    }
+    else if (provider == "Google") {
+      success = await authProvider.googleLoginApp();
+    }
+
+    if (success) {
+      SnackBarUtils.showSuccess(context, AppStrings.loginSuccessful);
+    }
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -348,27 +335,5 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     _passwordController.dispose();
     _fadeController.dispose();
     super.dispose();
-  }
-
-    void _loginWithSocial(String provider) async {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      bool success = false;
-    
-      if (provider == "Facebook") {
-        success = await authProvider.facebookLogin();
-      }
-      else if (provider == "Google") {
-        success = await authProvider.googleLoginApp();
-      }
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login successful'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
   }
 }
