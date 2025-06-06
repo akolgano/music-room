@@ -1,7 +1,7 @@
 // lib/providers/device_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../models/device.dart';
+import '../models/models.dart';
 
 class DeviceProvider with ChangeNotifier {
   final ApiService _api = ApiService();

@@ -157,6 +157,111 @@ class ApiService {
     );
   }
 
+  Future<Device?> registerDevice(String uuid, String licenseKey, String deviceName, String token) async {
+    try {
+      return await _handleRequest(
+        () => http.post(
+          Uri.parse('$_baseUrl/devices/register/'),
+          headers: _getHeaders(token),
+          body: json.encode({
+            'uuid': uuid,
+            'license_key': licenseKey,
+            'device_name': deviceName,
+          }),
+        ),
+        (data) => Device.fromJson(data),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<List<Device>> getUserDevices(String token) async {
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl/devices/'), headers: _getHeaders(token)),
+      (data) {
+        final devices = data['devices'] as List<dynamic>;
+        return devices.map((d) => Device.fromJson(d as Map<String, dynamic>)).toList();
+      },
+    );
+  }
+
+  Future<bool> checkControlPermission(String deviceUuid, String token) async {
+    try {
+      await _handleRequest(
+        () => http.get(Uri.parse('$_baseUrl/devices/$deviceUuid/can-control'), headers: _getHeaders(token)),
+        (data) => data,
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<int>> getFriends(String token) async {
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl/users/get_friends/'), headers: _getHeaders(token)),
+      (data) {
+        final friends = data['friends'] as List<dynamic>;
+        return friends.map((f) => f as int).toList();
+      },
+    );
+  }
+
+  Future<String> sendFriendRequest(int userId, String token) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/users/send_friend_request/'),
+        headers: _getHeaders(token),
+        body: json.encode({'user_id': userId}),
+      ),
+      (data) => data['message'] ?? 'Friend request sent',
+    );
+  }
+
+  Future<Map<String, dynamic>> getUser(String? token) async {
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl/users/profile/'), headers: _getHeaders(token)),
+      (data) => data,
+    );
+  }
+
+  Future<void> userPasswordChange(String? token, String currentPassword, String newPassword) async {
+    await _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/users/change_password/'),
+        headers: _getHeaders(token),
+        body: json.encode({
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        }),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<void> facebookLink(String? token, String fbAccessToken) async {
+    await _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/auth/facebook/link/'),
+        headers: _getHeaders(token),
+        body: json.encode({'fbAccessToken': fbAccessToken}),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<void> googleLink(String type, String? token, String idToken) async {
+    await _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/auth/google/link/'),
+        headers: _getHeaders(token),
+        body: json.encode({'idToken': idToken, 'type': type}),
+      ),
+      (_) => null,
+    );
+  }
+
   Future<Map<String, dynamic>> get(String endpoint, String token) async {
     return _handleRequest(
       () => http.get(Uri.parse('$_baseUrl$endpoint'), headers: _getHeaders(token)),
