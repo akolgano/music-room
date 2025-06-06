@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/playlist_track.dart';
-import '../core/constants.dart';
+import '../models/models.dart';
+import '../core/app_core.dart';
 
 class WebSocketService with ChangeNotifier {
   static final WebSocketService _instance = WebSocketService._internal();
@@ -16,8 +16,10 @@ class WebSocketService with ChangeNotifier {
   String? _currentPlaylistId;
   bool _isConnected = false;
   
-  final StreamController<List<PlaylistTrack>> _playlistTracksController = StreamController<List<PlaylistTrack>>.broadcast();
-  final StreamController<String> _connectionStatusController = StreamController<String>.broadcast();
+  final StreamController<List<PlaylistTrack>> _playlistTracksController = 
+      StreamController<List<PlaylistTrack>>.broadcast();
+  final StreamController<String> _connectionStatusController = 
+      StreamController<String>.broadcast();
 
   bool get isConnected => _isConnected;
   Stream<List<PlaylistTrack>> get playlistTracksStream => _playlistTracksController.stream;
@@ -35,14 +37,20 @@ class WebSocketService with ChangeNotifier {
       if (_isConnected && _currentPlaylistId == playlistId) return;
 
       _currentPlaylistId = playlistId;
-      _channel = WebSocketChannel.connect(Uri.parse('$_baseWebSocketUrl/ws/playlists/$playlistId/'));
+      _channel = WebSocketChannel.connect(
+        Uri.parse('$_baseWebSocketUrl/ws/playlists/$playlistId/')
+      );
       
       await _channel!.ready;
       _isConnected = true;
       _connectionStatusController.add('Connected to playlist $playlistId');
       notifyListeners();
 
-      _channel!.stream.listen(_handleMessage, onError: _handleError, onDone: _handleDisconnection);
+      _channel!.stream.listen(
+        _handleMessage,
+        onError: _handleError,
+        onDone: _handleDisconnection
+      );
     } catch (e) {
       _isConnected = false;
       _connectionStatusController.add('Connection failed: $e');
@@ -55,15 +63,19 @@ class WebSocketService with ChangeNotifier {
     try {
       final data = json.decode(message);
       if (data['type'] == 'playlist_update') {
-        final tracksData = data['data'];
-        if (tracksData is List) {
-          final tracks = tracksData.map((trackData) => PlaylistTrack(
-            trackId: trackData['track']['id'].toString(),
-            name: trackData['track']['name'] ?? '',
+        final tracksData = data['data'] as List<dynamic>;
+        final tracks = tracksData.map((trackData) {
+          final track = Track.fromJson(trackData['track']);
+          return PlaylistTrack(
+            trackId: track.id,
+            name: track.name,
             position: trackData['position'] ?? 0,
-          )).toList();
-          _playlistTracksController.add(tracks);
-        }
+            track: track,
+          );
+        }).toList();
+        
+        _playlistTracksController.add(tracks);
+        notifyListeners();
       }
     } catch (e) {
       print('Error handling WebSocket message: $e');

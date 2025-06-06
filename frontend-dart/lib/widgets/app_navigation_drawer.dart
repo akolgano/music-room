@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../core/theme.dart';
-import '../core/constants.dart';
+import '../providers/device_provider.dart';
+import '../core/app_core.dart';
+import '../services/websocket_service.dart';
 
 class AppNavigationDrawer extends StatelessWidget {
   const AppNavigationDrawer({Key? key}) : super(key: key);
@@ -11,12 +12,14 @@ class AppNavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final deviceProvider = Provider.of<DeviceProvider>(context);
+    final webSocketService = WebSocketService();
     
     return Drawer(
       backgroundColor: AppTheme.background,
       child: Column(
         children: [
-          _buildDrawerHeader(context, authProvider),
+          _buildDrawerHeader(context, authProvider, deviceProvider, webSocketService),
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
@@ -38,6 +41,7 @@ class AppNavigationDrawer extends StatelessWidget {
                     ),
                   ],
                 ),
+                
                 _buildSection(
                   'Music & Playlists',
                   [
@@ -45,7 +49,7 @@ class AppNavigationDrawer extends StatelessWidget {
                       context,
                       icon: Icons.library_music,
                       title: 'My Playlists',
-                      route: '/playlists',
+                      onTap: () => _navigateToPlaylists(context, false),
                     ),
                     _buildNavItem(
                       context,
@@ -57,7 +61,7 @@ class AppNavigationDrawer extends StatelessWidget {
                       context,
                       icon: Icons.add_circle,
                       title: 'Create Playlist',
-                      route: AppRoutes.playlistEditor,
+                      route: AppRoutes.PlaylistEditor,
                     ),
                     _buildNavItem(
                       context,
@@ -79,8 +83,9 @@ class AppNavigationDrawer extends StatelessWidget {
                     ),
                   ],
                 ),
+                
                 _buildSection(
-                  'Social',
+                  'Social & Friends',
                   [
                     _buildNavItem(
                       context,
@@ -102,6 +107,26 @@ class AppNavigationDrawer extends StatelessWidget {
                     ),
                   ],
                 ),
+                
+                _buildSection(
+                  'Device Management',
+                  [
+                    _buildNavItem(
+                      context,
+                      icon: Icons.devices,
+                      title: 'My Devices',
+                      route: AppRoutes.deviceManagement,
+                      badge: deviceProvider.userDevices.length.toString(),
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.admin_panel_settings,
+                      title: 'Control Delegation',
+                      route: AppRoutes.controlDelegation,
+                    ),
+                  ],
+                ),
+                
                 _buildSection(
                   'Advanced Features',
                   [
@@ -119,13 +144,33 @@ class AppNavigationDrawer extends StatelessWidget {
                     ),
                     _buildNavItem(
                       context,
-                      icon: Icons.admin_panel_settings,
-                      title: 'Control Delegation',
-                      route: AppRoutes.controlDelegation,
+                      icon: Icons.share,
+                      title: 'Playlist Sharing',
+                      onTap: () => _showPlaylistSharingOptions(context),
                     ),
                   ],
                 ),
+                
+                _buildSection(
+                  'Settings',
+                  [
+                    _buildNavItem(
+                      context,
+                      icon: Icons.password,
+                      title: 'Change Password',
+                      route: AppRoutes.userPasswordChange,
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.link,
+                      title: 'Link Social Network',
+                      route: AppRoutes.socialNetworkLink,
+                    ),
+                  ],
+                ),
+                
                 const Divider(color: AppTheme.surfaceVariant),
+                
                 _buildNavItem(
                   context,
                   icon: Icons.logout,
@@ -141,9 +186,14 @@ class AppNavigationDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context, AuthProvider authProvider) {
+  Widget _buildDrawerHeader(
+    BuildContext context, 
+    AuthProvider authProvider, 
+    DeviceProvider deviceProvider,
+    WebSocketService webSocketService,
+  ) {
     return Container(
-      height: 200,
+      height: 220,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -188,6 +238,7 @@ class AppNavigationDrawer extends StatelessWidget {
                 ],
               ),
               const Spacer(),
+              
               Row(
                 children: [
                   CircleAvatar(
@@ -215,6 +266,67 @@ class AppNavigationDrawer extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.8),
                             fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.smartphone,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${deviceProvider.userDevices.length} devices',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: webSocketService.isConnected ? Colors.green : Colors.grey,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          webSocketService.isConnected ? 'Live' : 'Offline',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
                           ),
                         ),
                       ],
@@ -258,6 +370,7 @@ class AppNavigationDrawer extends StatelessWidget {
     String? route,
     VoidCallback? onTap,
     Color? color,
+    String? badge,
   }) {
     final itemColor = color ?? Colors.white;
     final currentRoute = ModalRoute.of(context)?.settings.name;
@@ -296,17 +409,76 @@ class AppNavigationDrawer extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
-        trailing: isSelected 
-            ? Icon(
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (badge != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  badge,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            if (isSelected)
+              const SizedBox(width: 8),
+            if (isSelected) 
+              const Icon(
                 Icons.chevron_right,
                 color: AppTheme.primary,
-              )
-            : null,
+              ),
+          ],
+        ),
         onTap: onTap ?? () {
           if (route != null) {
             Navigator.of(context).pushNamed(route);
           }
         },
+      ),
+    );
+  }
+
+  void _navigateToPlaylists(BuildContext context, bool publicOnly) {
+    Navigator.pop(context);
+    if (publicOnly) {
+      Navigator.pushNamed(context, AppRoutes.publicPlaylists);
+    } else {
+      Navigator.pushNamed(context, AppRoutes.home); 
+    }
+  }
+
+  void _showPlaylistSharingOptions(BuildContext context) {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('Playlist Sharing', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'To share a playlist, open the playlist editor and use the share button.',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.PlaylistEditor);
+            },
+            child: const Text('Create Playlist'),
+          ),
+        ],
       ),
     );
   }

@@ -80,9 +80,7 @@ class LoadingWidget extends StatelessWidget {
   const LoadingWidget({Key? key, this.message}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return CommonWidgets.loadingWidget(message);
-  }
+  Widget build(BuildContext context) => CommonWidgets.loadingWidget(message);
 }
 
 class EmptyState extends StatelessWidget {
@@ -102,15 +100,13 @@ class EmptyState extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return CommonWidgets.emptyState(
-      icon: icon,
-      title: title,
-      subtitle: subtitle,
-      buttonText: buttonText,
-      onButtonPressed: onButtonPressed,
-    );
-  }
+  Widget build(BuildContext context) => CommonWidgets.emptyState(
+    icon: icon,
+    title: title,
+    subtitle: subtitle,
+    buttonText: buttonText,
+    onButtonPressed: onButtonPressed,
+  );
 }
 
 void showAppSnackBar(BuildContext context, String message, {bool isError = false}) {
@@ -197,27 +193,23 @@ class PlaylistCard extends StatelessWidget {
       color: AppTheme.surface,
       child: ListTile(
         onTap: onTap,
-        leading: _buildLeading(),
+        leading: Container(
+          width: 50, height: 50,
+          decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(8)),
+          child: const Icon(Icons.library_music, color: Colors.black),
+        ),
         title: Text(playlist.name, style: CommonStyles.bodyStyle),
         subtitle: Text('${playlist.tracks.length} tracks', style: CommonStyles.subtitleStyle),
-        trailing: _buildTrailing(),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onPlay != null) IconButton(icon: const Icon(Icons.play_arrow), onPressed: onPlay),
+            if (onShare != null) IconButton(icon: const Icon(Icons.share), onPressed: onShare),
+          ],
+        ),
       ),
     );
   }
-
-  Widget _buildLeading() => Container(
-    width: 50, height: 50,
-    decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(8)),
-    child: const Icon(Icons.library_music, color: Colors.black),
-  );
-
-  Widget _buildTrailing() => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      if (onPlay != null) IconButton(icon: const Icon(Icons.play_arrow), onPressed: onPlay),
-      if (onShare != null) IconButton(icon: const Icon(Icons.share), onPressed: onShare),
-    ],
-  );
 }
 
 class TrackCard extends StatelessWidget {
@@ -354,11 +346,34 @@ class MiniPlayerWidget extends StatelessWidget {
           decoration: BoxDecoration(color: AppTheme.surface, boxShadow: AppTheme.lightShadow),
           child: Row(
             children: [
-              _buildAlbumArt(track),
-              Expanded(child: _buildTrackInfo(track)),
+              Container(
+                width: 64, height: 64,
+                color: AppTheme.surfaceVariant,
+                child: track.imageUrl?.isNotEmpty == true
+                    ? Image.network(track.imageUrl!, fit: BoxFit.cover, 
+                        errorBuilder: (_, __, ___) => const Icon(Icons.music_note, color: Colors.white))
+                    : const Icon(Icons.music_note, color: Colors.white),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(track.name, style: CommonStyles.bodyStyle.copyWith(fontWeight: FontWeight.w600, fontSize: 14), 
+                           maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 2),
+                      Text(track.artist, style: CommonStyles.subtitleStyle.copyWith(fontSize: 12), 
+                           maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
+                ),
+              ),
               IconButton(
                 onPressed: playerService.togglePlay,
-                icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: AppTheme.primary, size: 24),
+                icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, 
+                          color: AppTheme.primary, size: 24),
               ),
               const SizedBox(width: 8),
             ],
@@ -367,27 +382,4 @@ class MiniPlayerWidget extends StatelessWidget {
       },
     );
   }
-
-  Widget _buildAlbumArt(Track track) => Container(
-    width: 64, height: 64,
-    color: AppTheme.surfaceVariant,
-    child: track.imageUrl?.isNotEmpty == true
-        ? Image.network(track.imageUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _defaultIcon())
-        : _defaultIcon(),
-  );
-
-  Widget _defaultIcon() => const Icon(Icons.music_note, color: Colors.white);
-
-  Widget _buildTrackInfo(Track track) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(track.name, style: CommonStyles.bodyStyle.copyWith(fontWeight: FontWeight.w600, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-        const SizedBox(height: 2),
-        Text(track.artist, style: CommonStyles.subtitleStyle.copyWith(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
-      ],
-    ),
-  );
 }

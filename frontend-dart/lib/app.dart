@@ -14,6 +14,17 @@ import 'screens/playlists/public_playlists_screen.dart';
 import 'screens/friends/friends_list_screen.dart';
 import 'screens/friends/add_friend_screen.dart';
 import 'screens/friends/friend_request_screen.dart';
+import 'screens/devices/device_management_screen.dart';
+import 'screens/music/playlist_sharing_screen.dart';
+import 'screens/music/music_features_screen.dart';
+import 'screens/music/track_vote_screen.dart';
+import 'screens/music/control_delegation_screen.dart';
+import 'screens/music/player_screen.dart';
+import 'screens/music/track_selection_screen.dart';
+import 'screens/music/deezer_track_detail_screen.dart';
+import 'screens/profile/user_password_change_screen.dart';
+import 'screens/profile/social_network_link_screen.dart';
+import 'models/models.dart';
 
 class MusicRoomApp extends StatelessWidget {
   const MusicRoomApp({Key? key}) : super(key: key);
@@ -32,20 +43,84 @@ class MusicRoomApp extends StatelessWidget {
         builder: (context, auth, _) => 
           auth.isLoggedIn ? const HomeScreen() : const AuthScreen(),
       ),
-      routes: {
-        AppRoutes.home: (context) => const HomeScreen(),
-        AppRoutes.auth: (context) => const AuthScreen(),
-        AppRoutes.profile: (context) => const ProfileScreen(),
-        AppRoutes.playlistEditor: (context) {
-          final args = ModalRoute.of(context)?.settings.arguments;
-          return PlaylistEditorScreen(playlistId: args is String ? args : null);
-        },
-        AppRoutes.trackSearch: (context) => const TrackSearchScreen(),
-        AppRoutes.publicPlaylists: (context) => const PublicPlaylistsScreen(),
-        AppRoutes.friends: (context) => const FriendsListScreen(),
-        AppRoutes.addFriend: (context) => const AddFriendScreen(),
-        AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
-      },
+      routes: _buildRoutes(),
+      onGenerateRoute: _onGenerateRoute,
+    );
+  }
+
+  Map<String, WidgetBuilder> _buildRoutes() {
+    return {
+      AppRoutes.home: (context) => const HomeScreen(),
+      AppRoutes.auth: (context) => const AuthScreen(),
+      AppRoutes.profile: (context) => const ProfileScreen(),
+      AppRoutes.playlistEditor: (context) => _buildPlaylistEditor(context),
+      AppRoutes.trackSearch: (context) => const TrackSearchScreen(),
+      AppRoutes.publicPlaylists: (context) => const PublicPlaylistsScreen(),
+      AppRoutes.friends: (context) => const FriendsListScreen(),
+      AppRoutes.addFriend: (context) => const AddFriendScreen(),
+      AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
+      AppRoutes.deviceManagement: (context) => const DeviceManagementScreen(),
+      AppRoutes.playlistSharing: (context) => _buildPlaylistSharing(context),
+      AppRoutes.musicFeatures: (context) => const MusicFeaturesScreen(),
+      AppRoutes.trackVote: (context) => const MusicTrackVoteScreen(),
+      AppRoutes.controlDelegation: (context) => const MusicControlDelegationScreen(),
+      AppRoutes.player: (context) => const PlayerScreen(),
+      AppRoutes.trackSelection: (context) => _buildTrackSelection(context),
+      AppRoutes.deezerTrackDetail: (context) => _buildDeezerTrackDetail(context),
+      AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
+      AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
+    };
+  }
+
+  Widget _buildPlaylistEditor(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    return PlaylistEditorScreen(playlistId: args is String ? args : null);
+  }
+
+  Widget _buildPlaylistSharing(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Playlist) {
+      return PlaylistSharingScreen(playlist: args);
+    }
+    return const Scaffold(
+      body: Center(child: Text('Invalid playlist data')),
+    );
+  }
+
+  Widget _buildTrackSelection(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    return TrackSelectionScreen(playlistId: args is String ? args : null);
+  }
+
+  Widget _buildDeezerTrackDetail(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      return DeezerTrackDetailScreen(trackId: args);
+    }
+    return const Scaffold(
+      body: Center(child: Text('Invalid track ID')),
+    );
+  }
+
+  Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
+    if (settings.name?.startsWith('/deezer_track/') == true) {
+      final trackId = settings.name!.split('/').last;
+      return MaterialPageRoute(
+        builder: (context) => DeezerTrackDetailScreen(trackId: trackId),
+      );
+    }
+    
+    if (settings.name?.startsWith('/playlist/') == true) {
+      final playlistId = settings.name!.split('/').last;
+      return MaterialPageRoute(
+        builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
+      );
+    }
+    
+    return MaterialPageRoute(
+      builder: (context) => const Scaffold(
+        body: Center(child: Text('Page not found')),
+      ),
     );
   }
 }
@@ -93,7 +168,10 @@ class _AppScaffold extends StatelessWidget {
 
                 return Container(
                   height: 100,
-                  decoration: BoxDecoration(color: AppTheme.surface, boxShadow: AppTheme.lightShadow),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface, 
+                    boxShadow: AppTheme.lightShadow
+                  ),
                   child: Row(
                     children: [
                       Container(
@@ -111,16 +189,21 @@ class _AppScaffold extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(track.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              Text(track.name, 
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16), 
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
                               const SizedBox(height: 4),
-                              Text(track.artist, style: const TextStyle(color: Colors.grey, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              Text(track.artist, 
+                                style: const TextStyle(color: Colors.grey, fontSize: 14), 
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
                             ],
                           ),
                         ),
                       ),
                       IconButton(
                         onPressed: playerService.togglePlay,
-                        icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: AppTheme.primary, size: 32),
+                        icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, 
+                                  color: AppTheme.primary, size: 32),
                       ),
                       const SizedBox(width: 8),
                     ],
