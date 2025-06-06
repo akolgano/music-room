@@ -6,7 +6,8 @@ import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../core/app_core.dart';
-import '../../widgets/app_widgets.dart';
+import '../../widgets/common_widgets.dart';
+import '../../utils/snackbar_utils.dart';
 import '../../models/models.dart';
 
 class TrackSearchScreen extends StatefulWidget {
@@ -195,7 +196,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   Widget _buildResults(List tracks) {
     if (_isLoading) {
-      return const LoadingWidget(message: AppStrings.loading);
+      return CommonWidgets.loadingWidget(AppStrings.loading);
     }
 
     if (_searchController.text.isEmpty) {
@@ -244,7 +245,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         return TrackCard(
           track: track,
           isSelected: _selectedTracks.contains(track.id),
-          showImage: _searchDeezer,
           onTap: () => _handleTrackTap(track),
           onSelectionChanged: _isMultiSelectMode ? (value) => _toggleSelection(track.id) : null,
           onAdd: !_isMultiSelectMode && widget.playlistId != null ? () => _addSingleTrack(track) : null,
@@ -272,12 +272,12 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(track, previewUrl);
-        showAppSnackBar(context, 'Playing preview of "${track.name}"');
+        CommonWidgets.showSnackBar(context, 'Playing preview of "${track.name}"');
       } else {
-        showAppSnackBar(context, AppStrings.noPreviewAvailable, isError: true);
+        CommonWidgets.showSnackBar(context, AppStrings.noPreviewAvailable, isError: true);
       }
     } catch (error) {
-      showAppSnackBar(context, 'Failed to play preview', isError: true);
+      CommonWidgets.showSnackBar(context, 'Failed to play preview', isError: true);
     }
   }
 
@@ -293,7 +293,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         await musicProvider.searchTracks(_searchController.text);
       }
     } catch (error) {
-      showAppSnackBar(context, 'Search failed. Please try again.', isError: true);
+      CommonWidgets.showSnackBar(context, 'Search failed. Please try again.', isError: true);
     }
     setState(() => _isLoading = false);
   }
@@ -302,7 +302,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     if (_isMultiSelectMode) {
       _toggleSelection(track.id);
     } else if (widget.playlistId == null) {
-      showAppSnackBar(context, 'Track details coming soon!');
+      CommonWidgets.showSnackBar(context, 'Track details coming soon!');
     } else {
       if (_searchDeezer) {
         _playPreview(track);
@@ -335,9 +335,9 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         deviceProvider.deviceUuid,
       );
       
-      showAppSnackBar(context, 'Added "${track.name}" to playlist!');
+      CommonWidgets.showSnackBar(context, 'Added "${track.name}" to playlist!');
     } catch (error) {
-      showAppSnackBar(context, 'Failed to add track', isError: true);
+      CommonWidgets.showSnackBar(context, 'Failed to add track', isError: true);
     }
   }
 
@@ -358,13 +358,13 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         );
       }
 
-      showAppSnackBar(context, 'Added ${_selectedTracks.length} tracks!');
+      CommonWidgets.showSnackBar(context, 'Added ${_selectedTracks.length} tracks!');
       setState(() {
         _selectedTracks.clear();
         _isMultiSelectMode = false;
       });
     } catch (error) {
-      showAppSnackBar(context, 'Failed to add some tracks', isError: true);
+      CommonWidgets.showSnackBar(context, 'Failed to add some tracks', isError: true);
     }
   }
 

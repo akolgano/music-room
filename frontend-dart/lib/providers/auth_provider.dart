@@ -17,6 +17,8 @@ class AuthProvider with ChangeNotifier, BaseProvider {
   String? _token;
   String? _userId;
   String? _username;
+  String? _apiBaseUrl;
+  GoogleSignIn? googleSignIn;
 
   bool get isLoggedIn => _isLoggedIn;
   String? get token => _token;
@@ -24,12 +26,6 @@ class AuthProvider with ChangeNotifier, BaseProvider {
   String? get username => _username;
   String get displayName => _username ?? 'User';
   bool get hasValidToken => _token != null && _token!.isNotEmpty;
-
-  String? _apiBaseUrl;
-  GoogleSignIn? googleSignIn;
-
-  String? _apiBaseUrl;
-  GoogleSignIn? googleSignIn;
 
   Map<String, String> get authHeaders => {
     'Content-Type': 'application/json',
@@ -41,15 +37,10 @@ class AuthProvider with ChangeNotifier, BaseProvider {
 
     if (!kIsWeb) {
       googleSignIn = GoogleSignIn(
-      scopes: ['email', 'profile', 'openid'],
-      clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
+        scopes: ['email', 'profile', 'openid'],
+        clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
       );
     }
-  }
-
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
   }
 
   Future<bool> login(String username, String password) async {
@@ -111,147 +102,18 @@ class AuthProvider with ChangeNotifier, BaseProvider {
     }) != null;
   }
 
-  void _setUserData(String token, String userId, String username) {
-    _token = token;
-    _userId = userId;
-    _username = username;
-    _isLoggedIn = true;
-  }
-
-  void _clearUserData() {
-    _token = null;
-    _userId = null;
-    _username = null;
-    _isLoggedIn = false;
-    clearError();
-  }
-
-  Future<bool> facebookLogin() async {
-    try{
-        _isLoading = true;
-        _errorMessage = null;
-        notifyListeners();
-
-        final LoginResult result = await FacebookAuth.instance.login();
-        if (result.status == LoginStatus.success) {
-          final fbAccessToken = result.accessToken!.tokenString;
-
-          final authResult = await _api.facebookLogin(fbAccessToken);
-
-          _token = authResult.token;
-          _userId = authResult.user.id;
-          _username = authResult.user.username;
-          _isLoggedIn = true;
-
-          _isLoading = false;
-          notifyListeners();
-          return true;
-        }
-        else {
-          _errorMessage = "Facebook login failed !";
-          _isLoading = false;
-          notifyListeners();
-          return false;
-        }
-      } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-  }
-
-  Future<bool> googleLoginWeb(GoogleSignInUserData? account) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-
-      var idToken = account?.idToken;
-
-      if (idToken == null) {
-        _errorMessage = "Google login failed !";
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-
-      final authResult = await _api.googleLogin('web', idToken);
-      _token = authResult.token;
-      _userId = authResult.user.id;
-      _username = authResult.user.username;
-      _isLoggedIn = true;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-
-
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-  }
-
-  Future<bool> googleLoginApp() async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-
-      final user = await googleSignIn?.signIn();
-
-      if (user == null) {
-        _errorMessage = "Google login failed !";
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-
-      final auth = await user.authentication;
-      final idToken = auth.idToken;
-
-      if (idToken == null) {
-        _errorMessage = "Google login failed !";
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-
-      final authResult = await _api.googleLogin('app', idToken);
-      _token = authResult.token;
-      _userId = authResult.user.id;
-      _username = authResult.user.username;
-      _isLoggedIn = true;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-
-    } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-    }
-  }
-
   Future<void> forgotPassword(String email) async {
     try {
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/users/forgot_password/'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-        }),
+        body: json.encode({'email': email}),
       );
 
       final responseData = json.decode(response.body);
       if (response.statusCode != 200) {
         throw responseData;
       }
-      
     } catch (error) {
       rethrow;
     }
@@ -274,9 +136,23 @@ class AuthProvider with ChangeNotifier, BaseProvider {
       if (response.statusCode != 200) {
         throw responseData;
       }
-
     } catch (error) {
       rethrow;
     }
+  }
+
+  void _setUserData(String token, String userId, String username) {
+    _token = token;
+    _userId = userId;
+    _username = username;
+    _isLoggedIn = true;
+  }
+
+  void _clearUserData() {
+    _token = null;
+    _userId = null;
+    _username = null;
+    _isLoggedIn = false;
+    clearError();
   }
 }

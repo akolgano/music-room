@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/app_core.dart';
-import '../../widgets/app_widgets.dart';
+import '../../widgets/common_widgets.dart';
+import '../../utils/snackbar_utils.dart';
 
 class FriendRequestScreen extends StatefulWidget {
   const FriendRequestScreen({Key? key}) : super(key: key);
@@ -47,9 +48,9 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
         title: const Text('Friend Requests'),
       ),
       body: _isLoading
-          ? const LoadingWidget()
+          ? CommonWidgets.loadingWidget()
           : _pendingRequests.isEmpty
-              ? const EmptyState(
+              ? CommonWidgets.emptyState(
                   icon: Icons.mail,
                   title: 'No pending friend requests',
                   subtitle: 'When someone sends you a friend request, it will appear here',

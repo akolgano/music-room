@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/app_core.dart';
 import '../../providers/friend_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/app_widgets.dart'; 
+import '../../widgets/common_widgets.dart';
+import '../../utils/snackbar_utils.dart';
 
 class FriendsListScreen extends StatefulWidget {
   const FriendsListScreen({Key? key}) : super(key: key);
@@ -84,7 +85,7 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
         ),
       ),
       body: _isLoading
-          ? const LoadingWidget()
+          ? CommonWidgets.loadingWidget()
           : TabBarView(
               controller: _tabController,
               children: [
@@ -97,7 +98,7 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
 
   Widget _buildFriendsTab() {
     if (_friends.isEmpty) {
-      return EmptyState(
+      return CommonWidgets.emptyState(
         icon: Icons.people,
         title: 'No friends yet',
         subtitle: 'Add friends to start sharing music together!',
@@ -154,7 +155,7 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
 
   Widget _buildRequestsTab() {
     if (_pendingRequests.isEmpty) {
-      return const EmptyState(
+      return CommonWidgets.emptyState(
         icon: Icons.mail_outline,
         title: 'No friend requests',
         subtitle: 'When someone sends you a friend request, it will appear here',

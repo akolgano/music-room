@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
+import '../../providers/profile_provider.dart';
 import '../../core/app_core.dart';
-import '../../widgets/app_widgets.dart';
+import '../../widgets/common_widgets.dart';
+import '../../utils/snackbar_utils.dart';
 import '../base_screen.dart';
+import '../profile/user_password_change_screen.dart';
+import '../profile/social_network_link_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -173,11 +177,11 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
     return Consumer<MusicProvider>(
       builder: (context, music, _) {
         if (music.isLoading) {
-          return const LoadingWidget(message: 'Loading playlists...');
+          return CommonWidgets.loadingWidget('Loading playlists...');
         }
 
         if (music.playlists.isEmpty) {
-          return const EmptyState(
+          return CommonWidgets.emptyState(
             icon: Icons.playlist_play,
             title: 'No playlists yet',
             subtitle: 'Create your first playlist to get started!',
@@ -246,7 +250,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => UserPasswordChangeScreen(),
+                      builder: (context) => const UserPasswordChangeScreen(),
                     ),
                   )
               ),
@@ -257,7 +261,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SocialNetworkLinkScreen(),
+                    builder: (context) => const SocialNetworkLinkScreen(),
                   ),
                 )
             ),

@@ -1,7 +1,6 @@
 // lib/utils/snackbar_utils.dart
 import 'package:flutter/material.dart';
-import '../core/theme.dart';
-import '../core/app_strings.dart';
+import '../core/app_core.dart';
 
 class SnackBarUtils {
   static void showSuccess(BuildContext context, String message) {

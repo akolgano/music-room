@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../core/app_core.dart';
-import '../widgets/app_widgets.dart';
+import '../utils/snackbar_utils.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);

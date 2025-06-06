@@ -4,11 +4,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/music_provider.dart';
+import 'providers/friend_provider.dart';
+import 'providers/profile_provider.dart';
+import 'providers/device_provider.dart';
 import 'services/music_player_service.dart';
 import 'app.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; 
-import 'providers/profile_provider.dart';
 
 final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
 
@@ -43,6 +45,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MusicPlayerService()),
         ChangeNotifierProvider(create: (_) => FriendProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => DeviceProvider()),
       ],
       child: const MusicRoomApp(),
     );
