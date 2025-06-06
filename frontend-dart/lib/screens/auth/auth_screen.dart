@@ -65,6 +65,37 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> _initializeGoogleSignInWeb() async {
+    await googleSignInPlugin.initWithParams(
+      SignInInitParameters(
+        clientId: dotenv.env['GOOGLE_CLIENT_ID_WEB'],
+        scopes: ['email', 'profile', 'openid'],
+      ),
+    );
+
+    googleSignInPlugin.userDataEvents?.listen((GoogleSignInUserData? account) {
+      if (account != null) {
+        _googleLoginWeb(account);
+      }
+    });
+
+  }
+
+  Future<void> _googleLoginWeb(GoogleSignInUserData? account) async {
+    bool success = false;
+    success = await Provider.of<AuthProvider>(context, listen: false).googleLoginWeb(account);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login successful'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,7 +251,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSocialButtons() {
+  Widget _buildRemoteLoginRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -266,10 +297,19 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+              MaterialPageRoute(
+                builder: (context) => ForgotPasswordScreen(),
+              ),
             );
           },
-          child: const Text('Forgot Password?', style: TextStyle(color: AppTheme.textSecondary)),
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(color: AppTheme.textSecondary),
+              children: [
+                TextSpan(text: 'Forgot Password ?'),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -335,5 +375,27 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     _passwordController.dispose();
     _fadeController.dispose();
     super.dispose();
+  }
+
+    void _loginWithSocial(String provider) async {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      bool success = false;
+    
+      if (provider == "Facebook") {
+        success = await authProvider.facebookLogin();
+      }
+      else if (provider == "Google") {
+        success = await authProvider.googleLoginApp();
+      }
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login successful'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
   }
 }

@@ -14,3 +14,4 @@ pytest-django
 pytest-asyncio
 #uvicorn
 #uvicorn[standard]
+google-auth

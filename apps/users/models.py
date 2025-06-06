@@ -1,12 +1,9 @@
-# from django.contrib.auth.models import AbstractUser
-
-# class CustomUser(AbstractUser):
-#     pass
-
 from django.db import models 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+from datetime import timedelta
 
 class Friendship(models.Model):
     from_user = models.ForeignKey(User, related_name='friendships_created', on_delete=models.CASCADE)
@@ -26,3 +23,16 @@ class Friendship(models.Model):
 
     def __str__(self):
         return f"{self.from_user} -> {self.to_user}"
+
+
+def get_expiry_time():
+    return timezone.now() + timedelta(minutes=5)
+
+class OneTimePasscode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.IntegerField()
+    expired_at = models.DateTimeField(default=get_expiry_time)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"OTP code for {self.user.email} (expires at {self.expired_at})"
