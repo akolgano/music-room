@@ -5,8 +5,11 @@ mkdir -p /var/log
 
 echo "$(date): Starting the Django service..." >> /var/log/django.log
 
+: ${POSTGRES_HOST:=postgres}
+: ${POSTGRES_PORT:=5432}
+
 echo "Waiting for database..."
-while ! nc -z $POSTGRES_HOST 5432; do
+while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT"; do
   sleep 1
 done
 export PYTHONPATH=/app
@@ -15,7 +18,13 @@ echo "Applying migrations..."
 python manage.py makemigrations
 python manage.py migrate
 echo "Loading data..."
-python manage.py loaddata sample.json
+if [ -f "/app/sample.json" ]; then
+    python /app/clean_fixture.py /app/sample.json
+elif [ -f "/app/apps/playlists/fixtures/sample.json" ]; then
+    python /app/clean_fixture.py /app/apps/playlists/fixtures/sample.json
+else
+    echo "No sample.json found, skipping fixture cleaning"
+fi
 
 SUPERUSER_EXISTS=$(python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username='$DJANGO_SUPERUSER_USERNAME').exists())")
 if [ "$SUPERUSER_EXISTS" = "False" ]; then
