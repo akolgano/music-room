@@ -1,11 +1,10 @@
 // lib/app.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'core/theme.dart';
-import 'core/constants.dart';
+import 'core/app_core.dart';
 import 'providers/auth_provider.dart';
 import 'services/music_player_service.dart';
-import 'widgets/music_player_widget.dart';
+import 'widgets/app_widgets.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/profile/profile_screen.dart';

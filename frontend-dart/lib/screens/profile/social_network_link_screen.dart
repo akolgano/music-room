@@ -1,7 +1,7 @@
 // lib/screens/auth/social_network_link_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme.dart';
+import '../../core/app_core.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import 'package:google_sign_in_web/google_sign_in_web.dart';

@@ -1,11 +1,10 @@
 // lib/screens/friends/friends_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme.dart';
-import '../../core/constants.dart';
+import '../../core/app_core.dart';
 import '../../providers/friend_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/unified_widgets.dart';
+import '../../widgets/app_widgets.dart'; 
 
 class FriendsListScreen extends StatefulWidget {
   const FriendsListScreen({Key? key}) : super(key: key);
@@ -24,10 +23,14 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadFriendsData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFriendsData();
+    });
   }
 
   Future<void> _loadFriendsData() async {
+    if (!mounted) return; 
+    
     setState(() => _isLoading = true);
     
     try {
@@ -39,15 +42,21 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
         friendProvider.fetchPendingRequests(authProvider.token!),
       ]);
       
-      setState(() {
-        _friends = friendProvider.friends;
-        _pendingRequests = friendProvider.pendingRequests;
-      });
+      if (mounted) { 
+        setState(() {
+          _friends = friendProvider.friends;
+          _pendingRequests = friendProvider.pendingRequests;
+        });
+      }
     } catch (e) {
-      SnackBarUtils.showError(context, 'Unable to load friends data');
+      if (mounted) {
+        SnackBarUtils.showError(context, 'Unable to load friends data');
+      }
     }
     
-    setState(() => _isLoading = false);
+    if (mounted) { 
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -250,10 +259,14 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       
       final message = await friendProvider.acceptFriendRequest(authProvider.token!, int.parse(friendshipId));
-      SnackBarUtils.showSuccess(context, message ?? 'Friend request accepted');
-      _loadFriendsData();
+      if (mounted) {
+        SnackBarUtils.showSuccess(context, message ?? 'Friend request accepted');
+        _loadFriendsData();
+      }
     } catch (error) {
-      SnackBarUtils.showError(context, 'Failed to accept request');
+      if (mounted) {
+        SnackBarUtils.showError(context, 'Failed to accept request');
+      }
     }
   }
 
@@ -263,10 +276,14 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       
       final message = await friendProvider.rejectFriendRequest(authProvider.token!, int.parse(friendshipId));
-      SnackBarUtils.showSuccess(context, message ?? 'Friend request rejected');
-      _loadFriendsData();
+      if (mounted) {
+        SnackBarUtils.showSuccess(context, message ?? 'Friend request rejected');
+        _loadFriendsData();
+      }
     } catch (error) {
-      SnackBarUtils.showError(context, 'Failed to reject request');
+      if (mounted) {
+        SnackBarUtils.showError(context, 'Failed to reject request');
+      }
     }
   }
 
@@ -276,10 +293,14 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       
       await friendProvider.removeFriend(authProvider.token!, friendId);
-      SnackBarUtils.showSuccess(context, 'Friend removed');
-      _loadFriendsData();
+      if (mounted) {
+        SnackBarUtils.showSuccess(context, 'Friend removed');
+        _loadFriendsData();
+      }
     } catch (e) {
-      SnackBarUtils.showError(context, 'Failed to remove friend');
+      if (mounted) {
+        SnackBarUtils.showError(context, 'Failed to remove friend');
+      }
     }
   }
 
