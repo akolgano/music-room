@@ -135,23 +135,27 @@ class PlaylistTrack {
   final String trackId;
   final String name;
   final int position;
+  final Track? track; 
   
   PlaylistTrack({
     required this.trackId,
     required this.name,
     required this.position,
+    this.track,
   });
   
   factory PlaylistTrack.fromJson(Map<String, dynamic> json) => PlaylistTrack(
     trackId: json['track_id'].toString(),
-    name: json['name'] ?? '',
+    name: json['name'] ?? json['track']?['name'] ?? '',
     position: json['position'] ?? 0,
+    track: json['track'] != null ? Track.fromJson(json['track']) : null,
   );
   
   Map<String, dynamic> toJson() => {
     'track_id': trackId,
     'name': name,
     'position': position,
+    if (track != null) 'track': track!.toJson(),
   };
 }
 
@@ -187,6 +191,82 @@ class Device {
     'device_name': name,
     'is_active': isActive,
     'license_key': licenseKey,
+    'created_at': createdAt.toIso8601String(),
+  };
+}
+
+class Event {
+  final String id;
+  final String name;
+  final String description;
+  final bool isPublic;
+  final String creator;
+  final DateTime startTime;
+  final DateTime endTime;
+  final String? location;
+  
+  Event({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.isPublic,
+    required this.creator,
+    required this.startTime,
+    required this.endTime,
+    this.location,
+  });
+  
+  factory Event.fromJson(Map<String, dynamic> json) => Event(
+    id: json['id'].toString(),
+    name: json['name'] ?? '',
+    description: json['description'] ?? '',
+    isPublic: json['public'] ?? false,
+    creator: json['creator'] ?? '',
+    startTime: DateTime.parse(json['start_time']),
+    endTime: DateTime.parse(json['end_time']),
+    location: json['location'],
+  );
+  
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'public': isPublic,
+    'creator': creator,
+    'start_time': startTime.toIso8601String(),
+    'end_time': endTime.toIso8601String(),
+    'location': location,
+  };
+}
+
+class Friendship {
+  final String id;
+  final int fromUser;
+  final int toUser;
+  final String status;
+  final DateTime createdAt;
+  
+  Friendship({
+    required this.id,
+    required this.fromUser,
+    required this.toUser,
+    required this.status,
+    required this.createdAt,
+  });
+  
+  factory Friendship.fromJson(Map<String, dynamic> json) => Friendship(
+    id: json['id'].toString(),
+    fromUser: json['from_user'],
+    toUser: json['to_user'],
+    status: json['status'] ?? 'pending',
+    createdAt: DateTime.parse(json['created_at']),
+  );
+  
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'from_user': fromUser,
+    'to_user': toUser,
+    'status': status,
     'created_at': createdAt.toIso8601String(),
   };
 }

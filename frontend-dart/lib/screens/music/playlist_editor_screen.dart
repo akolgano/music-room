@@ -4,11 +4,9 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
-import '../../models/playlist.dart';
-import '../../models/playlist_track.dart';
-import '../../core/theme.dart';
-import '../../core/app_strings.dart';
-import '../../widgets/unified_widgets.dart';
+import '../../models/models.dart';
+import '../../core/app_core.dart';
+import '../../widgets/app_widgets.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;

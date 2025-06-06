@@ -5,10 +5,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../services/music_player_service.dart';
-import '../../core/theme.dart';
-import '../../core/app_strings.dart';
-import '../../widgets/unified_widgets.dart';
-import '../../models/track.dart';
+import '../../core/app_core.dart';
+import '../../widgets/app_widgets.dart';
+import '../../models/models.dart';
 
 class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;

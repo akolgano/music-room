@@ -70,6 +70,42 @@ class MusicProvider with ChangeNotifier, BaseProvider {
     return track?.previewUrl;
   }
 
+  Future<void> fetchPlaylistTracks(String playlistId, String token) async {
+    final result = await execute(() async {
+      final response = await _api.get('/playlists/playlist/$playlistId/tracks', token);
+      final tracksData = response['tracks'] as List<dynamic>;
+      return tracksData.map((t) => PlaylistTrack.fromJson(t)).toList();
+    });
+    if (result != null) _playlistTracks = result;
+  }
+
+  Future<void> addTrackToPlaylist(String playlistId, String trackId, String token, String? deviceUuid) async {
+    await execute(() => _api.post('/playlists/$playlistId/tracks', {
+      'track_id': trackId,
+      if (deviceUuid != null) 'device_uuid': deviceUuid,
+    }, token));
+  }
+
+  Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token, String? deviceUuid) async {
+    await execute(() => _api.post('/playlists/$playlistId/tracks/remove', {
+      'track_id': trackId,
+      if (deviceUuid != null) 'device_uuid': deviceUuid,
+    }, token));
+  }
+
+  Future<bool> changePlaylistVisibility(String playlistId, bool isPublic, String token) async {
+    final result = await execute(() => _api.post('/playlists/$playlistId/visibility', {
+      'public': isPublic,
+    }, token));
+    return result != null;
+  }
+
+  Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
+    await execute(() => _api.post('/tracks/add_from_deezer', {
+      'deezer_track_id': deezerTrackId,
+    }, token));
+  }
+
   Future<bool> performMusicAction(String endpoint, Map<String, dynamic> data, String token) async {
     final result = await execute(() => _api.post(endpoint, data, token));
     return result != null;
