@@ -6,7 +6,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../models/models.dart';
 import '../../core/app_core.dart';
-import '../../widgets/app_widgets.dart';
+import '../../widgets/common_widgets.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
@@ -110,7 +110,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
         actions: _buildAppBarActions(),
       ),
       body: _isLoading
-          ? const LoadingWidget()
+          ? CommonWidgets.loadingWidget()
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(

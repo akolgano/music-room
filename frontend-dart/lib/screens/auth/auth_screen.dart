@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_core.dart';
-import '../../widgets/app_widgets.dart';
+import '../../widgets/common_widgets.dart';
+import '../../utils/snackbar_utils.dart';
 import '../../providers/auth_provider.dart';
 import 'package:google_sign_in_web/google_sign_in_web.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
@@ -64,37 +65,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       SnackBarUtils.showSuccess(context, AppStrings.loginSuccessful);
     }
   }
-
-  Future<void> _initializeGoogleSignInWeb() async {
-    await googleSignInPlugin.initWithParams(
-      SignInInitParameters(
-        clientId: dotenv.env['GOOGLE_CLIENT_ID_WEB'],
-        scopes: ['email', 'profile', 'openid'],
-      ),
-    );
-
-    googleSignInPlugin.userDataEvents?.listen((GoogleSignInUserData? account) {
-      if (account != null) {
-        _googleLoginWeb(account);
-      }
-    });
-
-  }
-
-  Future<void> _googleLoginWeb(GoogleSignInUserData? account) async {
-    bool success = false;
-    success = await Provider.of<AuthProvider>(context, listen: false).googleLoginWeb(account);
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Login successful'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
   
   @override
   Widget build(BuildContext context) {
@@ -251,7 +221,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildRemoteLoginRow() {
+  Widget _buildSocialButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -297,18 +267,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ForgotPasswordScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
             );
           },
-          child: RichText(
-            text: TextSpan(
-              style: const TextStyle(color: AppTheme.textSecondary),
-              children: [
-                TextSpan(text: 'Forgot Password ?'),
-              ],
-            ),
+          child: const Text(
+            'Forgot Password?',
+            style: TextStyle(color: AppTheme.textSecondary),
           ),
         ),
       ],
@@ -358,8 +322,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   
     if (provider == "Facebook") {
       success = await authProvider.facebookLogin();
-    }
-    else if (provider == "Google") {
+    } else if (provider == "Google") {
       success = await authProvider.googleLoginApp();
     }
 
@@ -375,27 +338,5 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     _passwordController.dispose();
     _fadeController.dispose();
     super.dispose();
-  }
-
-    void _loginWithSocial(String provider) async {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      bool success = false;
-    
-      if (provider == "Facebook") {
-        success = await authProvider.facebookLogin();
-      }
-      else if (provider == "Google") {
-        success = await authProvider.googleLoginApp();
-      }
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login successful'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
   }
 }

@@ -10,6 +10,7 @@ django.log
 .vscode/
 /venv/
 #migrations/
+.env
 
 # Kotlin & Android
 *.iml

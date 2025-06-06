@@ -5,7 +5,8 @@ import '../../providers/music_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/models.dart';
 import '../../core/app_core.dart';
-import '../../widgets/app_widgets.dart';
+import '../../widgets/common_widgets.dart';
+import '../../utils/snackbar_utils.dart';
 
 class PublicPlaylistsScreen extends StatefulWidget {
   const PublicPlaylistsScreen({Key? key}) : super(key: key);
@@ -71,11 +72,11 @@ class _PublicPlaylistsScreenState extends State<PublicPlaylistsScreen> {
           ),
           Expanded(
             child: musicProvider.isLoading
-                ? const LoadingWidget()
+                ? CommonWidgets.loadingWidget()
                 : musicProvider.hasConnectionError 
                     ? _buildErrorView(musicProvider)
                     : _filteredPlaylists.isEmpty
-                        ? const EmptyState(
+                        ? CommonWidgets.emptyState(
                             icon: Icons.public,
                             title: 'No public playlists found',
                             subtitle: 'Be the first to create a public playlist!',

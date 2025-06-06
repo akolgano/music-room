@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/app_core.dart';
-import '../../widgets/app_widgets.dart'; 
+import '../../widgets/common_widgets.dart';
+import '../../utils/snackbar_utils.dart';
 
 class AddFriendScreen extends StatefulWidget {
   const AddFriendScreen({Key? key}) : super(key: key);
