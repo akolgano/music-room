@@ -334,7 +334,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         authProvider.token!,
         deviceProvider.deviceUuid,
       );
-      
       CommonWidgets.showSnackBar(context, 'Added "${track.name}" to playlist!');
     } catch (error) {
       CommonWidgets.showSnackBar(context, 'Failed to add track', isError: true);
@@ -357,7 +356,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
           deviceProvider.deviceUuid,
         );
       }
-
       CommonWidgets.showSnackBar(context, 'Added ${_selectedTracks.length} tracks!');
       setState(() {
         _selectedTracks.clear();
