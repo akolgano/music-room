@@ -41,9 +41,13 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
   
   Future<void> _loadData() async {
     final music = Provider.of<MusicProvider>(context, listen: false);
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    
     if (auth.isLoggedIn && auth.token != null) {
       await music.fetchUserPlaylists(auth.token!);
     }
+
+    profileProvider.loadProfile(auth.token);
   }
 
   @override
@@ -197,6 +201,9 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
   }
 
   Widget _buildProfile() {
+    final auth = Provider.of<AuthProvider>(context);
+    final profileProvider = Provider.of<ProfileProvider>(context);
+    
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -232,6 +239,29 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
             () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
         _buildProfileItem(Icons.help, 'Help',
             () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
+
+        if (profileProvider.isPasswordUsable) ...[
+          _buildProfileItem(Icons.password, 'Password Change',
+              () => 
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserPasswordChangeScreen(),
+                    ),
+                  )
+              ),
+        ],
+                      
+        _buildProfileItem(Icons.link, 'Link Social Network',
+            () => 
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SocialNetworkLinkScreen(),
+                  ),
+                )
+            ),
+
       ],
     );
   }
