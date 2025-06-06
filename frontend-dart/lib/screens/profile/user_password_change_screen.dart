@@ -168,5 +168,4 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
   void _cancel() async {
     Navigator.pop(context);
   }
-
 }

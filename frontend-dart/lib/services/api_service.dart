@@ -279,6 +279,71 @@ class ApiService {
       (data) => data,
     );
   }
+
+  Future<AuthResult> facebookLogin(String fbAccessToken) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/auth/facebook/login/'),
+        headers: _getHeaders(),
+        body: json.encode({'fbAccessToken': fbAccessToken,}),
+      ),
+      (data) => AuthResult.fromJson(data),
+    );
+  }
+
+  Future<AuthResult> googleLogin(String type, String idToken) async {
+  return _handleRequest(
+    () => http.post(
+      Uri.parse('$_baseUrl/auth/google/login/'),
+      headers: _getHeaders(),
+      body: json.encode({'idToken': idToken, 'type': type}),
+    ),
+    (data) => AuthResult.fromJson(data),
+  );
+  }
+
+  Future<Map<String, dynamic>> userPasswordChange(String? token, String currentPassword, String newPassword) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/users/user_password_change/'), 
+        headers: _getHeaders(token),
+        body: json.encode({'currentPassword': currentPassword, 'newPassword': newPassword}),
+      ),
+      (data) => data
+    );
+  }
+
+  Future<Map<String, dynamic>> facebookLink(String? token, String fbAccessToken) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/auth/facebook/link/'),
+        headers: _getHeaders(token),
+        body: json.encode({'fbAccessToken': fbAccessToken,}),
+      ),
+      (data) => data,
+    );
+  }
+
+  Future<Map<String, dynamic>> googleLink(String type, String? token, String idToken) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/auth/google/link/'),
+        headers: _getHeaders(token),
+        body: json.encode({'idToken': idToken, 'type': type}),
+      ),
+      (data) => data,
+    );
+  }
+
+  Future<Map<String, dynamic>> getUser(String? token) async {
+    return _handleRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/users/get_user/'),
+        headers: _getHeaders(token),
+      ),
+      (data) => data,
+    );
+  }
 }
 
 class AuthResult {
