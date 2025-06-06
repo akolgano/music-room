@@ -24,4 +24,5 @@ urlpatterns = [
     path('tracks/', include('apps.tracks.urls')),
     path('playlists/', include('apps.playlists.urls')),
     path('devices/', include('apps.devices.urls')),
+    path('auth/', include('apps.remote_auth.urls')),
 ]

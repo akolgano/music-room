@@ -18,12 +18,21 @@ class SocialNetworkLinkScreen extends StatefulWidget {
 
 class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> {
   final _formKey = GlobalKey<FormState>();
+  //bool isLink = false;
   
   final googleSignInPlugin = GoogleSignInPlatform.instance as GoogleSignInPlugin;
 
   @override                                                                 
   void initState() {     
     super.initState();
+
+    /*final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    profileProvider.loadProfile(authProvider.token);
+    profileProvider.clearError();
+    if (profileProvider.socialType != null){
+      setState((){isLink = true;});
+    }*/
 
     if (kIsWeb) {
       _initializeGoogleSignInWeb();
@@ -226,7 +235,16 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> {
 
     if (success) {
 
+      //setState(() {isLink = true;});
+
+      //profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      //authProvider = Provider.of<AuthProvider>(context, listen: false);
       profileProvider.loadProfile(authProvider.token);
+
+      //Navigator.pushReplacement(
+      //  context,
+      //  MaterialPageRoute(builder: (context) => SocialNetworkLinkScreen()),
+      //);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -366,5 +366,4 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void _cancel() async {
     Navigator.pop(context);
   }
-  
 }
