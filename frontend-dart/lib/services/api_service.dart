@@ -279,6 +279,92 @@ class ApiService {
       (data) => data,
     );
   }
+
+  Future<void> moveTrackInPlaylist({
+    required String playlistId,
+    required int rangeStart,
+    required int insertBefore,
+    int rangeLength = 1,
+    required String token,
+  }) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/playlists/move-track/'),
+        headers: _getHeaders(token),
+        body: json.encode({
+          'playlist_id': int.parse(playlistId),
+          'range_start': rangeStart,
+          'insert_before': insertBefore,
+          'range_length': rangeLength,
+        }),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<void> inviteUserToPlaylist({
+    required String playlistId,
+    required int userId,
+    required String token,
+  }) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/playlists/$playlistId/invite-user/'),
+        headers: _getHeaders(token),
+        body: json.encode({'user_id': userId}),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<void> delegateDeviceControl({
+    required String deviceUuid,
+    required int delegateUserId,
+    required bool canControl,
+    required String token,
+  }) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/devices/delegate/'),
+        headers: _getHeaders(token),
+        body: json.encode({
+          'device_uuid': deviceUuid,
+          'delegate_user_id': delegateUserId,
+          'can_control': canControl,
+        }),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<List<Device>> getAllUserDevices(String token) async {
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl/devices/'), headers: _getHeaders(token)),
+      (data) {
+        final devices = data['devices'] as List<dynamic>;
+        return devices.map((d) => Device.fromJson(d as Map<String, dynamic>)).toList();
+      },
+    );
+  }
+
+  Future<void> removeTrackFromPlaylist({
+    required String playlistId,
+    required String trackId,
+    required String token,
+    String? deviceUuid,
+  }) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/playlists/$playlistId/remove_tracks'),
+        headers: _getHeaders(token),
+        body: json.encode({
+          'track_id': trackId,
+          if (deviceUuid != null) 'device_uuid': deviceUuid,
+        }),
+      ),
+      (_) => null,
+    );
+  }
 }
 
 class AuthResult {

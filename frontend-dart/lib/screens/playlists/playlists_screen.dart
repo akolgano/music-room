@@ -1,9 +1,8 @@
 // lib/screens/playlists/playlists_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/playlist.dart';
-import '../../core/theme.dart';
-import '../../core/constants.dart';
+import '../../models/models.dart';
+import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';

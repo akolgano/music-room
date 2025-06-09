@@ -1,11 +1,9 @@
-// screens/music/track_vote_screen.dart
+// lib/screens/music/track_vote_screen.dart
 import 'package:flutter/material.dart';
-import '../../core/theme.dart';
+import '../../core/app_core.dart';
 
 class MusicTrackVoteScreen extends StatelessWidget {
-  final String? eventId;
-  
-  const MusicTrackVoteScreen({Key? key, this.eventId}) : super(key: key);
+  const MusicTrackVoteScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +11,7 @@ class MusicTrackVoteScreen extends StatelessWidget {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.background,
-        title: const Text('Music Track Vote'),
+        title: const Text('Track Voting'),
       ),
       body: const Center(
         child: Column(
@@ -21,15 +19,9 @@ class MusicTrackVoteScreen extends StatelessWidget {
           children: [
             Icon(Icons.how_to_vote, size: 64, color: AppTheme.primary),
             SizedBox(height: 16),
-            Text(
-              'Track Voting',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
+            Text('Track Voting', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
             SizedBox(height: 8),
-            Text(
-              'Coming Soon',
-              style: TextStyle(color: AppTheme.onSurfaceVariant),
-            ),
+            Text('Coming Soon', style: TextStyle(color: AppTheme.onSurfaceVariant)),
           ],
         ),
       ),

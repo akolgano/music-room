@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
-import '../../models/playlist.dart';
-import '../../core/theme.dart';
+import '../../models/models.dart';
+import '../../core/app_core.dart';
 
 class PlaylistSharingScreen extends StatefulWidget {
   final Playlist playlist;

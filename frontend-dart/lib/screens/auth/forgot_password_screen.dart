@@ -2,18 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-
-
-class MusicColors {
-  static const Color primary = Color(0xFF1DB954);
-  static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF282828);
-  static const Color surfaceVariant = Color(0xFF333333);
-  static const Color onSurface = Color(0xFFFFFFFF);
-  static const Color onSurfaceVariant = Color(0xFFB3B3B3);
-  static const Color error = Color(0xFFE91429);
-}
-
+import '../../core/app_core.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -42,7 +31,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           gradient: LinearGradient(
             colors: [
               Colors.black,
-              MusicColors.background,
+              AppTheme.background,
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -62,7 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       const Icon(
                         Icons.music_note,
                         size: 80,
-                        color: MusicColors.primary,
+                        color: AppTheme.primary,
                       ),
                       const SizedBox(height: 20),
                       const Text(
@@ -83,7 +72,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           Icon(
                             Icons.music_note,
                             size: 60,
-                            color: MusicColors.primary,
+                            color: AppTheme.primary,
                           ),
                           SizedBox(width: 20),
                           Text(
@@ -100,7 +89,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       const SizedBox(height: 20),
                     ],
                     Card(
-                      color: MusicColors.surface,
+                      color: AppTheme.surface,
                       elevation: 8,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -129,13 +118,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   controller: _emailController,
                                   decoration: InputDecoration(
                                     labelText: 'Email',
-                                    prefixIcon: Icon(Icons.email, color: MusicColors.onSurfaceVariant),
+                                    prefixIcon: Icon(Icons.email, color: AppTheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: BorderSide.none,
                                     ),
                                     filled: true,
-                                    fillColor: MusicColors.surfaceVariant,
+                                    fillColor: AppTheme.surfaceVariant,
                                   ),
                                   style: const TextStyle(color: Colors.white),
                                   keyboardType: TextInputType.emailAddress,
@@ -158,13 +147,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   controller: _otpController,
                                   decoration: InputDecoration(
                                     labelText: 'One Time Passcode',
-                                    prefixIcon: Icon(Icons.lock, color: MusicColors.onSurfaceVariant),
+                                    prefixIcon: Icon(Icons.lock, color: AppTheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: BorderSide.none,
                                     ),
                                     filled: true,
-                                    fillColor: MusicColors.surfaceVariant,
+                                    fillColor: AppTheme.surfaceVariant,
                                   ),
                                   style: const TextStyle(color: Colors.white),
                                   
@@ -189,13 +178,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   controller: _passwordController,
                                   decoration: InputDecoration(
                                     labelText: 'Password',
-                                    prefixIcon: Icon(Icons.lock, color: MusicColors.onSurfaceVariant),
+                                    prefixIcon: Icon(Icons.lock, color: AppTheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: BorderSide.none,
                                     ),
                                     filled: true,
-                                    fillColor: MusicColors.surfaceVariant,
+                                    fillColor: AppTheme.surfaceVariant,
                                   ),
                                   style: const TextStyle(color: Colors.white),
                                   obscureText: true,
@@ -213,14 +202,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               if (_isLoading)
                                 const Center(
                                   child: CircularProgressIndicator(
-                                    color: MusicColors.primary,
+                                    color: AppTheme.primary,
                                   ),
                                 )
                               else
                                 ElevatedButton(
                                   onPressed: _submit,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: MusicColors.primary,
+                                    backgroundColor: AppTheme.primary,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
@@ -241,7 +230,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   ElevatedButton(
                                   onPressed: _cancel,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: MusicColors.surface,
+                                    backgroundColor: AppTheme.surface,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
@@ -292,7 +281,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("OTP Sent to your email! Please input OTP and new password in 5 minutes!"),
-          backgroundColor: MusicColors.onSurface,
+          backgroundColor: AppTheme.onSurface,
           duration: Duration(seconds: 5),
           action: SnackBarAction(
             label: 'DISMISS',
@@ -324,7 +313,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Password changed success !"),
-          backgroundColor: MusicColors.onSurface,
+          backgroundColor: AppTheme.onSurface,
           duration: Duration(seconds: 5),
           action: SnackBarAction(
             label: 'DISMISS',
@@ -344,7 +333,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.toString()),
-          backgroundColor: MusicColors.error,
+          backgroundColor: AppTheme.error,
           duration: Duration(seconds: 5),
           action: SnackBarAction(
             label: 'DISMISS',
