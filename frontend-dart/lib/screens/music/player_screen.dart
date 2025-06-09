@@ -12,18 +12,63 @@ class PlayerScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         title: const Text('Music Player'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => DialogUtils.showFeatureComingSoon(context, 'Full Music Player'),
+          ),
+        ],
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.music_note, size: 64, color: AppTheme.primary),
-            SizedBox(height: 16),
-            Text('Music Player', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-            SizedBox(height: 8),
-            Text('Coming Soon', style: TextStyle(color: AppTheme.onSurfaceVariant)),
+      body: EmptyState(
+        icon: Icons.music_note,
+        title: 'Music Player',
+        subtitle: 'Full music player functionality coming soon!',
+        buttonText: 'Learn More',
+        onButtonPressed: () => DialogUtils.showInfoDialog(
+          context: context,
+          title: 'Music Player Features',
+          icon: Icons.music_note,
+          message: 'The full music player will include:',
+          points: [
+            'Full track playback controls',
+            'Queue management',
+            'Lyrics display',
+            'Audio visualizations',
+            'Playlist integration',
           ],
+          tip: 'Currently you can play track previews from the search screen!',
         ),
+      ),
+    );
+  }
+}
+
+class SimpleComingSoonScreen extends StatelessWidget {
+  final String title;
+  final String feature;
+  final IconData icon;
+
+  const SimpleComingSoonScreen({
+    Key? key,
+    required this.title,
+    required this.feature,
+    required this.icon,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: Text(title),
+      ),
+      body: EmptyState(
+        icon: icon,
+        title: title,
+        subtitle: 'Coming Soon',
+        buttonText: 'Learn More',
+        onButtonPressed: () => DialogUtils.showFeatureComingSoon(context, feature),
       ),
     );
   }

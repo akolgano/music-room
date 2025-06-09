@@ -2,9 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../models/models.dart';
+import '../providers/dynamic_theme_provider.dart';
 
 class MusicPlayerService with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final DynamicThemeProvider? _themeProvider;
+  
   Track? _currentTrack;
   bool _isPlaying = false;
   Duration _position = Duration.zero;
@@ -15,7 +18,8 @@ class MusicPlayerService with ChangeNotifier {
   Duration get position => _position;
   Duration get duration => _duration;
   
-  MusicPlayerService() {
+  MusicPlayerService({DynamicThemeProvider? themeProvider}) 
+      : _themeProvider = themeProvider {
     _initializePlayer();
   }
 
@@ -50,6 +54,11 @@ class MusicPlayerService with ChangeNotifier {
       }
 
       _currentTrack = track;
+      
+      if (_themeProvider != null && track.imageUrl != null) {
+        _themeProvider!.extractAndApplyDominantColor(track.imageUrl);
+      }
+      
       await _audioPlayer.play(UrlSource(audioUrl));
       _isPlaying = true;
       notifyListeners();
@@ -85,6 +94,11 @@ class MusicPlayerService with ChangeNotifier {
       _isPlaying = false;
       _position = Duration.zero;
       _currentTrack = null;
+      
+      if (_themeProvider != null) {
+        _themeProvider!.resetTheme();
+      }
+      
       notifyListeners();
     } catch (e) {
       print('Error stopping playback: $e');

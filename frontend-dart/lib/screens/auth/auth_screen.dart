@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
-import '../../utils/snackbar_utils.dart';
 import '../../providers/auth_provider.dart';
 import 'package:google_sign_in_web/google_sign_in_web.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
@@ -35,8 +34,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_fadeController);
+    _fadeController = AnimationController(duration: AppDurations.longDelay, vsync: this);
+    _fadeAnimation = AppAnimations.fadeIn.animate(_fadeController);
     _fadeController.forward();
 
     if (kIsWeb) {
@@ -60,9 +59,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _googleLoginWeb(GoogleSignInUserData? account) async {
-    final success = await Provider.of<AuthProvider>(context, listen: false).googleLoginWeb(account);
-    if (success) {
-      SnackBarUtils.showSuccess(context, AppStrings.loginSuccessful);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.googleLoginWeb(account);
+    if (success && mounted) {
+      _showSuccessAndNavigate(AppStrings.loginSuccessful);
     }
   }
   
@@ -73,7 +73,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: AppSizes.screenPadding,
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: ConstrainedBox(
@@ -81,25 +81,30 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 child: Card(
                   color: AppTheme.surface,
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildHeader(),
-                          const SizedBox(height: 32),
-                          _buildForm(),
-                          const SizedBox(height: 32),
-                          _buildSubmitButton(),
-                          const SizedBox(height: 16),
-                          _buildToggleButton(),
-                          const SizedBox(height: 16),
-                          _buildSocialButtons(),
-                          const SizedBox(height: 16),
-                          _buildForgotPasswordButton(),
-                        ],
-                      ),
+                    padding: AppSizes.cardPadding,
+                    child: Consumer<AuthProvider>(
+                      builder: (context, authProvider, _) {
+                        return Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildHeader(),
+                              const SizedBox(height: 32),
+                              if (authProvider.hasError) _buildErrorBanner(authProvider.errorMessage!),
+                              _buildForm(),
+                              const SizedBox(height: 32),
+                              _buildSubmitButton(authProvider),
+                              const SizedBox(height: 16),
+                              _buildToggleButton(),
+                              const SizedBox(height: 16),
+                              _buildSocialButtons(),
+                              const SizedBox(height: 16),
+                              _buildForgotPasswordButton(),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -139,6 +144,30 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildErrorBanner(String error) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              error,
+              style: const TextStyle(color: Colors.red, fontSize: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildForm() {
     return Column(
       children: [
@@ -146,7 +175,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           controller: _usernameController,
           labelText: AppStrings.username,
           prefixIcon: Icons.person,
-          validator: (v) => Validators.required(v, AppStrings.username.toLowerCase()),
+          validator: (value) => Validators.required(value, AppStrings.username.toLowerCase()),
         ),
         if (!_isLogin) ...[
           const SizedBox(height: 16),
@@ -180,16 +209,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSubmitButton() {
-    return Consumer<AuthProvider>(
-      builder: (context, auth, _) {
-        return AppButton(
-          text: _isLogin ? AppStrings.signIn : AppStrings.signUp,
-          icon: _isLogin ? Icons.login : Icons.person_add,
-          isLoading: auth.isLoading,
-          onPressed: _submit,
-        );
-      },
+  Widget _buildSubmitButton(AuthProvider authProvider) {
+    return AppButton(
+      text: _isLogin ? AppStrings.signIn : AppStrings.signUp,
+      icon: _isLogin ? Icons.login : Icons.person_add,
+      isLoading: authProvider.isLoading,
+      onPressed: _submit,
     );
   }
 
@@ -290,14 +315,14 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     bool success;
     
     try {
       if (_isLogin) {
-        success = await auth.login(_usernameController.text.trim(), _passwordController.text);
+        success = await authProvider.login(_usernameController.text.trim(), _passwordController.text);
       } else {
-        success = await auth.signup(
+        success = await authProvider.signup(
           _usernameController.text.trim(), 
           _emailController.text.trim(), 
           _passwordController.text,
@@ -305,14 +330,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       }
       
       if (mounted && success) {
-        SnackBarUtils.showSuccess(context, _isLogin ? AppStrings.loginSuccessful : AppStrings.accountCreated);
-      } else if (mounted && auth.hasError) {
-        SnackBarUtils.showError(context, auth.errorMessage!);
+        _showSuccessAndNavigate(_isLogin ? AppStrings.loginSuccessful : AppStrings.accountCreated);
       }
     } catch (e) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'An unexpected error occurred. Please try again.');
-      }
     }
   }
 
@@ -326,8 +346,21 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       success = await authProvider.googleLoginApp();
     }
 
-    if (success) {
-      SnackBarUtils.showSuccess(context, AppStrings.loginSuccessful);
+    if (success && mounted) {
+      _showSuccessAndNavigate(AppStrings.loginSuccessful);
+    }
+  }
+
+  void _showSuccessAndNavigate(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          duration: AppDurations.snackBarDuration,
+        ),
+      );
     }
   }
 

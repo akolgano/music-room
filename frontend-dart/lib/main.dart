@@ -7,6 +7,7 @@ import 'providers/music_provider.dart';
 import 'providers/friend_provider.dart';
 import 'providers/profile_provider.dart';
 import 'providers/device_provider.dart';
+import 'providers/dynamic_theme_provider.dart';
 import 'services/music_player_service.dart';
 import 'app.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -42,7 +43,15 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => MusicProvider()),
-        ChangeNotifierProvider(create: (_) => MusicPlayerService()),
+        ChangeNotifierProvider(create: (_) => DynamicThemeProvider()),
+        ChangeNotifierProxyProvider<DynamicThemeProvider, MusicPlayerService>(
+          create: (context) => MusicPlayerService(
+            themeProvider: Provider.of<DynamicThemeProvider>(context, listen: false),
+          ),
+          update: (context, themeProvider, previous) => previous ?? MusicPlayerService(
+            themeProvider: themeProvider,
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => FriendProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => DeviceProvider()),

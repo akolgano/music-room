@@ -100,6 +100,103 @@ class AppTheme {
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
     elevation: 4,
   );
+
+  static Widget buildGradientContainer({
+    required Widget child,
+    List<Color>? colors,
+    BorderRadius? borderRadius,
+    EdgeInsets? padding,
+  }) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: colors ?? [primary, primary.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: borderRadius ?? BorderRadius.circular(12),
+      ),
+      child: child,
+    );
+  }
+
+  static Widget buildShadowContainer({
+    required Widget child,
+    Color? shadowColor,
+    double? blurRadius,
+    EdgeInsets? padding,
+    BorderRadius? borderRadius,
+  }) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: borderRadius ?? BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: (shadowColor ?? primary).withOpacity(0.3),
+            blurRadius: blurRadius ?? 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  static Widget buildCard({
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    Color? color,
+    BorderRadius? borderRadius,
+    List<BoxShadow>? boxShadow,
+  }) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: color ?? surface,
+        borderRadius: borderRadius ?? BorderRadius.circular(12),
+        boxShadow: boxShadow ?? lightShadow,
+      ),
+      child: child,
+    );
+  }
+
+  static Widget buildPrimaryCard({
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: primary.withOpacity(0.3)),
+      ),
+      child: child,
+    );
+  }
+
+  static Decoration get glassmorphicDecoration => BoxDecoration(
+    color: surface.withOpacity(0.8),
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.1),
+      width: 1,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.1),
+        blurRadius: 10,
+        offset: const Offset(0, 5),
+      ),
+    ],
+  );
 }
 
 class AppConstants {
@@ -113,6 +210,12 @@ class AppConstants {
   static const int defaultPageSize = 25;
   static const int maxSearchResults = 100;
   static const int minPasswordLength = 8;
+
+  static const int maxPlaylistNameLength = 100;
+  static const int maxDescriptionLength = 500;
+  static const int maxTracksPerPlaylist = 1000;
+  static const int maxFriendsCount = 500;
+  static const int maxDevicesPerUser = 10;
 }
 
 class AppRoutes {
@@ -201,6 +304,63 @@ class AppStrings {
   static const String confirmDelete = 'Are you sure you want to delete';
 }
 
+class AppMessages {
+  static const String featureComingSoon = 'This feature is coming soon!';
+  static const String connectionError = 'Connection error. Check your internet.';
+  static const String loadingPlaylists = 'Loading playlists...';
+  static const String loadingTracks = 'Loading tracks...';
+  static const String loadingFriends = 'Loading friends...';
+  static const String noResultsFound = 'No results found';
+  static const String tryDifferentKeywords = 'Try searching with different keywords';
+  static const String confirmAction = 'Are you sure?';
+  static const String actionCompleted = 'Action completed successfully';
+  static const String actionFailed = 'Action failed. Please try again.';
+  static const String playlistEmpty = 'This playlist is empty';
+  static const String noFriendsYet = 'No friends yet. Add some to get started!';
+  static const String noDevicesRegistered = 'No devices registered';
+  static const String networkErrorRetry = 'Network error. Tap to retry.';
+  static const String sessionExpired = 'Session expired. Please sign in again.';
+  static const String unauthorized = 'You are not authorized to perform this action.';
+  static const String serverError = 'Server error. Please try again later.';
+}
+
+class AppDurations {
+  static const Duration shortDelay = Duration(milliseconds: 300);
+  static const Duration mediumDelay = Duration(milliseconds: 500);
+  static const Duration longDelay = Duration(milliseconds: 800);
+  static const Duration snackBarDuration = Duration(seconds: 3);
+  static const Duration animationDuration = Duration(milliseconds: 250);
+  static const Duration splashDuration = Duration(seconds: 2);
+  static const Duration debounceDelay = Duration(milliseconds: 500);
+  static const Duration refreshIndicatorDuration = Duration(seconds: 1);
+}
+
+class AppSizes {
+  static const double borderRadius = 12.0;
+  static const double cardElevation = 4.0;
+  static const double iconSize = 24.0;
+  static const double avatarSize = 40.0;
+  static const double buttonHeight = 50.0;
+  static const double appBarHeight = 56.0;
+  static const double bottomNavHeight = 60.0;
+  static const double fabSize = 56.0;
+  
+  static const EdgeInsets screenPadding = EdgeInsets.all(16.0);
+  static const EdgeInsets cardPadding = EdgeInsets.all(16.0);
+  static const EdgeInsets listItemPadding = EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0);
+  static const EdgeInsets buttonPadding = EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0);
+}
+
+class AppAnimations {
+  static const Curve defaultCurve = Curves.easeInOut;
+  static const Curve bounceCurve = Curves.bounceOut;
+  static const Curve elasticCurve = Curves.elasticOut;
+  
+  static Tween<double> get fadeIn => Tween<double>(begin: 0.0, end: 1.0);
+  static Tween<double> get slideUp => Tween<double>(begin: 1.0, end: 0.0);
+  static Tween<double> get scaleUp => Tween<double>(begin: 0.0, end: 1.0);
+}
+
 class Validators {
   static String? required(String? value, String fieldName) {
     if (value?.isEmpty ?? true) return 'Please enter $fieldName';
@@ -217,7 +377,106 @@ class Validators {
 
   static String? password(String? value) {
     if (value?.isEmpty ?? true) return 'Please enter password';
-    if (value!.length < 8) return 'Password must be at least 8 characters';
+    if (value!.length < AppConstants.minPasswordLength) {
+      return 'Password must be at least ${AppConstants.minPasswordLength} characters';
+    }
     return null;
+  }
+
+  static String? playlistName(String? value) {
+    if (value?.isEmpty ?? true) return 'Please enter a playlist name';
+    if (value!.length > AppConstants.maxPlaylistNameLength) {
+      return 'Playlist name too long (max ${AppConstants.maxPlaylistNameLength} characters)';
+    }
+    return null;
+  }
+
+  static String? description(String? value) {
+    if (value != null && value.length > AppConstants.maxDescriptionLength) {
+      return 'Description too long (max ${AppConstants.maxDescriptionLength} characters)';
+    }
+    return null;
+  }
+
+  static String? username(String? value) {
+    if (value?.isEmpty ?? true) return 'Please enter a username';
+    if (value!.length < 3) return 'Username must be at least 3 characters';
+    if (value.length > 30) return 'Username must be less than 30 characters';
+    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+      return 'Username can only contain letters, numbers, and underscores';
+    }
+    return null;
+  }
+
+  static String? phoneNumber(String? value) {
+    if (value?.isEmpty ?? true) return null; 
+    if (!RegExp(r'^\+?[\d\s\-\(\)]+$').hasMatch(value!)) {
+      return 'Please enter a valid phone number';
+    }
+    return null;
+  }
+}
+
+class AppUtils {
+  static String formatDuration(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  static String formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+  }
+
+  static String formatNumber(int number) {
+    if (number < 1000) return number.toString();
+    if (number < 1000000) return '${(number / 1000).toStringAsFixed(1)}K';
+    if (number < 1000000000) return '${(number / 1000000).toStringAsFixed(1)}M';
+    return '${(number / 1000000000).toStringAsFixed(1)}B';
+  }
+
+  static String getTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    
+    if (difference.inDays > 365) {
+      return '${(difference.inDays / 365).floor()} year${(difference.inDays / 365).floor() == 1 ? '' : 's'} ago';
+    } else if (difference.inDays > 30) {
+      return '${(difference.inDays / 30).floor()} month${(difference.inDays / 30).floor() == 1 ? '' : 's'} ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  static bool isValidUrl(String url) {
+    return RegExp(r'^https?://').hasMatch(url);
+  }
+
+  static String truncateString(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}...';
+  }
+
+  static Color darken(Color color, [double amount = 0.1]) {
+    assert(amount >= 0 && amount <= 1);
+    final hsl = HSLColor.fromColor(color);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
+  }
+
+  static Color lighten(Color color, [double amount = 0.1]) {
+    assert(amount >= 0 && amount <= 1);
+    final hsl = HSLColor.fromColor(color);
+    final hslLight = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+    return hslLight.toColor();
   }
 }

@@ -61,7 +61,13 @@ class AppNavigationDrawer extends StatelessWidget {
                       context,
                       icon: Icons.add_circle,
                       title: 'Create Playlist',
-                      route: AppRoutes.PlaylistEditor,
+                      route: AppRoutes.playlistEditor,
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.edit,
+                      title: 'Edit Playlist',
+                      onTap: () => _showPlaylistSelector(context, 'edit'),
                     ),
                     _buildNavItem(
                       context,
@@ -80,6 +86,36 @@ class AppNavigationDrawer extends StatelessWidget {
                       icon: Icons.play_circle,
                       title: 'Music Player',
                       route: AppRoutes.player,
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.share,
+                      title: 'Playlist Sharing',
+                      onTap: () => _showPlaylistSelector(context, 'share'),
+                    ),
+                  ],
+                ),
+                
+                _buildSection(
+                  'Music Discovery',
+                  [
+                    _buildNavItem(
+                      context,
+                      icon: Icons.music_note,
+                      title: 'Deezer Integration',
+                      onTap: () => _navigateToDeezerSearch(context),
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.album,
+                      title: 'Track Details',
+                      onTap: () => _showTrackIdInput(context),
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.featured_play_list,
+                      title: 'Music Features',
+                      route: AppRoutes.musicFeatures,
                     ),
                   ],
                 ),
@@ -109,14 +145,13 @@ class AppNavigationDrawer extends StatelessWidget {
                 ),
                 
                 _buildSection(
-                  'Device Management',
+                  'Collaboration',
                   [
                     _buildNavItem(
                       context,
-                      icon: Icons.devices,
-                      title: 'My Devices',
-                      route: AppRoutes.deviceManagement,
-                      badge: deviceProvider.userDevices.length.toString(),
+                      icon: Icons.how_to_vote,
+                      title: 'Track Voting',
+                      route: AppRoutes.trackVote,
                     ),
                     _buildNavItem(
                       context,
@@ -128,31 +163,20 @@ class AppNavigationDrawer extends StatelessWidget {
                 ),
                 
                 _buildSection(
-                  'Advanced Features',
+                  'Device Management',
                   [
                     _buildNavItem(
                       context,
-                      icon: Icons.featured_play_list,
-                      title: 'Music Features',
-                      route: AppRoutes.musicFeatures,
-                    ),
-                    _buildNavItem(
-                      context,
-                      icon: Icons.how_to_vote,
-                      title: 'Track Voting',
-                      route: AppRoutes.trackVote,
-                    ),
-                    _buildNavItem(
-                      context,
-                      icon: Icons.share,
-                      title: 'Playlist Sharing',
-                      onTap: () => _showPlaylistSharingOptions(context),
+                      icon: Icons.devices,
+                      title: 'My Devices',
+                      route: AppRoutes.deviceManagement,
+                      badge: deviceProvider.userDevices.length.toString(),
                     ),
                   ],
                 ),
                 
                 _buildSection(
-                  'Settings',
+                  'Account Settings',
                   [
                     _buildNavItem(
                       context,
@@ -169,7 +193,31 @@ class AppNavigationDrawer extends StatelessWidget {
                   ],
                 ),
                 
-                const Divider(color: AppTheme.surfaceVariant),
+                _buildSection(
+                  'App Features',
+                  [
+                    _buildNavItem(
+                      context,
+                      icon: Icons.settings,
+                      title: 'App Settings',
+                      onTap: () => _showAppSettings(context),
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.help,
+                      title: 'Help & Support',
+                      onTap: () => _showHelpDialog(context),
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.info,
+                      title: 'About App',
+                      onTap: () => _showAboutDialog(context),
+                    ),
+                  ],
+                ),
+                
+                const Divider(color: Colors.grey),
                 
                 _buildNavItem(
                   context,
@@ -286,7 +334,7 @@ class AppNavigationDrawer extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.smartphone,
                           color: Colors.white,
                           size: 12,
@@ -439,6 +487,7 @@ class AppNavigationDrawer extends StatelessWidget {
         ),
         onTap: onTap ?? () {
           if (route != null) {
+            Navigator.of(context).pop();
             Navigator.of(context).pushNamed(route);
           }
         },
@@ -455,15 +504,21 @@ class AppNavigationDrawer extends StatelessWidget {
     }
   }
 
-  void _showPlaylistSharingOptions(BuildContext context) {
+  void _navigateToDeezerSearch(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, AppRoutes.trackSearch);
+  }
+
+  void _showPlaylistSelector(BuildContext context, String action) {
     Navigator.pop(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surface,
-        title: const Text('Playlist Sharing', style: TextStyle(color: Colors.white)),
+        title: Text('${action == 'edit' ? 'Edit' : 'Share'} Playlist', 
+                   style: const TextStyle(color: Colors.white)),
         content: const Text(
-          'To share a playlist, open the playlist editor and use the share button.',
+          'This feature requires selecting a specific playlist. Please use the Home screen to access your playlists.',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
@@ -474,9 +529,168 @@ class AppNavigationDrawer extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, AppRoutes.PlaylistEditor);
+              Navigator.pushNamed(context, AppRoutes.home);
             },
-            child: const Text('Create Playlist'),
+            child: const Text('Go to Playlists'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTrackIdInput(BuildContext context) {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          backgroundColor: AppTheme.surface,
+          title: const Text('View Track Details', style: TextStyle(color: Colors.white)),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              hintText: 'Enter Deezer Track ID',
+              hintStyle: TextStyle(color: Colors.grey),
+            ),
+            style: const TextStyle(color: Colors.white),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, AppRoutes.deezerTrackDetail, 
+                                    arguments: controller.text);
+                }
+              },
+              child: const Text('View'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAppSettings(BuildContext context) {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('App Settings', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.dark_mode, color: Colors.white),
+              title: const Text('Dark Mode', style: TextStyle(color: Colors.white)),
+              trailing: Switch(
+                value: true,
+                onChanged: (value) {},
+                activeColor: AppTheme.primary,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications, color: Colors.white),
+              title: const Text('Notifications', style: TextStyle(color: Colors.white)),
+              trailing: Switch(
+                value: true,
+                onChanged: (value) {},
+                activeColor: AppTheme.primary,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.high_quality, color: Colors.white),
+              title: const Text('High Quality Audio', style: TextStyle(color: Colors.white)),
+              trailing: Switch(
+                value: false,
+                onChanged: (value) {},
+                activeColor: AppTheme.primary,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHelpDialog(BuildContext context) {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('Help & Support', style: TextStyle(color: Colors.white)),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Getting Started:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text('• Create playlists to organize your music', style: TextStyle(color: Colors.grey)),
+            Text('• Add friends to share music together', style: TextStyle(color: Colors.grey)),
+            Text('• Search for tracks using Deezer integration', style: TextStyle(color: Colors.grey)),
+            Text('• Vote on tracks in collaborative playlists', style: TextStyle(color: Colors.grey)),
+            SizedBox(height: 16),
+            Text('Need more help?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text('Contact support: support@musicroom.app', style: TextStyle(color: AppTheme.primary)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('About Music Room', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Music Room', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+            const SizedBox(height: 8),
+            Text('Version: ${AppConstants.version}', style: const TextStyle(color: Colors.white)),
+            const SizedBox(height: 16),
+            const Text('A collaborative music sharing platform that lets you create, share, and enjoy playlists with friends.', 
+                       style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 16),
+            const Text('Features:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('• Real-time collaborative playlists', style: TextStyle(color: Colors.grey)),
+            const Text('• Deezer integration for music discovery', style: TextStyle(color: Colors.grey)),
+            const Text('• Social features and friend connections', style: TextStyle(color: Colors.grey)),
+            const Text('• Multi-device synchronization', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 16),
+            const Text('© 2024 Music Room Team', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
         ],
       ),

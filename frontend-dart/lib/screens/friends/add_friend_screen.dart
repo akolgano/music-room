@@ -5,7 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
-import '../../utils/snackbar_utils.dart';
+import '../base_screen.dart';
 
 class AddFriendScreen extends StatefulWidget {
   const AddFriendScreen({Key? key}) : super(key: key);
@@ -14,9 +14,11 @@ class AddFriendScreen extends StatefulWidget {
   State<AddFriendScreen> createState() => _AddFriendScreenState();
 }
 
-class _AddFriendScreenState extends State<AddFriendScreen> {
+class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   final _userIdController = TextEditingController();
-  bool _isLoading = false;
+
+  @override
+  String get screenTitle => 'Add New Friend';
 
   @override
   void dispose() {
@@ -24,100 +26,28 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     super.dispose();
   }
 
-  Future<void> _sendFriendRequest() async {
-    final userInput = _userIdController.text.trim();
-    
-    if (userInput.isEmpty) {
-      SnackBarUtils.showError(context, 'Please enter a user ID');
-      return;
-    }
-
-    int? userId;
-    try {
-      userId = int.parse(userInput);
-      if (userId <= 0) {
-        SnackBarUtils.showError(context, 'Please enter a valid user ID');
-        return;
-      }
-    } catch (e) {
-      SnackBarUtils.showError(context, 'User ID must be a number');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      
-      final message = await friendProvider.sendFriendRequest(authProvider.token!, userId);
-      
-      SnackBarUtils.showSuccess(context, message ?? 'Friend request sent successfully!');
-      _userIdController.clear();
-    } catch (error) {
-      String errorMessage = 'Unable to send friend request';
-      if (error.toString().contains('not found')) {
-        errorMessage = 'User not found. Please check the user ID.';
-      } else if (error.toString().contains('already')) {
-        errorMessage = 'You\'re already friends with this user or have a pending request.';
-      }
-      SnackBarUtils.showError(context, errorMessage);
-    }
-
-    setState(() => _isLoading = false);
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Add New Friend'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeaderCard(),
-            const SizedBox(height: 24),
-            _buildSearchCard(),
-            const SizedBox(height: 24),
-            _buildHowItWorksCard(),
-          ],
-        ),
+  Widget buildContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderCard(),
+          const SizedBox(height: 24),
+          _buildSearchCard(),
+          const SizedBox(height: 24),
+          _buildHowItWorksCard(),
+        ],
       ),
     );
   }
 
   Widget _buildHeaderCard() {
-    return Card(
-      color: AppTheme.primary.withOpacity(0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppTheme.primary.withOpacity(0.3)),
-      ),
-      child: const Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.people, color: AppTheme.primary, size: 24),
-                SizedBox(width: 12),
-                Text('Find Music Friends', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              ],
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Connect to share playlists and discover music together. Ask your friends for their Music Room user ID to add them!',
-              style: TextStyle(color: Colors.white, fontSize: 14),
-            ),
-          ],
-        ),
-      ),
+    return InfoBanner(
+      title: 'Find Music Friends',
+      message: 'Connect to share playlists and discover music together. Ask your friends for their Music Room user ID to add them!',
+      icon: Icons.people,
     );
   }
 
@@ -142,31 +72,21 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
               labelText: 'Friend\'s User ID',
               hintText: 'e.g., 12345',
               prefixIcon: Icons.person_search,
+              validator: (value) {
+                if (value?.isEmpty ?? true) return 'Please enter a user ID';
+                final userId = int.tryParse(value!);
+                if (userId == null || userId <= 0) return 'Please enter a valid user ID';
+                return null;
+              },
               onChanged: (value) => setState(() {}),
             ),
             const SizedBox(height: 20),
-            _isLoading
-                ? Container(
-                    width: double.infinity,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)),
-                        SizedBox(width: 12),
-                        Text('Sending request...', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  )
-                : AppButton(
-                    text: 'Send Friend Request',
-                    icon: Icons.send,
-                    onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null,
-                  ),
+            AppButton(
+              text: 'Send Friend Request',
+              icon: Icons.send,
+              onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null,
+              isLoading: isLoading,
+            ),
           ],
         ),
       ),
@@ -229,6 +149,38 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _sendFriendRequest() async {
+    final userInput = _userIdController.text.trim();
+    
+    if (userInput.isEmpty) {
+      showError('Please enter a user ID');
+      return;
+    }
+
+    int? userId;
+    try {
+      userId = int.parse(userInput);
+      if (userId <= 0) {
+        showError('Please enter a valid user ID');
+        return;
+      }
+    } catch (e) {
+      showError('User ID must be a number');
+      return;
+    }
+
+    await runAsyncAction(
+      () async {
+        final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+        final message = await friendProvider.sendFriendRequest(auth.token!, userId!);
+        _userIdController.clear();
+        return message;
+      },
+      successMessage: 'Friend request sent successfully!',
+      errorMessage: 'Unable to send friend request',
     );
   }
 }

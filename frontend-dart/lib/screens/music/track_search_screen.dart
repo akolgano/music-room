@@ -4,11 +4,12 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
+import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
-import '../../utils/snackbar_utils.dart';
 import '../../models/models.dart';
+import '../base_screen.dart';
 
 class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;
@@ -26,12 +27,27 @@ class TrackSearchScreen extends StatefulWidget {
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
 
-class _TrackSearchScreenState extends State<TrackSearchScreen> {
+class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   final _searchController = TextEditingController();
   bool _isLoading = false;
   bool _searchDeezer = true;
   Set<String> _selectedTracks = {};
   bool _isMultiSelectMode = false;
+
+  @override
+  String get screenTitle => widget.playlistId != null ? 'Add Music to Playlist' : AppStrings.searchTracks;
+
+  @override
+  List<Widget> get actions => [
+    if (widget.playlistId != null)
+      TextButton(
+        onPressed: () => setState(() => _isMultiSelectMode = !_isMultiSelectMode),
+        child: Text(
+          _isMultiSelectMode ? AppStrings.cancel : 'Multi-Select',
+          style: const TextStyle(color: AppTheme.primary),
+        ),
+      ),
+  ];
 
   @override
   void initState() {
@@ -45,89 +61,78 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final musicProvider = Provider.of<MusicProvider>(context);
-    final tracks = musicProvider.searchResults;
-
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: Text(widget.playlistId != null ? 'Add Music to Playlist' : AppStrings.searchTracks),
-        actions: [
-          if (widget.playlistId != null)
-            TextButton(
-              onPressed: () => setState(() => _isMultiSelectMode = !_isMultiSelectMode),
-              child: Text(_isMultiSelectMode ? AppStrings.cancel : 'Multi-Select'),
-            ),
-        ],
-      ),
-      body: Column(
-        children: [
-          _buildSearchHeader(),
-          _buildModeSelector(),
-          if (_isMultiSelectMode && _selectedTracks.isNotEmpty) _buildSelectionBar(),
-          Expanded(child: _buildResults(tracks)),
-        ],
-      ),
+  Widget buildContent() {
+    return Consumer<DynamicThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return Consumer<MusicProvider>(
+          builder: (context, musicProvider, _) {
+            return Column(
+              children: [
+                _buildSearchHeader(themeProvider),
+                _buildModeSelector(themeProvider),
+                if (_isMultiSelectMode && _selectedTracks.isNotEmpty) 
+                  _buildSelectionBar(themeProvider),
+                Expanded(child: _buildResults(musicProvider.searchResults, themeProvider)),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildSearchHeader() {
+  Widget _buildSearchHeader(DynamicThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(color: AppTheme.surface),
+      decoration: BoxDecoration(
+        color: themeProvider.surfaceColor,
+        boxShadow: [
+          BoxShadow(
+            color: themeProvider.primaryColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceVariant,
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: AppStrings.searchForTracks,
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                  prefixIcon: const Icon(Icons.search, color: AppTheme.primary),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                onSubmitted: (_) => _performSearch(),
-              ),
+            child: AppTextField(
+              controller: _searchController,
+              labelText: '',
+              hintText: AppStrings.searchForTracks,
+              prefixIcon: Icons.search,
+              onChanged: (_) => setState(() {}),
             ),
           ),
           const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: _isLoading ? null : _performSearch,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-            ),
-            child: _isLoading 
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                : const Text(AppStrings.search, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          AppButton(
+            text: AppStrings.search,
+            onPressed: _searchController.text.isNotEmpty ? _performSearch : null,
+            isLoading: _isLoading,
+            icon: Icons.search,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildModeSelector() {
+  Widget _buildModeSelector(DynamicThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          const Text('Search in:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+          const Text(
+            'Search in:', 
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Row(
               children: [
-                _buildModeButton(true, AppStrings.deezer, Icons.music_note),
+                _buildModeButton(true, AppStrings.deezer, Icons.music_note, themeProvider),
                 const SizedBox(width: 8),
-                _buildModeButton(false, AppStrings.local, Icons.library_music),
+                _buildModeButton(false, AppStrings.local, Icons.library_music, themeProvider),
               ],
             ),
           ),
@@ -136,27 +141,38 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     );
   }
 
-  Widget _buildModeButton(bool isDeezer, String label, IconData icon) {
+  Widget _buildModeButton(bool isDeezer, String label, IconData icon, DynamicThemeProvider themeProvider) {
     final isSelected = _searchDeezer == isDeezer;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _searchDeezer = isDeezer),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        child: AnimatedContainer(
+          duration: AppDurations.animationDuration,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.primary.withOpacity(0.2) : AppTheme.surface,
+            color: isSelected ? themeProvider.primaryColor.withOpacity(0.2) : themeProvider.surfaceColor,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: isSelected ? AppTheme.primary : Colors.transparent),
+            border: Border.all(
+              color: isSelected ? themeProvider.primaryColor : Colors.transparent,
+              width: 2,
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: isSelected ? AppTheme.primary : Colors.white, size: 16),
+              Icon(
+                icon, 
+                color: isSelected ? themeProvider.primaryColor : Colors.white, 
+                size: 16,
+              ),
               const SizedBox(width: 4),
-              Text(label, style: TextStyle(
-                color: isSelected ? AppTheme.primary : Colors.white,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              )),
+              Text(
+                label, 
+                style: TextStyle(
+                  color: isSelected ? themeProvider.primaryColor : Colors.white,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
             ],
           ),
         ),
@@ -164,93 +180,40 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     );
   }
 
-  Widget _buildSelectionBar() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle, color: AppTheme.primary, size: 24),
-          const SizedBox(width: 8),
-          Text('${_selectedTracks.length} selected', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-          const Spacer(),
-          ElevatedButton.icon(
-            onPressed: _addSelectedTracks,
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Add Selected'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-          ),
-        ],
-      ),
+  Widget _buildSelectionBar(DynamicThemeProvider themeProvider) {
+    return InfoBanner(
+      title: '${_selectedTracks.length} selected',
+      message: 'Ready to add to playlist',
+      icon: Icons.check_circle,
+      color: themeProvider.primaryColor,
+      actionText: 'Add Selected',
+      onAction: _addSelectedTracks,
     );
   }
 
-  void _addToLibrary(Track track) async {
-    if (track.deezerTrackId == null) {
-      CommonWidgets.showSnackBar(context, 'Cannot add non-Deezer track to library', isError: true);
-      return;
-    }
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-
-      await musicProvider.addTrackFromDeezer(track.deezerTrackId!, authProvider.token!);
-      CommonWidgets.showSnackBar(context, 'Added "${track.name}" to your library!');
-    } catch (error) {
-      CommonWidgets.showSnackBar(context, 'Failed to add track to library', isError: true);
-    }
-  }
-
-  Widget _buildResults(List tracks) {
+  Widget _buildResults(List tracks, DynamicThemeProvider themeProvider) {
     if (_isLoading) {
-      return CommonWidgets.loadingWidget(AppStrings.loading);
+      return buildLoadingState(AppStrings.loading);
     }
 
     if (_searchController.text.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.search, size: 64, color: AppTheme.primary),
-            SizedBox(height: 16),
-            Text('Ready to find music?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-            SizedBox(height: 8),
-            Text('Enter a song title, artist name, or album to get started', style: TextStyle(color: Colors.grey), textAlign: TextAlign.center),
-          ],
-        ),
+      return EmptyState(
+        icon: Icons.search,
+        title: 'Ready to find music?',
+        subtitle: 'Enter a song title, artist name, or album to get started',
       );
     }
 
     if (tracks.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off, size: 80, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text(AppStrings.noTracksFound, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 8),
-            const Text(AppStrings.tryDifferentKeywords, style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                _searchController.clear();
-                setState(() {});
-              },
-              child: const Text('Clear Search'),
-            ),
-          ],
-        ),
+      return EmptyState(
+        icon: Icons.search_off,
+        title: AppStrings.noTracksFound,
+        subtitle: AppStrings.tryDifferentKeywords,
+        buttonText: 'Clear Search',
+        onButtonPressed: () {
+          _searchController.clear();
+          setState(() {});
+        },
       );
     }
 
@@ -272,6 +235,22 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     );
   }
 
+  Future<void> _addToLibrary(Track track) async {
+    if (track.deezerTrackId == null) {
+      showError('Cannot add non-Deezer track to library');
+      return;
+    }
+
+    await runAsyncAction(
+      () async {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        await musicProvider.addTrackFromDeezer(track.deezerTrackId!, auth.token!);
+      },
+      successMessage: 'Added "${track.name}" to your library!',
+      errorMessage: 'Failed to add track to library',
+    );
+  }
+
   Future<void> _playPreview(Track track) async {
     try {
       final playerService = Provider.of<MusicPlayerService>(context, listen: false);
@@ -290,29 +269,32 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(track, previewUrl);
-        CommonWidgets.showSnackBar(context, 'Playing preview of "${track.name}"');
+        showSuccess('Playing preview of "${track.name}"');
       } else {
-        CommonWidgets.showSnackBar(context, AppStrings.noPreviewAvailable, isError: true);
+        showError(AppStrings.noPreviewAvailable);
       }
     } catch (error) {
-      CommonWidgets.showSnackBar(context, 'Failed to play preview', isError: true);
+      showError('Failed to play preview');
     }
   }
 
-  void _performSearch() async {
+  Future<void> _performSearch() async {
     if (_searchController.text.trim().isEmpty) return;
 
     setState(() => _isLoading = true);
-    try {
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      if (_searchDeezer) {
-        await musicProvider.searchDeezerTracks(_searchController.text);
-      } else {
-        await musicProvider.searchTracks(_searchController.text);
-      }
-    } catch (error) {
-      CommonWidgets.showSnackBar(context, 'Search failed. Please try again.', isError: true);
-    }
+    
+    await runAsyncAction(
+      () async {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        if (_searchDeezer) {
+          await musicProvider.searchDeezerTracks(_searchController.text);
+        } else {
+          await musicProvider.searchTracks(_searchController.text);
+        }
+      },
+      errorMessage: 'Search failed. Please try again.',
+    );
+    
     setState(() => _isLoading = false);
   }
 
@@ -320,7 +302,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     if (_isMultiSelectMode) {
       _toggleSelection(track.id);
     } else if (widget.playlistId == null) {
-      CommonWidgets.showSnackBar(context, 'Track details coming soon!');
+      showInfo('Track details coming soon!');
     } else {
       if (_searchDeezer) {
         _playPreview(track);
@@ -338,50 +320,51 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     });
   }
 
-  void _addSingleTrack(track) async {
+  Future<void> _addSingleTrack(track) async {
     if (widget.playlistId == null) return;
 
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+    await runAsyncAction(
+      () async {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
 
-      await musicProvider.addTrackToPlaylist(
-        widget.playlistId!, 
-        track.id, 
-        authProvider.token!,
-        deviceProvider.deviceUuid,
-      );
-      CommonWidgets.showSnackBar(context, 'Added "${track.name}" to playlist!');
-    } catch (error) {
-      CommonWidgets.showSnackBar(context, 'Failed to add track', isError: true);
-    }
-  }
-
-  void _addSelectedTracks() async {
-    if (widget.playlistId == null || _selectedTracks.isEmpty) return;
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
-
-      for (String trackId in _selectedTracks) {
         await musicProvider.addTrackToPlaylist(
-          widget.playlistId!,
-          trackId,
-          authProvider.token!,
+          widget.playlistId!, 
+          track.id, 
+          auth.token!,
           deviceProvider.deviceUuid,
         );
-      }
-      CommonWidgets.showSnackBar(context, 'Added ${_selectedTracks.length} tracks!');
-      setState(() {
-        _selectedTracks.clear();
-        _isMultiSelectMode = false;
-      });
-    } catch (error) {
-      CommonWidgets.showSnackBar(context, 'Failed to add some tracks', isError: true);
-    }
+      },
+      successMessage: 'Added "${track.name}" to playlist!',
+      errorMessage: 'Failed to add track',
+    );
+  }
+
+  Future<void> _addSelectedTracks() async {
+    if (widget.playlistId == null || _selectedTracks.isEmpty) return;
+
+    await runAsyncAction(
+      () async {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+
+        for (String trackId in _selectedTracks) {
+          await musicProvider.addTrackToPlaylist(
+            widget.playlistId!,
+            trackId,
+            auth.token!,
+            deviceProvider.deviceUuid,
+          );
+        }
+      },
+      successMessage: 'Added ${_selectedTracks.length} tracks!',
+      errorMessage: 'Failed to add some tracks',
+    );
+
+    setState(() {
+      _selectedTracks.clear();
+      _isMultiSelectMode = false;
+    });
   }
 
   @override

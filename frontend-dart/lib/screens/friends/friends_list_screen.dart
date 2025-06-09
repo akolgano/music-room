@@ -5,7 +5,8 @@ import '../../core/app_core.dart';
 import '../../providers/friend_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/common_widgets.dart';
-import '../../utils/snackbar_utils.dart';
+import '../../utils/dialog_utils.dart';
+import '../base_screen.dart';
 
 class FriendsListScreen extends StatefulWidget {
   const FriendsListScreen({Key? key}) : super(key: key);
@@ -14,312 +15,257 @@ class FriendsListScreen extends StatefulWidget {
   State<FriendsListScreen> createState() => _FriendsListScreenState();
 }
 
-class _FriendsListScreenState extends State<FriendsListScreen> with TickerProviderStateMixin {
+class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   List<int> _friends = [];
   List<Map<String, dynamic>> _pendingRequests = [];
-  bool _isLoading = false;
+
+  @override
+  String get screenTitle => 'Friends';
+
+  @override
+  List<Widget> get actions => [
+    TextButton.icon(
+      onPressed: () => navigateTo(AppRoutes.addFriend),
+      icon: const Icon(Icons.person_add, color: AppTheme.primary),
+      label: const Text('Add Friend', style: TextStyle(color: AppTheme.primary)),
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadFriendsData();
-    });
-  }
-
-  Future<void> _loadFriendsData() async {
-    if (!mounted) return; 
-    
-    setState(() => _isLoading = true);
-    
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      
-      await Future.wait([
-        friendProvider.fetchFriends(authProvider.token!),
-        friendProvider.fetchPendingRequests(authProvider.token!),
-      ]);
-      
-      if (mounted) { 
-        setState(() {
-          _friends = friendProvider.friends;
-          _pendingRequests = friendProvider.pendingRequests;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'Unable to load friends data');
-      }
-    }
-    
-    if (mounted) { 
-      setState(() => _isLoading = false);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadFriendsData());
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Friends'),
-        actions: [
-          TextButton.icon(
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
-            icon: const Icon(Icons.person_add, color: AppTheme.primary),
-            label: const Text('Add Friend', style: TextStyle(color: AppTheme.primary)),
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.primary,
-          unselectedLabelColor: Colors.grey,
-          tabs: [
-            Tab(text: 'Friends (${_friends.length})'),
-            Tab(text: 'Requests (${_pendingRequests.length})'),
-          ],
-        ),
-      ),
-      body: _isLoading
-          ? CommonWidgets.loadingWidget()
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildFriendsTab(),
-                _buildRequestsTab(),
-              ],
-            ),
+  PreferredSizeWidget? buildAppBar() {
+    return buildStandardAppBar(
+      actions: actions,
+    ) as PreferredSizeWidget;
+  }
+
+  @override
+  Widget buildContent() {
+    return buildTabScaffold(
+      tabs: [
+        Tab(text: 'Friends (${_friends.length})'),
+        Tab(text: 'Requests (${_pendingRequests.length})'),
+      ],
+      tabViews: [
+        _buildFriendsTab(),
+        _buildRequestsTab(),
+      ],
+      controller: _tabController,
+    );
+  }
+
+  Future<void> _loadFriendsData() async {
+    await runAsyncAction(
+      () async {
+        final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+        
+        await Future.wait([
+          friendProvider.fetchFriends(auth.token!),
+          friendProvider.fetchPendingRequests(auth.token!),
+        ]);
+        
+        _friends = friendProvider.friends;
+        _pendingRequests = friendProvider.pendingRequests;
+      },
+      errorMessage: 'Unable to load friends data',
     );
   }
 
   Widget _buildFriendsTab() {
     if (_friends.isEmpty) {
-      return CommonWidgets.emptyState(
+      return EmptyState(
         icon: Icons.people,
         title: 'No friends yet',
         subtitle: 'Add friends to start sharing music together!',
         buttonText: 'Add Friend',
-        onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
+        onButtonPressed: () => navigateTo(AppRoutes.addFriend),
       );
     }
 
-    return RefreshIndicator(
+    return buildListWithRefresh<int>(
+      items: _friends,
       onRefresh: _loadFriendsData,
-      color: AppTheme.primary,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _friends.length,
-        itemBuilder: (context, index) {
-          final friendId = _friends[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            color: AppTheme.surface,
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
-                child: const Icon(Icons.person, color: Colors.white),
+      itemBuilder: (friendId, index) => Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        color: AppTheme.surface,
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
+            child: const Icon(Icons.person, color: Colors.white),
+          ),
+          title: Text('Friend #$friendId', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+          subtitle: Text('User ID: $friendId', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          trailing: PopupMenuButton<String>(
+            onSelected: (value) => _handleFriendAction(value, friendId),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'share',
+                child: Row(
+                  children: [
+                    Icon(Icons.playlist_play, size: 16),
+                    SizedBox(width: 8),
+                    Text('Share Playlist'),
+                  ],
+                ),
               ),
-              title: Text('Friend #$friendId', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-              subtitle: Text('User ID: $friendId', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              trailing: PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
-                    case 'share':
-                      _sharePlaylistWithFriend(friendId);
-                      break;
-                    case 'remove':
-                      _showRemoveDialog(friendId);
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'share',
-                    child: Row(
-                      children: [
-                        Icon(Icons.playlist_play, size: 16),
-                        SizedBox(width: 8),
-                        Text('Share Playlist'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'remove',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person_remove, size: 16, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Remove Friend', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
+              const PopupMenuItem(
+                value: 'remove',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_remove, size: 16, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Remove Friend', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildRequestsTab() {
     if (_pendingRequests.isEmpty) {
-      return CommonWidgets.emptyState(
+      return EmptyState(
         icon: Icons.mail_outline,
         title: 'No friend requests',
         subtitle: 'When someone sends you a friend request, it will appear here',
       );
     }
 
-    return RefreshIndicator(
+    return buildListWithRefresh<Map<String, dynamic>>(
+      items: _pendingRequests,
       onRefresh: _loadFriendsData,
-      color: AppTheme.primary,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _pendingRequests.length,
-        itemBuilder: (context, index) {
-          final request = _pendingRequests[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            color: AppTheme.surface,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      itemBuilder: (request, index) => Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        color: AppTheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        backgroundColor: Colors.blue,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('User ID: ${request['from_user'] ?? 'Unknown'}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                            const SizedBox(height: 4),
-                            Text('Status: ${request['status'] ?? 'pending'}', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.7))),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    child: Icon(Icons.person, color: Colors.white),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => _rejectRequest(request['id']?.toString() ?? '0'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white),
-                        ),
-                        child: const Text('REJECT'),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton(
-                        onPressed: () => _acceptRequest(request['id']?.toString() ?? '0'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: Colors.black,
-                        ),
-                        child: const Text('ACCEPT'),
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('User ID: ${request['from_user'] ?? 'Unknown'}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        const SizedBox(height: 4),
+                        Text('Status: ${request['status'] ?? 'pending'}', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.7))),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          );
-        },
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => _rejectRequest(request['id']?.toString() ?? '0'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                    ),
+                    child: const Text('REJECT'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () => _acceptRequest(request['id']?.toString() ?? '0'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.black,
+                    ),
+                    child: const Text('ACCEPT'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  void _handleFriendAction(String action, int friendId) {
+    switch (action) {
+      case 'share':
+        _sharePlaylistWithFriend(friendId);
+        break;
+      case 'remove':
+        _showRemoveDialog(friendId);
+        break;
+    }
   }
 
   void _sharePlaylistWithFriend(int friendId) {
-    SnackBarUtils.showInfo(context, 'Playlist sharing coming soon!');
+    showInfo('Playlist sharing coming soon!');
   }
 
   void _showRemoveDialog(int friendId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: const Text('Remove Friend', style: TextStyle(color: Colors.white)),
-        content: Text('Are you sure you want to remove Friend #$friendId?', style: const TextStyle(color: Colors.white)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _removeFriend(friendId);
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
-    );
+    DialogUtils.showConfirmDialog(
+      context,
+      title: 'Remove Friend',
+      message: 'Are you sure you want to remove Friend #$friendId?',
+      confirmText: 'Remove',
+      isDangerous: true,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        _removeFriend(friendId);
+      }
+    });
   }
 
   Future<void> _acceptRequest(String friendshipId) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      
-      final message = await friendProvider.acceptFriendRequest(authProvider.token!, int.parse(friendshipId));
-      if (mounted) {
-        SnackBarUtils.showSuccess(context, message ?? 'Friend request accepted');
-        _loadFriendsData();
-      }
-    } catch (error) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'Failed to accept request');
-      }
-    }
+    await runAsyncAction(
+      () async {
+        final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+        final message = await friendProvider.acceptFriendRequest(auth.token!, int.parse(friendshipId));
+        await _loadFriendsData();
+        return message;
+      },
+      successMessage: 'Friend request accepted',
+      errorMessage: 'Failed to accept request',
+    );
   }
 
   Future<void> _rejectRequest(String friendshipId) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      
-      final message = await friendProvider.rejectFriendRequest(authProvider.token!, int.parse(friendshipId));
-      if (mounted) {
-        SnackBarUtils.showSuccess(context, message ?? 'Friend request rejected');
-        _loadFriendsData();
-      }
-    } catch (error) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'Failed to reject request');
-      }
-    }
+    await runAsyncAction(
+      () async {
+        final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+        final message = await friendProvider.rejectFriendRequest(auth.token!, int.parse(friendshipId));
+        await _loadFriendsData();
+        return message;
+      },
+      successMessage: 'Friend request rejected',
+      errorMessage: 'Failed to reject request',
+    );
   }
 
   Future<void> _removeFriend(int friendId) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      
-      await friendProvider.removeFriend(authProvider.token!, friendId);
-      if (mounted) {
-        SnackBarUtils.showSuccess(context, 'Friend removed');
-        _loadFriendsData();
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'Failed to remove friend');
-      }
-    }
+    await runAsyncAction(
+      () async {
+        final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+        await friendProvider.removeFriend(auth.token!, friendId);
+        await _loadFriendsData();
+      },
+      successMessage: 'Friend removed',
+      errorMessage: 'Failed to remove friend',
+    );
   }
 
   @override

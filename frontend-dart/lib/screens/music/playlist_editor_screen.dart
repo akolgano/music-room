@@ -10,7 +10,8 @@ import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/websocket_service.dart';
 import '../../services/api_service.dart';
-import '../../utils/snackbar_utils.dart';
+import '../../utils/dialog_utils.dart';
+import '../base_screen.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
@@ -21,17 +22,29 @@ class PlaylistEditorScreen extends StatefulWidget {
   State<PlaylistEditorScreen> createState() => _PlaylistEditorScreenState();
 }
 
-class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
+class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final WebSocketService _webSocketService = WebSocketService();
   final ApiService _apiService = ApiService();
   
   bool _isPublic = false;
-  bool _isLoading = false;
   Playlist? _playlist;
   List<PlaylistTrack> _playlistTracks = [];
   List<int> _friends = [];
+
+  @override
+  String get screenTitle => _isEditMode ? AppStrings.editPlaylist : AppStrings.createPlaylist;
+
+  @override
+  List<Widget> get actions => _buildAppBarActions();
+
+  @override
+  Widget? get floatingActionButton => _isEditMode ? _buildFloatingActionButton() : null;
+
+  bool get _isEditMode => widget.playlistId != null && 
+                         widget.playlistId!.isNotEmpty && 
+                         widget.playlistId != 'null';
 
   @override
   void initState() {
@@ -39,250 +52,27 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     if (_isEditMode) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylist());
     }
-    _loadFriends();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadFriends());
     _setupWebSocketListener();
   }
 
-  bool get _isEditMode => widget.playlistId != null && 
-                         widget.playlistId!.isNotEmpty && 
-                         widget.playlistId != 'null';
-
-  void _setupWebSocketListener() {
-    if (_isEditMode) {
-      _webSocketService.playlistTracksStream.listen((tracks) {
-        if (mounted) {
-          setState(() {
-            _playlistTracks = tracks;
-          });
-        }
-      });
-    }
-  }
-
-  Future<void> _loadFriends() async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      await friendProvider.fetchFriends(authProvider.token!);
-      if (mounted) {
-        setState(() {
-          _friends = friendProvider.friends;
-        });
-      }
-    } catch (e) {
-      print('Error loading friends: $e');
-    }
-  }
-
-  Future<void> _loadPlaylist() async {
-    if (!_isEditMode) return;
-
-    setState(() => _isLoading = true);
-    
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      
-      _playlist = await musicProvider.getPlaylistDetails(widget.playlistId!, authProvider.token!);
-      
-      if (_playlist != null) {
-        _nameController.text = _playlist!.name;
-        _descriptionController.text = _playlist!.description;
-        _isPublic = _playlist!.isPublic;
-        
-        await musicProvider.fetchPlaylistTracks(widget.playlistId!, authProvider.token!);
-        _playlistTracks = List.from(musicProvider.playlistTracks);
-        
-        await _webSocketService.connectToPlaylist(widget.playlistId!);
-      }
-    } catch (e) {
-      SnackBarUtils.showError(context, 'Failed to load playlist');
-    }
-    
-    setState(() => _isLoading = false);
-  }
-
-  Future<void> _createPlaylist() async {
-    if (_nameController.text.isEmpty) {
-      SnackBarUtils.showError(context, 'Please give your playlist a name');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
-
-      final playlistId = await musicProvider.createPlaylist(
-        _nameController.text,
-        _descriptionController.text,
-        _isPublic,
-        authProvider.token!,
-        deviceProvider.deviceUuid,
-      );
- 
-      if (playlistId != null) {
-        SnackBarUtils.showSuccess(context, 'Playlist created successfully!');
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
-          ),
-        );
-        return;
-      }
-    } catch (e) {
-      SnackBarUtils.showError(context, 'Failed to create playlist');
-    }
-
-    setState(() => _isLoading = false);
-  }
-
-  Future<void> _reorderTracks(int oldIndex, int newIndex) async {
-    if (!_isEditMode) return;
-    
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
-      await _apiService.moveTrackInPlaylist(
-        playlistId: widget.playlistId!,
-        rangeStart: oldIndex,
-        insertBefore: newIndex,
-        token: authProvider.token!,
-      );
-      
-      SnackBarUtils.showSuccess(context, 'Track moved successfully');
-    } catch (e) {
-      SnackBarUtils.showError(context, 'Failed to move track');
-      _loadPlaylist();
-    }
-  }
-
-  Future<void> _removeTrack(PlaylistTrack track) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: const Text('Remove Track', style: TextStyle(color: Colors.white)),
-        content: Text('Remove "${track.name}" from this playlist?', 
-                     style: const TextStyle(color: Colors.white)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false), 
-            child: const Text('Cancel')
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true && _isEditMode) {
-      try {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
-
-        await _apiService.removeTrackFromPlaylist(
-          playlistId: widget.playlistId!,
-          trackId: track.trackId,
-          token: authProvider.token!,
-          deviceUuid: deviceProvider.deviceUuid,
-        );
-        
-        SnackBarUtils.showSuccess(context, AppStrings.trackRemoved);
-      } catch (e) {
-        SnackBarUtils.showError(context, 'Unable to remove track');
-      }
-    }
-  }
-
-  Future<void> _inviteUser() async {
-    if (!_isEditMode || _friends.isEmpty) {
-      SnackBarUtils.showError(context, 'No friends to invite');
-      return;
-    }
-
-    final selectedUserId = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: const Text('Invite Friend', style: TextStyle(color: Colors.white)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: _friends.length,
-            itemBuilder: (context, index) {
-              final friendId = _friends[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppTheme.primary,
-                  child: Text(friendId.toString()[0]),
-                ),
-                title: Text('Friend #$friendId', style: const TextStyle(color: Colors.white)),
-                onTap: () => Navigator.of(context).pop(friendId),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-
-    if (selectedUserId != null) {
-      try {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        
-        await _apiService.inviteUserToPlaylist(
-          playlistId: widget.playlistId!,
-          userId: selectedUserId,
-          token: authProvider.token!,
-        );
-        
-        SnackBarUtils.showSuccess(context, 'User invited to playlist!');
-      } catch (e) {
-        SnackBarUtils.showError(context, 'Failed to invite user');
-      }
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: Text(_isEditMode ? AppStrings.editPlaylist : AppStrings.createPlaylist),
-        actions: _buildAppBarActions(),
+  Widget buildContent() {
+    if (isLoading) {
+      return buildLoadingState();
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!_isEditMode) _buildCreatePlaylistHeader(),
+          _buildPlaylistForm(),
+          const SizedBox(height: 32),
+          if (_isEditMode) _buildTracksSection(),
+        ],
       ),
-      body: _isLoading
-          ? CommonWidgets.loadingWidget()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!_isEditMode) _buildCreatePlaylistHeader(),
-                  _buildPlaylistForm(),
-                  const SizedBox(height: 32),
-                  if (_isEditMode) _buildTracksSection(),
-                ],
-              ),
-            ),
-      floatingActionButton: _isEditMode ? _buildFloatingActionButton() : null,
     );
   }
 
@@ -291,14 +81,11 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
       return [
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.save, size: 16),
-            label: const Text('Create'),
-            onPressed: _isLoading ? null : _createPlaylist,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.black,
-            ),
+          child: AppButton(
+            text: 'Create',
+            icon: Icons.save,
+            onPressed: _createPlaylist,
+            isLoading: isLoading,
           ),
         ),
       ];
@@ -313,7 +100,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
       TextButton.icon(
         icon: Icon(_isPublic ? Icons.public : Icons.lock, size: 16),
         label: Text(_isPublic ? 'Public' : 'Private', style: const TextStyle(fontSize: 12)),
-        onPressed: _isLoading ? null : _toggleVisibility,
+        onPressed: _toggleVisibility,
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -323,28 +110,10 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
   }
 
   Widget _buildCreatePlaylistHeader() {
-    return Card(
-      color: AppTheme.primary.withOpacity(0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.lightbulb, color: AppTheme.primary, size: 24),
-                SizedBox(width: 8),
-                Text('Getting Started', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Create your custom playlist by giving it a name and description. You can add songs later!',
-              style: TextStyle(color: Colors.white, fontSize: 14),
-            ),
-          ],
-        ),
-      ),
+    return InfoBanner(
+      title: 'Getting Started',
+      message: 'Create your custom playlist by giving it a name and description. You can add songs later!',
+      icon: Icons.lightbulb,
     );
   }
 
@@ -364,21 +133,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 const Spacer(),
                 if (_isEditMode && _webSocketService.isConnected)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.sync, color: Colors.green, size: 14),
-                        SizedBox(width: 4),
-                        Text('Live', style: TextStyle(color: Colors.green, fontSize: 10)),
-                      ],
-                    ),
-                  ),
+                  StatusIndicator(isConnected: _webSocketService.isConnected),
               ],
             ),
             const SizedBox(height: 16),
@@ -386,7 +141,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
               controller: _nameController,
               labelText: 'Playlist Name',
               prefixIcon: Icons.title,
-              validator: (value) => (value?.isEmpty ?? true) ? 'Please enter a playlist name' : null,
+              validator: Validators.playlistName,
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -394,6 +149,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
               labelText: 'Description (optional)',
               prefixIcon: Icons.description,
               maxLines: 3,
+              validator: Validators.description,
             ),
             const SizedBox(height: 16),
             SwitchListTile(
@@ -430,21 +186,7 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 const Spacer(),
                 if (_webSocketService.isConnected)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.sync, color: Colors.green, size: 14),
-                        SizedBox(width: 4),
-                        Text('Live', style: TextStyle(color: Colors.green, fontSize: 10)),
-                      ],
-                    ),
-                  ),
+                  StatusIndicator(isConnected: _webSocketService.isConnected),
               ],
             ),
             const SizedBox(height: 16),
@@ -459,30 +201,12 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
   }
 
   Widget _buildEmptyTracksState() {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(Icons.music_note, size: 48, color: Colors.white.withOpacity(0.5)),
-            const SizedBox(height: 16),
-            const Text('No tracks added yet', 
-                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 8),
-            const Text('Add some songs to get started!', style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _navigateToTrackSearch,
-              icon: const Icon(Icons.add),
-              label: const Text('Add Songs'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return EmptyState(
+      icon: Icons.music_note,
+      title: 'No tracks added yet',
+      subtitle: 'Add some songs to get started!',
+      buttonText: 'Add Songs',
+      onButtonPressed: _navigateToTrackSearch,
     );
   }
 
@@ -540,25 +264,174 @@ class _PlaylistEditorScreenState extends State<PlaylistEditorScreen> {
     );
   }
 
-  Future<void> _toggleVisibility() async {
-    if (!_isEditMode) return;
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-
-      bool newVisibility = !_isPublic;
-      await musicProvider.changePlaylistVisibility(widget.playlistId!, newVisibility, authProvider.token!);
-      
-      setState(() => _isPublic = newVisibility);
-      SnackBarUtils.showSuccess(context, 'Playlist is now ${newVisibility ? 'public' : 'private'}');
-    } catch (e) {
-      SnackBarUtils.showError(context, 'Unable to change visibility');
+  void _setupWebSocketListener() {
+    if (_isEditMode) {
+      _webSocketService.playlistTracksStream.listen((tracks) {
+        if (mounted) {
+          setState(() {
+            _playlistTracks = tracks;
+          });
+        }
+      });
     }
   }
 
+  Future<void> _loadFriends() async {
+    await runAsync(() async {
+      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+      await friendProvider.fetchFriends(auth.token!);
+      _friends = friendProvider.friends;
+    });
+  }
+
+  Future<void> _loadPlaylist() async {
+    if (!_isEditMode) return;
+
+    await runAsyncAction(
+      () async {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        
+        _playlist = await musicProvider.getPlaylistDetails(widget.playlistId!, auth.token!);
+        
+        if (_playlist != null) {
+          _nameController.text = _playlist!.name;
+          _descriptionController.text = _playlist!.description;
+          _isPublic = _playlist!.isPublic;
+          
+          await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
+          _playlistTracks = List.from(musicProvider.playlistTracks);
+          
+          await _webSocketService.connectToPlaylist(widget.playlistId!);
+          setState(() {});
+        }
+      },
+      errorMessage: 'Failed to load playlist',
+    );
+  }
+
+  Future<void> _createPlaylist() async {
+    if (_nameController.text.isEmpty) {
+      showError('Please give your playlist a name');
+      return;
+    }
+
+    await runAsyncAction(
+      () async {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+
+        final playlistId = await musicProvider.createPlaylist(
+          _nameController.text,
+          _descriptionController.text,
+          _isPublic,
+          auth.token!,
+          deviceProvider.deviceUuid,
+        );
+ 
+        if (playlistId != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
+            ),
+          );
+        }
+      },
+      successMessage: 'Playlist created successfully!',
+      errorMessage: 'Failed to create playlist',
+    );
+  }
+
+  Future<void> _reorderTracks(int oldIndex, int newIndex) async {
+    if (!_isEditMode) return;
+    
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+
+    await runAsyncAction(
+      () async {
+        await _apiService.moveTrackInPlaylist(
+          playlistId: widget.playlistId!,
+          rangeStart: oldIndex,
+          insertBefore: newIndex,
+          token: auth.token!,
+        );
+      },
+      successMessage: 'Track moved successfully',
+      errorMessage: 'Failed to move track',
+    );
+  }
+
+  Future<void> _removeTrack(PlaylistTrack track) async {
+    final confirm = await DialogUtils.showDeleteConfirmDialog(context, track.name);
+
+    if (confirm == true && _isEditMode) {
+      await runAsyncAction(
+        () async {
+          final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+
+          await _apiService.removeTrackFromPlaylist(
+            playlistId: widget.playlistId!,
+            trackId: track.trackId,
+            token: auth.token!,
+            deviceUuid: deviceProvider.deviceUuid,
+          );
+        },
+        successMessage: AppStrings.trackRemoved,
+        errorMessage: 'Unable to remove track',
+      );
+    }
+  }
+
+  Future<void> _inviteUser() async {
+    if (!_isEditMode || _friends.isEmpty) {
+      showError('No friends to invite');
+      return;
+    }
+
+    final selectedIndex = await DialogUtils.showSelectionDialog<int>(
+      context: context,
+      title: 'Invite Friend',
+      items: _friends,
+      itemTitle: (friendId) => 'Friend #$friendId',
+      itemLeading: (friendId) => CircleAvatar(
+        backgroundColor: AppTheme.primary,
+        child: Text(friendId.toString()[0]),
+      ),
+    );
+
+    if (selectedIndex != null) {
+      await runAsyncAction(
+        () async {
+          await _apiService.inviteUserToPlaylist(
+            playlistId: widget.playlistId!,
+            userId: _friends[selectedIndex],
+            token: auth.token!,
+          );
+        },
+        successMessage: 'User invited to playlist!',
+        errorMessage: 'Failed to invite user',
+      );
+    }
+  }
+
+  Future<void> _toggleVisibility() async {
+    if (!_isEditMode) return;
+
+    await runAsyncAction(
+      () async {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        bool newVisibility = !_isPublic;
+        await musicProvider.changePlaylistVisibility(widget.playlistId!, newVisibility, auth.token!);
+        setState(() => _isPublic = newVisibility);
+      },
+      successMessage: 'Playlist is now ${!_isPublic ? 'public' : 'private'}',
+      errorMessage: 'Unable to change visibility',
+    );
+  }
+
   void _navigateToTrackSearch() {
-    Navigator.of(context).pushNamed('/track_search', arguments: widget.playlistId);
+    navigateTo('/track_search', arguments: widget.playlistId);
   }
 
   @override
