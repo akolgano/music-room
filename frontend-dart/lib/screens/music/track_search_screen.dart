@@ -194,6 +194,23 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     );
   }
 
+  void _addToLibrary(Track track) async {
+    if (track.deezerTrackId == null) {
+      CommonWidgets.showSnackBar(context, 'Cannot add non-Deezer track to library', isError: true);
+      return;
+    }
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+
+      await musicProvider.addTrackFromDeezer(track.deezerTrackId!, authProvider.token!);
+      CommonWidgets.showSnackBar(context, 'Added "${track.name}" to your library!');
+    } catch (error) {
+      CommonWidgets.showSnackBar(context, 'Failed to add track to library', isError: true);
+    }
+  }
+
   Widget _buildResults(List tracks) {
     if (_isLoading) {
       return CommonWidgets.loadingWidget(AppStrings.loading);
@@ -249,6 +266,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
           onSelectionChanged: _isMultiSelectMode ? (value) => _toggleSelection(track.id) : null,
           onAdd: !_isMultiSelectMode && widget.playlistId != null ? () => _addSingleTrack(track) : null,
           onPlay: _searchDeezer ? () => _playPreview(track) : null,
+          onAddToLibrary: _searchDeezer && track.deezerTrackId != null ? () => _addToLibrary(track) : null,
         );
       },
     );

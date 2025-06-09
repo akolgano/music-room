@@ -8,8 +8,7 @@ import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
 import '../../utils/snackbar_utils.dart';
 import '../base_screen.dart';
-import '../profile/user_password_change_screen.dart';
-import '../profile/social_network_link_screen.dart';
+import '../profile/profile_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -81,7 +80,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
       children: [
         _buildDashboard(),
         _buildPlaylists(),
-        _buildProfile(),
+        const ProfileScreen(isEmbedded: true), 
       ],
     );
   }
@@ -185,6 +184,8 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
             icon: Icons.playlist_play,
             title: 'No playlists yet',
             subtitle: 'Create your first playlist to get started!',
+            buttonText: 'Create Playlist',
+            onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           );
         }
 
@@ -201,84 +202,6 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
           },
         );
       },
-    );
-  }
-
-  Widget _buildProfile() {
-    final auth = Provider.of<AuthProvider>(context);
-    final profileProvider = Provider.of<ProfileProvider>(context);
-    
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Card(
-          color: AppTheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: AppTheme.primary,
-                  child: Icon(Icons.person, size: 50, color: Colors.black),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  auth.displayName,
-                  style: const TextStyle(fontSize: 24, color: Colors.white),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'User ID: ${auth.userId ?? "Unknown"}',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildProfileItem(Icons.people, AppStrings.friends,
-            () => Navigator.pushNamed(context, AppRoutes.friends)),
-        _buildProfileItem(Icons.settings, 'Settings',
-            () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
-        _buildProfileItem(Icons.help, 'Help',
-            () => SnackBarUtils.showInfo(context, AppStrings.featureComingSoon)),
-
-        if (profileProvider.isPasswordUsable) ...[
-          _buildProfileItem(Icons.password, 'Password Change',
-              () => 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserPasswordChangeScreen(),
-                    ),
-                  )
-              ),
-        ],
-                      
-        _buildProfileItem(Icons.link, 'Link Social Network',
-            () => 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SocialNetworkLinkScreen(),
-                  ),
-                )
-            ),
-
-      ],
-    );
-  }
-
-  Widget _buildProfileItem(IconData icon, String title, VoidCallback onTap) {
-    return Card(
-      color: AppTheme.surface,
-      child: ListTile(
-        leading: Icon(icon, color: AppTheme.primary),
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: onTap,
-      ),
     );
   }
 

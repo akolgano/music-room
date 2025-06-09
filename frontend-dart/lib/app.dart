@@ -10,7 +10,7 @@ import 'screens/auth/auth_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/music/track_search_screen.dart';
 import 'screens/music/playlist_editor_screen.dart';
-import 'screens/playlists/public_playlists_screen.dart';
+import 'screens/playlists/playlists_screen.dart';
 import 'screens/friends/friends_list_screen.dart';
 import 'screens/friends/add_friend_screen.dart';
 import 'screens/friends/friend_request_screen.dart';

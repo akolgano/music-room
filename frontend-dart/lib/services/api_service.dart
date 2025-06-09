@@ -365,6 +365,56 @@ class ApiService {
       (_) => null,
     );
   }
+
+  Future<List<Map<String, dynamic>>> getPendingFriendRequests(String token) async {
+    return _handleRequest(
+      () => http.get(Uri.parse('$_baseUrl/users/get_pending_requests/'), headers: _getHeaders(token)),
+      (data) {
+        final requests = data['requests'] as List<dynamic>;
+        return requests.map((r) => r as Map<String, dynamic>).toList();
+      },
+    );
+  }
+
+  Future<String> acceptFriendRequest(int friendshipId, String token) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/users/accept_friend_request/$friendshipId/'),
+        headers: _getHeaders(token),
+      ),
+      (data) => data['message'] ?? 'Friend request accepted',
+    );
+  }
+
+  Future<String> rejectFriendRequest(int friendshipId, String token) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/users/reject_friend_request/$friendshipId/'),
+        headers: _getHeaders(token),
+      ),
+      (data) => data['message'] ?? 'Friend request rejected',
+    );
+  }
+
+  Future<void> removeFriend(int friendId, String token) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/users/remove_friend/$friendId/'),
+        headers: _getHeaders(token),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
+    return _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/tracks/add_from_deezer/$deezerTrackId/'),
+        headers: _getHeaders(token),
+      ),
+      (_) => null,
+    );
+  }
 }
 
 class AuthResult {

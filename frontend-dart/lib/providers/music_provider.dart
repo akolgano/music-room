@@ -100,12 +100,6 @@ class MusicProvider with ChangeNotifier, BaseProvider {
     return result != null;
   }
 
-  Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
-    await execute(() => _api.post('/tracks/add_from_deezer', {
-      'deezer_track_id': deezerTrackId,
-    }, token));
-  }
-
   Future<bool> performMusicAction(String endpoint, Map<String, dynamic> data, String token) async {
     final result = await execute(() => _api.post(endpoint, data, token));
     return result != null;
@@ -322,5 +316,9 @@ class MusicProvider with ChangeNotifier, BaseProvider {
       return results.take(limit).toList();
     });
     return result ?? [];
+  }
+
+  Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
+    await execute(() => _api.addTrackFromDeezer(deezerTrackId, token));
   }
 }
