@@ -1,4 +1,6 @@
 // lib/core/app_core.dart
+import 'package:flutter/material.dart';
+
 export 'package:flutter/material.dart';
 
 class AppTheme {

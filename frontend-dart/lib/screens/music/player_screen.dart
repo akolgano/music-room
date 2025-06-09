@@ -1,4 +1,7 @@
 // lib/screens/music/player_screen.dart
+import 'package:flutter/material.dart';
+import '../../core/app_core.dart';
+
 class PlayerScreen extends StatelessWidget {
   const PlayerScreen({Key? key}) : super(key: key);
 

@@ -1,4 +1,7 @@
 // lib/screens/music/control_delegation_screen.dart
+import 'package:flutter/material.dart';
+import '../../core/app_core.dart';
+
 class MusicControlDelegationScreen extends StatelessWidget {
   const MusicControlDelegationScreen({Key? key}) : super(key: key);
 

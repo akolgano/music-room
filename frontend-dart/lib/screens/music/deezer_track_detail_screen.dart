@@ -1,4 +1,7 @@
 // lib/screens/music/deezer_track_detail_screen.dart
+import 'package:flutter/material.dart';
+import '../../core/app_core.dart';
+
 class DeezerTrackDetailScreen extends StatelessWidget {
   final String trackId;
   

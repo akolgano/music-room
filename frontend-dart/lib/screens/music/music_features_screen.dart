@@ -1,6 +1,6 @@
 // lib/screens/music/music_features_screen.dart
 import 'package:flutter/material.dart';
-import '../../core/constants.dart';
+import '../../core/app_core.dart';
 import 'track_search_screen.dart';
 
 class MusicFeaturesScreen extends StatelessWidget {
@@ -9,7 +9,9 @@ class MusicFeaturesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
         title: const Text('Music Features'),
       ),
       body: Padding(
@@ -64,7 +66,7 @@ class MusicFeaturesScreen extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (ctx) => TrackSearchScreen(searchDeezer: true),
+                    builder: (ctx) => const TrackSearchScreen(searchDeezer: true),
                   ),
                 );
               },
@@ -80,10 +82,10 @@ class MusicFeaturesScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: Colors.indigo,
+          color: AppTheme.primary,
         ),
       ),
     );
@@ -99,6 +101,7 @@ class MusicFeaturesScreen extends StatelessWidget {
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      color: AppTheme.surface,
       child: InkWell(
         onTap: onTap ?? (route != null ? () => Navigator.of(context).pushNamed(route) : null),
         child: Padding(
@@ -107,10 +110,10 @@ class MusicFeaturesScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 25,
-                backgroundColor: Colors.indigo.withOpacity(0.1),
+                backgroundColor: AppTheme.primary.withOpacity(0.1),
                 child: Icon(
                   icon,
-                  color: Colors.indigo,
+                  color: AppTheme.primary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -123,19 +126,20 @@ class MusicFeaturesScreen extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: TextStyle(
-                        color: Colors.grey[600],
+                      style: const TextStyle(
+                        color: AppTheme.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, color: Colors.grey),
+              const Icon(Icons.arrow_forward_ios, color: Colors.grey),
             ],
           ),
         ),
