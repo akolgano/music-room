@@ -48,22 +48,13 @@ class FriendProvider with ChangeNotifier {
   }
 
   Future<void> fetchPendingRequests(String token) async {
-    await _execute(() async {
-      _pendingRequests = [
-        {
-          'id': '1', 
-          'from_user': 123, 
-          'to_user': int.tryParse(token) ?? 0, 
-          'status': 'pending',
-          'created_at': DateTime.now().toIso8601String(),
-        }
-      ];
-    });
+    final result = await _execute(() => _api.getPendingFriendRequests(token));
+    if (result != null) _pendingRequests = result;
   }
 
   Future<String?> acceptFriendRequest(String token, int friendshipId) async {
-    return await _execute(() async {
-      await Future.delayed(const Duration(milliseconds: 500));
+    final result = await _execute(() async {
+      final message = await _api.acceptFriendRequest(friendshipId, token);
       
       final requestIndex = _pendingRequests.indexWhere((req) => 
         int.tryParse(req['id']?.toString() ?? '0') == friendshipId);
@@ -77,23 +68,27 @@ class FriendProvider with ChangeNotifier {
       }
       
       notifyListeners();
-      return 'Friend request accepted';
+      return message;
     });
+    return result;
   }
 
   Future<String?> rejectFriendRequest(String token, int friendshipId) async {
-    return await _execute(() async {
-      await Future.delayed(const Duration(milliseconds: 500));
+    final result = await _execute(() async {
+      final message = await _api.rejectFriendRequest(friendshipId, token);
+      
       _pendingRequests.removeWhere((req) => 
         int.tryParse(req['id']?.toString() ?? '0') == friendshipId);
+      
       notifyListeners();
-      return 'Friend request rejected';
+      return message;
     });
+    return result;
   }
 
   Future<void> removeFriend(String token, int friendId) async {
     await _execute(() async {
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _api.removeFriend(friendId, token);
       _friends.remove(friendId);
     });
   }

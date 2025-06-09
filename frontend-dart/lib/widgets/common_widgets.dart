@@ -215,7 +215,7 @@ class PlaylistCard extends StatelessWidget {
 class TrackCard extends StatelessWidget {
   final Track track;
   final bool isSelected;
-  final VoidCallback? onTap, onAdd, onPlay;
+  final VoidCallback? onTap, onAdd, onPlay, onAddToLibrary;
   final ValueChanged<bool?>? onSelectionChanged;
   final bool showImage;
 
@@ -223,7 +223,7 @@ class TrackCard extends StatelessWidget {
     Key? key,
     required this.track,
     this.isSelected = false,
-    this.onTap, this.onAdd, this.onPlay, this.onSelectionChanged,
+    this.onTap, this.onAdd, this.onPlay, this.onAddToLibrary, this.onSelectionChanged,
     this.showImage = true,
   }) : super(key: key);
 
@@ -315,6 +315,7 @@ class TrackCard extends StatelessWidget {
       actions.add(IconButton(
         icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, color: AppTheme.primary, size: 24),
         onPressed: onPlay,
+        tooltip: trackIsPlaying ? 'Pause Preview' : 'Play Preview',
       ));
     }
     
@@ -322,6 +323,15 @@ class TrackCard extends StatelessWidget {
       actions.add(IconButton(
         icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
         onPressed: onAdd,
+        tooltip: 'Add to Playlist',
+      ));
+    }
+
+    if (onAddToLibrary != null) {
+      actions.add(IconButton(
+        icon: const Icon(Icons.library_add, color: Colors.orange, size: 24),
+        onPressed: onAddToLibrary,
+        tooltip: 'Add to Library',
       ));
     }
 

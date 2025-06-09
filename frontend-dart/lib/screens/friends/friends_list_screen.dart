@@ -128,12 +128,25 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
               trailing: PopupMenuButton<String>(
                 onSelected: (value) {
                   switch (value) {
+                    case 'share':
+                      _sharePlaylistWithFriend(friendId);
+                      break;
                     case 'remove':
                       _showRemoveDialog(friendId);
                       break;
                   }
                 },
                 itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'share',
+                    child: Row(
+                      children: [
+                        Icon(Icons.playlist_play, size: 16),
+                        SizedBox(width: 8),
+                        Text('Share Playlist'),
+                      ],
+                    ),
+                  ),
                   const PopupMenuItem(
                     value: 'remove',
                     child: Row(
@@ -227,6 +240,10 @@ class _FriendsListScreenState extends State<FriendsListScreen> with TickerProvid
         },
       ),
     );
+  }
+
+  void _sharePlaylistWithFriend(int friendId) {
+    SnackBarUtils.showInfo(context, 'Playlist sharing coming soon!');
   }
 
   void _showRemoveDialog(int friendId) {
