@@ -168,10 +168,7 @@ class _AppScaffold extends StatelessWidget {
 
                 return Container(
                   height: 100,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface, 
-                    boxShadow: AppTheme.lightShadow
-                  ),
+                  decoration: BoxDecoration(color: AppTheme.surface, boxShadow: AppTheme.lightShadow),
                   child: Row(
                     children: [
                       Container(
@@ -189,21 +186,16 @@ class _AppScaffold extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(track.name, 
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16), 
-                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                              Text(track.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
                               const SizedBox(height: 4),
-                              Text(track.artist, 
-                                style: const TextStyle(color: Colors.grey, fontSize: 14), 
-                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                              Text(track.artist, style: const TextStyle(color: Colors.grey, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                             ],
                           ),
                         ),
                       ),
                       IconButton(
                         onPressed: playerService.togglePlay,
-                        icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, 
-                                  color: AppTheme.primary, size: 32),
+                        icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: AppTheme.primary, size: 32),
                       ),
                       const SizedBox(width: 8),
                     ],
