@@ -101,6 +101,155 @@ class AppTheme {
     elevation: 4,
   );
 
+  static ButtonStyle get outlinedButtonStyle => OutlinedButton.styleFrom(
+    foregroundColor: primary,
+    side: const BorderSide(color: primary),
+    minimumSize: const Size(88, 50),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+  );
+
+  static Widget buildStandardCard({
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    VoidCallback? onTap,
+    Color? color,
+  }) {
+    return Card(
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: color ?? surface,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: padding ?? const EdgeInsets.all(16),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  static Widget buildFormCard({
+    required Widget child,
+    String? title,
+    IconData? titleIcon,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    return Card(
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: surface,
+      child: Padding(
+        padding: padding ?? const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (title != null) ...[
+              Row(
+                children: [
+                  if (titleIcon != null) ...[
+                    Icon(titleIcon, color: primary, size: 20),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget buildListCard({
+    required Widget child,
+    VoidCallback? onTap,
+    EdgeInsets? margin,
+    Color? color,
+  }) {
+    return Card(
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      color: color ?? surface,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: child,
+      ),
+    );
+  }
+
+  static Widget buildActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? iconColor,
+    Widget? trailing,
+  }) {
+    final cardIconColor = iconColor ?? primary;
+    return buildListCard(
+      onTap: onTap,
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: cardIconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: cardIconColor, size: 20),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(color: onSurfaceVariant, fontSize: 12),
+        ),
+        trailing: trailing ?? const Icon(Icons.chevron_right, color: onSurfaceVariant),
+      ),
+    );
+  }
+
+  static Widget buildHeaderCard({
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    List<Color>? gradientColors,
+  }) {
+    return Container(
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors ?? [primary, primary.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: primary.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: padding ?? const EdgeInsets.all(16),
+        child: child,
+      ),
+    );
+  }
+
   static Widget buildGradientContainer({
     required Widget child,
     List<Color>? colors,
@@ -182,6 +331,40 @@ class AppTheme {
     );
   }
 
+  static Widget buildErrorCard({
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: error.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: error.withOpacity(0.3)),
+      ),
+      child: child,
+    );
+  }
+
+  static Widget buildSuccessCard({
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: success.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: success.withOpacity(0.3)),
+      ),
+      child: child,
+    );
+  }
+
   static Decoration get glassmorphicDecoration => BoxDecoration(
     color: surface.withOpacity(0.8),
     borderRadius: BorderRadius.circular(16),
@@ -197,6 +380,99 @@ class AppTheme {
       ),
     ],
   );
+
+  static Widget buildPrimaryButton({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool fullWidth = true,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: isLoading ? null : onPressed,
+      icon: isLoading 
+        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+        : Icon(icon ?? Icons.check, size: 16),
+      label: Text(text),
+      style: fullWidth ? fullWidthButtonStyle : ElevatedButton.styleFrom(
+        backgroundColor: primary,
+        foregroundColor: Colors.black,
+        minimumSize: const Size(88, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      ),
+    );
+  }
+
+  static Widget buildSecondaryButton({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool fullWidth = false,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon ?? Icons.check, size: 16),
+      label: Text(text),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: primary,
+        side: const BorderSide(color: primary),
+        minimumSize: fullWidth ? const Size(double.infinity, 50) : const Size(88, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      ),
+    );
+  }
+
+  static Widget buildDangerButton({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool fullWidth = false,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon ?? Icons.warning, size: 16),
+      label: Text(text),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: error,
+        foregroundColor: Colors.white,
+        minimumSize: fullWidth ? const Size(double.infinity, 50) : const Size(88, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      ),
+    );
+  }
+
+  static InputDecoration getInputDecoration({
+    required String labelText,
+    String? hintText,
+    IconData? prefixIcon,
+    Widget? suffixIcon,
+    String? errorText,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      errorText: errorText,
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: onSurfaceVariant) : null,
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: surfaceVariant,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: primary, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: error, width: 2),
+      ),
+      labelStyle: const TextStyle(color: onSurfaceVariant),
+      hintStyle: TextStyle(color: onSurface.withOpacity(0.6)),
+    );
+  }
 }
 
 class AppConstants {

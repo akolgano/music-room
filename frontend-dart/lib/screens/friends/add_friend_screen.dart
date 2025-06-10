@@ -16,6 +16,7 @@ class AddFriendScreen extends StatefulWidget {
 
 class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   final _userIdController = TextEditingController();
+  bool _isScreenLoading = false;
 
   @override
   String get screenTitle => 'Add New Friend';
@@ -85,7 +86,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
               text: 'Send Friend Request',
               icon: Icons.send,
               onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null,
-              isLoading: isLoading,
+              isLoading: _isScreenLoading,
             ),
           ],
         ),
@@ -172,15 +173,18 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
       return;
     }
 
+    setState(() => _isScreenLoading = true);
+
     await runAsyncAction(
       () async {
         final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-        final message = await friendProvider.sendFriendRequest(auth.token!, userId!);
+        await friendProvider.sendFriendRequest(auth.token!, userId!);
         _userIdController.clear();
-        return message;
       },
       successMessage: 'Friend request sent successfully!',
       errorMessage: 'Unable to send friend request',
     );
+
+    setState(() => _isScreenLoading = false);
   }
 }

@@ -1,6 +1,7 @@
 // lib/screens/music/music_features_screen.dart
 import 'package:flutter/material.dart';
 import '../../core/app_core.dart';
+import '../../widgets/common_widgets.dart';
 import 'track_search_screen.dart';
 
 class MusicFeaturesScreen extends StatelessWidget {

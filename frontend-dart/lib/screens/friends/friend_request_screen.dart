@@ -5,7 +5,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
-import '../../utils/snackbar_utils.dart';
 
 class FriendRequestScreen extends StatefulWidget {
   const FriendRequestScreen({Key? key}) : super(key: key);
@@ -33,7 +32,7 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
       await friendProvider.fetchPendingRequests(authProvider.token!);
       setState(() => _pendingRequests = friendProvider.pendingRequests);
     } catch (error) {
-      SnackBarUtils.showError(context, 'Failed to load pending requests');
+      _showError('Failed to load pending requests');
     }
 
     setState(() => _isLoading = false);
@@ -126,10 +125,10 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       
       final message = await friendProvider.acceptFriendRequest(authProvider.token!, int.parse(friendshipId));
-      SnackBarUtils.showSuccess(context, message ?? 'Friend request accepted');
+      _showSuccess(message ?? 'Friend request accepted');
       _loadPendingRequests();
     } catch (error) {
-      SnackBarUtils.showError(context, 'Failed to accept request');
+      _showError('Failed to accept request');
     }
   }
 
@@ -139,10 +138,32 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       
       final message = await friendProvider.rejectFriendRequest(authProvider.token!, int.parse(friendshipId));
-      SnackBarUtils.showSuccess(context, message ?? 'Friend request rejected');
+      _showSuccess(message ?? 'Friend request rejected');
       _loadPendingRequests();
     } catch (error) {
-      SnackBarUtils.showError(context, 'Failed to reject request');
+      _showError('Failed to reject request');
     }
+  }
+
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.error,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 }

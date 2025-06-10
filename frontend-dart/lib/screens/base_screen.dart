@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/base_provider.dart';
 import '../core/app_core.dart';
-import '../utils/snackbar_utils.dart';
+import '../utils/dialog_utils.dart';
 import '../widgets/common_widgets.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
@@ -18,31 +19,9 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   bool get showRefreshAction => false;
   VoidCallback? get onRefresh => null;
   
-  PreferredSizeWidget? buildAppBar() => AppBar(
-    backgroundColor: AppTheme.background,
-    title: Text(screenTitle),
-    leading: showDrawer ? null : _buildCustomLeading(),
-    actions: _buildActions(),
-  );
-
-  Widget? _buildCustomLeading() => null;
-
-  List<Widget> _buildActions() {
-    final actionList = <Widget>[];
-    
-    if (showRefreshAction && onRefresh != null) {
-      actionList.add(
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: onRefresh,
-          tooltip: 'Refresh',
-        ),
-      );
-    }
-    
-    actionList.addAll(actions);
-    return actionList;
-  }
+  bool get isLoading => false;
+  bool get hasError => false;
+  String? get errorMessage => null;
 
   @override
   Widget build(BuildContext context) {
@@ -55,77 +34,148 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     );
   }
 
-  Widget buildStandardAppBar({
+  PreferredSizeWidget? buildAppBar() => AppBar(
+    backgroundColor: AppTheme.background,
+    title: Text(screenTitle),
+    leading: showDrawer ? null : _buildCustomLeading(),
+    actions: _buildActions(),
+  );
+
+  PreferredSizeWidget buildStandardAppBar({
     String? title,
     List<Widget>? actions,
-    bool showRefresh = false,
-    VoidCallback? onRefresh,
     Widget? leading,
+    bool automaticallyImplyLeading = true,
   }) {
-    final appBarActions = <Widget>[];
-    
-    if (showRefresh && onRefresh != null) {
-      appBarActions.add(
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: onRefresh,
-          tooltip: 'Refresh',
-        ),
-      );
-    }
-    
-    if (actions != null) {
-      appBarActions.addAll(actions);
-    }
-
     return AppBar(
       backgroundColor: AppTheme.background,
       title: Text(title ?? screenTitle),
       leading: leading,
-      actions: appBarActions.isNotEmpty ? appBarActions : null,
+      automaticallyImplyLeading: automaticallyImplyLeading,
+      actions: actions ?? this.actions,
+    );
+  }
+
+  Widget buildTabContent({
+    required List<Tab> tabs,
+    required List<Widget> tabViews,
+    TabController? controller,
+  }) {
+    return DefaultTabController(
+      length: tabs.length,
+      child: Column(
+        children: [
+          TabBar(
+            controller: controller,
+            labelColor: AppTheme.primary,
+            unselectedLabelColor: Colors.grey,
+            tabs: tabs,
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: controller,
+              children: tabViews,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget buildTabScaffold({
     required List<Tab> tabs,
     required List<Widget> tabViews,
-    List<Widget>? actions,
-    String? title,
     TabController? controller,
   }) {
     return DefaultTabController(
       length: tabs.length,
-      child: Scaffold(
-        backgroundColor: AppTheme.background,
-        appBar: AppBar(
-          backgroundColor: AppTheme.background,
-          title: Text(title ?? screenTitle),
-          actions: actions,
-          bottom: TabBar(
+      child: Column(
+        children: [
+          TabBar(
             controller: controller,
             labelColor: AppTheme.primary,
             unselectedLabelColor: Colors.grey,
             tabs: tabs,
           ),
-        ),
-        drawer: showDrawer ? _buildDrawer() : null,
-        body: TabBarView(
-          controller: controller,
-          children: tabViews,
-        ),
-        floatingActionButton: floatingActionButton,
+          Expanded(
+            child: TabBarView(
+              controller: controller,
+              children: tabViews,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget buildListWithRefresh<T>({
-    required List<T> items,
-    required Widget Function(T item, int index) itemBuilder,
+  Widget buildConsumerContent<P extends ChangeNotifier>({
+    required Widget Function(BuildContext, P) builder,
+    Widget Function(String)? errorBuilder,
+    Widget Function()? loadingBuilder,
+    Widget Function()? emptyBuilder,
+  }) {
+    return Consumer<P>(
+      builder: (context, provider, _) {
+        if (provider is BaseProvider) {
+          if (provider.isLoading) {
+            return loadingBuilder?.call() ?? buildLoadingState();
+          }
+          if (provider.hasError) {
+            return errorBuilder?.call(provider.errorMessage!) ?? 
+                   buildErrorState(message: provider.errorMessage!);
+          }
+        }
+        return builder(context, provider);
+      },
+    );
+  }
+
+  Widget buildListContent<I>({
+    required List<I> items,
+    required Widget Function(I, int) itemBuilder,
+    required Future<void> Function() onRefresh,
+    Widget? emptyState,
+    Widget? header,
+    EdgeInsets? padding,
+    String Function(I)? searchFilter,
+    String? searchHint,
+  }) {
+    Widget content;
+    
+    if (searchFilter != null) {
+      content = _buildSearchableList(
+        items: items,
+        itemBuilder: itemBuilder,
+        searchFilter: searchFilter,
+        searchHint: searchHint,
+        onRefresh: onRefresh,
+        emptyState: emptyState,
+        padding: padding,
+      );
+    } else {
+      content = _buildSimpleList(
+        items: items,
+        itemBuilder: itemBuilder,
+        onRefresh: onRefresh,
+        emptyState: emptyState,
+        padding: padding,
+      );
+    }
+
+    if (header != null) {
+      return Column(
+        children: [header, Expanded(child: content)],
+      );
+    }
+    return content;
+  }
+
+  Widget buildListWithRefresh<I>({
+    required List<I> items,
+    required Widget Function(I, int) itemBuilder,
     required Future<void> Function() onRefresh,
     Widget? emptyState,
     EdgeInsets? padding,
-    bool shrinkWrap = false,
-    ScrollPhysics? physics,
   }) {
     if (items.isEmpty && emptyState != null) {
       return RefreshIndicator(
@@ -146,23 +196,144 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
       child: ListView.builder(
         padding: padding ?? const EdgeInsets.all(16),
         itemCount: items.length,
-        shrinkWrap: shrinkWrap,
-        physics: physics,
         itemBuilder: (context, index) => itemBuilder(items[index], index),
       ),
     );
   }
 
-  Widget buildGridWithRefresh<T>({
-    required List<T> items,
-    required Widget Function(T item, int index) itemBuilder,
+  Widget buildSearchableList<I>({
+    required List<I> items,
+    required Widget Function(I, int) itemBuilder,
+    required String Function(I) searchFilter,
+    String? searchHint,
+    Widget? emptyState,
+    Widget? noResultsState,
+    EdgeInsets? padding,
+    Future<void> Function()? onRefresh,
+  }) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final searchController = TextEditingController();
+        List<I> filteredItems = items;
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: AppTextField(
+                controller: searchController,
+                labelText: 'Search',
+                hintText: searchHint ?? 'Start typing to search...',
+                prefixIcon: Icons.search,
+                onChanged: (query) {
+                  setState(() {
+                    filteredItems = query.isEmpty ? items : items
+                        .where((item) => searchFilter(item)
+                            .toLowerCase()
+                            .contains(query.toLowerCase()))
+                        .toList();
+                  });
+                },
+              ),
+            ),
+            Expanded(
+              child: _buildListView(
+                items: filteredItems,
+                originalItems: items,
+                itemBuilder: itemBuilder,
+                emptyState: emptyState,
+                noResultsState: noResultsState,
+                padding: padding,
+                onRefresh: onRefresh,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget buildFormContent({
+    required List<Widget> children,
+    String? title,
+    IconData? titleIcon,
+    VoidCallback? onSubmit,
+    String? submitText,
+    bool isLoading = false,
+  }) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: AppTheme.buildFormCard(
+        title: title,
+        titleIcon: titleIcon,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ...children,
+            if (onSubmit != null) ...[
+              const SizedBox(height: 24),
+              AppTheme.buildPrimaryButton(
+                text: submitText ?? 'Submit',
+                onPressed: onSubmit,
+                isLoading: isLoading,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildLoadingState({String? message}) => CommonWidgets.loadingWidget(message);
+  
+  Widget buildErrorState({
+    required String message,
+    VoidCallback? onRetry,
+    String? retryText,
+  }) => CommonWidgets.errorState(
+    message: message,
+    onRetry: onRetry,
+    retryText: retryText,
+  );
+
+  Widget buildEmptyState({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    String? buttonText,
+    VoidCallback? onButtonPressed,
+  }) => CommonWidgets.emptyState(
+    icon: icon,
+    title: title,
+    subtitle: subtitle,
+    buttonText: buttonText,
+    onButtonPressed: onButtonPressed,
+  );
+
+  Widget buildInfoBanner({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color color = AppTheme.primary,
+    VoidCallback? onAction,
+    String? actionText,
+  }) {
+    return InfoBanner(
+      title: title,
+      message: message,
+      icon: icon,
+      color: color,
+      onAction: onAction,
+      actionText: actionText,
+    );
+  }
+
+  Widget _buildSimpleList<I>({
+    required List<I> items,
+    required Widget Function(I, int) itemBuilder,
     required Future<void> Function() onRefresh,
-    required int crossAxisCount,
     Widget? emptyState,
     EdgeInsets? padding,
-    double mainAxisSpacing = 8,
-    double crossAxisSpacing = 8,
-    double childAspectRatio = 1,
   }) {
     if (items.isEmpty && emptyState != null) {
       return RefreshIndicator(
@@ -180,46 +351,27 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     return RefreshIndicator(
       onRefresh: onRefresh,
       color: AppTheme.primary,
-      child: GridView.builder(
+      child: ListView.builder(
         padding: padding ?? const EdgeInsets.all(16),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          mainAxisSpacing: mainAxisSpacing,
-          crossAxisSpacing: crossAxisSpacing,
-          childAspectRatio: childAspectRatio,
-        ),
         itemCount: items.length,
         itemBuilder: (context, index) => itemBuilder(items[index], index),
       ),
     );
   }
 
-  Widget buildSearchableList<T>({
-    required List<T> items,
-    required Widget Function(T item, int index) itemBuilder,
-    required String Function(T item) searchFilter,
+  Widget _buildSearchableList<I>({
+    required List<I> items,
+    required Widget Function(I, int) itemBuilder,
+    required String Function(I) searchFilter,
+    required Future<void> Function() onRefresh,
     String? searchHint,
     Widget? emptyState,
-    Widget? noResultsState,
     EdgeInsets? padding,
-    Future<void> Function()? onRefresh,
   }) {
     return StatefulBuilder(
       builder: (context, setState) {
         final searchController = TextEditingController();
-        List<T> filteredItems = items;
-
-        void filterItems(String query) {
-          setState(() {
-            filteredItems = query.isEmpty
-                ? items
-                : items
-                    .where((item) => searchFilter(item)
-                        .toLowerCase()
-                        .contains(query.toLowerCase()))
-                    .toList();
-          });
-        }
+        List<I> filteredItems = items;
 
         return Column(
           children: [
@@ -230,18 +382,25 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
                 labelText: 'Search',
                 hintText: searchHint ?? 'Start typing to search...',
                 prefixIcon: Icons.search,
-                onChanged: filterItems,
+                onChanged: (query) {
+                  setState(() {
+                    filteredItems = query.isEmpty ? items : items
+                        .where((item) => searchFilter(item)
+                            .toLowerCase()
+                            .contains(query.toLowerCase()))
+                        .toList();
+                  });
+                },
               ),
             ),
             Expanded(
-              child: _buildFilteredList(
+              child: _buildSimpleList(
                 items: filteredItems,
-                originalItems: items,
                 itemBuilder: itemBuilder,
-                emptyState: emptyState,
-                noResultsState: noResultsState,
-                padding: padding,
                 onRefresh: onRefresh,
+                emptyState: items.isEmpty ? emptyState : 
+                           (filteredItems.isEmpty ? _buildNoResults() : null),
+                padding: EdgeInsets.symmetric(horizontal: padding?.horizontal ?? 16),
               ),
             ),
           ],
@@ -250,31 +409,18 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     );
   }
 
-  Widget _buildFilteredList<T>({
-    required List<T> items,
-    required List<T> originalItems,
-    required Widget Function(T item, int index) itemBuilder,
+  Widget _buildListView<I>({
+    required List<I> items,
+    required List<I> originalItems,
+    required Widget Function(I, int) itemBuilder,
     Widget? emptyState,
     Widget? noResultsState,
     EdgeInsets? padding,
     Future<void> Function()? onRefresh,
   }) {
-    if (originalItems.isEmpty && emptyState != null) {
-      return emptyState;
-    }
-
-    if (items.isEmpty && noResultsState != null) {
-      return noResultsState;
-    }
-
-    if (items.isEmpty) {
-      return const Center(
-        child: Text(
-          'No results found',
-          style: TextStyle(color: Colors.grey),
-        ),
-      );
-    }
+    if (originalItems.isEmpty && emptyState != null) return emptyState;
+    if (items.isEmpty && noResultsState != null) return noResultsState;
+    if (items.isEmpty) return const Center(child: Text('No results found', style: TextStyle(color: Colors.grey)));
 
     final listView = ListView.builder(
       padding: padding ?? const EdgeInsets.symmetric(horizontal: 16),
@@ -282,114 +428,29 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
       itemBuilder: (context, index) => itemBuilder(items[index], index),
     );
 
-    if (onRefresh != null) {
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        color: AppTheme.primary,
-        child: listView,
-      );
+    return onRefresh != null ? RefreshIndicator(onRefresh: onRefresh, color: AppTheme.primary, child: listView) : listView;
+  }
+
+  Widget _buildNoResults() => const Center(
+    child: Text('No results found', style: TextStyle(color: Colors.grey)),
+  );
+
+  List<Widget> _buildActions() {
+    final actionList = <Widget>[];
+    if (showRefreshAction && onRefresh != null) {
+      actionList.add(IconButton(
+        icon: const Icon(Icons.refresh),
+        onPressed: onRefresh,
+        tooltip: 'Refresh',
+      ));
     }
-
-    return listView;
+    actionList.addAll(actions);
+    return actionList;
   }
 
-  Widget buildLoadingState({String? message}) {
-    return CommonWidgets.loadingWidget(message);
-  }
-
-  Widget buildErrorState({
-    required String message,
-    VoidCallback? onRetry,
-    String? retryText,
-  }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text(
-              'Something went wrong',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: const TextStyle(color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            if (onRetry != null) ...[
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: Text(retryText ?? 'Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.black,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildSuccessState({
-    required String title,
-    required String message,
-    VoidCallback? onContinue,
-    String? continueText,
-  }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.check_circle, size: 64, color: Colors.green),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: const TextStyle(color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            if (onContinue != null) ...[
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: onContinue,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-                child: Text(continueText ?? 'Continue'),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  Widget? _buildCustomLeading() => null;
 
   Widget _buildDrawer() {
-    final auth = Provider.of<AuthProvider>(context);
-    
     return Drawer(
       backgroundColor: AppTheme.background,
       child: ListView(
@@ -437,17 +498,35 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     },
   );
 
-  void showSuccess(String message) => SnackBarUtils.showSuccess(context, message);
-  void showError(String message) => SnackBarUtils.showError(context, message);
-  void showInfo(String message) => SnackBarUtils.showInfo(context, message);
+  void navigateTo(String route, {Object? arguments}) => 
+      Navigator.pushNamed(context, route, arguments: arguments);
+  void navigateAndReplace(String route, {Object? arguments}) => 
+      Navigator.pushReplacementNamed(context, route, arguments: arguments);
+  void navigateBack([dynamic result]) => Navigator.pop(context, result);
+  void navigateToHome() => navigateTo(AppRoutes.home);
+  void navigateToFriends() => navigateTo(AppRoutes.friends);
+  void navigateToTrackSearch([String? playlistId]) => 
+      navigateTo(AppRoutes.trackSearch, arguments: playlistId);
 
-  Future<T?> runAsync<T>(Future<T> Function() operation) async {
-    try {
-      return await operation();
-    } catch (e) {
-      showError(e.toString());
-      return null;
-    }
+  Future<bool> showConfirmDialog(String title, String message, {bool isDangerous = false}) async =>
+      await DialogUtils.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous) ?? false;
+  Future<String?> showTextInputDialog(String title, {String? initialValue, String? hintText}) async =>
+      await DialogUtils.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText);
+  void showFeatureComingSoon([String? feature]) => DialogUtils.showFeatureComingSoon(context, feature);
+
+  void showSuccess(String message) => _showSnackBar(message, Colors.green);
+  void showError(String message) => _showSnackBar(message, AppTheme.error);
+  void showInfo(String message) => _showSnackBar(message, Colors.blue);
+
+  void _showSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> runAsyncAction(
@@ -457,40 +536,21 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     String? errorMessage,
   }) async {
     try {
-      if (loadingMessage != null) {
-      }
-      
+      if (loadingMessage != null) showInfo(loadingMessage);
       await operation();
-      
-      if (successMessage != null) {
-        showSuccess(successMessage);
-      }
+      if (successMessage != null) showSuccess(successMessage);
     } catch (e) {
       showError(errorMessage ?? e.toString());
     }
   }
 
-  void navigateTo(String route, {Object? arguments}) {
-    Navigator.pushNamed(context, route, arguments: arguments);
-  }
-
-  void navigateAndReplace(String route, {Object? arguments}) {
-    Navigator.pushReplacementNamed(context, route, arguments: arguments);
-  }
-
-  void navigateBack([dynamic result]) {
-    Navigator.pop(context, result);
-  }
-
-  bool canNavigateBack() {
-    return Navigator.canPop(context);
-  }
-
-  void showSnackBarMessage(String message, {bool isError = false}) {
-    if (isError) {
-      showError(message);
-    } else {
-      showSuccess(message);
+  Future<void> runAsync(Future<void> Function() operation) async {
+    try {
+      await operation();
+    } catch (e) {
+      showError(e.toString());
     }
   }
+
+  T getProvider<T>({bool listen = false}) => Provider.of<T>(context, listen: listen);
 }

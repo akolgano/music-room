@@ -6,7 +6,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
-import '../../utils/snackbar_utils.dart';
+import '../../models/models.dart';
 import '../base_screen.dart';
 import '../profile/profile_screen.dart'; 
 
@@ -41,7 +41,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
-  
+
   @override
   Widget buildContent() {
     return buildTabScaffold(
@@ -115,11 +115,20 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
     return Consumer<MusicProvider>(
       builder: (context, music, _) {
         if (music.isLoading) {
-          return buildLoadingState('Loading playlists...');
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: AppTheme.primary),
+                SizedBox(height: 16),
+                Text('Loading playlists...', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+          );
         }
 
         if (music.playlists.isEmpty) {
-          return EmptyState(
+          return CommonWidgets.emptyState(
             icon: Icons.playlist_play,
             title: 'No playlists yet',
             subtitle: 'Create your first playlist to get started!',
@@ -128,13 +137,20 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
           );
         }
 
-        return buildListWithRefresh<Playlist>(
-          items: music.playlists,
+        return RefreshIndicator(
           onRefresh: _loadData,
-          itemBuilder: (playlist, index) => PlaylistCard(
-            playlist: playlist,
-            onTap: () => navigateTo(AppRoutes.playlistEditor, arguments: playlist.id),
-            onPlay: () => showInfo('Playing ${playlist.name}'),
+          color: AppTheme.primary,
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: music.playlists.length,
+            itemBuilder: (context, index) {
+              final playlist = music.playlists[index];
+              return PlaylistCard(
+                playlist: playlist,
+                onTap: () => navigateTo(AppRoutes.playlistEditor, arguments: playlist.id),
+                onPlay: () => showInfo('Playing ${playlist.name}'),
+              );
+            },
           ),
         );
       },

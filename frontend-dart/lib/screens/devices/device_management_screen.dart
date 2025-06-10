@@ -101,7 +101,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
     return Consumer<DeviceProvider>(
       builder: (context, deviceProvider, _) {
         if (deviceProvider.userDevices.isEmpty) {
-          return EmptyState(
+          return CommonWidgets.emptyState(
             icon: Icons.devices,
             title: 'No devices registered',
             subtitle: 'Register your first device to start using Music Room',
@@ -230,7 +230,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
           const SectionTitle('Delegate to Friends'),
           const SizedBox(height: 8),
           if (_friends.isEmpty)
-            EmptyState(
+            buildEmptyState(
               icon: Icons.people_outline,
               title: 'No friends to delegate to',
               subtitle: 'Add friends first to delegate device control',

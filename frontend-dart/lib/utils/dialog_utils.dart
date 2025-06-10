@@ -10,47 +10,24 @@ class DialogUtils {
     String confirmText = AppStrings.confirm,
     String cancelText = AppStrings.cancel,
     bool isDangerous = false,
+    IconData? icon,
   }) {
-    return showDialog<bool>(
+    return _showBasicDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: Text(message, style: const TextStyle(color: Colors.white)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(cancelText),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: isDangerous
-                ? TextButton.styleFrom(foregroundColor: Colors.red)
-                : null,
-            child: Text(confirmText),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Future<bool?> showLogoutConfirmDialog(BuildContext context) {
-    return showConfirmDialog(
-      context,
-      title: AppStrings.logout,
-      message: AppStrings.confirmLogout,
-      confirmText: AppStrings.logout.toUpperCase(),
-      isDangerous: true,
-    );
-  }
-
-  static Future<bool?> showDeleteConfirmDialog(BuildContext context, String itemName) {
-    return showConfirmDialog(
-      context,
-      title: AppStrings.delete,
-      message: '${AppStrings.confirmDelete} "$itemName"?',
-      confirmText: AppStrings.delete,
-      isDangerous: true,
+      title: title,
+      icon: icon,
+      content: Text(message, style: const TextStyle(color: Colors.white)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(cancelText),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          style: isDangerous ? TextButton.styleFrom(foregroundColor: Colors.red) : null,
+          child: Text(confirmText),
+        ),
+      ],
     );
   }
 
@@ -59,75 +36,117 @@ class DialogUtils {
     required String title,
     String? initialValue,
     String? hintText,
+    String? labelText,
     bool obscureText = false,
     String? Function(String?)? validator,
+    IconData? icon,
+    int maxLines = 1,
   }) {
     final controller = TextEditingController(text: initialValue);
     final formKey = GlobalKey<FormState>();
     
-    return showDialog<String>(
+    return _showBasicDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: Form(
-          key: formKey,
-          child: TextFormField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: const TextStyle(color: Colors.grey),
-            ),
-            style: const TextStyle(color: Colors.white),
-            obscureText: obscureText,
-            autofocus: true,
-            validator: validator,
+      title: title,
+      icon: icon,
+      content: Form(
+        key: formKey,
+        child: TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hintText,
+            labelText: labelText,
+            hintStyle: const TextStyle(color: Colors.grey),
           ),
+          style: const TextStyle(color: Colors.white),
+          obscureText: obscureText,
+          autofocus: true,
+          maxLines: maxLines,
+          validator: validator,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(AppStrings.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? false) {
-                Navigator.of(ctx).pop(controller.text);
-              }
-            },
-            child: const Text(AppStrings.ok),
-          ),
-        ],
       ),
-    );
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(AppStrings.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            if (formKey.currentState?.validate() ?? false) {
+              Navigator.of(context).pop(controller.text);
+            }
+          },
+          child: const Text(AppStrings.ok),
+        ),
+      ],
+    ).then((result) {
+      controller.dispose();
+      return result;
+    });
   }
 
-  static Future<void> showFeatureComingSoon(BuildContext context, [String? feature]) {
-    return showDialog(
+  static Future<Map<String, String>?> showMultiInputDialog({
+    required BuildContext context,
+    required String title,
+    required List<InputField> fields,
+    IconData? icon,
+  }) {
+    final controllers = <String, TextEditingController>{};
+    final formKey = GlobalKey<FormState>();
+    
+    for (final field in fields) {
+      controllers[field.key] = TextEditingController(text: field.initialValue);
+    }
+    
+    return _showBasicDialog<Map<String, String>>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: const Row(
-          children: [
-            Icon(Icons.construction, color: AppTheme.primary),
-            SizedBox(width: 8),
-            Text('Coming Soon', style: TextStyle(color: Colors.white)),
-          ],
+      title: title,
+      icon: icon,
+      content: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: fields.map((field) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: TextFormField(
+              controller: controllers[field.key],
+              decoration: InputDecoration(
+                labelText: field.label,
+                hintText: field.hint,
+                hintStyle: const TextStyle(color: Colors.grey),
+              ),
+              style: const TextStyle(color: Colors.white),
+              obscureText: field.obscureText,
+              maxLines: field.maxLines,
+              validator: field.validator,
+            ),
+          )).toList(),
         ),
-        content: Text(
-          feature != null 
-            ? '$feature is coming soon!' 
-            : AppStrings.featureComingSoon,
-          style: const TextStyle(color: Colors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
       ),
-    );
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (formKey.currentState?.validate() ?? false) {
+              final result = <String, String>{};
+              for (final field in fields) {
+                result[field.key] = controllers[field.key]!.text;
+              }
+              Navigator.of(context).pop(result);
+            }
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    ).then((result) {
+      for (final controller in controllers.values) {
+        controller.dispose();
+      }
+      return result;
+    });
   }
 
   static Future<int?> showSelectionDialog<T>({
@@ -138,6 +157,7 @@ class DialogUtils {
     String Function(T)? itemSubtitle,
     Widget Function(T)? itemLeading,
     String? emptyMessage,
+    IconData? icon,
   }) {
     if (items.isEmpty) {
       showInfoDialog(
@@ -148,39 +168,37 @@ class DialogUtils {
       return Future.value(null);
     }
 
-    return showDialog<int>(
+    return _showBasicDialog<int>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return ListTile(
-                leading: itemLeading?.call(item) ?? CircleAvatar(
-                  backgroundColor: AppTheme.primary,
-                  child: Text('${index + 1}'),
-                ),
-                title: Text(itemTitle(item), style: const TextStyle(color: Colors.white)),
-                subtitle: itemSubtitle != null 
-                  ? Text(itemSubtitle(item), style: const TextStyle(color: Colors.grey))
-                  : null,
-                onTap: () => Navigator.of(context).pop(index),
-              );
-            },
-          ),
+      title: title,
+      icon: icon,
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return ListTile(
+              leading: itemLeading?.call(item) ?? CircleAvatar(
+                backgroundColor: AppTheme.primary,
+                child: Text('${index + 1}'),
+              ),
+              title: Text(itemTitle(item), style: const TextStyle(color: Colors.white)),
+              subtitle: itemSubtitle != null 
+                ? Text(itemSubtitle(item), style: const TextStyle(color: Colors.grey))
+                : null,
+              onTap: () => Navigator.of(context).pop(index),
+            );
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
     );
   }
 
@@ -194,92 +212,129 @@ class DialogUtils {
     String? actionText,
     IconData? icon,
   }) {
-    return showDialog(
+    return _showBasicDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Row(
-          children: [
-            if (icon != null) ...[
-              Icon(icon, color: AppTheme.primary),
-              const SizedBox(width: 8),
-            ],
-            Expanded(
-              child: Text(title, style: const TextStyle(color: Colors.white)),
-            ),
+      title: title,
+      icon: icon ?? Icons.info,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (message != null) ...[
+            Text(message, style: const TextStyle(color: Colors.white)),
+            const SizedBox(height: 12),
           ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (message != null) ...[
-              Text(message, style: const TextStyle(color: Colors.white)),
-              const SizedBox(height: 12),
-            ],
-            if (points != null) ...[
-              ...points.map((point) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 6),
-                      width: 4,
-                      height: 4,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(point, style: const TextStyle(color: Colors.grey)),
-                    ),
-                  ],
-                ),
-              )),
-            ],
-            if (tip != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.lightbulb, color: AppTheme.primary, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        tip, 
-                        style: const TextStyle(color: AppTheme.primary, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
+          if (points != null) ...[
+            ...points.map((point) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 6),
+                    width: 4, height: 4,
+                    decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(point, style: const TextStyle(color: Colors.grey))),
+                ],
               ),
-            ],
+            )),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
-          ),
-          if (onAction != null && actionText != null)
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                onAction();
-              },
-              child: Text(actionText),
-            ),
+          if (tip != null) ...[
+            const SizedBox(height: 16),
+            _buildTipContainer(tip),
+          ],
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Got it'),
+        ),
+        if (onAction != null && actionText != null)
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onAction();
+            },
+            child: Text(actionText),
+          ),
+      ],
+    );
+  }
+
+  static Future<void> showErrorDialog({
+    required BuildContext context,
+    required String title,
+    required String message,
+    String? details,
+    VoidCallback? onRetry,
+    String? retryText,
+  }) {
+    return _showBasicDialog<void>(
+      context: context,
+      title: title,
+      icon: Icons.error_outline,
+      iconColor: Colors.red,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(message, style: const TextStyle(color: Colors.white)),
+          if (details != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(details, style: const TextStyle(color: Colors.red, fontSize: 12, fontFamily: 'monospace')),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('OK'),
+        ),
+        if (onRetry != null)
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onRetry();
+            },
+            child: Text(retryText ?? 'Retry'),
+          ),
+      ],
+    );
+  }
+
+  static Future<void> showSuccessDialog({
+    required BuildContext context,
+    required String title,
+    required String message,
+    VoidCallback? onContinue,
+    String? continueText,
+  }) {
+    return _showBasicDialog<void>(
+      context: context,
+      title: title,
+      icon: Icons.check_circle,
+      iconColor: Colors.green,
+      content: Text(message, style: const TextStyle(color: Colors.white)),
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            onContinue?.call();
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          child: Text(continueText ?? 'Continue'),
+        ),
+      ],
     );
   }
 
@@ -309,100 +364,34 @@ class DialogUtils {
     );
   }
 
-  static void hideLoadingDialog(BuildContext context) {
-    Navigator.of(context).pop();
-  }
-
-  static Future<void> showErrorDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    String? details,
-    VoidCallback? onRetry,
-  }) {
-    return showDialog(
+  static Future<void> showFeatureComingSoon(BuildContext context, [String? feature]) {
+    return showInfoDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red),
-            const SizedBox(width: 8),
-            Text(title, style: const TextStyle(color: Colors.white)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(message, style: const TextStyle(color: Colors.white)),
-            if (details != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  details,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-          if (onRetry != null)
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                onRetry();
-              },
-              child: const Text('Retry'),
-            ),
-        ],
-      ),
+      title: 'Coming Soon',
+      message: feature != null ? '$feature is coming soon!' : AppStrings.featureComingSoon,
+      icon: Icons.construction,
     );
   }
 
-  static Future<void> showSuccessDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    VoidCallback? onContinue,
-  }) {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green),
-            const SizedBox(width: 8),
-            Text(title, style: const TextStyle(color: Colors.white)),
-          ],
-        ),
-        content: Text(message, style: const TextStyle(color: Colors.white)),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onContinue?.call();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Continue'),
-          ),
-        ],
-      ),
+  static Future<bool?> showLogoutConfirmDialog(BuildContext context) {
+    return showConfirmDialog(
+      context,
+      title: AppStrings.logout,
+      message: AppStrings.confirmLogout,
+      confirmText: AppStrings.logout.toUpperCase(),
+      isDangerous: true,
+      icon: Icons.logout,
+    );
+  }
+
+  static Future<bool?> showDeleteConfirmDialog(BuildContext context, String itemName) {
+    return showConfirmDialog(
+      context,
+      title: AppStrings.delete,
+      message: '${AppStrings.confirmDelete} "$itemName"?',
+      confirmText: AppStrings.delete,
+      isDangerous: true,
+      icon: Icons.delete_forever,
     );
   }
 
@@ -413,158 +402,354 @@ class DialogUtils {
     String? description,
     List<String>? features,
   }) {
-    return showDialog(
+    return _showBasicDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text('About $appName', style: const TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              appName,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text('Version: $version', style: const TextStyle(color: Colors.white)),
-            if (description != null) ...[
-              const SizedBox(height: 16),
-              Text(description, style: const TextStyle(color: Colors.grey)),
-            ],
-            if (features != null) ...[
-              const SizedBox(height: 16),
-              const Text(
-                'Features:',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ...features.map((feature) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• $feature', style: const TextStyle(color: Colors.grey)),
-              )),
-            ],
+      title: 'About $appName',
+      icon: Icons.info,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(appName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+          const SizedBox(height: 8),
+          Text('Version: $version', style: const TextStyle(color: Colors.white)),
+          if (description != null) ...[
             const SizedBox(height: 16),
-            const Text(
-              '© 2024 Music Room Team',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
+            Text(description, style: const TextStyle(color: Colors.grey)),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
+          if (features != null) ...[
+            const SizedBox(height: 16),
+            const Text('Features:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...features.map((feature) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text('• $feature', style: const TextStyle(color: Colors.grey)),
+            )),
+          ],
+          const SizedBox(height: 16),
+          const Text('© 2024 Music Room Team', style: TextStyle(color: Colors.grey, fontSize: 12)),
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
     );
-  }
-
-  static Future<Map<String, String>?> showMultiInputDialog({
-    required BuildContext context,
-    required String title,
-    required List<String> fieldNames,
-    List<String>? initialValues,
-    List<String>? hintTexts,
-    List<bool>? obscureTexts,
-  }) {
-    final controllers = fieldNames.map((name) => TextEditingController()).toList();
-    final formKey = GlobalKey<FormState>();
-
-    if (initialValues != null) {
-      for (int i = 0; i < initialValues.length && i < controllers.length; i++) {
-        controllers[i].text = initialValues[i];
-      }
-    }
-
-    return showDialog<Map<String, String>>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: fieldNames.asMap().entries.map((entry) {
-              final index = entry.key;
-              final fieldName = entry.value;
-              
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: TextFormField(
-                  controller: controllers[index],
-                  decoration: InputDecoration(
-                    labelText: fieldName,
-                    hintText: hintTexts != null && index < hintTexts.length 
-                      ? hintTexts[index] 
-                      : null,
-                    hintStyle: const TextStyle(color: Colors.grey),
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                  obscureText: obscureTexts != null && 
-                              index < obscureTexts.length && 
-                              obscureTexts[index],
-                  validator: (value) => 
-                    value?.isEmpty ?? true ? 'Please enter $fieldName' : null,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? false) {
-                final result = <String, String>{};
-                for (int i = 0; i < fieldNames.length; i++) {
-                  result[fieldNames[i]] = controllers[i].text;
-                }
-                Navigator.of(ctx).pop(result);
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    ).then((result) {
-      for (final controller in controllers) {
-        controller.dispose();
-      }
-      return result;
-    });
   }
 
   static Future<void> showSettingsDialog({
     required BuildContext context,
     required String title,
     required List<Widget> settings,
+    IconData? icon,
   }) {
-    return showDialog(
+    return _showBasicDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: settings,
+      title: title,
+      icon: icon ?? Icons.settings,
+      content: Column(mainAxisSize: MainAxisSize.min, children: settings),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
+      ],
+    );
+  }
+
+  static Future<T?> _showBasicDialog<T>({
+    required BuildContext context,
+    required String title,
+    required Widget content,
+    required List<Widget> actions,
+    IconData? icon,
+    Color? iconColor,
+  }) {
+    return showDialog<T>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: iconColor ?? AppTheme.primary),
+              const SizedBox(width: 8),
+            ],
+            Expanded(child: Text(title, style: const TextStyle(color: Colors.white))),
+          ],
+        ),
+        content: content,
+        actions: actions,
+      ),
+    );
+  }
+
+  static Widget _buildTipContainer(String tip) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lightbulb, color: AppTheme.primary, size: 16),
+          const SizedBox(width: 8),
+          Expanded(child: Text(tip, style: const TextStyle(color: AppTheme.primary, fontSize: 12))),
         ],
       ),
     );
   }
+
+  static void hideLoadingDialog(BuildContext context) {
+    Navigator.of(context).pop();
+  }
+}
+
+class InputField {
+  final String key;
+  final String label;
+  final String? hint;
+  final String? initialValue;
+  final bool obscureText;
+  final int maxLines;
+  final String? Function(String?)? validator;
+
+  const InputField({
+    required this.key,
+    required this.label,
+    this.hint,
+    this.initialValue,
+    this.obscureText = false,
+    this.maxLines = 1,
+    this.validator,
+  });
+}
+
+class FormUtils {
+  static Widget buildFormField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    IconData? icon,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      validator: validator,
+      onChanged: onChanged,
+      maxLines: maxLines,
+      style: const TextStyle(color: Colors.white),
+      decoration: AppTheme.getInputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: icon,
+      ),
+    );
+  }
+
+  static Widget buildSwitchField({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String title,
+    String? subtitle,
+    IconData? icon,
+  }) {
+    return SwitchListTile(
+      value: value,
+      onChanged: onChanged,
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(color: Colors.grey)) : null,
+      secondary: icon != null ? Icon(icon, color: AppTheme.primary) : null,
+      activeColor: AppTheme.primary,
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  static Widget buildCheckboxField({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String title,
+    String? subtitle,
+  }) {
+    return CheckboxListTile(
+      value: value,
+      onChanged: (val) => onChanged(val ?? false),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(color: Colors.grey)) : null,
+      activeColor: AppTheme.primary,
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  static Widget buildDropdownField<T>({
+    required T? value,
+    required ValueChanged<T?> onChanged,
+    required List<T> items,
+    required String Function(T) itemText,
+    required String label,
+    String? hint,
+    IconData? icon,
+  }) {
+    return DropdownButtonFormField<T>(
+      value: value,
+      onChanged: onChanged,
+      items: items.map((item) => DropdownMenuItem(
+        value: item,
+        child: Text(itemText(item)),
+      )).toList(),
+      decoration: AppTheme.getInputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: icon,
+      ),
+      style: const TextStyle(color: Colors.white),
+      dropdownColor: AppTheme.surface,
+    );
+  }
+
+  static Widget buildActionButton({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool isPrimary = true,
+    bool fullWidth = true,
+    Color? color,
+  }) {
+    if (isPrimary) {
+      return AppTheme.buildPrimaryButton(
+        text: text,
+        onPressed: onPressed,
+        icon: icon,
+        isLoading: isLoading,
+      );
+    } else {
+      return AppTheme.buildSecondaryButton(
+        text: text,
+        onPressed: onPressed,
+        icon: icon,
+        fullWidth: fullWidth,
+      );
+    }
+  }
+
+  static Widget buildFormCard({
+    required String title,
+    required List<Widget> children,
+    IconData? icon,
+    VoidCallback? onSubmit,
+    String? submitText,
+    bool isLoading = false,
+  }) {
+    return AppTheme.buildFormCard(
+      title: title,
+      titleIcon: icon,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ...children,
+          if (onSubmit != null) ...[
+            const SizedBox(height: 24),
+            buildActionButton(
+              text: submitText ?? 'Submit',
+              onPressed: onSubmit,
+              isLoading: isLoading,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class ValidationUtils {
+  static String? validateRequired(String? value, [String? fieldName]) {
+    if (value?.isEmpty ?? true) {
+      return 'Please enter ${fieldName ?? 'this field'}';
+    }
+    return null;
+  }
+
+  static String? validateEmail(String? value) {
+    if (value?.isEmpty ?? true) return 'Please enter an email';
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  static String? validatePassword(String? value, [int minLength = 8]) {
+    if (value?.isEmpty ?? true) return 'Please enter password';
+    if (value!.length < minLength) {
+      return 'Password must be at least $minLength characters';
+    }
+    return null;
+  }
+
+  static String? validateLength(String? value, int maxLength, [String? fieldName]) {
+    if (value != null && value.length > maxLength) {
+      return '${fieldName ?? 'Field'} must be less than $maxLength characters';
+    }
+    return null;
+  }
+
+  static String? validateRange(String? value, int min, int max, [String? fieldName]) {
+    if (value != null) {
+      if (value.length < min) {
+        return '${fieldName ?? 'Field'} must be at least $min characters';
+      }
+      if (value.length > max) {
+        return '${fieldName ?? 'Field'} must be less than $max characters';
+      }
+    }
+    return null;
+  }
+
+  static String? validateUsername(String? value) {
+    if (value?.isEmpty ?? true) return 'Please enter a username';
+    if (value!.length < 3) return 'Username must be at least 3 characters';
+    if (value.length > 30) return 'Username must be less than 30 characters';
+    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+      return 'Username can only contain letters, numbers, and underscores';
+    }
+    return null;
+  }
+
+  static String? validatePhoneNumber(String? value) {
+    if (value?.isEmpty ?? true) return null; 
+    if (!RegExp(r'^\+?[\d\s\-\(\)]+$').hasMatch(value!)) {
+      return 'Please enter a valid phone number';
+    }
+    return null;
+  }
+
+  static String? combine(List<String? Function()> validators) {
+    for (final validator in validators) {
+      final result = validator();
+      if (result != null) return result;
+    }
+    return null;
+  }
+
+  static String? Function(String?) required([String? fieldName]) =>
+      (value) => validateRequired(value, fieldName);
+  
+  static String? Function(String?) email() => validateEmail;
+  
+  static String? Function(String?) password([int minLength = 8]) =>
+      (value) => validatePassword(value, minLength);
+  
+  static String? Function(String?) length(int maxLength, [String? fieldName]) =>
+      (value) => validateLength(value, maxLength, fieldName);
+  
+  static String? Function(String?) range(int min, int max, [String? fieldName]) =>
+      (value) => validateRange(value, min, max, fieldName);
 }

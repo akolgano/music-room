@@ -1,5 +1,6 @@
 // lib/providers/base_provider.dart
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
 mixin BaseProvider on ChangeNotifier {
   bool _isLoading = false;
@@ -8,6 +9,7 @@ mixin BaseProvider on ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
+  bool get isReady => !_isLoading;
 
   void clearError() {
     _errorMessage = null;
@@ -53,8 +55,6 @@ mixin BaseProvider on ChangeNotifier {
 
     try {
       await action();
-      if (successMessage != null) {
-      }
       onSuccess?.call();
     } catch (e) {
       final message = errorMessage ?? e.toString();
@@ -64,201 +64,85 @@ mixin BaseProvider on ChangeNotifier {
       setLoading(false);
     }
   }
+}
 
-  Future<T?> executeWithRetry<T>(
-    Future<T> Function() operation, {
-    int maxRetries = 3,
-    Duration delay = const Duration(seconds: 1),
-    String? errorPrefix,
-  }) async {
-    Exception? lastException;
-    
-    for (int attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        return await execute(operation);
-      } catch (e) {
-        lastException = e is Exception ? e : Exception(e.toString());
-        if (attempt == maxRetries - 1) {
-          final prefix = errorPrefix ?? 'Operation failed after $maxRetries attempts';
-          setError('$prefix: ${lastException.toString()}');
-          break;
-        }
-        await Future.delayed(delay);
-      }
-    }
-    return null;
-  }
+mixin CommonProviderOperations<T> on ChangeNotifier, BaseProvider {
+  final ApiService _api = ApiService();
+  List<T> _items = [];
+  T? _selectedItem;
 
-  Future<List<T>> executeBatch<T>(
-    List<Future<T> Function()> operations, {
-    bool stopOnFirstError = false,
-    String? batchName,
-  }) async {
-    setLoading(true);
-    clearError();
+  List<T> get items => List.unmodifiable(_items);
+  T? get selectedItem => _selectedItem;
+  bool get hasItems => _items.isNotEmpty;
+  int get itemCount => _items.length;
 
-    final results = <T>[];
-    final errors = <String>[];
-
-    try {
-      for (int i = 0; i < operations.length; i++) {
-        try {
-          final result = await operations[i]();
-          results.add(result);
-        } catch (e) {
-          final errorMsg = '${batchName ?? 'Operation'} ${i + 1}: ${e.toString()}';
-          errors.add(errorMsg);
-          
-          if (stopOnFirstError) {
-            setError(errorMsg);
-            break;
-          }
-        }
-      }
-
-      if (errors.isNotEmpty && !stopOnFirstError) {
-        setError('${errors.length} of ${operations.length} operations failed:\n${errors.join('\n')}');
-      }
-
-      return results;
-    } finally {
-      setLoading(false);
+  Future<void> fetchItems(String token, {String? endpoint}) async {
+    final result = await execute(() => _fetchItemsFromApi(token, endpoint));
+    if (result != null) {
+      _items = result;
     }
   }
 
-  Future<T?> executeWithTimeout<T>(
-    Future<T> Function() operation, {
-    Duration timeout = const Duration(seconds: 30),
-    String? timeoutMessage,
-  }) async {
-    return await execute(() async {
-      return await operation().timeout(
-        timeout,
-        onTimeout: () {
-          throw Exception(timeoutMessage ?? 'Operation timed out after ${timeout.inSeconds} seconds');
-        },
-      );
+  Future<T?> createItem(Map<String, dynamic> data, String token, {String? endpoint}) async {
+    return execute(() async {
+      final item = await _createItemInApi(data, token, endpoint);
+      if (item != null) {
+        _items.add(item);
+        notifyListeners();
+        return item;
+      }
+      throw Exception('Failed to create item');
     });
   }
 
-  void reset() {
-    _isLoading = false;
-    _errorMessage = null;
+  Future<bool> updateItem(String id, Map<String, dynamic> data, String token, {String? endpoint}) async {
+    final result = await execute(() async {
+      await _updateItemInApi(id, data, token, endpoint);
+      await refreshItems(token);
+      return true;
+    });
+    return result ?? false;
+  }
+
+  Future<bool> deleteItem(String id, String token, {String? endpoint}) async {
+    final result = await execute(() async {
+      await _deleteItemInApi(id, token, endpoint);
+      _items.removeWhere((item) => _getItemId(item) == id);
+      if (_selectedItem != null && _getItemId(_selectedItem!) == id) {
+        _selectedItem = null;
+      }
+      notifyListeners();
+      return true;
+    });
+    return result ?? false;
+  }
+
+  void selectItem(T? item) {
+    _selectedItem = item;
     notifyListeners();
   }
 
-  Future<T?> safeExecute<T>(
-    Future<T> Function() operation, {
-    T? fallbackValue,
-    bool silent = false,
-  }) async {
+  Future<void> refreshItems(String token, {String? endpoint}) async {
+    await fetchItems(token, endpoint: endpoint);
+  }
+
+  void clearItems() {
+    _items.clear();
+    _selectedItem = null;
+    notifyListeners();
+  }
+
+  T? findItemById(String id) {
     try {
-      _isLoading = true;
-      if (!silent) notifyListeners();
-      
-      final result = await operation();
-      
-      if (_errorMessage != null && !silent) {
-        clearError();
-      }
-      
-      return result;
+      return _items.firstWhere((item) => _getItemId(item) == id);
     } catch (e) {
-      if (!silent) {
-        _errorMessage = e.toString();
-      }
-      return fallbackValue;
-    } finally {
-      _isLoading = false;
-      if (!silent) notifyListeners();
+      return null;
     }
   }
 
-  void executeSync(
-    void Function() operation, {
-    String? errorMessage,
-    VoidCallback? onSuccess,
-    VoidCallback? onError,
-  }) {
-    try {
-      clearError();
-      operation();
-      onSuccess?.call();
-    } catch (e) {
-      setError(errorMessage ?? e.toString());
-      onError?.call();
-    }
-  }
-
-  Future<Map<String, T?>> executeParallel<T>(
-    Map<String, Future<T> Function()> operations, {
-    Duration? timeout,
-  }) async {
-    setLoading(true);
-    clearError();
-
-    try {
-      final futures = operations.map((key, operation) => 
-        MapEntry(key, operation().catchError((e) => null as T?)));
-
-      final results = timeout != null
-        ? await Future.wait(
-            futures.values,
-            eagerError: false,
-          ).timeout(timeout)
-        : await Future.wait(
-            futures.values,
-            eagerError: false,
-          );
-
-      final resultMap = <String, T?>{};
-      final keys = futures.keys.toList();
-      
-      for (int i = 0; i < keys.length; i++) {
-        resultMap[keys[i]] = results[i];
-      }
-
-      return resultMap;
-    } catch (e) {
-      setError(e.toString());
-      return <String, T?>{};
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  Stream<T?> executeStream<T>(
-    Stream<T> Function() streamOperation, {
-    void Function(String)? onError,
-  }) async* {
-    setLoading(true);
-    clearError();
-
-    try {
-      await for (final value in streamOperation()) {
-        yield value;
-      }
-    } catch (e) {
-      setError(e.toString());
-      onError?.call(e.toString());
-      yield null;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  Future<void> delay([Duration duration = const Duration(milliseconds: 500)]) async {
-    await Future.delayed(duration);
-  }
-
-  void notifyError(String message) {
-    setError(message);
-  }
-
-  void notifySuccess() {
-    clearError();
-  }
-
-  bool get isIdle => !_isLoading && !hasError;
-  bool get isReady => !_isLoading;
+  Future<List<T>> _fetchItemsFromApi(String token, String? endpoint);
+  Future<T?> _createItemInApi(Map<String, dynamic> data, String token, String? endpoint);
+  Future<void> _updateItemInApi(String id, Map<String, dynamic> data, String token, String? endpoint);
+  Future<void> _deleteItemInApi(String id, String token, String? endpoint);
+  String _getItemId(T item);
 }

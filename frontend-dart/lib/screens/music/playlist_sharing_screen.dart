@@ -5,6 +5,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/models.dart';
 import '../../core/app_core.dart';
+import '../../widgets/common_widgets.dart';
+import '../base_screen.dart';
 
 class PlaylistSharingScreen extends StatefulWidget {
   final Playlist playlist;
@@ -33,10 +35,6 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
   
   @override
   Widget buildContent() {
-    if (isLoading) {
-      return buildLoadingState();
-    }
-    
     return SingleChildScrollView(
       padding: AppSizes.screenPadding,
       child: Column(
@@ -51,7 +49,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
             const SizedBox(height: 24),
             _buildVisibilityCard(),
           ] else ...[
-            EmptyState(
+            buildEmptyState(
               icon: Icons.lock,
               title: 'This playlist is currently private',
               subtitle: 'Enable public sharing to generate a share link',

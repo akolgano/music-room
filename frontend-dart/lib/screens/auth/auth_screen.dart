@@ -78,33 +78,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               opacity: _fadeAnimation,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 400),
-                child: Card(
-                  color: AppTheme.surface,
-                  child: Padding(
-                    padding: AppSizes.cardPadding,
-                    child: Consumer<AuthProvider>(
-                      builder: (context, authProvider, _) {
-                        return Form(
-                          key: _formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildHeader(),
-                              const SizedBox(height: 32),
-                              if (authProvider.hasError) _buildErrorBanner(authProvider.errorMessage!),
-                              _buildForm(),
-                              const SizedBox(height: 32),
-                              _buildSubmitButton(authProvider),
-                              const SizedBox(height: 16),
-                              _buildToggleButton(),
-                              const SizedBox(height: 16),
-                              _buildSocialButtons(),
-                              const SizedBox(height: 16),
-                              _buildForgotPasswordButton(),
-                            ],
-                          ),
-                        );
-                      },
+                child: Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) => Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildHeader(),
+                        const SizedBox(height: 32),
+                        if (authProvider.hasError) 
+                          ErrorBanner(message: authProvider.errorMessage!),
+                        _buildFormCard(authProvider),
+                        const SizedBox(height: 24),
+                        _buildSocialButtons(),
+                        const SizedBox(height: 16),
+                        _buildForgotPasswordButton(),
+                      ],
                     ),
                   ),
                 ),
@@ -117,170 +106,147 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeader() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            color: AppTheme.primary,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.music_note, size: 32, color: Colors.black),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          _isLogin ? 'Welcome Back' : 'Join ${AppConstants.appName}',
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          _isLogin 
-            ? 'Sign in to continue your musical journey'
-            : 'Create an account to start sharing music',
-          style: const TextStyle(color: AppTheme.textSecondary),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildErrorBanner(String error) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
-      ),
-      child: Row(
+    return AppTheme.buildHeaderCard(
+      child: Column(
         children: [
-          const Icon(Icons.error_outline, color: Colors.red, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              error,
-              style: const TextStyle(color: Colors.red, fontSize: 14),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
             ),
+            child: const Icon(Icons.music_note, size: 32, color: AppTheme.primary),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _isLogin ? 'Welcome Back' : 'Join ${AppConstants.appName}',
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _isLogin 
+              ? 'Sign in to continue your musical journey'
+              : 'Create an account to start sharing music',
+            style: const TextStyle(color: Colors.white70),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildForm() {
-    return Column(
-      children: [
-        AppTextField(
-          controller: _usernameController,
-          labelText: AppStrings.username,
-          prefixIcon: Icons.person,
-          validator: (value) => Validators.required(value, AppStrings.username.toLowerCase()),
-        ),
-        if (!_isLogin) ...[
+  Widget _buildFormCard(AuthProvider authProvider) {
+    return AppTheme.buildFormCard(
+      title: _isLogin ? 'Sign In' : 'Create Account',
+      titleIcon: _isLogin ? Icons.login : Icons.person_add,
+      child: Column(
+        children: [
+          AppTextField(
+            controller: _usernameController,
+            labelText: AppStrings.username,
+            prefixIcon: Icons.person,
+            validator: Validators.username,
+          ),
+          if (!_isLogin) ...[
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _emailController,
+              labelText: AppStrings.email,
+              prefixIcon: Icons.email,
+              validator: Validators.email,
+            ),
+          ],
           const SizedBox(height: 16),
           AppTextField(
-            controller: _emailController,
-            labelText: AppStrings.email,
-            prefixIcon: Icons.email,
-            validator: Validators.email,
+            controller: _passwordController,
+            labelText: AppStrings.password,
+            prefixIcon: Icons.lock,
+            obscureText: !_isPasswordVisible,
+            validator: Validators.password,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Checkbox(
+                value: _isPasswordVisible,
+                onChanged: (value) => setState(() => _isPasswordVisible = value ?? false),
+                activeColor: AppTheme.primary,
+              ),
+              const Text('Show password', style: TextStyle(color: AppTheme.textSecondary)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          AppTheme.buildPrimaryButton(
+            text: _isLogin ? AppStrings.signIn : AppStrings.signUp,
+            onPressed: _submit,
+            icon: _isLogin ? Icons.login : Icons.person_add,
+            isLoading: authProvider.isLoading,
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: AppTheme.surfaceVariant),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _isLogin = !_isLogin;
+                _clearForm();
+              });
+            },
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(color: AppTheme.textSecondary),
+                children: [
+                  TextSpan(text: _isLogin ? 'Don\'t have an account? ' : 'Already have an account? '),
+                  TextSpan(
+                    text: _isLogin ? AppStrings.signUp : AppStrings.signIn,
+                    style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _passwordController,
-          labelText: AppStrings.password,
-          prefixIcon: Icons.lock,
-          obscureText: !_isPasswordVisible,
-          validator: Validators.password,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Checkbox(
-              value: _isPasswordVisible,
-              onChanged: (value) => setState(() => _isPasswordVisible = value ?? false),
-              activeColor: AppTheme.primary,
-            ),
-            const Text('Show password', style: TextStyle(color: AppTheme.textSecondary)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSubmitButton(AuthProvider authProvider) {
-    return AppButton(
-      text: _isLogin ? AppStrings.signIn : AppStrings.signUp,
-      icon: _isLogin ? Icons.login : Icons.person_add,
-      isLoading: authProvider.isLoading,
-      onPressed: _submit,
-    );
-  }
-
-  Widget _buildToggleButton() {
-    return Column(
-      children: [
-        const Divider(color: AppTheme.surfaceVariant),
-        TextButton(
-          onPressed: () {
-            setState(() {
-              _isLogin = !_isLogin;
-              _clearForm();
-            });
-          },
-          child: RichText(
-            text: TextSpan(
-              style: const TextStyle(color: AppTheme.textSecondary),
-              children: [
-                TextSpan(text: _isLogin ? 'Don\'t have an account? ' : 'Already have an account? '),
-                TextSpan(
-                  text: _isLogin ? AppStrings.signUp : AppStrings.signIn,
-                  style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildSocialButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        if (kIsWeb)
-          googleSignInPlugin.renderButton()
-        else
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => _loginWithSocial('Google'),
-              icon: const Icon(Icons.g_mobiledata),
-              label: const Text('GOOGLE'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                side: const BorderSide(color: Colors.white),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+    return AppTheme.buildStandardCard(
+      child: Column(
+        children: [
+          const Text(
+            'Or continue with',
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (kIsWeb)
+                googleSignInPlugin.renderButton()
+              else
+                Expanded(
+                  child: AppButton(
+                    text: 'GOOGLE',
+                    onPressed: () => _loginWithSocial('Google'),
+                    icon: Icons.g_mobiledata,
+                    isOutlined: true,
+                    fullWidth: true,
+                  ),
+                ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: AppButton(
+                  text: 'FACEBOOK',
+                  onPressed: () => _loginWithSocial('Facebook'),
+                  icon: Icons.facebook,
+                  isOutlined: true,
+                  fullWidth: true,
+                ),
               ),
-            ),
+            ],
           ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () => _loginWithSocial('Facebook'),
-            icon: const Icon(Icons.facebook),
-            label: const Text('FACEBOOK'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              side: const BorderSide(color: Colors.white),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -353,14 +319,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
   void _showSuccessAndNavigate(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          duration: AppDurations.snackBarDuration,
-        ),
-      );
+      CommonWidgets.showSnackBar(context, message);
     }
   }
 

@@ -29,6 +29,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   final ApiService _apiService = ApiService();
   
   bool _isPublic = false;
+  bool _isScreenLoading = false;
   Playlist? _playlist;
   List<PlaylistTrack> _playlistTracks = [];
   List<int> _friends = [];
@@ -58,8 +59,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   @override
   Widget buildContent() {
-    if (isLoading) {
-      return buildLoadingState();
+    if (_isScreenLoading) {
+      return buildLoadingState(message: 'Loading playlist...');
     }
 
     return SingleChildScrollView(
@@ -67,7 +68,11 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!_isEditMode) _buildCreatePlaylistHeader(),
+          if (!_isEditMode) buildInfoBanner(
+            title: 'Getting Started',
+            message: 'Create your custom playlist by giving it a name and description. You can add songs later!',
+            icon: Icons.lightbulb,
+          ),
           _buildPlaylistForm(),
           const SizedBox(height: 32),
           if (_isEditMode) _buildTracksSection(),
@@ -85,7 +90,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             text: 'Create',
             icon: Icons.save,
             onPressed: _createPlaylist,
-            isLoading: isLoading,
+            isLoading: _isScreenLoading,
+            fullWidth: false,
           ),
         ),
       ];
@@ -109,104 +115,97 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     ];
   }
 
-  Widget _buildCreatePlaylistHeader() {
-    return InfoBanner(
-      title: 'Getting Started',
-      message: 'Create your custom playlist by giving it a name and description. You can add songs later!',
-      icon: Icons.lightbulb,
-    );
-  }
-
   Widget _buildPlaylistForm() {
-    return Card(
-      color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return AppTheme.buildFormCard(
+      title: _isEditMode ? 'Playlist Details' : 'Create New Playlist',
+      titleIcon: _isEditMode ? Icons.edit : Icons.add,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_isEditMode && _webSocketService.isConnected) ...[
             Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Icon(_isEditMode ? Icons.edit : Icons.add, color: AppTheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Text(_isEditMode ? 'Playlist Details' : 'Create New Playlist', 
-                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                const Spacer(),
-                if (_isEditMode && _webSocketService.isConnected)
-                  StatusIndicator(isConnected: _webSocketService.isConnected),
+                StatusIndicator(
+                  isConnected: _webSocketService.isConnected,
+                  animated: true,
+                ),
               ],
             ),
             const SizedBox(height: 16),
-            AppTextField(
-              controller: _nameController,
-              labelText: 'Playlist Name',
-              prefixIcon: Icons.title,
-              validator: Validators.playlistName,
+          ],
+          AppTextField(
+            controller: _nameController,
+            labelText: 'Playlist Name',
+            prefixIcon: Icons.title,
+            validator: Validators.playlistName,
+          ),
+          const SizedBox(height: 16),
+          AppTextField(
+            controller: _descriptionController,
+            labelText: 'Description (optional)',
+            prefixIcon: Icons.description,
+            maxLines: 3,
+            validator: Validators.description,
+          ),
+          const SizedBox(height: 16),
+          SwitchListTile(
+            title: Text(_isPublic ? 'Public Playlist' : 'Private Playlist', 
+                        style: const TextStyle(color: Colors.white)),
+            subtitle: Text(
+              _isPublic ? 'Anyone can view this playlist' : 'Only you can view this playlist',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
-            const SizedBox(height: 16),
-            AppTextField(
-              controller: _descriptionController,
-              labelText: 'Description (optional)',
-              prefixIcon: Icons.description,
-              maxLines: 3,
-              validator: Validators.description,
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: Text(_isPublic ? 'Public Playlist' : 'Private Playlist', 
-                          style: const TextStyle(color: Colors.white)),
-              subtitle: Text(
-                _isPublic ? 'Anyone can view this playlist' : 'Only you can view this playlist',
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-              value: _isPublic,
-              onChanged: (value) => setState(() => _isPublic = value),
-              activeColor: AppTheme.primary,
-              contentPadding: EdgeInsets.zero,
+            value: _isPublic,
+            onChanged: (value) => setState(() => _isPublic = value),
+            activeColor: AppTheme.primary,
+            contentPadding: EdgeInsets.zero,
+          ),
+          if (!_isEditMode) ...[
+            const SizedBox(height: 24),
+            AppTheme.buildPrimaryButton(
+              text: 'Create Playlist',
+              onPressed: _createPlaylist,
+              icon: Icons.add,
+              isLoading: _isScreenLoading,
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildTracksSection() {
-    return Card(
-      color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return AppTheme.buildFormCard(
+      title: 'Tracks (${_playlistTracks.length})',
+      titleIcon: Icons.queue_music,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_webSocketService.isConnected) ...[
             Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Icon(Icons.queue_music, color: AppTheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Text('Tracks (${_playlistTracks.length})', 
-                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                const Spacer(),
-                if (_webSocketService.isConnected)
-                  StatusIndicator(isConnected: _webSocketService.isConnected),
+                StatusIndicator(
+                  isConnected: _webSocketService.isConnected,
+                  animated: true,
+                ),
               ],
             ),
             const SizedBox(height: 16),
-            if (_playlistTracks.isEmpty)
-              _buildEmptyTracksState()
-            else
-              _buildReorderableTracksList(),
           ],
-        ),
+          if (_playlistTracks.isEmpty)
+            buildEmptyState(
+              icon: Icons.music_note,
+              title: 'No tracks added yet',
+              subtitle: 'Add some songs to get started!',
+              buttonText: 'Add Songs',
+              onButtonPressed: _navigateToTrackSearch,
+            )
+          else
+            _buildReorderableTracksList(),
+        ],
       ),
-    );
-  }
-
-  Widget _buildEmptyTracksState() {
-    return EmptyState(
-      icon: Icons.music_note,
-      title: 'No tracks added yet',
-      subtitle: 'Add some songs to get started!',
-      buttonText: 'Add Songs',
-      onButtonPressed: _navigateToTrackSearch,
     );
   }
 
@@ -218,35 +217,38 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       onReorder: _reorderTracks,
       itemBuilder: (context, index) {
         final track = _playlistTracks[index];
-        return Card(
+        return Container(
           key: ValueKey(track.trackId),
           margin: const EdgeInsets.only(bottom: 8),
-          color: AppTheme.surfaceVariant,
-          child: ListTile(
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text('${index + 1}', 
-                         style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 12)),
-            ),
-            title: Text(track.name, style: const TextStyle(color: Colors.white), 
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text('Position: ${track.position}', 
-                          style: const TextStyle(color: Colors.grey, fontSize: 12)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.drag_handle, color: Colors.grey.withOpacity(0.7)),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-                  onPressed: () => _removeTrack(track),
-                  tooltip: 'Remove track',
+          child: AppTheme.buildListCard(
+            margin: const EdgeInsets.only(bottom: 8),
+            color: AppTheme.surfaceVariant,
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-              ],
+                child: Text('${index + 1}', 
+                           style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+              title: Text(track.name, style: const TextStyle(color: Colors.white), 
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: Text('Position: ${track.position}', 
+                            style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.drag_handle, color: Colors.grey.withOpacity(0.7)),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                    onPressed: () => _removeTrack(track),
+                    tooltip: 'Remove track',
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -278,7 +280,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _loadFriends() async {
     await runAsync(() async {
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+      final friendProvider = getProvider<FriendProvider>();
       await friendProvider.fetchFriends(auth.token!);
       _friends = friendProvider.friends;
     });
@@ -287,9 +289,11 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   Future<void> _loadPlaylist() async {
     if (!_isEditMode) return;
 
+    setState(() => _isScreenLoading = true);
+
     await runAsyncAction(
       () async {
-        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        final musicProvider = getProvider<MusicProvider>();
         
         _playlist = await musicProvider.getPlaylistDetails(widget.playlistId!, auth.token!);
         
@@ -307,6 +311,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       },
       errorMessage: 'Failed to load playlist',
     );
+
+    setState(() => _isScreenLoading = false);
   }
 
   Future<void> _createPlaylist() async {
@@ -315,10 +321,12 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       return;
     }
 
+    setState(() => _isScreenLoading = true);
+
     await runAsyncAction(
       () async {
-        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-        final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+        final musicProvider = getProvider<MusicProvider>();
+        final deviceProvider = getProvider<DeviceProvider>();
 
         final playlistId = await musicProvider.createPlaylist(
           _nameController.text,
@@ -339,6 +347,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       successMessage: 'Playlist created successfully!',
       errorMessage: 'Failed to create playlist',
     );
+
+    setState(() => _isScreenLoading = false);
   }
 
   Future<void> _reorderTracks(int oldIndex, int newIndex) async {
@@ -363,12 +373,12 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   }
 
   Future<void> _removeTrack(PlaylistTrack track) async {
-    final confirm = await DialogUtils.showDeleteConfirmDialog(context, track.name);
+    final confirm = await showConfirmDialog('Remove Track', 'Remove "${track.name}" from playlist?');
 
-    if (confirm == true && _isEditMode) {
+    if (confirm && _isEditMode) {
       await runAsyncAction(
         () async {
-          final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+          final deviceProvider = getProvider<DeviceProvider>();
 
           await _apiService.removeTrackFromPlaylist(
             playlistId: widget.playlistId!,
@@ -420,7 +430,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
     await runAsyncAction(
       () async {
-        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        final musicProvider = getProvider<MusicProvider>();
         bool newVisibility = !_isPublic;
         await musicProvider.changePlaylistVisibility(widget.playlistId!, newVisibility, auth.token!);
         setState(() => _isPublic = newVisibility);
@@ -431,7 +441,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   }
 
   void _navigateToTrackSearch() {
-    navigateTo('/track_search', arguments: widget.playlistId);
+    navigateToTrackSearch(widget.playlistId);
   }
 
   @override

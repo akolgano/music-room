@@ -1,6 +1,8 @@
 // lib/screens/music/player_screen.dart
 import 'package:flutter/material.dart';
 import '../../core/app_core.dart';
+import '../../widgets/common_widgets.dart';
+import '../../utils/dialog_utils.dart';
 
 class PlayerScreen extends StatelessWidget {
   const PlayerScreen({Key? key}) : super(key: key);
@@ -19,7 +21,7 @@ class PlayerScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: EmptyState(
+      body: CommonWidgets.emptyState(
         icon: Icons.music_note,
         title: 'Music Player',
         subtitle: 'Full music player functionality coming soon!',
@@ -63,7 +65,7 @@ class SimpleComingSoonScreen extends StatelessWidget {
         backgroundColor: AppTheme.background,
         title: Text(title),
       ),
-      body: EmptyState(
+      body: CommonWidgets.emptyState(
         icon: icon,
         title: title,
         subtitle: 'Coming Soon',
