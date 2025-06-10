@@ -76,3 +76,16 @@ class _PublicPlaylistsScreenState extends BaseScreen<PublicPlaylistsScreen> {
     showInfo('Playing ${playlist.name}');
   }
 }
+
+class PublicPlaylistsScreen extends StatelessWidget {
+  const PublicPlaylistsScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const PlaylistsScreen(
+      publicOnly: true,
+      title: 'Public Playlists',
+      showCreateButton: false,
+    );
+  }
+}

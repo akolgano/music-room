@@ -86,7 +86,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
-                  ],
+                    child: const Icon(Icons.check, color: Colors.white, size: 12),
+                  ),
                 ),
                 child: const Icon(Icons.person, size: 50, color: Colors.black),
               ),
@@ -354,5 +355,43 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     if (confirmed) {
       showError('Account deletion is not implemented yet');
     }
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('Delete Account', style: TextStyle(color: Colors.red)),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('This will permanently delete your account and all associated data:', style: TextStyle(color: Colors.white)),
+            SizedBox(height: 8),
+            Text('• All your playlists', style: TextStyle(color: Colors.grey)),
+            Text('• Your friend connections', style: TextStyle(color: Colors.grey)),
+            Text('• Your listening history', style: TextStyle(color: Colors.grey)),
+            Text('• Your profile information', style: TextStyle(color: Colors.grey)),
+            SizedBox(height: 16),
+            Text('This action cannot be undone.', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              SnackBarUtils.showError(context, 'Account deletion is not implemented yet');
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete Account', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 }
