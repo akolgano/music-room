@@ -11,12 +11,6 @@ class User {
     username: json['username'],
     email: json['email'],
   );
-  
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'username': username,
-    if (email != null) 'email': email,
-  };
 }
 
 class Track {
@@ -56,24 +50,11 @@ class Track {
               json['album']?['cover_medium'] ?? 
               json['album']?['cover'],
   );
-  
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'artist': artist,
-    'album': album,
-    'url': url,
-    'deezer_track_id': deezerTrackId,
-    'preview_url': previewUrl,
-    'image_url': imageUrl,
-  };
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Track &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+      other is Track && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
@@ -109,23 +90,11 @@ class Playlist {
         .toList() ?? [],
     imageUrl: json['image_url'],
   );
-  
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'description': description,
-    'public': isPublic,
-    'creator': creator,
-    'tracks': tracks.map((track) => track.toJson()).toList(),
-    'image_url': imageUrl,
-  };
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Playlist &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+      other is Playlist && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
@@ -150,13 +119,6 @@ class PlaylistTrack {
     position: json['position'] ?? 0,
     track: json['track'] != null ? Track.fromJson(json['track']) : null,
   );
-  
-  Map<String, dynamic> toJson() => {
-    'track_id': trackId,
-    'name': name,
-    'position': position,
-    if (track != null) 'track': track!.toJson(),
-  };
 }
 
 class Device {
@@ -184,59 +146,6 @@ class Device {
     licenseKey: json['license_key'] ?? '',
     createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
   );
-  
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'uuid': uuid,
-    'device_name': name,
-    'is_active': isActive,
-    'license_key': licenseKey,
-    'created_at': createdAt.toIso8601String(),
-  };
-}
-
-class Event {
-  final String id;
-  final String name;
-  final String description;
-  final bool isPublic;
-  final String creator;
-  final DateTime startTime;
-  final DateTime endTime;
-  final String? location;
-  
-  Event({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.isPublic,
-    required this.creator,
-    required this.startTime,
-    required this.endTime,
-    this.location,
-  });
-  
-  factory Event.fromJson(Map<String, dynamic> json) => Event(
-    id: json['id'].toString(),
-    name: json['name'] ?? '',
-    description: json['description'] ?? '',
-    isPublic: json['public'] ?? false,
-    creator: json['creator'] ?? '',
-    startTime: DateTime.parse(json['start_time']),
-    endTime: DateTime.parse(json['end_time']),
-    location: json['location'],
-  );
-  
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'description': description,
-    'public': isPublic,
-    'creator': creator,
-    'start_time': startTime.toIso8601String(),
-    'end_time': endTime.toIso8601String(),
-    'location': location,
-  };
 }
 
 class Friendship {
@@ -261,12 +170,109 @@ class Friendship {
     status: json['status'] ?? 'pending',
     createdAt: DateTime.parse(json['created_at']),
   );
-  
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'from_user': fromUser,
-    'to_user': toUser,
-    'status': status,
-    'created_at': createdAt.toIso8601String(),
-  };
+}
+
+enum LicenseType { free, premium, enterprise }
+enum PlaylistPermission { view, edit, admin, invite }
+
+class PlaylistLicense {
+  final String id;
+  final String playlistId;
+  final LicenseType type;
+  final List<PlaylistPermission> permissions;
+  final bool allowPublicEdit;
+  final bool inviteOnlyEdit;
+  final DateTime? expiresAt;
+  final Map<String, dynamic> restrictions;
+
+  PlaylistLicense({
+    required this.id,
+    required this.playlistId,
+    required this.type,
+    required this.permissions,
+    this.allowPublicEdit = true,
+    this.inviteOnlyEdit = false,
+    this.expiresAt,
+    this.restrictions = const {},
+  });
+
+  factory PlaylistLicense.fromJson(Map<String, dynamic> json) => PlaylistLicense(
+    id: json['id'].toString(),
+    playlistId: json['playlist_id'].toString(),
+    type: LicenseType.values.firstWhere((e) => e.name == json['type']),
+    permissions: (json['permissions'] as List)
+        .map((p) => PlaylistPermission.values.firstWhere((e) => e.name == p))
+        .toList(),
+    allowPublicEdit: json['allow_public_edit'] ?? true,
+    inviteOnlyEdit: json['invite_only_edit'] ?? false,
+    expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at']) : null,
+    restrictions: json['restrictions'] ?? {},
+  );
+
+  bool hasPermission(PlaylistPermission permission) => permissions.contains(permission);
+  bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
+  bool get canEdit => hasPermission(PlaylistPermission.edit) && !isExpired;
+}
+
+class PlaylistCollaborator {
+  final String userId;
+  final String username;
+  final List<PlaylistPermission> permissions;
+  final DateTime joinedAt;
+  final bool isOnline;
+  final DateTime? lastActivity;
+
+  PlaylistCollaborator({
+    required this.userId,
+    required this.username,
+    required this.permissions,
+    required this.joinedAt,
+    this.isOnline = false,
+    this.lastActivity,
+  });
+
+  factory PlaylistCollaborator.fromJson(Map<String, dynamic> json) => PlaylistCollaborator(
+    userId: json['user_id'].toString(),
+    username: json['username'],
+    permissions: (json['permissions'] as List)
+        .map((p) => PlaylistPermission.values.firstWhere((e) => e.name == p))
+        .toList(),
+    joinedAt: DateTime.parse(json['joined_at']),
+    isOnline: json['is_online'] ?? false,
+    lastActivity: json['last_activity'] != null ? DateTime.parse(json['last_activity']) : null,
+  );
+
+  bool hasPermission(PlaylistPermission permission) => permissions.contains(permission);
+}
+
+enum ConflictType { trackMove, trackAdd, trackRemove, playlistEdit, simultaneousEdit }
+
+class PlaylistOperation {
+  final String id;
+  final String userId;
+  final String username;
+  final ConflictType type;
+  final Map<String, dynamic> data;
+  final DateTime timestamp;
+  final int version;
+
+  PlaylistOperation({
+    required this.id,
+    required this.userId,
+    required this.username,
+    required this.type,
+    required this.data,
+    required this.timestamp,
+    required this.version,
+  });
+
+  factory PlaylistOperation.fromJson(Map<String, dynamic> json) => PlaylistOperation(
+    id: json['id'],
+    userId: json['user_id'],
+    username: json['username'],
+    type: ConflictType.values.firstWhere((e) => e.name == json['type']),
+    data: json['data'],
+    timestamp: DateTime.parse(json['timestamp']),
+    version: json['version'],
+  );
 }
