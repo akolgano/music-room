@@ -6,7 +6,6 @@ import '../core/app_core.dart';
 import '../models/models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
-import '../providers/base_provider.dart';
 
 class CommonWidgets {
   static Widget loadingWidget([String? message]) => Center(
@@ -79,6 +78,24 @@ class CommonWidgets {
     ),
   );
 
+  static Widget buildInfoBanner({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color color = AppTheme.primary,
+    VoidCallback? onAction,
+    String? actionText,
+  }) {
+    return InfoBanner(
+      title: title,
+      message: message,
+      icon: icon,
+      color: color,
+      onAction: onAction,
+      actionText: actionText,
+    );
+  }
+
   static Widget buildTrackCard({
     required Track track,
     bool isSelected = false,
@@ -94,8 +111,7 @@ class CommonWidgets {
         final isCurrentTrack = playerService.currentTrack?.id == track.id;
         final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
 
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+        return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
             color: isSelected ? themeProvider.primaryColor.withOpacity(0.1) : themeProvider.surfaceColor,
@@ -111,7 +127,10 @@ class CommonWidgets {
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    _buildTrackLeading(track, isSelected, trackIsPlaying, themeProvider, onSelectionChanged, showImage),
+                    if (onSelectionChanged != null)
+                      Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
+                    else
+                      _buildAlbumArt(track, trackIsPlaying, themeProvider, showImage),
                     const SizedBox(width: 12),
                     Expanded(child: _buildTrackInfo(track, trackIsPlaying, themeProvider)),
                     _buildTrackActions(onPlay, onAdd, onAddToLibrary, trackIsPlaying, themeProvider),
@@ -123,61 +142,6 @@ class CommonWidgets {
         );
       },
     );
-  }
-
-  static Widget buildPlaylistCard({
-    required Playlist playlist,
-    VoidCallback? onTap,
-    VoidCallback? onPlay,
-    VoidCallback? onShare,
-    bool showPlayButton = true,
-  }) {
-    return Consumer<DynamicThemeProvider>(
-      builder: (context, themeProvider, _) {
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          color: themeProvider.surfaceColor,
-          child: ListTile(
-            onTap: onTap,
-            leading: Container(
-              width: 50, height: 50,
-              decoration: BoxDecoration(
-                color: themeProvider.primaryColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.library_music, color: Colors.white),
-            ),
-            title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
-            subtitle: Text('${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (showPlayButton && onPlay != null)
-                  IconButton(
-                    icon: Icon(Icons.play_arrow, color: themeProvider.primaryColor),
-                    onPressed: onPlay,
-                  ),
-                if (onShare != null)
-                  IconButton(
-                    icon: const Icon(Icons.share, color: Colors.white),
-                    onPressed: onShare,
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  static Widget _buildTrackLeading(
-    Track track, bool isSelected, bool trackIsPlaying, DynamicThemeProvider themeProvider,
-    ValueChanged<bool?>? onSelectionChanged, bool showImage,
-  ) {
-    if (onSelectionChanged != null) {
-      return Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor);
-    }
-    return _buildAlbumArt(track, trackIsPlaying, themeProvider, showImage);
   }
 
   static Widget _buildAlbumArt(Track track, bool trackIsPlaying, DynamicThemeProvider themeProvider, bool showImage) {
@@ -281,6 +245,42 @@ class CommonWidgets {
            Row(mainAxisSize: MainAxisSize.min, children: actions);
   }
 
+  static Widget buildPlaylistCard({
+    required Playlist playlist,
+    VoidCallback? onTap,
+    VoidCallback? onPlay,
+    VoidCallback? onShare,
+    bool showPlayButton = true,
+  }) {
+    return Consumer<DynamicThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          color: themeProvider.surfaceColor,
+          child: ListTile(
+            onTap: onTap,
+            leading: Container(
+              width: 50, height: 50,
+              decoration: BoxDecoration(
+                color: themeProvider.primaryColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.library_music, color: Colors.white),
+            ),
+            title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
+            subtitle: Text('${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
+            trailing: showPlayButton && onPlay != null 
+              ? IconButton(
+                  icon: Icon(Icons.play_arrow, color: themeProvider.primaryColor),
+                  onPressed: onPlay,
+                )
+              : null,
+          ),
+        );
+      },
+    );
+  }
+
   static void showSnackBar(BuildContext context, String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -290,44 +290,146 @@ class CommonWidgets {
       ),
     );
   }
+}
 
-  static Widget buildInfoBanner({
-    required String title,
-    required String message,
-    required IconData icon,
-    Color color = AppTheme.primary,
-    VoidCallback? onAction,
-    String? actionText,
-  }) {
+class ErrorBanner extends StatelessWidget {
+  final String message;
+  final Color color;
+
+  const ErrorBanner({
+    Key? key,
+    required this.message,
+    this.color = AppTheme.error,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 12),
+          Icon(Icons.error_outline, color: color, size: 20),
+          const SizedBox(width: 8),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 4),
-                Text(message, style: const TextStyle(color: Colors.white, fontSize: 14)),
-              ],
+            child: Text(
+              message,
+              style: TextStyle(color: color, fontSize: 14),
             ),
           ),
-          if (onAction != null && actionText != null)
-            TextButton(
-              onPressed: onAction,
-              child: Text(actionText, style: TextStyle(color: color)),
-            ),
         ],
       ),
+    );
+  }
+}
+
+class SettingsSection extends StatelessWidget {
+  final String title;
+  final List<Widget> items;
+
+  const SettingsSection({
+    Key? key,
+    required this.title,
+    required this.items,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: AppTheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...items,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback? onTap;
+  final Color color;
+
+  const SettingsItem({
+    Key? key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.onTap,
+    this.color = Colors.white,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(title, style: TextStyle(color: color)),
+      subtitle: subtitle != null 
+        ? Text(subtitle!, style: const TextStyle(color: Colors.grey))
+        : null,
+      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: onTap,
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+}
+
+class StatusIndicator extends StatelessWidget {
+  final bool isConnected;
+  final String connectedText;
+  final String disconnectedText;
+
+  const StatusIndicator({
+    Key? key,
+    required this.isConnected,
+    this.connectedText = 'Connected',
+    this.disconnectedText = 'Disconnected',
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: isConnected ? Colors.green : Colors.red,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          isConnected ? connectedText : disconnectedText,
+          style: TextStyle(
+            color: isConnected ? Colors.green : Colors.red,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -387,37 +489,6 @@ class MiniPlayerWidget extends StatelessWidget {
   }
 }
 
-class InfoBanner extends StatelessWidget {
-  final String title;
-  final String message;
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onAction;
-  final String? actionText;
-
-  const InfoBanner({
-    Key? key,
-    required this.title,
-    required this.message,
-    required this.icon,
-    this.color = AppTheme.primary,
-    this.onAction,
-    this.actionText,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return CommonWidgets.buildInfoBanner(
-      title: title,
-      message: message,
-      icon: icon,
-      color: color,
-      onAction: onAction,
-      actionText: actionText,
-    );
-  }
-}
-
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
@@ -449,10 +520,10 @@ class AppTextField extends StatelessWidget {
       maxLines: maxLines,
       onChanged: onChanged,
       style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
+      decoration: AppTheme.getInputDecoration(
         labelText: labelText,
         hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.grey) : null,
+        prefixIcon: prefixIcon,
       ),
     );
   }
@@ -552,34 +623,6 @@ class SectionTitle extends StatelessWidget {
   }
 }
 
-class ErrorBanner extends StatelessWidget {
-  final String message;
-
-  const ErrorBanner({Key? key, required this.message}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.error.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.error.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: AppTheme.error, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(message, style: const TextStyle(color: AppTheme.error, fontSize: 14)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class QuickActionCard extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -665,102 +708,54 @@ class FeatureCard extends StatelessWidget {
   }
 }
 
-class StatusIndicator extends StatelessWidget {
-  final bool isConnected;
-  final String connectedText;
-  final String disconnectedText;
-  final bool animated;
+class InfoBanner extends StatelessWidget {
+  final String title;
+  final String message;
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onAction;
+  final String? actionText;
 
-  const StatusIndicator({
+  const InfoBanner({
     Key? key,
-    required this.isConnected,
-    this.connectedText = 'Connected',
-    this.disconnectedText = 'Disconnected',
-    this.animated = false,
+    required this.title,
+    required this.message,
+    required this.icon,
+    this.color = AppTheme.primary,
+    this.onAction,
+    this.actionText,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: (isConnected ? Colors.green : Colors.grey).withOpacity(0.2),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 8, height: 8,
-            decoration: BoxDecoration(
-              color: isConnected ? Colors.green : Colors.grey,
-              shape: BoxShape.circle,
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 4),
+                Text(message, style: const TextStyle(color: Colors.white, fontSize: 14)),
+              ],
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            isConnected ? connectedText : disconnectedText,
-            style: TextStyle(color: isConnected ? Colors.green : Colors.grey, fontSize: 10),
-          ),
+          if (onAction != null && actionText != null)
+            TextButton(
+              onPressed: onAction,
+              child: Text(actionText!, style: TextStyle(color: color)),
+            ),
         ],
-      ),
-    );
-  }
-}
-
-class SettingsSection extends StatelessWidget {
-  final String title;
-  final List<Widget> items;
-
-  const SettingsSection({Key? key, required this.title, required this.items}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-          child: Text(
-            title,
-            style: const TextStyle(color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-        ),
-        ...items,
-        const SizedBox(height: 8),
-      ],
-    );
-  }
-}
-
-class SettingsItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final Color? color;
-
-  const SettingsItem({
-    Key? key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.color,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final itemColor = color ?? Colors.white;
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: AppTheme.surface,
-      child: ListTile(
-        leading: Icon(icon, color: itemColor),
-        title: Text(title, style: TextStyle(color: itemColor)),
-        subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey)),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: onTap,
       ),
     );
   }
