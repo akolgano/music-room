@@ -270,4 +270,16 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       auth.logout();
     }
   }
+
+  void _showDeleteAccountDialog() async {
+    final confirmed = await showConfirmDialog(
+      'Delete Account',
+      AppStrings.deleteAccountWarning,
+      isDangerous: true,
+    );
+    
+    if (confirmed) {
+      showError('Account deletion is not implemented yet');
+    }
+  }
 }
