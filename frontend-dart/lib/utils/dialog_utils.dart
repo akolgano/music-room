@@ -42,47 +42,19 @@ class DialogUtils {
     IconData? icon,
     int maxLines = 1,
   }) {
-    final controller = TextEditingController(text: initialValue);
-    final formKey = GlobalKey<FormState>();
-    
-    return _showBasicDialog<String>(
+    return showDialog<String>(
       context: context,
-      title: title,
-      icon: icon,
-      content: Form(
-        key: formKey,
-        child: TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: hintText,
-            labelText: labelText,
-            hintStyle: const TextStyle(color: Colors.grey),
-          ),
-          style: const TextStyle(color: Colors.white),
-          obscureText: obscureText,
-          autofocus: true,
-          maxLines: maxLines,
-          validator: validator,
-        ),
+      builder: (ctx) => _TextInputDialog(
+        title: title,
+        initialValue: initialValue,
+        hintText: hintText,
+        labelText: labelText,
+        obscureText: obscureText,
+        validator: validator,
+        icon: icon,
+        maxLines: maxLines,
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text(AppStrings.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            if (formKey.currentState?.validate() ?? false) {
-              Navigator.of(context).pop(controller.text);
-            }
-          },
-          child: const Text(AppStrings.ok),
-        ),
-      ],
-    ).then((result) {
-      controller.dispose();
-      return result;
-    });
+    );
   }
 
   static Future<Map<String, String>?> showMultiInputDialog({
@@ -91,62 +63,14 @@ class DialogUtils {
     required List<InputField> fields,
     IconData? icon,
   }) {
-    final controllers = <String, TextEditingController>{};
-    final formKey = GlobalKey<FormState>();
-    
-    for (final field in fields) {
-      controllers[field.key] = TextEditingController(text: field.initialValue);
-    }
-    
-    return _showBasicDialog<Map<String, String>>(
+    return showDialog<Map<String, String>>(
       context: context,
-      title: title,
-      icon: icon,
-      content: Form(
-        key: formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: fields.map((field) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: TextFormField(
-              controller: controllers[field.key],
-              decoration: InputDecoration(
-                labelText: field.label,
-                hintText: field.hint,
-                hintStyle: const TextStyle(color: Colors.grey),
-              ),
-              style: const TextStyle(color: Colors.white),
-              obscureText: field.obscureText,
-              maxLines: field.maxLines,
-              validator: field.validator,
-            ),
-          )).toList(),
-        ),
+      builder: (ctx) => _MultiInputDialog(
+        title: title,
+        fields: fields,
+        icon: icon,
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () {
-            if (formKey.currentState?.validate() ?? false) {
-              final result = <String, String>{};
-              for (final field in fields) {
-                result[field.key] = controllers[field.key]!.text;
-              }
-              Navigator.of(context).pop(result);
-            }
-          },
-          child: const Text('Save'),
-        ),
-      ],
-    ).then((result) {
-      for (final controller in controllers.values) {
-        controller.dispose();
-      }
-      return result;
-    });
+    );
   }
 
   static Future<int?> showSelectionDialog<T>({
@@ -506,6 +430,189 @@ class DialogUtils {
 
   static void hideLoadingDialog(BuildContext context) {
     Navigator.of(context).pop();
+  }
+}
+
+class _TextInputDialog extends StatefulWidget {
+  final String title;
+  final String? initialValue;
+  final String? hintText;
+  final String? labelText;
+  final bool obscureText;
+  final String? Function(String?)? validator;
+  final IconData? icon;
+  final int maxLines;
+
+  const _TextInputDialog({
+    required this.title,
+    this.initialValue,
+    this.hintText,
+    this.labelText,
+    this.obscureText = false,
+    this.validator,
+    this.icon,
+    this.maxLines = 1,
+  });
+
+  @override
+  State<_TextInputDialog> createState() => _TextInputDialogState();
+}
+
+class _TextInputDialogState extends State<_TextInputDialog> {
+  late final TextEditingController _controller;
+  late final GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+    _formKey = GlobalKey<FormState>();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppTheme.surface,
+      title: Row(
+        children: [
+          if (widget.icon != null) ...[
+            Icon(widget.icon, color: AppTheme.primary),
+            const SizedBox(width: 8),
+          ],
+          Expanded(child: Text(widget.title, style: const TextStyle(color: Colors.white))),
+        ],
+      ),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            hintText: widget.hintText,
+            labelText: widget.labelText,
+            hintStyle: const TextStyle(color: Colors.grey),
+          ),
+          style: const TextStyle(color: Colors.white),
+          obscureText: widget.obscureText,
+          autofocus: true,
+          maxLines: widget.maxLines,
+          validator: widget.validator,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(AppStrings.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_formKey.currentState?.validate() ?? false) {
+              Navigator.of(context).pop(_controller.text);
+            }
+          },
+          child: const Text(AppStrings.ok),
+        ),
+      ],
+    );
+  }
+}
+
+class _MultiInputDialog extends StatefulWidget {
+  final String title;
+  final List<InputField> fields;
+  final IconData? icon;
+
+  const _MultiInputDialog({
+    required this.title,
+    required this.fields,
+    this.icon,
+  });
+
+  @override
+  State<_MultiInputDialog> createState() => _MultiInputDialogState();
+}
+
+class _MultiInputDialogState extends State<_MultiInputDialog> {
+  late final Map<String, TextEditingController> _controllers;
+  late final GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = {};
+    _formKey = GlobalKey<FormState>();
+    
+    for (final field in widget.fields) {
+      _controllers[field.key] = TextEditingController(text: field.initialValue);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppTheme.surface,
+      title: Row(
+        children: [
+          if (widget.icon != null) ...[
+            Icon(widget.icon, color: AppTheme.primary),
+            const SizedBox(width: 8),
+          ],
+          Expanded(child: Text(widget.title, style: const TextStyle(color: Colors.white))),
+        ],
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: widget.fields.map((field) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: TextFormField(
+              controller: _controllers[field.key],
+              decoration: InputDecoration(
+                labelText: field.label,
+                hintText: field.hint,
+                hintStyle: const TextStyle(color: Colors.grey),
+              ),
+              style: const TextStyle(color: Colors.white),
+              obscureText: field.obscureText,
+              maxLines: field.maxLines,
+              validator: field.validator,
+            ),
+          )).toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_formKey.currentState?.validate() ?? false) {
+              final result = <String, String>{};
+              for (final field in widget.fields) {
+                result[field.key] = _controllers[field.key]!.text;
+              }
+              Navigator.of(context).pop(result);
+            }
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
   }
 }
 
