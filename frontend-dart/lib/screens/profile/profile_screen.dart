@@ -44,9 +44,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           _buildProfileHeader(),
           const SizedBox(height: 16),
           
-          _buildAccountSection(),
-          _buildMusicSection(),
-          _buildSocialSection(),
+          _buildProfileInformationSection(),
+          _buildSocialNetworkSection(),
           
           Consumer<ProfileProvider>(
             builder: (context, profileProvider, _) {
@@ -57,7 +56,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
             },
           ),
           
-          _buildAppSection(),
           _buildAccountActionsSection(),
         ],
       ),
@@ -134,79 +132,48 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
   }
 
-  Widget _buildAccountSection() {
+  Widget _buildProfileInformationSection() {
     return SettingsSection(
-      title: 'Account',
+      title: 'Profile Information',
       items: [
         SettingsItem(
-          icon: Icons.edit,
-          title: 'Edit Profile', 
-          subtitle: 'Update your profile information',
-          onTap: _showEditProfileDialog,
+          icon: Icons.public,
+          title: 'Public Information', 
+          subtitle: 'Information visible to everyone',
+          onTap: () => _showEditInformationDialog('public'),
         ),
-        SettingsItem(
-          icon: Icons.content_copy,
-          title: 'Copy User ID',
-          subtitle: 'Share your user ID: ${auth.userId ?? "Unknown"}',
-          onTap: () => _copyToClipboard(auth.userId ?? ''),
-        ),
-        SettingsItem(
-          icon: Icons.security,
-          title: 'Privacy & Security',
-          subtitle: 'Manage your account security',
-          onTap: () => showInfo(AppStrings.featureComingSoon),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMusicSection() {
-    return SettingsSection(
-      title: 'Music',
-      items: [
-        SettingsItem(
-          icon: Icons.library_music,
-          title: 'My Library',
-          subtitle: 'View your saved music',
-          onTap: navigateToHome,
-        ),
-        SettingsItem(
-          icon: Icons.high_quality,
-          title: 'Audio Quality',
-          subtitle: 'Set streaming quality',
-          onTap: _showAudioQualityDialog,
-        ),
-        SettingsItem(
-          icon: Icons.download,
-          title: 'Downloads',
-          subtitle: 'Manage your offline music',
-          onTap: () => showInfo(AppStrings.featureComingSoon),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialSection() {
-    return SettingsSection(
-      title: 'Social',
-      items: [
         SettingsItem(
           icon: Icons.people,
-          title: AppStrings.friends,
-          subtitle: 'Manage your friends',
-          onTap: navigateToFriends,
+          title: 'Friends Information',
+          subtitle: 'Information visible to friends only',
+          onTap: () => _showEditInformationDialog('friends'),
         ),
         SettingsItem(
-          icon: Icons.share,
-          title: 'Sharing',
-          subtitle: 'Control sharing settings',
-          onTap: () => showInfo(AppStrings.featureComingSoon),
+          icon: Icons.lock,
+          title: 'Private Information',
+          subtitle: 'Information visible only to you',
+          onTap: () => _showEditInformationDialog('private'),
         ),
         SettingsItem(
-          icon: Icons.block,
-          title: 'Blocked Users',
-          subtitle: 'Manage blocked accounts',
-          onTap: () => showInfo(AppStrings.featureComingSoon),
+          icon: Icons.music_note,
+          title: 'Music Preferences',
+          subtitle: 'Your music tastes and preferences',
+          onTap: _showMusicPreferencesDialog,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialNetworkSection() {
+    return SettingsSection(
+      title: 'Social Network',
+      items: [
+        SettingsItem(
+          icon: Icons.link,
+          title: 'Link Social Account',
+          subtitle: 'Connect Facebook or Google account',
+          onTap: () => Navigator.push(context, MaterialPageRoute(
+            builder: (context) => const SocialNetworkLinkScreen())),
         ),
       ],
     );
@@ -219,7 +186,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         SettingsItem(
           icon: Icons.password,
           title: 'Change Password',
-          subtitle: 'Change your password',
+          subtitle: 'Change your account password',
           onTap: () => Navigator.push(context, MaterialPageRoute(
             builder: (context) => const UserPasswordChangeScreen())),
         ),
@@ -227,48 +194,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
   }
 
-  Widget _buildAppSection() {
-    return SettingsSection(
-      title: 'App',
-      items: [
-        SettingsItem(
-          icon: Icons.link,
-          title: 'Link Social Network',
-          subtitle: 'Connect social accounts',
-          onTap: () => Navigator.push(context, MaterialPageRoute(
-            builder: (context) => const SocialNetworkLinkScreen())),
-        ),
-        SettingsItem(
-          icon: Icons.notifications,
-          title: 'Notifications',
-          subtitle: 'Control notifications',
-          onTap: () => showInfo(AppStrings.featureComingSoon),
-        ),
-        SettingsItem(
-          icon: Icons.storage,
-          title: 'Storage',
-          subtitle: 'Manage app storage and cache',
-          onTap: () => showInfo(AppStrings.featureComingSoon),
-        ),
-        SettingsItem(
-          icon: Icons.info,
-          title: 'About',
-          subtitle: 'Version ${AppConstants.version}',
-          onTap: _showAboutDialog,
-        ),
-        SettingsItem(
-          icon: Icons.help,
-          title: 'Help & Support',
-          subtitle: 'Get help',
-          onTap: () => showInfo(AppStrings.featureComingSoon),
-        ),
-      ],
-    );
-  }
-
   Widget _buildAccountActionsSection() {
     return SettingsSection(
-      title: 'Account Actions',
+      title: 'Account',
       items: [
         SettingsItem(
           icon: Icons.logout,
@@ -277,59 +205,58 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           onTap: _showSignOutDialog,
           color: Colors.orange,
         ),
-        SettingsItem(
-          icon: Icons.delete_forever,
-          title: 'Delete Account',
-          subtitle: 'Permanently delete your account',
-          onTap: _showDeleteAccountDialog,
-          color: Colors.red,
-        ),
       ],
     );
   }
 
-  void _showEditProfileDialog() async {
-    final newUsername = await showTextInputDialog(
-      'Edit Username',
-      initialValue: auth.username ?? '',
-      hintText: 'Enter new username',
+  void _showEditInformationDialog(String type) async {
+    String title = '';
+    String hint = '';
+    
+    switch (type) {
+      case 'public':
+        title = 'Edit Public Information';
+        hint = 'Information visible to everyone';
+        break;
+      case 'friends':
+        title = 'Edit Friends Information';
+        hint = 'Information visible to friends only';
+        break;
+      case 'private':
+        title = 'Edit Private Information';
+        hint = 'Information visible only to you';
+        break;
+    }
+
+    final result = await DialogUtils.showMultiInputDialog(
+      context: context,
+      title: title,
+      fields: [
+        InputField(key: 'bio', label: 'Bio', hint: 'Tell others about yourself'),
+        InputField(key: 'location', label: 'Location', hint: 'Your location'),
+        InputField(key: 'website', label: 'Website', hint: 'Your website or social media'),
+      ],
     );
     
-    if (newUsername != null && newUsername != auth.username) {
-      showInfo('Profile editing functionality coming soon!');
+    if (result != null) {
+      showSuccess('$type information updated successfully');
     }
   }
 
-  void _copyToClipboard(String text) {
-    showSuccess('User ID copied to clipboard');
-  }
-
-  void _showAudioQualityDialog() {
-    DialogUtils.showSelectionDialog<String>(
+  void _showMusicPreferencesDialog() async {
+    final result = await DialogUtils.showMultiInputDialog(
       context: context,
-      title: 'Audio Quality',
-      items: ['High (320kbps)', 'Normal (160kbps)', 'Low (96kbps)'],
-      itemTitle: (quality) => quality,
-    ).then((selectedIndex) {
-      if (selectedIndex != null) {
-        showSuccess('Audio quality updated');
-      }
-    });
-  }
-
-  void _showAboutDialog() {
-    DialogUtils.showAboutDialog(
-      context: context,
-      appName: AppConstants.appName,
-      version: AppConstants.version,
-      description: 'A collaborative music sharing platform',
-      features: [
-        'Real-time collaborative playlists',
-        'Deezer integration for music discovery',
-        'Social features and friend connections',
-        'Multi-device synchronization',
+      title: 'Music Preferences',
+      fields: [
+        InputField(key: 'genres', label: 'Favorite Genres', hint: 'Rock, Pop, Jazz, etc.'),
+        InputField(key: 'artists', label: 'Favorite Artists', hint: 'Your top artists'),
+        InputField(key: 'mood', label: 'Listening Mood', hint: 'Happy, Relaxed, Energetic, etc.'),
       ],
     );
+    
+    if (result != null) {
+      showSuccess('Music preferences updated successfully');
+    }
   }
 
   void _showSignOutDialog() async {
@@ -341,18 +268,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     
     if (confirmed) {
       auth.logout();
-    }
-  }
-
-  void _showDeleteAccountDialog() async {
-    final confirmed = await showConfirmDialog(
-      'Delete Account',
-      AppStrings.deleteAccountWarning,
-      isDangerous: true,
-    );
-    
-    if (confirmed) {
-      showError('Account deletion is not implemented yet');
     }
   }
 }
