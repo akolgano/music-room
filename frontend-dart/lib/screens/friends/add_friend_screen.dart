@@ -45,7 +45,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   }
 
   Widget _buildHeaderCard() {
-    return InfoBanner(
+    return AppCards.info(
       title: 'Find Music Friends',
       message: 'Connect to share playlists and discover music together. Ask your friends for their Music Room user ID to add them!',
       icon: Icons.people,
@@ -68,7 +68,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            AppTextField(
+            FormComponents.textField(
               controller: _userIdController,
               labelText: 'Friend\'s User ID',
               hintText: 'e.g., 12345',
@@ -82,7 +82,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
               onChanged: (value) => setState(() {}),
             ),
             const SizedBox(height: 20),
-            AppButton(
+            FormComponents.button(
               text: 'Send Friend Request',
               icon: Icons.send,
               onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null,

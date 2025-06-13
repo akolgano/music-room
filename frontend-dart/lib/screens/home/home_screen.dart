@@ -65,7 +65,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InfoBanner(
+          AppCards.info(
             title: 'Welcome back, ${auth.displayName}!',
             message: 'Ready to discover and share music?',
             icon: Icons.music_note,
@@ -145,7 +145,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
             itemCount: music.playlists.length,
             itemBuilder: (context, index) {
               final playlist = music.playlists[index];
-              return PlaylistCard(
+              return AppCards.playlist(
                 playlist: playlist,
                 onTap: () => navigateTo(AppRoutes.playlistEditor, arguments: playlist.id),
                 onPlay: () => showInfo('Playing ${playlist.name}'),

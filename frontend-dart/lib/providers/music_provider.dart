@@ -6,7 +6,7 @@ import '../services/api_service.dart';
 import '../models/models.dart';
 import 'base_provider.dart';
 
-class MusicProvider with ChangeNotifier, BaseProvider {
+class MusicProvider extends BaseProvider {
   final ApiService _api = ApiService();
   
   List<Playlist> _playlists = [];
@@ -72,11 +72,83 @@ class MusicProvider with ChangeNotifier, BaseProvider {
     if (result != null) _playlistTracks = result;
   }
 
-  Future<void> addTrackToPlaylist(String playlistId, String trackId, String token, String? deviceUuid) async {
-    await execute(() => _api.post('/playlists/$playlistId/tracks', {
-      'track_id': trackId,
-      if (deviceUuid != null) 'device_uuid': deviceUuid,
-    }, token));
+  Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token, String? deviceUuid) async {
+    return await execute(() async {
+      final existingTrack = _playlistTracks.firstWhere(
+        (t) => t.trackId == trackId,
+        orElse: () => PlaylistTrack(trackId: '', name: '', position: -1),
+      );
+      
+      if (existingTrack.position != -1) {
+        return AddTrackResult(
+          success: false,
+          message: 'Track is already in this playlist',
+          isDuplicate: true,
+        );
+      }
+
+      await _api.post('/playlists/$playlistId/tracks', {
+        'track_id': trackId,
+        if (deviceUuid != null) 'device_uuid': deviceUuid,
+      }, token);
+
+      await fetchPlaylistTracks(playlistId, token);
+
+      return AddTrackResult(
+        success: true,
+        message: 'Track added successfully',
+        isDuplicate: false,
+      );
+    }) ?? AddTrackResult(
+      success: false,
+      message: 'Failed to add track to playlist',
+      isDuplicate: false,
+    );
+  }
+
+  Future<BatchAddResult> addMultipleTracksToPlaylist({
+    required String playlistId,
+    required List<String> trackIds,
+    required String token,
+    String? deviceUuid,
+    Function(int current, int total)? onProgress,
+  }) async {
+    int successCount = 0;
+    int duplicateCount = 0;
+    int failureCount = 0;
+    List<String> errors = [];
+
+    for (int i = 0; i < trackIds.length; i++) {
+      final trackId = trackIds[i];
+      
+      onProgress?.call(i + 1, trackIds.length);
+      
+      try {
+        final result = await addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
+        
+        if (result.success) {
+          successCount++;
+        } else if (result.isDuplicate) {
+          duplicateCount++;
+        } else {
+          failureCount++;
+          errors.add(result.message);
+        }
+        
+        await Future.delayed(const Duration(milliseconds: 100));
+      } catch (e) {
+        failureCount++;
+        errors.add('Failed to add track: $e');
+      }
+    }
+
+    return BatchAddResult(
+      totalTracks: trackIds.length,
+      successCount: successCount,
+      duplicateCount: duplicateCount,
+      failureCount: failureCount,
+      errors: errors,
+    );
   }
 
   Future<void> removeTrackFromPlaylist({
@@ -85,12 +157,17 @@ class MusicProvider with ChangeNotifier, BaseProvider {
     required String token,
     String? deviceUuid,
   }) async {
-    await execute(() => _api.removeTrackFromPlaylist(
-      playlistId: playlistId,
-      trackId: trackId,
-      token: token,
-      deviceUuid: deviceUuid,
-    ));
+    await execute(() async {
+      await _api.removeTrackFromPlaylist(
+        playlistId: playlistId,
+        trackId: trackId,
+        token: token,
+        deviceUuid: deviceUuid,
+      );
+      
+      _playlistTracks.removeWhere((t) => t.trackId == trackId);
+      notifyListeners();
+    });
   }
 
   Future<bool> changePlaylistVisibility(String playlistId, bool isPublic, String token) async {
@@ -171,11 +248,13 @@ class MusicProvider with ChangeNotifier, BaseProvider {
     String? artist,
     String? album,
     bool deezer = true,
+    int limit = 50,
   }) async {
     final params = <String, String>{
       if (deezer) 'q' : query else 'query': query,
       if (artist != null) 'artist': artist,
       if (album != null) 'album': album,
+      'limit': limit.toString(),
     };
     
     final result = await execute(() async {
@@ -193,51 +272,6 @@ class MusicProvider with ChangeNotifier, BaseProvider {
     });
     
     if (result != null) _searchResults = result;
-  }
-
-  Future<void> addMultipleTracksToPlaylist({
-    required String playlistId,
-    required List<String> trackIds,
-    required String token,
-    String? deviceUuid,
-  }) async {
-    await _batchPlaylistOperation(playlistId, trackIds, token, deviceUuid, true);
-  }
-
-  Future<void> removeMultipleTracksFromPlaylist({
-    required String playlistId,
-    required List<String> trackIds,
-    required String token,
-    String? deviceUuid,
-  }) async {
-    await _batchPlaylistOperation(playlistId, trackIds, token, deviceUuid, false);
-  }
-
-  Future<void> _batchPlaylistOperation(
-    String playlistId,
-    List<String> trackIds,
-    String token,
-    String? deviceUuid,
-    bool isAdd,
-  ) async {
-    await execute(() async {
-      for (final trackId in trackIds) {
-        if (isAdd) {
-          await _api.post('/playlists/$playlistId/tracks/', {
-            'track_id': trackId,
-            if (deviceUuid != null) 'device_uuid': deviceUuid,
-          }, token);
-        } else {
-          await _api.removeTrackFromPlaylist(
-            playlistId: playlistId,
-            trackId: trackId,
-            token: token,
-            deviceUuid: deviceUuid,
-          );
-        }
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-    });
   }
 
   Future<Map<String, dynamic>> getPlaylistStatistics(String playlistId, String token) async {
@@ -320,5 +354,72 @@ class MusicProvider with ChangeNotifier, BaseProvider {
 
   Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
     await execute(() => _api.addTrackFromDeezer(deezerTrackId, token));
+  }
+
+  void clearSearchResults() {
+    _searchResults.clear();
+    notifyListeners();
+  }
+
+  Track? getTrackById(String trackId) {
+    try {
+      return _searchResults.firstWhere((track) => track.id == trackId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  bool isTrackInPlaylist(String trackId) {
+    return _playlistTracks.any((t) => t.trackId == trackId);
+  }
+}
+
+class AddTrackResult {
+  final bool success;
+  final String message;
+  final bool isDuplicate;
+
+  AddTrackResult({
+    required this.success,
+    required this.message,
+    required this.isDuplicate,
+  });
+}
+
+class BatchAddResult {
+  final int totalTracks;
+  final int successCount;
+  final int duplicateCount;
+  final int failureCount;
+  final List<String> errors;
+
+  BatchAddResult({
+    required this.totalTracks,
+    required this.successCount,
+    required this.duplicateCount,
+    required this.failureCount,
+    required this.errors,
+  });
+
+  bool get hasErrors => failureCount > 0;
+  bool get hasPartialSuccess => successCount > 0 && failureCount > 0;
+  bool get isCompleteSuccess => successCount == totalTracks;
+  
+  String get summaryMessage {
+    if (isCompleteSuccess) {
+      return 'All $totalTracks tracks added successfully!';
+    } else if (hasPartialSuccess) {
+      return '$successCount/$totalTracks tracks added successfully';
+    } else {
+      return 'Failed to add tracks to playlist';
+    }
+  }
+
+  String get detailedMessage {
+    final parts = <String>[];
+    if (successCount > 0) parts.add('$successCount added');
+    if (duplicateCount > 0) parts.add('$duplicateCount duplicates');
+    if (failureCount > 0) parts.add('$failureCount failed');
+    return parts.join(', ');
   }
 }

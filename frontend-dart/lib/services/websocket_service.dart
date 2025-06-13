@@ -4,8 +4,7 @@ import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/models.dart';
-import 'playlist_conflict_resolver.dart';
+import '../models/collaboration_models.dart';
 
 class WebSocketService with ChangeNotifier {
   static final WebSocketService _instance = WebSocketService._internal();
@@ -17,7 +16,6 @@ class WebSocketService with ChangeNotifier {
   String? _currentUserId;
   bool _isConnected = false;
   
-  final PlaylistConflictResolver _conflictResolver = PlaylistConflictResolver();
   final StreamController<PlaylistOperation> _operationsController = 
       StreamController<PlaylistOperation>.broadcast();
   final StreamController<List<PlaylistCollaborator>> _collaboratorsController = 
@@ -30,7 +28,6 @@ class WebSocketService with ChangeNotifier {
   Stream<PlaylistOperation> get operationsStream => _operationsController.stream;
   Stream<List<PlaylistCollaborator>> get collaboratorsStream => _collaboratorsController.stream;
   Stream<String> get notificationsStream => _notificationsController.stream;
-  PlaylistConflictResolver get conflictResolver => _conflictResolver;
 
   String get _baseWebSocketUrl {
     final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
@@ -64,10 +61,6 @@ class WebSocketService with ChangeNotifier {
         onError: _handleError,
         onDone: _handleDisconnection
       );
-
-      _conflictResolver.conflictNotifications.listen((notification) {
-        _notificationsController.add(notification);
-      });
 
     } catch (e) {
       _isConnected = false;
@@ -121,15 +114,7 @@ class WebSocketService with ChangeNotifier {
     if (_isConnected && _channel != null) {
       _sendMessage({
         'type': 'playlist_operation',
-        'operation': {
-          'id': operation.id,
-          'user_id': operation.userId,
-          'username': operation.username,
-          'type': operation.type.name,
-          'data': operation.data,
-          'timestamp': operation.timestamp.toIso8601String(),
-          'version': operation.version,
-        },
+        'operation': operation.toJson(),
       });
     }
   }
@@ -227,7 +212,6 @@ class WebSocketService with ChangeNotifier {
     _operationsController.close();
     _collaboratorsController.close();
     _notificationsController.close();
-    _conflictResolver.dispose();
     super.dispose();
   }
 }

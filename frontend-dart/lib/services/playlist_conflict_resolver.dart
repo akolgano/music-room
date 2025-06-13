@@ -3,6 +3,38 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 
+enum ConflictType { trackMove, trackAdd, trackRemove, trackUpdate }
+
+class PlaylistOperation {
+  final String id;
+  final String userId;
+  final String username;
+  final ConflictType type;
+  final Map<String, dynamic> data;
+  final DateTime timestamp;
+  final int version;
+
+  PlaylistOperation({
+    required this.id,
+    required this.userId,
+    required this.username,
+    required this.type,
+    required this.data,
+    required this.timestamp,
+    required this.version,
+  });
+
+  factory PlaylistOperation.fromJson(Map<String, dynamic> json) => PlaylistOperation(
+    id: json['id'].toString(),
+    userId: json['user_id'].toString(),
+    username: json['username'] ?? 'User',
+    type: ConflictType.values.firstWhere((t) => t.name == json['type'], orElse: () => ConflictType.trackUpdate),
+    data: json['data'] ?? {},
+    timestamp: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
+    version: json['version'] ?? 1,
+  );
+}
+
 class PlaylistConflictResolver {
   final Map<String, List<PlaylistOperation>> _pendingOperations = {};
   final StreamController<String> _conflictNotifications = StreamController.broadcast();

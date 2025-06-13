@@ -1,10 +1,76 @@
 // lib/providers/playlist_license_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../models/license_models.dart';
 import 'base_provider.dart';
 
-class PlaylistLicenseProvider with ChangeNotifier, BaseProvider {
+enum PlaylistPermission { read, edit, share, delete }
+
+class PlaylistLicense {
+  final String id;
+  final String playlistId;
+  final String type;
+  final List<PlaylistPermission> permissions;
+  final bool allowPublicEdit;
+  final bool inviteOnlyEdit;
+  final DateTime? expiresAt;
+  final Map<String, dynamic> restrictions;
+  final bool canEdit;
+
+  PlaylistLicense({
+    required this.id,
+    required this.playlistId,
+    required this.type,
+    required this.permissions,
+    required this.allowPublicEdit,
+    required this.inviteOnlyEdit,
+    this.expiresAt,
+    required this.restrictions,
+    this.canEdit = true,
+  });
+
+  factory PlaylistLicense.fromJson(Map<String, dynamic> json) => PlaylistLicense(
+    id: json['id'].toString(),
+    playlistId: json['playlist_id'].toString(),
+    type: json['type'] ?? 'basic',
+    permissions: (json['permissions'] as List?)?.map((p) => PlaylistPermission.values.firstWhere((perm) => perm.name == p)).toList() ?? [],
+    allowPublicEdit: json['allow_public_edit'] ?? false,
+    inviteOnlyEdit: json['invite_only_edit'] ?? false,
+    expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at']) : null,
+    restrictions: json['restrictions'] ?? {},
+    canEdit: json['can_edit'] ?? true,
+  );
+}
+
+class PlaylistCollaborator {
+  final String userId;
+  final String username;
+  final List<PlaylistPermission> permissions;
+  final DateTime joinedAt;
+  final bool isOnline;
+  final DateTime? lastActivity;
+
+  PlaylistCollaborator({
+    required this.userId,
+    required this.username,
+    required this.permissions,
+    required this.joinedAt,
+    required this.isOnline,
+    this.lastActivity,
+  });
+
+  factory PlaylistCollaborator.fromJson(Map<String, dynamic> json) => PlaylistCollaborator(
+    userId: json['user_id'].toString(),
+    username: json['username'] ?? 'User',
+    permissions: (json['permissions'] as List?)?.map((p) => PlaylistPermission.values.firstWhere((perm) => perm.name == p)).toList() ?? [],
+    joinedAt: DateTime.parse(json['joined_at'] ?? DateTime.now().toIso8601String()),
+    isOnline: json['is_online'] ?? false,
+    lastActivity: json['last_activity'] != null ? DateTime.parse(json['last_activity']) : null,
+  );
+
+  bool hasPermission(PlaylistPermission permission) => permissions.contains(permission);
+}
+
+class PlaylistLicenseProvider extends ChangeNotifier with StateManagement {
   final ApiService _api = ApiService();
   
   PlaylistLicense? _currentLicense;

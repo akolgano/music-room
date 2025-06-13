@@ -6,9 +6,10 @@ import '../core/app_core.dart';
 import '../models/models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
+import '../providers/base_provider.dart';
 
-class CommonWidgets {
-  static Widget loadingWidget([String? message]) => Center(
+class CommonStates {
+  static Widget loading([String? message]) => Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -21,7 +22,9 @@ class CommonWidgets {
     ),
   );
 
-  static Widget emptyState({
+  static Widget loadingWidget([String? message]) => loading(message);
+
+  static Widget empty({
     required IconData icon,
     required String title,
     String? subtitle,
@@ -33,9 +36,9 @@ class CommonWidgets {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 80, color: Colors.white.withOpacity(0.5)),
+          Icon(icon, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), textAlign: TextAlign.center),
           if (subtitle != null) ...[
             const SizedBox(height: 8),
             Text(subtitle, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
@@ -49,11 +52,15 @@ class CommonWidgets {
     ),
   );
 
-  static Widget errorState({
-    required String message,
-    VoidCallback? onRetry,
-    String? retryText,
-  }) => Center(
+  static Widget emptyState({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    String? buttonText,
+    VoidCallback? onButtonPressed,
+  }) => empty(icon: icon, title: title, subtitle: subtitle, buttonText: buttonText, onButtonPressed: onButtonPressed);
+
+  static Widget error({required String message, VoidCallback? onRetry, String? retryText}) => Center(
     child: Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -61,22 +68,28 @@ class CommonWidgets {
         children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
-          const Text('Something went wrong', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text('Error', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 8),
           Text(message, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
           if (onRetry != null) ...[
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(retryText ?? 'Retry'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
-            ),
+            ElevatedButton(onPressed: onRetry, child: Text(retryText ?? 'Retry')),
           ],
         ],
       ),
     ),
   );
+
+  static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor ?? AppTheme.primary,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
 
   static Widget buildInfoBanner({
     required String title,
@@ -85,85 +98,257 @@ class CommonWidgets {
     Color color = AppTheme.primary,
     VoidCallback? onAction,
     String? actionText,
+  }) => Container(
+    padding: const EdgeInsets.all(16),
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: color.withOpacity(0.3)),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 4),
+              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: 14)),
+            ],
+          ),
+        ),
+        if (onAction != null && actionText != null)
+          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color))),
+      ],
+    ),
+  );
+}
+
+class FormComponents {
+  static Widget textField({
+    required TextEditingController controller,
+    required String labelText,
+    String? hintText,
+    IconData? prefixIcon,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
+    int maxLines = 1,
+  }) => TextFormField(
+    controller: controller,
+    obscureText: obscureText,
+    validator: validator,
+    onChanged: onChanged,
+    maxLines: maxLines,
+    style: const TextStyle(color: Colors.white),
+    decoration: AppTheme.getInputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      prefixIcon: prefixIcon,
+    ),
+  );
+
+  static Widget button({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool isOutlined = false,
+    bool fullWidth = true,
+    Color? backgroundColor,
+    Color? foregroundColor,
   }) {
-    return InfoBanner(
-      title: title,
-      message: message,
-      icon: icon,
-      color: color,
-      onAction: onAction,
-      actionText: actionText,
-    );
+    final child = isLoading 
+      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+      : Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) Icon(icon, size: 16),
+            if (icon != null) const SizedBox(width: 8),
+            Text(text),
+          ],
+        );
+
+    final button = isOutlined
+      ? OutlinedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: foregroundColor ?? AppTheme.primary,
+            side: BorderSide(color: foregroundColor ?? AppTheme.primary),
+          ),
+          child: child,
+        )
+      : ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor ?? AppTheme.primary,
+            foregroundColor: foregroundColor ?? Colors.black,
+          ),
+          child: child,
+        );
+
+    return fullWidth ? SizedBox(width: double.infinity, height: 50, child: button) : button;
   }
 
-  static Widget buildTrackCard({
+  static Widget switchTile({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String title,
+    String? subtitle,
+    IconData? icon,
+  }) => SwitchListTile(
+    value: value,
+    onChanged: onChanged,
+    title: Text(title, style: const TextStyle(color: Colors.white)),
+    subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(color: Colors.grey)) : null,
+    secondary: icon != null ? Icon(icon, color: AppTheme.primary) : null,
+    activeColor: AppTheme.primary,
+    contentPadding: EdgeInsets.zero,
+  );
+}
+
+class AppCards {
+  static Widget info({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color color = AppTheme.primary,
+    VoidCallback? onAction,
+    String? actionText,
+  }) => Container(
+    padding: const EdgeInsets.all(16),
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: color.withOpacity(0.3)),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 4),
+              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: 14)),
+            ],
+          ),
+        ),
+        if (onAction != null && actionText != null)
+          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color))),
+      ],
+    ),
+  );
+
+  static Widget playlist({
+    required Playlist playlist,
+    required VoidCallback onTap,
+    VoidCallback? onPlay,
+    bool showPlayButton = false,
+  }) => Card(
+    margin: const EdgeInsets.only(bottom: 12),
+    color: AppTheme.surface,
+    child: ListTile(
+      leading: _buildPlaylistImage(playlist),
+      title: Text(playlist.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
+          Text('By ${playlist.creator}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      ),
+      trailing: showPlayButton && onPlay != null
+          ? IconButton(icon: const Icon(Icons.play_circle_outline, color: AppTheme.primary), onPressed: onPlay)
+          : const Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: onTap,
+    ),
+  );
+
+  static Widget _buildPlaylistImage(Playlist playlist) => Container(
+    width: 56, height: 56,
+    decoration: BoxDecoration(
+      color: AppTheme.primary.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: playlist.imageUrl?.isNotEmpty == true
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(playlist.imageUrl!, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.library_music, color: AppTheme.primary)),
+          )
+        : const Icon(Icons.library_music, color: AppTheme.primary),
+  );
+
+  static Widget track({
     required Track track,
     bool isSelected = false,
+    bool isInPlaylist = false,
+    bool showAddButton = true,
+    bool showPlayButton = true,
     VoidCallback? onTap,
     VoidCallback? onAdd,
     VoidCallback? onPlay,
+    VoidCallback? onRemove,
     VoidCallback? onAddToLibrary,
     ValueChanged<bool?>? onSelectionChanged,
-    bool showImage = true,
-  }) {
-    return Consumer2<MusicPlayerService, DynamicThemeProvider>(
-      builder: (context, playerService, themeProvider, _) {
-        final isCurrentTrack = playerService.currentTrack?.id == track.id;
-        final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
+  }) => Consumer2<MusicPlayerService, DynamicThemeProvider>(
+    builder: (context, playerService, themeProvider, _) {
+      final isCurrentTrack = playerService.currentTrack?.id == track.id;
+      final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
 
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: isSelected ? themeProvider.primaryColor.withOpacity(0.1) : themeProvider.surfaceColor,
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        decoration: BoxDecoration(
+          color: _getTrackCardColor(isSelected, isCurrentTrack, isInPlaylist, themeProvider),
+          borderRadius: BorderRadius.circular(12),
+          border: _getTrackCardBorder(isCurrentTrack, isInPlaylist, themeProvider),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
             borderRadius: BorderRadius.circular(12),
-            border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    if (onSelectionChanged != null)
-                      Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
-                    else
-                      _buildAlbumArt(track, trackIsPlaying, themeProvider, showImage),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildTrackInfo(track, trackIsPlaying, themeProvider)),
-                    _buildTrackActions(onPlay, onAdd, onAddToLibrary, trackIsPlaying, themeProvider),
-                  ],
-                ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  if (onSelectionChanged != null)
+                    Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
+                  else
+                    _buildTrackImage(track, trackIsPlaying, themeProvider),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildTrackInfo(track, trackIsPlaying, themeProvider, isInPlaylist)),
+                  _buildTrackActions(showAddButton, showPlayButton, onAdd, onPlay, onRemove, onAddToLibrary, isInPlaylist, trackIsPlaying, themeProvider),
+                ],
               ),
             ),
           ),
-        );
-      },
-    );
-  }
-
-  static Widget _buildAlbumArt(Track track, bool trackIsPlaying, DynamicThemeProvider themeProvider, bool showImage) {
-    Widget content;
-    if (track.imageUrl?.isNotEmpty == true && showImage) {
-      content = ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: CachedNetworkImage(
-          imageUrl: track.imageUrl!,
-          width: 56, height: 56,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            width: 56, height: 56,
-            decoration: BoxDecoration(color: themeProvider.surfaceColor, borderRadius: BorderRadius.circular(8)),
-            child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-          ),
-          errorWidget: (context, url, error) => _defaultArt(themeProvider),
         ),
       );
-    } else {
-      content = _defaultArt(themeProvider);
-    }
+    },
+  );
+
+  static Widget _buildTrackImage(Track track, bool trackIsPlaying, DynamicThemeProvider themeProvider) {
+    Widget content = Container(
+      width: 56, height: 56,
+      decoration: BoxDecoration(color: themeProvider.surfaceColor, borderRadius: BorderRadius.circular(8)),
+      child: track.imageUrl?.isNotEmpty == true
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: track.imageUrl!, width: 56, height: 56, fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => const Icon(Icons.music_note, color: Colors.white, size: 28),
+              ),
+            )
+          : const Icon(Icons.music_note, color: Colors.white, size: 28),
+    );
 
     if (trackIsPlaying) {
       content = Stack(
@@ -171,7 +356,10 @@ class CommonWidgets {
           content,
           Container(
             width: 56, height: 56,
-            decoration: BoxDecoration(color: themeProvider.primaryColor.withOpacity(0.9), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: themeProvider.primaryColor.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: const Icon(Icons.equalizer, color: Colors.white, size: 28),
           ),
         ],
@@ -180,232 +368,126 @@ class CommonWidgets {
     return content;
   }
 
-  static Widget _defaultArt(DynamicThemeProvider themeProvider) => Container(
-    width: 56, height: 56,
-    decoration: BoxDecoration(color: themeProvider.surfaceColor, borderRadius: BorderRadius.circular(8)),
-    child: const Icon(Icons.music_note, color: Colors.white, size: 28),
-  );
-
-  static Widget _buildTrackInfo(Track track, bool trackIsPlaying, DynamicThemeProvider themeProvider) => Column(
+  static Widget _buildTrackInfo(Track track, bool trackIsPlaying, DynamicThemeProvider themeProvider, bool isInPlaylist) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        track.name,
-        style: TextStyle(
-          color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16,
-          decoration: trackIsPlaying ? TextDecoration.underline : null,
-          decorationColor: themeProvider.primaryColor,
-        ),
-        maxLines: 2, overflow: TextOverflow.ellipsis,
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              track.name,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                decoration: trackIsPlaying ? TextDecoration.underline : null,
+                decorationColor: themeProvider.primaryColor,
+              ),
+              maxLines: 2, overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (isInPlaylist) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green, width: 1),
+              ),
+              child: const Text('Added', style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.w500)),
+            ),
+          ],
+        ],
       ),
       const SizedBox(height: 4),
       Text(track.artist, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-      if (track.album.isNotEmpty) ...[
-        const SizedBox(height: 2),
-        Text(track.album, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
-      ],
+      if (track.album.isNotEmpty) Text(track.album, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
     ],
   );
 
-  static Widget _buildTrackActions(
-    VoidCallback? onPlay, VoidCallback? onAdd, VoidCallback? onAddToLibrary,
-    bool trackIsPlaying, DynamicThemeProvider themeProvider,
-  ) {
+  static Widget _buildTrackActions(bool showAddButton, bool showPlayButton, VoidCallback? onAdd, VoidCallback? onPlay, VoidCallback? onRemove, VoidCallback? onAddToLibrary, bool isInPlaylist, bool trackIsPlaying, DynamicThemeProvider themeProvider) {
     List<Widget> actions = [];
-    
-    if (onPlay != null) {
-      actions.add(Container(
-        decoration: BoxDecoration(color: themeProvider.primaryColor.withOpacity(trackIsPlaying ? 1.0 : 0.8), borderRadius: BorderRadius.circular(20)),
-        child: IconButton(
-          icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 20),
-          onPressed: onPlay,
-          tooltip: trackIsPlaying ? 'Pause Preview' : 'Play Preview',
+
+    if (showPlayButton && onPlay != null) {
+      actions.add(
+        Container(
+          decoration: BoxDecoration(color: themeProvider.primaryColor.withOpacity(trackIsPlaying ? 1.0 : 0.8), borderRadius: BorderRadius.circular(20)),
+          child: IconButton(
+            icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 20),
+            onPressed: onPlay,
+          ),
         ),
-      ));
+      );
     }
-    
-    if (onAdd != null) {
-      actions.add(IconButton(
-        icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
-        onPressed: onAdd,
-        tooltip: 'Add to Playlist',
-      ));
+
+    if (showAddButton && onAdd != null && !isInPlaylist) {
+      actions.add(IconButton(icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 24), onPressed: onAdd));
     }
 
     if (onAddToLibrary != null) {
-      actions.add(IconButton(
-        icon: Icon(Icons.library_add, color: themeProvider.primaryColor, size: 24),
-        onPressed: onAddToLibrary,
-        tooltip: 'Add to Library',
-      ));
+      actions.add(IconButton(icon: const Icon(Icons.library_add, color: Colors.blue, size: 24), onPressed: onAddToLibrary));
     }
 
-    return actions.length == 1 ? actions.first : 
-           actions.isEmpty ? const SizedBox(width: 8) :
-           Row(mainAxisSize: MainAxisSize.min, children: actions);
+    if (onRemove != null) {
+      actions.add(IconButton(icon: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 24), onPressed: onRemove));
+    }
+
+    return actions.length == 1 ? actions.first : Row(mainAxisSize: MainAxisSize.min, children: actions);
   }
 
-  static Widget buildPlaylistCard({
-    required Playlist playlist,
-    VoidCallback? onTap,
-    VoidCallback? onPlay,
-    VoidCallback? onShare,
-    bool showPlayButton = true,
-  }) {
-    return Consumer<DynamicThemeProvider>(
-      builder: (context, themeProvider, _) {
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          color: themeProvider.surfaceColor,
-          child: ListTile(
-            onTap: onTap,
-            leading: Container(
-              width: 50, height: 50,
-              decoration: BoxDecoration(
-                color: themeProvider.primaryColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.library_music, color: Colors.white),
-            ),
-            title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
-            subtitle: Text('${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
-            trailing: showPlayButton && onPlay != null 
-              ? IconButton(
-                  icon: Icon(Icons.play_arrow, color: themeProvider.primaryColor),
-                  onPressed: onPlay,
-                )
-              : null,
-          ),
-        );
-      },
-    );
+  static Color _getTrackCardColor(bool isSelected, bool isCurrentTrack, bool isInPlaylist, DynamicThemeProvider themeProvider) {
+    if (isSelected) return themeProvider.primaryColor.withOpacity(0.2);
+    if (isCurrentTrack) return themeProvider.primaryColor.withOpacity(0.1);
+    if (isInPlaylist) return Colors.green.withOpacity(0.05);
+    return themeProvider.surfaceColor;
   }
 
-  static void showSnackBar(BuildContext context, String message, {bool isError = false}) {
+  static Border? _getTrackCardBorder(bool isCurrentTrack, bool isInPlaylist, DynamicThemeProvider themeProvider) {
+    if (isCurrentTrack) return Border.all(color: themeProvider.primaryColor, width: 2);
+    if (isInPlaylist) return Border.all(color: Colors.green.withOpacity(0.3), width: 1);
+    return null;
+  }
+}
+
+class UiUtils {
+  static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? AppTheme.error : Colors.green,
+        backgroundColor: backgroundColor ?? AppTheme.primary,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 }
 
-class ErrorBanner extends StatelessWidget {
-  final String message;
-  final Color color;
-
-  const ErrorBanner({
-    Key? key,
-    required this.message,
-    this.color = AppTheme.error,
-  }) : super(key: key);
+class MiniPlayerWidget extends StatelessWidget {
+  const MiniPlayerWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: color, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(color: color, fontSize: 14),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SettingsSection extends StatelessWidget {
-  final String title;
-  final List<Widget> items;
-
-  const SettingsSection({
-    Key? key,
-    required this.title,
-    required this.items,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 80,
       color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...items,
-          ],
-        ),
+      child: const Center(
+        child: Text('Mini Player', style: TextStyle(color: Colors.white)),
       ),
-    );
-  }
-}
-
-class SettingsItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback? onTap;
-  final Color color;
-
-  const SettingsItem({
-    Key? key,
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.onTap,
-    this.color = Colors.white,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color)),
-      subtitle: subtitle != null 
-        ? Text(subtitle!, style: const TextStyle(color: Colors.grey))
-        : null,
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-      onTap: onTap,
-      contentPadding: EdgeInsets.zero,
     );
   }
 }
 
 class StatusIndicator extends StatelessWidget {
   final bool isConnected;
-  final String connectedText;
-  final String disconnectedText;
+  final String? connectedText;
+  final String? disconnectedText;
 
   const StatusIndicator({
     Key? key,
     required this.isConnected,
-    this.connectedText = 'Connected',
-    this.disconnectedText = 'Disconnected',
+    this.connectedText,
+    this.disconnectedText,
   }) : super(key: key);
 
   @override
@@ -423,7 +505,7 @@ class StatusIndicator extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          isConnected ? connectedText : disconnectedText,
+          isConnected ? (connectedText ?? 'Connected') : (disconnectedText ?? 'Disconnected'),
           style: TextStyle(
             color: isConnected ? Colors.green : Colors.red,
             fontSize: 12,
@@ -434,190 +516,21 @@ class StatusIndicator extends StatelessWidget {
   }
 }
 
-class MiniPlayerWidget extends StatelessWidget {
-  const MiniPlayerWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer2<MusicPlayerService, DynamicThemeProvider>(
-      builder: (context, playerService, themeProvider, _) {
-        final track = playerService.currentTrack;
-        if (track == null) return const SizedBox.shrink();
-
-        return Container(
-          height: 60,
-          decoration: BoxDecoration(
-            color: themeProvider.surfaceColor,
-            boxShadow: [
-              BoxShadow(
-                color: themeProvider.primaryColor.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 60, height: 60,
-                child: track.imageUrl?.isNotEmpty == true
-                    ? Image.network(track.imageUrl!, fit: BoxFit.cover)
-                    : Container(color: themeProvider.surfaceColor, child: const Icon(Icons.music_note, color: Colors.white)),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(track.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(track.artist, style: const TextStyle(color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                ),
-              ),
-              IconButton(
-                onPressed: playerService.togglePlay,
-                icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class AppTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String labelText;
-  final String? hintText;
-  final IconData? prefixIcon;
-  final bool obscureText;
-  final String? Function(String?)? validator;
-  final int maxLines;
-  final ValueChanged<String>? onChanged;
-
-  const AppTextField({
-    Key? key,
-    required this.controller,
-    required this.labelText,
-    this.hintText,
-    this.prefixIcon,
-    this.obscureText = false,
-    this.validator,
-    this.maxLines = 1,
-    this.onChanged,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      maxLines: maxLines,
-      onChanged: onChanged,
-      style: const TextStyle(color: Colors.white),
-      decoration: AppTheme.getInputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: prefixIcon,
-      ),
-    );
-  }
-}
-
-class AppButton extends StatelessWidget {
-  final String text;
-  final VoidCallback? onPressed;
-  final bool isLoading;
-  final IconData? icon;
-  final bool fullWidth;
-  final bool isOutlined;
-
-  const AppButton({
-    Key? key,
-    required this.text,
-    this.onPressed,
-    this.isLoading = false,
-    this.icon,
-    this.fullWidth = true,
-    this.isOutlined = false,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (isOutlined) {
-      return OutlinedButton.icon(
-        onPressed: isLoading ? null : onPressed,
-        icon: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Icon(icon ?? Icons.check, size: 16),
-        label: Text(text),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppTheme.primary,
-          side: const BorderSide(color: AppTheme.primary),
-          minimumSize: fullWidth ? const Size(double.infinity, 50) : const Size(88, 50),
-        ),
-      );
-    }
-
-    return ElevatedButton.icon(
-      onPressed: isLoading ? null : onPressed,
-      icon: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Icon(icon ?? Icons.check, size: 16),
-      label: Text(text),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.black,
-        minimumSize: fullWidth ? const Size(double.infinity, 50) : const Size(88, 50),
-      ),
-    );
-  }
-}
-
-class PlaylistCard extends StatelessWidget {
-  final Playlist playlist;
-  final VoidCallback? onTap;
-  final VoidCallback? onPlay;
-  final VoidCallback? onShare;
-  final bool showPlayButton;
-
-  const PlaylistCard({
-    Key? key,
-    required this.playlist,
-    this.onTap,
-    this.onPlay,
-    this.onShare,
-    this.showPlayButton = true,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return CommonWidgets.buildPlaylistCard(
-      playlist: playlist,
-      onTap: onTap,
-      onPlay: onPlay,
-      onShare: onShare,
-      showPlayButton: showPlayButton,
-    );
-  }
-}
-
 class SectionTitle extends StatelessWidget {
   final String title;
-  final Color? color;
-  
-  const SectionTitle(this.title, {Key? key, this.color}) : super(key: key);
-  
+  const SectionTitle(this.title, {Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
         title,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color ?? AppTheme.primary),
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -649,15 +562,8 @@ class QuickActionCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 32),
-              ),
-              const SizedBox(height: 12),
+              Icon(icon, size: 32, color: color),
+              const SizedBox(height: 8),
               Text(
                 title,
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
@@ -666,6 +572,33 @@ class QuickActionCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ErrorBanner extends StatelessWidget {
+  final String message;
+  const ErrorBanner({Key? key, required this.message}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(message, style: const TextStyle(color: Colors.red, fontSize: 14)),
+          ),
+        ],
       ),
     );
   }
@@ -688,17 +621,10 @@ class FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.surface,
       child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: AppTheme.primary),
-        ),
+        leading: Icon(icon, color: AppTheme.primary),
         title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
         subtitle: Text(description, style: const TextStyle(color: Colors.grey)),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
@@ -708,55 +634,64 @@ class FeatureCard extends StatelessWidget {
   }
 }
 
-class InfoBanner extends StatelessWidget {
+class SettingsSection extends StatelessWidget {
   final String title;
-  final String message;
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onAction;
-  final String? actionText;
+  final List<Widget> items;
 
-  const InfoBanner({
+  const SettingsSection({
     Key? key,
     required this.title,
-    required this.message,
-    required this.icon,
-    this.color = AppTheme.primary,
-    this.onAction,
-    this.actionText,
+    required this.items,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 4),
-                Text(message, style: const TextStyle(color: Colors.white, fontSize: 14)),
-              ],
-            ),
-          ),
-          if (onAction != null && actionText != null)
-            TextButton(
-              onPressed: onAction,
-              child: Text(actionText!, style: TextStyle(color: color)),
-            ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionTitle(title),
+        Card(
+          color: AppTheme.surface,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(children: items),
+        ),
+      ],
     );
   }
 }
+
+class SettingsItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const SettingsItem({
+    Key? key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final itemColor = color ?? Colors.white;
+    return ListTile(
+      leading: Icon(icon, color: itemColor),
+      title: Text(title, style: TextStyle(color: itemColor, fontWeight: FontWeight.w500)),
+      subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey)),
+      trailing: Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: onTap,
+    );
+  }
+}
+
+typedef CommonWidgets = CommonStates;
+typedef AppTextField = FormComponents;
+typedef AppButton = FormComponents;
+typedef InfoBanner = AppCards;
+typedef PlaylistCard = AppCards;
+typedef TrackCard = AppCards;

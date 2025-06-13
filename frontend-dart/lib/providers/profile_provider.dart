@@ -8,7 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 
-class ProfileProvider with ChangeNotifier, BaseProvider {
+class ProfileProvider extends BaseProvider {
   final ApiService _apiService = ApiService();
   
   String? _userId;

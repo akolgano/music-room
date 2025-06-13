@@ -141,7 +141,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       titleIcon: _isLogin ? Icons.login : Icons.person_add,
       child: Column(
         children: [
-          AppTextField(
+          FormComponents.textField(
             controller: _usernameController,
             labelText: AppStrings.username,
             prefixIcon: Icons.person,
@@ -149,7 +149,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           ),
           if (!_isLogin) ...[
             const SizedBox(height: 16),
-            AppTextField(
+            FormComponents.textField(
               controller: _emailController,
               labelText: AppStrings.email,
               prefixIcon: Icons.email,
@@ -157,7 +157,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             ),
           ],
           const SizedBox(height: 16),
-          AppTextField(
+          FormComponents.textField(
             controller: _passwordController,
             labelText: AppStrings.password,
             prefixIcon: Icons.lock,
@@ -225,7 +225,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 googleSignInPlugin.renderButton()
               else
                 Expanded(
-                  child: AppButton(
+                  child: FormComponents.button(
                     text: 'GOOGLE',
                     onPressed: () => _loginWithSocial('Google'),
                     icon: Icons.g_mobiledata,
@@ -235,7 +235,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 ),
               const SizedBox(width: 16),
               Expanded(
-                child: AppButton(
+                child: FormComponents.button(
                   text: 'FACEBOOK',
                   onPressed: () => _loginWithSocial('Facebook'),
                   icon: Icons.facebook,
