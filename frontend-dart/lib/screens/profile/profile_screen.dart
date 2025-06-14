@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/app_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/unified_components.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
@@ -136,62 +136,62 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Widget _buildProfileInformationSection() {
-    return SettingsSection(
+    return UnifiedComponents.settingsSection(
       title: 'Profile Information',
       items: [
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.public,
           title: 'Public Information', 
           subtitle: 'Information visible to everyone',
           onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PublicInfoScreen(),
-                  ),
-                )
+            context,
+            MaterialPageRoute(
+              builder: (context) => PublicInfoScreen(),
+            ),
+          ),
         ),
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.people,
           title: 'Friends Information',
           subtitle: 'Information visible to friends only',
           onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FriendInfoScreen(),
-                  ),
-                )
+            context,
+            MaterialPageRoute(
+              builder: (context) => FriendInfoScreen(),
+            ),
+          ),
         ),
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.lock,
           title: 'Private Information',
           subtitle: 'Information visible only to you',
           onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PrivateInfoScreen(),
-                  ),
-                )
+            context,
+            MaterialPageRoute(
+              builder: (context) => PrivateInfoScreen(),
+            ),
+          ),
         ),
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.music_note,
           title: 'Music Preferences',
           subtitle: 'Your music tastes and preferences',
           onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MusicPreferenceScreen(),
-                  ),
-                )
+            context,
+            MaterialPageRoute(
+              builder: (context) => MusicPreferenceScreen(),
+            ),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildSocialNetworkSection() {
-    return SettingsSection(
+    return UnifiedComponents.settingsSection(
       title: 'Social Network',
       items: [
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.link,
           title: 'Link Social Account',
           subtitle: 'Connect Facebook or Google account',
@@ -203,10 +203,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Widget _buildSecuritySection() {
-    return SettingsSection(
+    return UnifiedComponents.settingsSection(
       title: 'Security',
       items: [
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.password,
           title: 'Change Password',
           subtitle: 'Change your account password',
@@ -218,10 +218,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Widget _buildAccountActionsSection() {
-    return SettingsSection(
+    return UnifiedComponents.settingsSection(
       title: 'Account',
       items: [
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.logout,
           title: 'Sign Out',
           subtitle: 'Sign out of your account',
@@ -230,56 +230,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         ),
       ],
     );
-  }
-
-  void _showEditInformationDialog(String type) async {
-    String title = '';
-    String hint = '';
-    
-    switch (type) {
-      case 'public':
-        title = 'Edit Public Information';
-        hint = 'Information visible to everyone';
-        break;
-      case 'friends':
-        title = 'Edit Friends Information';
-        hint = 'Information visible to friends only';
-        break;
-      case 'private':
-        title = 'Edit Private Information';
-        hint = 'Information visible only to you';
-        break;
-    }
-
-    final result = await DialogUtils.showMultiInputDialog(
-      context: context,
-      title: title,
-      fields: [
-        InputField(key: 'bio', label: 'Bio', hint: 'Tell others about yourself'),
-        InputField(key: 'location', label: 'Location', hint: 'Your location'),
-        InputField(key: 'website', label: 'Website', hint: 'Your website or social media'),
-      ],
-    );
-    
-    if (result != null) {
-      showSuccess('$type information updated successfully');
-    }
-  }
-
-  void _showMusicPreferencesDialog() async {
-    final result = await DialogUtils.showMultiInputDialog(
-      context: context,
-      title: 'Music Preferences',
-      fields: [
-        InputField(key: 'genres', label: 'Favorite Genres', hint: 'Rock, Pop, Jazz, etc.'),
-        InputField(key: 'artists', label: 'Favorite Artists', hint: 'Your top artists'),
-        InputField(key: 'mood', label: 'Listening Mood', hint: 'Happy, Relaxed, Energetic, etc.'),
-      ],
-    );
-    
-    if (result != null) {
-      showSuccess('Music preferences updated successfully');
-    }
   }
 
   void _showSignOutDialog() async {
@@ -291,18 +241,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     
     if (confirmed) {
       auth.logout();
-    }
-  }
-
-  void _showDeleteAccountDialog() async {
-    final confirmed = await showConfirmDialog(
-      'Delete Account',
-      AppStrings.deleteAccountWarning,
-      isDangerous: true,
-    );
-    
-    if (confirmed) {
-      showError('Account deletion is not implemented yet');
     }
   }
 }

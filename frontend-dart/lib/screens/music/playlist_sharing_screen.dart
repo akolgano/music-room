@@ -5,7 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../models/models.dart';
 import '../../core/app_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/unified_components.dart';
 import '../base_screen.dart';
 
 class PlaylistSharingScreen extends StatefulWidget {
@@ -43,7 +43,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
           _buildPlaylistInfoCard(),
           const SizedBox(height: 24),
           if (_isPublic) ...[
-            const SectionTitle('Share Options'),
+            UnifiedComponents.sectionTitle('Share Options'),
             const SizedBox(height: 16),
             _buildShareCard(),
             const SizedBox(height: 24),
@@ -143,23 +143,23 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
   }
 
   Widget _buildVisibilityCard() {
-    return SettingsSection(
+    return UnifiedComponents.settingsSection(
       title: 'Who can see this playlist',
       items: [
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.public,
           title: 'Public',
           subtitle: 'Anyone with the link',
           onTap: () {},
           color: _isPublic ? AppTheme.primary : Colors.white,
         ),
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.group,
           title: 'Friends Only',
           subtitle: 'Only people you follow',
           onTap: () => showInfo('This feature is coming soon!'),
         ),
-        SettingsItem(
+        UnifiedComponents.settingsItem(
           icon: Icons.lock,
           title: 'Private',
           subtitle: 'Only you',

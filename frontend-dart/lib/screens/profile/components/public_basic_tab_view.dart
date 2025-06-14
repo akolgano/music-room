@@ -4,7 +4,7 @@ import '../../../core/app_core.dart';
 import '../../../providers/profile_provider.dart';
 import '../../../providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../widgets/common_widgets.dart';
+import '../../../widgets/unified_components.dart';
 import '../../../widgets/base_form_widget.dart';
 import '../../../core/common_utils.dart';
 
@@ -105,7 +105,7 @@ class _PublicBasicTabViewState extends State<PublicBasicTabView> {
               ),
               const SizedBox(height: 16),
 
-              AppTextField(
+              UnifiedComponents.textField(
                 controller: _locationController,
                 labelText: 'Current Location',
                 validator: (v) => CommonUtils.validateRequired(v, 'location') ?? 

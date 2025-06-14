@@ -4,10 +4,9 @@ import '../../../core/app_core.dart';
 import '../../../providers/profile_provider.dart';
 import '../../../providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../widgets/common_widgets.dart';
+import '../../../widgets/unified_components.dart';
 import './date_picker.dart';
 import './utils.dart';
-
 
 class FriendInfoTabView extends StatefulWidget {
   const FriendInfoTabView({Key? key}) : super(key: key);
@@ -52,7 +51,6 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
     });
   }
 
-
   Future<void> _submit() async {
     try{
 
@@ -92,11 +90,11 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
 
       if (success) {
         await profileProvider.loadProfile(authProvider.token);
-        CommonWidgets.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
+        UnifiedComponents.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
 
     } catch (e) {
-        CommonWidgets.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
+        UnifiedComponents.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
         return ;
       }
   }
@@ -159,7 +157,6 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
                     ),
                     const SizedBox(height: 16),
 
-
                     Text(
                       'Hobby',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -192,10 +189,9 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
                     ),
                     const SizedBox(height: 16),
 
-                    AppTextField(
+                    UnifiedComponents.textField(
                       controller: _friendInfoController,
                       labelText: 'Something for friend',
-                      obscureText: false,
                       minLines: 5,
                       maxLines: 10,
                       validator: (v) => v?.isEmpty ?? true ? 'Please enter something for friend' :

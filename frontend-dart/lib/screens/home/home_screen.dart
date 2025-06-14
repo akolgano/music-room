@@ -5,7 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/app_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/unified_components.dart';
 import '../../models/models.dart';
 import '../base_screen.dart';
 import '../profile/profile_screen.dart'; 
@@ -65,13 +65,13 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppCards.info(
+          UnifiedComponents.infoBanner(
             title: 'Welcome back, ${auth.displayName}!',
             message: 'Ready to discover and share music?',
             icon: Icons.music_note,
           ),
           const SizedBox(height: 32),
-          const SectionTitle('Quick Actions'),
+          UnifiedComponents.sectionTitle('Quick Actions'),
           const SizedBox(height: 16),
           GridView.count(
             shrinkWrap: true,
@@ -80,25 +80,25 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
             children: [
-              QuickActionCard(
+              UnifiedComponents.quickActionCard(
                 title: AppStrings.searchTracks,
                 icon: Icons.search,
                 color: Colors.blue,
                 onTap: () => navigateTo(AppRoutes.trackSearch),
               ),
-              QuickActionCard(
+              UnifiedComponents.quickActionCard(
                 title: AppStrings.createPlaylist,
                 icon: Icons.add_circle,
                 color: Colors.green,
                 onTap: () => navigateTo(AppRoutes.playlistEditor),
               ),
-              QuickActionCard(
+              UnifiedComponents.quickActionCard(
                 title: 'Find Friends',
                 icon: Icons.people,
                 color: Colors.purple,
                 onTap: () => navigateTo(AppRoutes.friends),
               ),
-              QuickActionCard(
+              UnifiedComponents.quickActionCard(
                 title: AppStrings.publicPlaylists,
                 icon: Icons.public,
                 color: Colors.orange,
@@ -128,7 +128,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
         }
 
         if (music.playlists.isEmpty) {
-          return CommonWidgets.emptyState(
+          return UnifiedComponents.emptyState(
             icon: Icons.playlist_play,
             title: 'No playlists yet',
             subtitle: 'Create your first playlist to get started!',
@@ -145,7 +145,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
             itemCount: music.playlists.length,
             itemBuilder: (context, index) {
               final playlist = music.playlists[index];
-              return AppCards.playlist(
+              return UnifiedComponents.playlistCard(
                 playlist: playlist,
                 onTap: () => navigateTo(AppRoutes.playlistEditor, arguments: playlist.id),
                 onPlay: () => showInfo('Playing ${playlist.name}'),

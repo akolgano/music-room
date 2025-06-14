@@ -5,7 +5,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../core/app_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/unified_components.dart';
 import '../../models/models.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
@@ -99,7 +99,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
           Row(
             children: [
               Expanded(
-                child: FormComponents.textField(
+                child: UnifiedComponents.textField(
                   controller: _searchController,
                   labelText: '',
                   hintText: AppStrings.searchForTracks,
@@ -108,7 +108,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              FormComponents.button(
+              UnifiedComponents.primaryButton(
                 text: AppStrings.search,
                 onPressed: _searchController.text.isNotEmpty ? _performSearch : null,
                 isLoading: getProvider<MusicProvider>().isLoading,
@@ -231,7 +231,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Widget _buildSelectionSummary() {
-    return CommonWidgets.buildInfoBanner(
+    return UnifiedComponents.infoBanner(
       title: '${_selectedTracks.length} tracks selected',
       message: 'Tap "Add Selected" to add all selected tracks to your playlist',
       icon: Icons.check_circle,
@@ -297,7 +297,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         final isInPlaylist = widget.playlistId != null && 
                             getProvider<MusicProvider>().isTrackInPlaylist(track.id);
 
-        return TrackCard.track(
+        return UnifiedComponents.trackCard(
           track: track,
           isSelected: _selectedTracks.contains(track.id),
           onTap: () => _handleTrackTap(track),
