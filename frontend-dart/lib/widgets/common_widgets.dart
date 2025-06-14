@@ -496,6 +496,7 @@ class AppTextField extends StatelessWidget {
   final IconData? prefixIcon;
   final bool obscureText;
   final String? Function(String?)? validator;
+  final int minLines;      
   final int maxLines;
   final ValueChanged<String>? onChanged;
 
@@ -507,6 +508,7 @@ class AppTextField extends StatelessWidget {
     this.prefixIcon,
     this.obscureText = false,
     this.validator,
+    this.minLines = 1,
     this.maxLines = 1,
     this.onChanged,
   }) : super(key: key);
@@ -517,6 +519,7 @@ class AppTextField extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
+      minLines: minLines,
       maxLines: maxLines,
       onChanged: onChanged,
       style: const TextStyle(color: Colors.white),
