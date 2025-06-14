@@ -176,7 +176,7 @@ def forgot_password(request):
         return JsonResponse({'error': 'User passwords cannot be reset.'}, status=status.HTTP_400_BAD_REQUEST)
 
     otp = utils.create_otp_for_user(user)
-    print(f"otp {otp}")
+
     if not otp:
         return JsonResponse({'error': 'OTP creation failed.'}, status=status.HTTP_404_NOT_FOUND)
 
