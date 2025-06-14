@@ -519,7 +519,7 @@ class AppTextField extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
-      minLines: maxLines,
+      minLines: minLines,
       maxLines: maxLines,
       onChanged: onChanged,
       style: const TextStyle(color: Colors.white),
