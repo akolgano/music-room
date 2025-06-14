@@ -67,14 +67,12 @@ class ProfileProvider with ChangeNotifier {
   GoogleSignIn? googleSignIn;
 
   ProfileProvider() {
-
     if (!kIsWeb) {
       googleSignIn = GoogleSignIn(
       scopes: ['email', 'profile', 'openid'],
       clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
       );
     }
-
   }
 
   void clearError() {
@@ -109,7 +107,6 @@ class ProfileProvider with ChangeNotifier {
 
   Future<bool> loadProfile(String? token) async{
     try{
-
       _isLoading = true;
       _errorMessage = null;
       resetValues();
@@ -409,5 +406,4 @@ class ProfileProvider with ChangeNotifier {
         return false;
     }
   }
-
 }

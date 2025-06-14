@@ -49,7 +49,6 @@ class _MusicPreferenceTabViewState extends State<MusicPreferenceTabView> {
 
   Future<void> _submit() async {
     try{
-
       setState((){
           _prefsValidationError = false;
       });

@@ -92,7 +92,6 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
         await profileProvider.loadProfile(authProvider.token);
         UnifiedComponents.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
-
     } catch (e) {
         UnifiedComponents.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
         return ;
@@ -156,7 +155,6 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
                       },
                     ),
                     const SizedBox(height: 16),
-
                     Text(
                       'Hobby',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -188,7 +186,6 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-
                     UnifiedComponents.textField(
                       controller: _friendInfoController,
                       labelText: 'Something for friend',

@@ -18,6 +18,7 @@ class PublicBasicTabView extends StatefulWidget {
 class _PublicBasicTabViewState extends State<PublicBasicTabView> {
   final _formKey = GlobalKey<FormState>();
   final _locationController = TextEditingController();
+
   String? _gender;
   bool _genderValidationError = false;
 

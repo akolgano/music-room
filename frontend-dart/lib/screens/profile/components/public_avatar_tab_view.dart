@@ -96,13 +96,11 @@ class _PublicAvatarTabViewState extends State<PublicAvatarTabView> {
         await profileProvider.loadProfile(authProvider.token);
         CommonWidgets.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
-
   } catch (e) {
         CommonWidgets.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
         return ;
       }
   }
-
 
   @override
   Widget build(BuildContext context) {

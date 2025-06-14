@@ -9,5 +9,3 @@ class Utils {
     }
     return '';
   }
-
-}

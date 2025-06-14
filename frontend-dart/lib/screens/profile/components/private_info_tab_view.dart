@@ -82,7 +82,6 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
         await profileProvider.loadProfile(authProvider.token);
         UnifiedComponents.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
-
     } catch (e) {
           UnifiedComponents.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
           return ;
@@ -131,7 +130,6 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       ),
                       const SizedBox(height: 16),
                     ],
-
                     UnifiedComponents.textField(
                       controller: _firstNameController,
                       labelText: 'First name',
@@ -145,7 +143,6 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                     ),
                     const SizedBox(height: 16),
-
                     UnifiedComponents.textField(
                       controller: _lastNameController,
                       labelText: 'Last name',
@@ -159,7 +156,6 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                     ),
                     const SizedBox(height: 16),
-
                     UnifiedComponents.textField(
                       controller: _phoneController,
                       labelText: 'Phone number',
@@ -175,7 +171,6 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                     ),
                     const SizedBox(height: 16),
-
                     UnifiedComponents.textField(
                       controller: _streetController,
                       labelText: 'Street/Block/Unit/City',
@@ -217,7 +212,6 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                   ),
                   const SizedBox(height: 16),
-
                   UnifiedComponents.textField(
                       controller: _postalCodeController,
                       labelText: 'Postal Code',
