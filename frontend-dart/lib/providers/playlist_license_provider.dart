@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'base_provider.dart';
-
-enum PlaylistPermission { read, edit, share, delete }
+import '../models/collaboration_models.dart'; 
 
 class PlaylistLicense {
   final String id;
@@ -39,35 +38,6 @@ class PlaylistLicense {
     restrictions: json['restrictions'] ?? {},
     canEdit: json['can_edit'] ?? true,
   );
-}
-
-class PlaylistCollaborator {
-  final String userId;
-  final String username;
-  final List<PlaylistPermission> permissions;
-  final DateTime joinedAt;
-  final bool isOnline;
-  final DateTime? lastActivity;
-
-  PlaylistCollaborator({
-    required this.userId,
-    required this.username,
-    required this.permissions,
-    required this.joinedAt,
-    required this.isOnline,
-    this.lastActivity,
-  });
-
-  factory PlaylistCollaborator.fromJson(Map<String, dynamic> json) => PlaylistCollaborator(
-    userId: json['user_id'].toString(),
-    username: json['username'] ?? 'User',
-    permissions: (json['permissions'] as List?)?.map((p) => PlaylistPermission.values.firstWhere((perm) => perm.name == p)).toList() ?? [],
-    joinedAt: DateTime.parse(json['joined_at'] ?? DateTime.now().toIso8601String()),
-    isOnline: json['is_online'] ?? false,
-    lastActivity: json['last_activity'] != null ? DateTime.parse(json['last_activity']) : null,
-  );
-
-  bool hasPermission(PlaylistPermission permission) => permissions.contains(permission);
 }
 
 class PlaylistLicenseProvider extends ChangeNotifier with StateManagement {

@@ -81,15 +81,14 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
 
       if (success) {
         await profileProvider.loadProfile(authProvider.token);
-        CommonWidgets.showSnackBar(context, 'Update successful', isError: false);
+        CommonWidgets.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
 
     } catch (e) {
-          CommonWidgets.showSnackBar(context, 'Exception: $e', isError: true);
+          CommonWidgets.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
           return ;
         }
   }
-
 
   @override
   Widget build(BuildContext context) {

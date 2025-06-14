@@ -2,12 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/unified_components.dart';
 import '../../providers/auth_provider.dart';
-import 'package:google_sign_in_web/google_sign_in_web.dart';
-import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../utils/social_login_utils.dart';
+import '../../utils/async_operation_utils.dart';
+import '../../utils/validation_utils.dart';
 import './forgot_password_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -17,7 +16,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
+class _AuthScreenState extends State<AuthScreen> with AsyncOperationMixin, TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -25,11 +24,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   
   bool _isLogin = true;
   bool _isPasswordVisible = false;
+  bool _socialLoginLoading = false;
   
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
-
-  final googleSignInPlugin = GoogleSignInPlatform.instance as GoogleSignInPlugin;
 
   @override
   void initState() {
@@ -37,33 +35,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     _fadeController = AnimationController(duration: AppDurations.longDelay, vsync: this);
     _fadeAnimation = AppAnimations.fadeIn.animate(_fadeController);
     _fadeController.forward();
-
-    if (kIsWeb) {
-      _initializeGoogleSignInWeb();
-    }
-  }
-
-  Future<void> _initializeGoogleSignInWeb() async {
-    await googleSignInPlugin.initWithParams(
-      SignInInitParameters(
-        clientId: dotenv.env['GOOGLE_CLIENT_ID_WEB'],
-        scopes: ['email', 'profile', 'openid'],
-      ),
-    );
-
-    googleSignInPlugin.userDataEvents?.listen((GoogleSignInUserData? account) {
-      if (account != null) {
-        _googleLoginWeb(account);
-      }
+    
+    SocialLoginUtils.initialize();
+    
+    SocialLoginUtils.setupGoogleWebCallback((account) {
+      _handleGoogleWebLogin(account);
     });
-  }
-
-  Future<void> _googleLoginWeb(GoogleSignInUserData? account) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.googleLoginWeb(account);
-    if (success && mounted) {
-      _showSuccessAndNavigate(AppStrings.loginSuccessful);
-    }
   }
   
   @override
@@ -78,23 +55,24 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               opacity: _fadeAnimation,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 400),
-                child: Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) => Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildHeader(),
-                        const SizedBox(height: 32),
-                        if (authProvider.hasError) 
-                          ErrorBanner(message: authProvider.errorMessage!),
-                        _buildFormCard(authProvider),
-                        const SizedBox(height: 24),
-                        _buildSocialButtons(),
-                        const SizedBox(height: 16),
-                        _buildForgotPasswordButton(),
-                      ],
-                    ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 32),
+                      if (hasError) 
+                        UnifiedComponents.errorBanner(
+                          message: errorMessage!,
+                          onDismiss: clearMessages,
+                        ),
+                      _buildFormCard(),
+                      const SizedBox(height: 24),
+                      _buildSocialButtons(),
+                      const SizedBox(height: 16),
+                      _buildForgotPasswordButton(),
+                    ],
                   ),
                 ),
               ),
@@ -106,7 +84,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeader() {
-    return AppTheme.buildHeaderCard(
+    return UnifiedComponents.headerCard(
       child: Column(
         children: [
           Container(
@@ -135,34 +113,34 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildFormCard(AuthProvider authProvider) {
-    return AppTheme.buildFormCard(
+  Widget _buildFormCard() {
+    return UnifiedComponents.formCard(
       title: _isLogin ? 'Sign In' : 'Create Account',
       titleIcon: _isLogin ? Icons.login : Icons.person_add,
       child: Column(
         children: [
-          FormComponents.textField(
+          UnifiedComponents.textField(
             controller: _usernameController,
             labelText: AppStrings.username,
             prefixIcon: Icons.person,
-            validator: Validators.username,
+            validator: ValidationUtils.username,
           ),
           if (!_isLogin) ...[
             const SizedBox(height: 16),
-            FormComponents.textField(
+            UnifiedComponents.textField(
               controller: _emailController,
               labelText: AppStrings.email,
               prefixIcon: Icons.email,
-              validator: Validators.email,
+              validator: ValidationUtils.email,
             ),
           ],
           const SizedBox(height: 16),
-          FormComponents.textField(
+          UnifiedComponents.textField(
             controller: _passwordController,
             labelText: AppStrings.password,
             prefixIcon: Icons.lock,
             obscureText: !_isPasswordVisible,
-            validator: Validators.password,
+            validator: (value) => ValidationUtils.password(value),
           ),
           const SizedBox(height: 8),
           Row(
@@ -176,21 +154,16 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             ],
           ),
           const SizedBox(height: 24),
-          AppTheme.buildPrimaryButton(
+          UnifiedComponents.primaryButton(
             text: _isLogin ? AppStrings.signIn : AppStrings.signUp,
             onPressed: _submit,
             icon: _isLogin ? Icons.login : Icons.person_add,
-            isLoading: authProvider.isLoading,
+            isLoading: isLoading,
           ),
           const SizedBox(height: 16),
           const Divider(color: AppTheme.surfaceVariant),
           TextButton(
-            onPressed: () {
-              setState(() {
-                _isLogin = !_isLogin;
-                _clearForm();
-              });
-            },
+            onPressed: _toggleMode,
             child: RichText(
               text: TextSpan(
                 style: const TextStyle(color: AppTheme.textSecondary),
@@ -210,7 +183,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildSocialButtons() {
-    return AppTheme.buildStandardCard(
+    return UnifiedComponents.standardCard(
       child: Column(
         children: [
           const Text(
@@ -221,26 +194,21 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              if (kIsWeb)
-                googleSignInPlugin.renderButton()
-              else
-                Expanded(
-                  child: FormComponents.button(
-                    text: 'GOOGLE',
-                    onPressed: () => _loginWithSocial('Google'),
-                    icon: Icons.g_mobiledata,
-                    isOutlined: true,
-                    fullWidth: true,
-                  ),
-                ),
+              Expanded(
+                child: SocialLoginUtils.renderGoogleWebButton().runtimeType == SizedBox 
+                  ? SocialLoginButton(
+                      provider: 'Google',
+                      onPressed: () => _loginWithSocial('Google'),
+                      isLoading: _socialLoginLoading,
+                    )
+                  : SocialLoginUtils.renderGoogleWebButton(),
+              ),
               const SizedBox(width: 16),
               Expanded(
-                child: FormComponents.button(
-                  text: 'FACEBOOK',
+                child: SocialLoginButton(
+                  provider: 'Facebook',
                   onPressed: () => _loginWithSocial('Facebook'),
-                  icon: Icons.facebook,
-                  isOutlined: true,
-                  fullWidth: true,
+                  isLoading: _socialLoginLoading,
                 ),
               ),
             ],
@@ -270,12 +238,20 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _toggleMode() {
+    setState(() {
+      _isLogin = !_isLogin;
+      _clearForm();
+    });
+  }
+
   void _clearForm() {
     _usernameController.clear();
     _emailController.clear();
     _passwordController.clear();
     _isPasswordVisible = false;
     _formKey.currentState?.reset();
+    clearMessages();
   }
 
   Future<void> _submit() async {
@@ -284,42 +260,78 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     bool success;
     
-    try {
-      if (_isLogin) {
-        success = await authProvider.login(_usernameController.text.trim(), _passwordController.text);
-      } else {
-        success = await authProvider.signup(
+    if (_isLogin) {
+      success = await executeBool(
+        operation: () => authProvider.login(
+          _usernameController.text.trim(), 
+          _passwordController.text
+        ),
+        successMessage: AppStrings.loginSuccessful,
+        errorMessage: 'Login failed. Please check your credentials.',
+      );
+    } else {
+      success = await executeBool(
+        operation: () => authProvider.signup(
           _usernameController.text.trim(), 
           _emailController.text.trim(), 
           _passwordController.text,
-        );
+        ),
+        successMessage: AppStrings.accountCreated,
+        errorMessage: 'Account creation failed. Please try again.',
+      );
+    }
+    
+    if (success) {
+    }
+  }
+
+  Future<void> _loginWithSocial(String provider) async {
+    setState(() => _socialLoginLoading = true);
+    
+    try {
+      SocialLoginResult result;
+      
+      if (provider == 'Facebook') {
+        result = await SocialLoginUtils.loginWithFacebook();
+      } else if (provider == 'Google') {
+        result = await SocialLoginUtils.loginWithGoogle();
+      } else {
+        result = SocialLoginResult.error('Unknown provider');
       }
       
-      if (mounted && success) {
-        _showSuccessAndNavigate(_isLogin ? AppStrings.loginSuccessful : AppStrings.accountCreated);
+      if (result.success && result.token != null) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        bool success = false;
+        
+        if (provider == 'Facebook') {
+          success = await authProvider.facebookLogin();
+        } else if (provider == 'Google') {
+          success = await authProvider.googleLoginApp();
+        }
+        
+        if (success) {
+          showSuccess(AppStrings.loginSuccessful);
+        } else {
+          showError('Social login failed. Please try again.');
+        }
+      } else {
+        showError(result.error ?? 'Social login failed');
       }
     } catch (e) {
+      showError('Social login error: $e');
+    } finally {
+      setState(() => _socialLoginLoading = false);
     }
   }
 
-  void _loginWithSocial(String provider) async {
+  Future<void> _handleGoogleWebLogin(account) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    bool success = false;
-  
-    if (provider == "Facebook") {
-      success = await authProvider.facebookLogin();
-    } else if (provider == "Google") {
-      success = await authProvider.googleLoginApp();
-    }
-
-    if (success && mounted) {
-      _showSuccessAndNavigate(AppStrings.loginSuccessful);
-    }
-  }
-
-  void _showSuccessAndNavigate(String message) {
-    if (mounted) {
-      CommonWidgets.showSnackBar(context, message);
+    final success = await authProvider.googleLoginWeb(account);
+    
+    if (success) {
+      showSuccess(AppStrings.loginSuccessful);
+    } else {
+      showError('Google login failed');
     }
   }
 

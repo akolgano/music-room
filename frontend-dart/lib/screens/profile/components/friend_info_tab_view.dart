@@ -59,7 +59,7 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
       setState((){
           _hobbyValidationError = false;
         });
-    
+
       if (!_formKey.currentState!.validate()) return;
       
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -92,15 +92,14 @@ class _FriendInfoTabViewState extends State<FriendInfoTabView> {
 
       if (success) {
         await profileProvider.loadProfile(authProvider.token);
-        CommonWidgets.showSnackBar(context, 'Update successful', isError: false);
+        CommonWidgets.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
 
     } catch (e) {
-        CommonWidgets.showSnackBar(context, 'Exception: $e', isError: true );
+        CommonWidgets.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
         return ;
       }
   }
-
 
   @override
   Widget build(BuildContext context) {
