@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'apps.remote_auth',
+    'apps.profile',
 ]
 
 MIDDLEWARE = [
@@ -190,3 +191,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+
+MEDIA_URL = '/apps/avatars/'
+MEDIA_ROOT = BASE_DIR / 'apps/avatars'

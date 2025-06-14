@@ -1,7 +1,6 @@
 // lib/screens/profile/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/app_core.dart';
 import '../../widgets/common_widgets.dart';
@@ -9,6 +8,10 @@ import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
 import 'social_network_link_screen.dart';
+import '../profile/public_info_screen.dart';
+import '../profile/private_info_screen.dart';
+import '../profile/friend_info_screen.dart';
+import '../profile/music_preference_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
@@ -140,25 +143,45 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           icon: Icons.public,
           title: 'Public Information', 
           subtitle: 'Information visible to everyone',
-          onTap: () => _showEditInformationDialog('public'),
+          onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PublicInfoScreen(),
+                  ),
+                )
         ),
         SettingsItem(
           icon: Icons.people,
           title: 'Friends Information',
           subtitle: 'Information visible to friends only',
-          onTap: () => _showEditInformationDialog('friends'),
+          onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FriendInfoScreen(),
+                  ),
+                )
         ),
         SettingsItem(
           icon: Icons.lock,
           title: 'Private Information',
           subtitle: 'Information visible only to you',
-          onTap: () => _showEditInformationDialog('private'),
+          onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PrivateInfoScreen(),
+                  ),
+                )
         ),
         SettingsItem(
           icon: Icons.music_note,
           title: 'Music Preferences',
           subtitle: 'Your music tastes and preferences',
-          onTap: _showMusicPreferencesDialog,
+          onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MusicPreferenceScreen(),
+                  ),
+                )
         ),
       ],
     );

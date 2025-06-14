@@ -221,7 +221,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getUser(String? token) async {
     return _handleRequest(
-      () => http.get(Uri.parse('$_baseUrl/users/profile/'), headers: _getHeaders(token)),
+      () => http.get(Uri.parse('$_baseUrl/users/get_user/'), headers: _getHeaders(token)),
       (data) => data,
     );
   }
@@ -229,11 +229,11 @@ class ApiService {
   Future<void> userPasswordChange(String? token, String currentPassword, String newPassword) async {
     await _handleRequest(
       () => http.post(
-        Uri.parse('$_baseUrl/users/change_password/'),
+        Uri.parse('$_baseUrl/users/user_password_change/'),
         headers: _getHeaders(token),
         body: json.encode({
-          'current_password': currentPassword,
-          'new_password': newPassword,
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
         }),
       ),
       (_) => null,
