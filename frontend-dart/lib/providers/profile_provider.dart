@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import '../services/profile_api_service.dart';
 
-
 class ProfileProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   final ProfileApiService _profileApiService = ProfileApiService();
@@ -68,14 +67,12 @@ class ProfileProvider with ChangeNotifier {
   GoogleSignIn? googleSignIn;
 
   ProfileProvider() {
-
     if (!kIsWeb) {
       googleSignIn = GoogleSignIn(
       scopes: ['email', 'profile', 'openid'],
       clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
       );
     }
-
   }
 
   void clearError() {
@@ -110,7 +107,6 @@ class ProfileProvider with ChangeNotifier {
 
   Future<bool> loadProfile(String? token) async{
     try{
-
       _isLoading = true;
       _errorMessage = null;
       resetValues();
@@ -410,5 +406,4 @@ class ProfileProvider with ChangeNotifier {
         return false;
     }
   }
-
 }

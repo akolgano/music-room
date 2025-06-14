@@ -1,10 +1,46 @@
 // lib/providers/playlist_license_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../models/license_models.dart';
 import 'base_provider.dart';
+import '../models/collaboration_models.dart'; 
 
-class PlaylistLicenseProvider with ChangeNotifier, BaseProvider {
+class PlaylistLicense {
+  final String id;
+  final String playlistId;
+  final String type;
+  final List<PlaylistPermission> permissions;
+  final bool allowPublicEdit;
+  final bool inviteOnlyEdit;
+  final DateTime? expiresAt;
+  final Map<String, dynamic> restrictions;
+  final bool canEdit;
+
+  PlaylistLicense({
+    required this.id,
+    required this.playlistId,
+    required this.type,
+    required this.permissions,
+    required this.allowPublicEdit,
+    required this.inviteOnlyEdit,
+    this.expiresAt,
+    required this.restrictions,
+    this.canEdit = true,
+  });
+
+  factory PlaylistLicense.fromJson(Map<String, dynamic> json) => PlaylistLicense(
+    id: json['id'].toString(),
+    playlistId: json['playlist_id'].toString(),
+    type: json['type'] ?? 'basic',
+    permissions: (json['permissions'] as List?)?.map((p) => PlaylistPermission.values.firstWhere((perm) => perm.name == p)).toList() ?? [],
+    allowPublicEdit: json['allow_public_edit'] ?? false,
+    inviteOnlyEdit: json['invite_only_edit'] ?? false,
+    expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at']) : null,
+    restrictions: json['restrictions'] ?? {},
+    canEdit: json['can_edit'] ?? true,
+  );
+}
+
+class PlaylistLicenseProvider extends ChangeNotifier with StateManagement {
   final ApiService _api = ApiService();
   
   PlaylistLicense? _currentLicense;

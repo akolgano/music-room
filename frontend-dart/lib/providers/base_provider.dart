@@ -2,14 +2,14 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
-mixin BaseProvider on ChangeNotifier {
+mixin StateManagement on ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
-  bool get isReady => !_isLoading;
+  bool get isReady => !_isLoading && !hasError;
 
   void clearError() {
     _errorMessage = null;
@@ -23,6 +23,7 @@ mixin BaseProvider on ChangeNotifier {
 
   void setError(String error) {
     _errorMessage = error;
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -33,40 +34,19 @@ mixin BaseProvider on ChangeNotifier {
 
     try {
       final result = await operation();
+      _isLoading = false;
+      notifyListeners();
       return result;
     } catch (e) {
       _errorMessage = e.toString();
-      return null;
-    } finally {
       _isLoading = false;
       notifyListeners();
-    }
-  }
-
-  Future<void> performAction(
-    Future<void> Function() action, {
-    String? successMessage,
-    String? errorMessage,
-    VoidCallback? onSuccess,
-    VoidCallback? onError,
-  }) async {
-    setLoading(true);
-    clearError();
-
-    try {
-      await action();
-      onSuccess?.call();
-    } catch (e) {
-      final message = errorMessage ?? e.toString();
-      setError(message);
-      onError?.call();
-    } finally {
-      setLoading(false);
+      return null;
     }
   }
 }
 
-mixin CommonProviderOperations<T> on ChangeNotifier, BaseProvider {
+mixin CrudOperations<T> on ChangeNotifier, StateManagement {
   final ApiService _api = ApiService();
   List<T> _items = [];
   T? _selectedItem;
@@ -76,8 +56,14 @@ mixin CommonProviderOperations<T> on ChangeNotifier, BaseProvider {
   bool get hasItems => _items.isNotEmpty;
   int get itemCount => _items.length;
 
+  Future<List<T>> fetchFromApi(String token, {String? endpoint});
+  Future<T?> createInApi(Map<String, dynamic> data, String token, {String? endpoint});
+  Future<void> updateInApi(String id, Map<String, dynamic> data, String token, {String? endpoint});
+  Future<void> deleteInApi(String id, String token, {String? endpoint});
+  String getItemId(T item);
+
   Future<void> fetchItems(String token, {String? endpoint}) async {
-    final result = await execute(() => _fetchItemsFromApi(token, endpoint));
+    final result = await execute(() => fetchFromApi(token, endpoint: endpoint));
     if (result != null) {
       _items = result;
     }
@@ -85,7 +71,7 @@ mixin CommonProviderOperations<T> on ChangeNotifier, BaseProvider {
 
   Future<T?> createItem(Map<String, dynamic> data, String token, {String? endpoint}) async {
     return execute(() async {
-      final item = await _createItemInApi(data, token, endpoint);
+      final item = await createInApi(data, token, endpoint: endpoint);
       if (item != null) {
         _items.add(item);
         notifyListeners();
@@ -97,7 +83,7 @@ mixin CommonProviderOperations<T> on ChangeNotifier, BaseProvider {
 
   Future<bool> updateItem(String id, Map<String, dynamic> data, String token, {String? endpoint}) async {
     final result = await execute(() async {
-      await _updateItemInApi(id, data, token, endpoint);
+      await updateInApi(id, data, token, endpoint: endpoint);
       await refreshItems(token);
       return true;
     });
@@ -106,9 +92,9 @@ mixin CommonProviderOperations<T> on ChangeNotifier, BaseProvider {
 
   Future<bool> deleteItem(String id, String token, {String? endpoint}) async {
     final result = await execute(() async {
-      await _deleteItemInApi(id, token, endpoint);
-      _items.removeWhere((item) => _getItemId(item) == id);
-      if (_selectedItem != null && _getItemId(_selectedItem!) == id) {
+      await deleteInApi(id, token, endpoint: endpoint);
+      _items.removeWhere((item) => getItemId(item) == id);
+      if (_selectedItem != null && getItemId(_selectedItem!) == id) {
         _selectedItem = null;
       }
       notifyListeners();
@@ -134,15 +120,35 @@ mixin CommonProviderOperations<T> on ChangeNotifier, BaseProvider {
 
   T? findItemById(String id) {
     try {
-      return _items.firstWhere((item) => _getItemId(item) == id);
+      return _items.firstWhere((item) => getItemId(item) == id);
     } catch (e) {
       return null;
     }
   }
+}
 
-  Future<List<T>> _fetchItemsFromApi(String token, String? endpoint);
-  Future<T?> _createItemInApi(Map<String, dynamic> data, String token, String? endpoint);
-  Future<void> _updateItemInApi(String id, Map<String, dynamic> data, String token, String? endpoint);
-  Future<void> _deleteItemInApi(String id, String token, String? endpoint);
-  String _getItemId(T item);
+abstract class BaseProvider extends ChangeNotifier with StateManagement {
+  final ApiService api = ApiService();
+
+  Future<void> performAction(
+    Future<void> Function() action, {
+    String? successMessage,
+    String? errorMessage,
+    VoidCallback? onSuccess,
+    VoidCallback? onError,
+  }) async {
+    setLoading(true);
+    clearError();
+
+    try {
+      await action();
+      onSuccess?.call();
+    } catch (e) {
+      final message = errorMessage ?? e.toString();
+      setError(message);
+      onError?.call();
+    } finally {
+      setLoading(false);
+    }
+  }
 }

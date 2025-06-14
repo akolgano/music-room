@@ -77,8 +77,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          
-                          AppTextField(
+                          FormComponents.textField(
                             controller: _currentPasswordController,
                             labelText: 'Current Password',
                             obscureText: true,
@@ -86,23 +85,20 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                                       v!.length < 8 ? 'Password must be at least 8 characters' : null,
                           ),
                           const SizedBox(height: 24),
-
-                          AppTextField(
+                          FormComponents.textField(
                             controller: _newPasswordController,
                             labelText: 'New Password',
                             obscureText: true,
                             validator: (v) => v?.isEmpty ?? true ? 'Please enter new password' : 
                                       v!.length < 8 ? 'Password must be at least 8 characters' : null,
-                          ),
+                          ), 
                           const SizedBox(height: 24),
-
                           profileProvider.isLoading
                             ? const CircularProgressIndicator(color: AppTheme.primary)
                             : ElevatedButton(
                                 onPressed: _submit,
                                 child: const Text('Submit'),
                               ),
-
                           const SizedBox(height: 24),
                           TextButton(
                             onPressed: () => Navigator.pop(context),

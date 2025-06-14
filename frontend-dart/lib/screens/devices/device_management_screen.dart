@@ -221,7 +221,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InfoBanner(
+          AppCards.info(
             title: 'Control Delegation',
             message: 'Allow your friends to control music playback on your devices. This enables collaborative playlist management and remote control.',
             icon: Icons.info,

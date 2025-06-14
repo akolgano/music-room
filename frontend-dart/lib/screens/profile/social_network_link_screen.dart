@@ -4,10 +4,9 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/app_core.dart';
-import 'package:google_sign_in_web/google_sign_in_web.dart';
-import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../widgets/unified_components.dart';
+import '../../utils/social_login_utils.dart';
+import '../../utils/async_operation_utils.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {
   const SocialNetworkLinkScreen({Key? key}) : super(key: key);
@@ -16,46 +15,13 @@ class SocialNetworkLinkScreen extends StatefulWidget {
   State<SocialNetworkLinkScreen> createState() => _SocialNetworkLinkScreenState();
 }
 
-class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> {
-  final googleSignInPlugin = GoogleSignInPlatform.instance as GoogleSignInPlugin;
+class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with AsyncOperationMixin {
 
   @override                                                                 
   void initState() {     
     super.initState();
-    if (kIsWeb) {
-      _initializeGoogleSignInWeb();
-    }
-  }
-
-  Future<void> _initializeGoogleSignInWeb() async {
-    await googleSignInPlugin.initWithParams(
-      SignInInitParameters(
-        clientId: dotenv.env['GOOGLE_CLIENT_ID_WEB'],
-        scopes: ['email', 'profile', 'openid'],
-      ),
-    );
-
-    googleSignInPlugin.userDataEvents?.listen((GoogleSignInUserData? account) {
-      if (account != null) {
-        _googleLinkWeb(account);
-      }
-    });
-  }
-
-  Future<void> _googleLinkWeb(GoogleSignInUserData? account) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.token == null) return;
-
-    bool success = await Provider.of<ProfileProvider>(context, listen: false).googleLinkWeb(authProvider.token, account);
-    
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link successful'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
+    SocialLoginUtils.initialize();
+    SocialLoginUtils.setupGoogleWebCallback(_handleGoogleWebLink);
   }
 
   @override
@@ -71,104 +37,69 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> {
           padding: const EdgeInsets.all(20),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 450),
-            child: Card(
-              color: AppTheme.surface,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Consumer<ProfileProvider>(
-                  builder: (context, profileProvider, child) {
-                    return Column(
-                      children: [
-                        const Text(
-                          'Link with Social Network',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)
+            child: UnifiedComponents.formCard(
+              title: 'Link with Social Network',
+              child: Consumer<ProfileProvider>(
+                builder: (context, profileProvider, child) {
+                  return Column(
+                    children: [
+                      if (hasError)
+                        UnifiedComponents.errorBanner(
+                          message: errorMessage!,
+                          onDismiss: clearMessages,
                         ),
-                        const SizedBox(height: 24),
-                        
-                        if (profileProvider.hasError) ...[
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red.withOpacity(0.3)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    profileProvider.errorMessage ?? 'An error occurred',
-                                    style: const TextStyle(color: Colors.red, fontSize: 14),
-                                  ),
-                                ),  
-                              ],
+
+                      if (hasSuccess)
+                        UnifiedComponents.successBanner(message: successMessage!),
+
+                      if (profileProvider.socialType != null) ...[
+                        UnifiedComponents.infoBanner(
+                          title: 'Connected',
+                          message: 'Your account is linked to ${profileProvider.socialType!}',
+                          icon: Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(
+                            child: SocialLoginUtils.renderGoogleWebButton().runtimeType == SizedBox 
+                              ? SocialLoginButton(
+                                  provider: 'Google',
+                                  onPressed: () => _linkWithSocial('Google'),
+                                  isLoading: isLoading,
+                                )
+                              : SocialLoginUtils.renderGoogleWebButton(),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: SocialLoginButton(
+                              provider: 'Facebook',
+                              onPressed: () => _linkWithSocial('Facebook'),
+                              isLoading: isLoading,
                             ),
                           ),
-                          const SizedBox(height: 16),
                         ],
+                      ),
+                      
+                      const SizedBox(height: 24),
 
-                        if (profileProvider.socialType != null) ...[
-                          Text('Connected to ${profileProvider.socialType!}'),
-                          const SizedBox(height: 16),
-                        ],
+                      if (isLoading)
+                        const CircularProgressIndicator(color: AppTheme.primary),
 
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            if (kIsWeb)
-                              googleSignInPlugin.renderButton()
-                            else
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () => _loginWithSocial('Google'),
-                                  icon: const Icon(Icons.g_mobiledata),
-                                  label: const Text('GOOGLE'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    side: const BorderSide(color: Colors.white),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                                  ),
-                                ),
-                              ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _loginWithSocial('Facebook'),
-                                icon: const Icon(Icons.facebook),
-                                label: const Text('FACEBOOK'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  side: const BorderSide(color: Colors.white),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
-                        if (profileProvider.isLoading)
-                          const CircularProgressIndicator(color: AppTheme.primary),
-
-                        const SizedBox(height: 24),
-                        TextButton(
-                          onPressed: () async {
-                            final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                            await profileProvider.loadProfile(authProvider.token);
-                            Navigator.pop(context);
-                          },
-                          style: TextButton.styleFrom(foregroundColor: Colors.white),
-                          child: const Text('Go Back'),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                      const SizedBox(height: 24),
+                      
+                      TextButton(
+                        onPressed: _goBack,
+                        style: TextButton.styleFrom(foregroundColor: Colors.white),
+                        child: const Text('Go Back'),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -177,27 +108,72 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> {
     );
   }
     
-  void _loginWithSocial(String provider) async {
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+  Future<void> _linkWithSocial(String provider) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    
+    if (authProvider.token == null) {
+      setError('Not authenticated');
+      return;
+    }
+
+    try {
+      SocialLoginResult result;
+      
+      if (provider == 'Facebook') {
+        result = await SocialLoginUtils.loginWithFacebook();
+      } else if (provider == 'Google') {
+        result = await SocialLoginUtils.loginWithGoogle();
+      } else {
+        setError('Unknown social provider');
+        return;
+      }
+
+      if (!result.success || result.token == null) {
+        setError(result.error ?? 'Social login failed');
+        return;
+      }
+
+      await executeBool(
+        operation: () async {
+          if (provider == 'Facebook') {
+            await profileProvider.facebookLink(authProvider.token);
+          } else if (provider == 'Google') {
+            await profileProvider.googleLinkApp(authProvider.token);
+          }
+        },
+        successMessage: '$provider account linked successfully!',
+        errorMessage: 'Failed to link $provider account',
+        onSuccess: () async {
+          await profileProvider.loadProfile(authProvider.token);
+        },
+      );
+    } catch (e) {
+      setError('Error linking $provider account: $e');
+    }
+  }
+
+  Future<void> _handleGoogleWebLink(account) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    
     if (authProvider.token == null) return;
 
-    bool success = false;
-  
-    if (provider == "Facebook") {
-      success = await profileProvider.facebookLink(authProvider.token);
-    } else if (provider == "Google") {
-      success = await profileProvider.googleLinkApp(authProvider.token);
-    }
+    await executeBool(
+      operation: () => profileProvider.googleLinkWeb(authProvider.token, account),
+      successMessage: 'Google account linked successfully!',
+      errorMessage: 'Failed to link Google account',
+      onSuccess: () async {
+        await profileProvider.loadProfile(authProvider.token);
+      },
+    );
+  }
 
-    if (success) {
-      profileProvider.loadProfile(authProvider.token);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link successful'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
+  Future<void> _goBack() async {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    await profileProvider.loadProfile(authProvider.token);
+    Navigator.pop(context);
   }
 }

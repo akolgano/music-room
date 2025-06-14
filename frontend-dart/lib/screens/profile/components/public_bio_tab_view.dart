@@ -1,11 +1,10 @@
-// lib/screens/profile/components/public_bio_tab_view.darts
+// lib/screens/profile/components/public_bio_tab_view.dart
 import 'package:flutter/material.dart';
 import '../../../core/app_core.dart';
 import '../../../providers/profile_provider.dart';
 import '../../../providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../widgets/common_widgets.dart';
-
+import '../../../widgets/unified_components.dart';
 
 class PublicBioTabView extends StatefulWidget {
   const PublicBioTabView({Key? key}) : super(key: key);
@@ -29,7 +28,6 @@ class _PublicBioTabViewState extends State<PublicBioTabView> {
     });
   }
 
-
   Future<void> _submit() async {
     try{
 
@@ -45,15 +43,13 @@ class _PublicBioTabViewState extends State<PublicBioTabView> {
 
       if (success) {
         await profileProvider.loadProfile(authProvider.token);
-        CommonWidgets.showSnackBar(context, 'Update successful', isError: false);
+        UnifiedComponents.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
-      
     } catch (e) {
-        CommonWidgets.showSnackBar(context, 'Exception: $e', isError: true);
+        UnifiedComponents.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
         return ;
       }  
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -103,15 +99,13 @@ class _PublicBioTabViewState extends State<PublicBioTabView> {
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-
-                    AppTextField(
-                    controller: _bioController,
-                    labelText: 'Something about yourself',
-                    obscureText: false,
-                    minLines: 5,
-                    maxLines: 10,
-                    validator: (v) => v?.isEmpty ?? true ? 'Please enter a bio' : 
-                              v!.length > 500 ? 'Bio maximum 500 characters' : null,
+                    UnifiedComponents.textField(
+                      controller: _bioController,
+                      labelText: 'Something about yourself',
+                      minLines: 5,
+                      maxLines: 10,
+                      validator: (v) => v?.isEmpty ?? true ? 'Please enter a bio' : 
+                                v!.length > 500 ? 'Bio maximum 500 characters' : null,
                     ),
                     const SizedBox(height: 24),
 

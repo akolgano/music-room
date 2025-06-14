@@ -47,14 +47,12 @@ class _MusicPreferenceTabViewState extends State<MusicPreferenceTabView> {
     });
   }
 
-
   Future<void> _submit() async {
     try{
-
       setState((){
           _prefsValidationError = false;
       });
-    
+
       if (!_formKey.currentState!.validate()) return;
       
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -81,11 +79,11 @@ class _MusicPreferenceTabViewState extends State<MusicPreferenceTabView> {
 
       if (success) {
         await profileProvider.loadProfile(authProvider.token);
-        CommonWidgets.showSnackBar(context, 'Update successful', isError: false);
+        CommonWidgets.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
 
     } catch (e) {
-        CommonWidgets.showSnackBar(context, 'Exception: $e', isError: true);
+        CommonWidgets.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
         return ;
       }
   }

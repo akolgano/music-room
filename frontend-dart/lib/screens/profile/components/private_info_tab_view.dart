@@ -4,8 +4,7 @@ import '../../../core/app_core.dart';
 import '../../../providers/profile_provider.dart';
 import '../../../providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../widgets/common_widgets.dart';
-
+import '../../../widgets/unified_components.dart';
 
 class PrivateInfoTabView extends StatefulWidget {
   const PrivateInfoTabView({Key? key}) : super(key: key);
@@ -81,15 +80,13 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
 
       if (success) {
         await profileProvider.loadProfile(authProvider.token);
-        CommonWidgets.showSnackBar(context, 'Update successful', isError: false);
+        UnifiedComponents.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
-
     } catch (e) {
-          CommonWidgets.showSnackBar(context, 'Exception: $e', isError: true);
+          UnifiedComponents.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
           return ;
         }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -133,11 +130,9 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       ),
                       const SizedBox(height: 16),
                     ],
-
-                    AppTextField(
+                    UnifiedComponents.textField(
                       controller: _firstNameController,
                       labelText: 'First name',
-                      obscureText: false,
                       validator: (v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter your first name';
@@ -148,11 +143,9 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                     ),
                     const SizedBox(height: 16),
-
-                    AppTextField(
+                    UnifiedComponents.textField(
                       controller: _lastNameController,
                       labelText: 'Last name',
-                      obscureText: false,
                       validator: (v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter your last name';
@@ -163,11 +156,9 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                     ),
                     const SizedBox(height: 16),
-
-                    AppTextField(
+                    UnifiedComponents.textField(
                       controller: _phoneController,
                       labelText: 'Phone number',
-                      obscureText: false,
                       validator: (v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a phone number';
@@ -180,11 +171,9 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                     ),
                     const SizedBox(height: 16),
-
-                    AppTextField(
+                    UnifiedComponents.textField(
                       controller: _streetController,
                       labelText: 'Street/Block/Unit/City',
-                      obscureText: false,
                       minLines: 3,
                       maxLines: 5,
                       validator: (v) {
@@ -223,11 +212,9 @@ class _PrivateInfoTabViewState extends State<PrivateInfoTabView> {
                       },
                   ),
                   const SizedBox(height: 16),
-
-                  AppTextField(
+                  UnifiedComponents.textField(
                       controller: _postalCodeController,
                       labelText: 'Postal Code',
-                      obscureText: false,
                       validator: (v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a postal code';

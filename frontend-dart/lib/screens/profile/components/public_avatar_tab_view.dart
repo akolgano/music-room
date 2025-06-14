@@ -1,4 +1,4 @@
-// lib/screens/profile/components/public_avatar_tab_view.darts
+// lib/screens/profile/components/public_avatar_tab_view.dart
 import 'package:flutter/material.dart';
 import '../../../core/app_core.dart';
 import 'dart:convert';
@@ -34,7 +34,7 @@ class _PublicAvatarTabViewState extends State<PublicAvatarTabView> {
     if (picked != null) {
 
       if(!await isValidImageFile(picked)) {
-          CommonWidgets.showSnackBar(context, 'Error: Need image JPEG or PNG', isError: true);
+          CommonWidgets.showSnackBar(context, 'Error: Need image JPEG or PNG', backgroundColor: Colors.red);
         return ;
       }
 
@@ -94,15 +94,13 @@ class _PublicAvatarTabViewState extends State<PublicAvatarTabView> {
 
         await clear();
         await profileProvider.loadProfile(authProvider.token);
-        CommonWidgets.showSnackBar(context, 'Update successful', isError: false);
+        CommonWidgets.showSnackBar(context, 'Update successful', backgroundColor: Colors.green);
       }
-
   } catch (e) {
-        CommonWidgets.showSnackBar(context, 'Exception: $e', isError: true);
+        CommonWidgets.showSnackBar(context, 'Exception: $e', backgroundColor: Colors.red);
         return ;
       }
   }
-
 
   @override
   Widget build(BuildContext context) {
