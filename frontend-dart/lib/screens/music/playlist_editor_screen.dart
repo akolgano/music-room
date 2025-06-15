@@ -9,7 +9,7 @@ import '../../providers/playlist_license_provider.dart';
 import '../../models/models.dart';
 import '../../models/collaboration_models.dart'; 
 import '../../core/consolidated_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/widgets.dart'; 
 import '../../services/websocket_service.dart';
 import '../../services/api_service.dart';
 import '../../services/music_player_service.dart';

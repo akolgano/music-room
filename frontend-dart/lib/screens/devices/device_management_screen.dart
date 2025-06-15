@@ -6,7 +6,8 @@ import '../../providers/device_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/consolidated_core.dart';
 import '../../models/models.dart';
-import '../../widgets/common_widgets.dart';
+import '../../models/api_models.dart';
+import '../../widgets/widgets.dart'; 
 import '../../services/api_service.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
@@ -52,10 +53,8 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
   }
 
   @override
-  PreferredSizeWidget? buildAppBar() {
-    return buildStandardAppBar(
-      actions: actions,
-    ) as PreferredSizeWidget;
+  PreferredSizeWidget? buildAppBar({List<Widget>? actions}) {
+    return buildStandardAppBar(actions: actions ?? this.actions);
   }
 
   @override
@@ -93,7 +92,8 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
 
   Future<void> _loadAllDevices() async {
     await runAsync(() async {
-      _allDevices = await _apiService.getAllUserDevices(auth.token!);
+      final response = await _apiService.getAllUserDevices('Token ${auth.token!}');
+      _allDevices = response.devices;
     });
   }
 
@@ -368,12 +368,12 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
   Future<void> _delegateControl(Device device, int friendId) async {
     await runAsyncAction(
       () async {
-        await _apiService.delegateDeviceControl(
+        final request = DelegateControlRequest(
           deviceUuid: device.uuid,
           delegateUserId: friendId,
           canControl: true,
-          token: auth.token!,
         );
+        await _apiService.delegateDeviceControl('Token ${auth.token!}', request);
       },
       successMessage: 'Control delegated to Friend #$friendId for ${device.name}',
       errorMessage: 'Failed to delegate control',

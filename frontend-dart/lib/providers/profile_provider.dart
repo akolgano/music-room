@@ -34,8 +34,6 @@ class ProfileProvider with ChangeNotifier {
   List<String>? _hobbies;
   String? _friendInfo;
   List<String>? _musicPreferences;
-  
-
   String? get userId => _userId;
   String? get username => _username;
   String? get userEmail => _userEmail;
@@ -67,8 +65,8 @@ class ProfileProvider with ChangeNotifier {
   ProfileProvider() {
     if (!kIsWeb) {
       googleSignIn = GoogleSignIn(
-      scopes: ['email', 'profile', 'openid'],
-      clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
+        scopes: ['email', 'profile', 'openid'],
+        clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
       );
     }
   }
@@ -101,7 +99,7 @@ class ProfileProvider with ChangeNotifier {
     _hobbies = null;
     _friendInfo = null;
     _musicPreferences = null;
-}
+  }
 
   Future<bool> loadProfile(String? token) async{
     try{
@@ -110,7 +108,7 @@ class ProfileProvider with ChangeNotifier {
       resetValues();
       notifyListeners();
 
-      final data = await _apiService.getUser(token);
+      final data = await _apiService.getUserData(token);
 
       _userId = data['id'];
       _username = data['username'];
@@ -126,13 +124,13 @@ class ProfileProvider with ChangeNotifier {
         _socialId = social['social_id'];
       }
 
-      final profilePublic = await _apiService.getProfilePublic(token);
+      final profilePublic = await _apiService.getProfilePublicData(token);
       _avatar = profilePublic['avatar'];
       _gender = profilePublic['gender'];
       _location = profilePublic['location'];
       _bio = profilePublic['bio'];
 
-      final profilePrivate = await _apiService.getProfilePrivate(token);
+      final profilePrivate = await _apiService.getProfilePrivateData(token);
       _firstName = profilePrivate['first_name'];
       _lastName = profilePrivate['last_name'];
       _phone = profilePrivate['phone'];
@@ -140,7 +138,7 @@ class ProfileProvider with ChangeNotifier {
       _country = profilePrivate['country'];
       _postalCode = profilePrivate['postal_code'];
 
-      final profileFriend = await _apiService.getProfileFriend(token);
+      final profileFriend = await _apiService.getProfileFriendData(token);
       _hobbies = profileFriend ['hobbies'];
       _friendInfo = profileFriend ['friend_info'];
       final dobDb = profileFriend ['dob'];
@@ -148,7 +146,7 @@ class ProfileProvider with ChangeNotifier {
         _dob = DateTime.parse(dobDb);
       }
 
-      final profileMusic = await _apiService.getProfileMusic(token);
+      final profileMusic = await _apiService.getProfileMusicData(token);
       _musicPreferences = profileMusic['music_preferences'];
 
       _isLoading = false;
@@ -163,15 +161,13 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-
   Future<bool> userPasswordChange(String? token, String currentPassword, String newPassword) async {
     try{
-    
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
 
-      await _apiService.userPasswordChange(token, currentPassword, newPassword);
+      await _apiService.userPasswordChangeData(token, currentPassword, newPassword);
 
       _isLoading = false;
       notifyListeners();
@@ -185,7 +181,6 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-
   Future<bool> facebookLink(String? token) async {
     try{
         _isLoading = true;
@@ -196,7 +191,7 @@ class ProfileProvider with ChangeNotifier {
         if (result.status == LoginStatus.success) {
           final fbAccessToken = result.accessToken!.tokenString;
 
-          await _apiService.facebookLink(token, fbAccessToken);
+          await _apiService.facebookLinkData(token, fbAccessToken);
 
           _isLoading = false;
           notifyListeners();
@@ -231,7 +226,7 @@ class ProfileProvider with ChangeNotifier {
         return false;
       }
 
-      await _apiService.googleLink('web', token, idToken);
+      await _apiService.googleLinkData('web', token, idToken);
       
       _isLoading = false;
       notifyListeners();
@@ -243,7 +238,6 @@ class ProfileProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
-
   }
 
   Future<bool> googleLinkApp(String? token) async {
@@ -271,7 +265,7 @@ class ProfileProvider with ChangeNotifier {
         return false;
       }
 
-      await _apiService.googleLink('app', token, idToken);
+      await _apiService.googleLinkData('app', token, idToken);
       
       _isLoading = false;
       notifyListeners();
@@ -291,7 +285,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _apiService.updateAvatar(token, avatarBase64, mimeType);
+      await _apiService.updateAvatarData(token, avatarBase64, mimeType);
       
       _isLoading = false;
       notifyListeners();
@@ -311,7 +305,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _apiService.updatePublicBasic(token, gender, location);
+      await _apiService.updatePublicBasicData(token, gender, location);
       
       _isLoading = false;
       notifyListeners();
@@ -331,7 +325,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _apiService.updatePublicBio(token, bio);
+      await _apiService.updatePublicBioData(token, bio);
       
       _isLoading = false;
       notifyListeners();
@@ -351,7 +345,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _apiService.updatePrivateInfo(token, firstName, lastName, phone, street, country, postalCode);
+      await _apiService.updatePrivateInfoData(token, firstName, lastName, phone, street, country, postalCode);
       
       _isLoading = false;
       notifyListeners();
@@ -371,7 +365,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _apiService.updateFriendInfo(token, dob, hobbies, friendInfo);
+      await _apiService.updateFriendInfoData(token, dob, hobbies, friendInfo);
       
       _isLoading = false;
       notifyListeners();
@@ -391,7 +385,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _apiService.updateMusicPreferences(token, musicPreferences);
+      await _apiService.updateMusicPreferencesData(token, musicPreferences);
       
       _isLoading = false;
       notifyListeners();

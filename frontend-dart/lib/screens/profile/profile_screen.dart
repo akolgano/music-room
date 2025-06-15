@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/consolidated_core.dart';
-import '../../widgets/unified_components.dart';
+import '../../widgets/app_widgets.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
@@ -122,10 +122,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Widget _buildProfileInformationSection() {
-    return UnifiedComponents.settingsSection(
+    return AppWidgets.settingsSection(
       title: 'Profile Information',
       items: [
-        UnifiedComponents.settingsItem(
+        AppWidgets.settingsItem(
           icon: Icons.edit,
           title: 'Edit Profile Information', 
           subtitle: 'Manage public, private, friend, and music info',
@@ -134,7 +134,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
             MaterialPageRoute(builder: (context) => const ProfileInfoScreen()),
           ),
         ),
-        UnifiedComponents.settingsItem(
+        AppWidgets.settingsItem(
           icon: Icons.link,
           title: 'Social Network Links',
           subtitle: 'Connect Facebook or Google account',
@@ -154,10 +154,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           return const SizedBox.shrink();
         }
 
-        return UnifiedComponents.settingsSection(
+        return AppWidgets.settingsSection(
           title: 'Security',
           items: [
-            UnifiedComponents.settingsItem(
+            AppWidgets.settingsItem(
               icon: Icons.password,
               title: 'Change Password',
               subtitle: 'Change your account password',
@@ -173,10 +173,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Widget _buildAccountActionsSection() {
-    return UnifiedComponents.settingsSection(
+    return AppWidgets.settingsSection(
       title: 'Account',
       items: [
-        UnifiedComponents.settingsItem(
+        AppWidgets.settingsItem(
           icon: Icons.logout,
           title: 'Sign Out',
           subtitle: 'Sign out of your account',

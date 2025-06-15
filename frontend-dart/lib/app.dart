@@ -2,10 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/consolidated_core.dart';  
+import 'core/app_builder.dart';
 import 'providers/auth_provider.dart';
 import 'providers/dynamic_theme_provider.dart';
 import 'services/music_player_service.dart';
-import 'widgets/common_widgets.dart';
+import 'widgets/app_widgets.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/profile/profile_screen.dart';
@@ -47,87 +48,10 @@ class MusicRoomApp extends StatelessWidget {
             builder: (context, auth, _) => 
               auth.isLoggedIn ? const HomeScreen() : const AuthScreen(),
           ),
-          routes: _buildRoutes(),
-          onGenerateRoute: _onGenerateRoute,
+          routes: AppBuilder.buildRoutes(),
+          onGenerateRoute: AppBuilder.generateRoute,
         );
       },
-    );
-  }
-
-  Map<String, WidgetBuilder> _buildRoutes() {
-    return {
-      AppRoutes.home: (context) => const HomeScreen(),
-      AppRoutes.auth: (context) => const AuthScreen(),
-      AppRoutes.profile: (context) => const ProfileScreen(),
-      AppRoutes.playlistEditor: (context) => _buildPlaylistEditor(context),
-      AppRoutes.trackSearch: (context) => const TrackSearchScreen(),
-      AppRoutes.publicPlaylists: (context) => const PublicPlaylistsScreen(),
-      AppRoutes.friends: (context) => const FriendsListScreen(),
-      AppRoutes.addFriend: (context) => const AddFriendScreen(),
-      AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
-      AppRoutes.deviceManagement: (context) => const DeviceManagementScreen(),
-      AppRoutes.playlistSharing: (context) => _buildPlaylistSharing(context),
-      AppRoutes.musicFeatures: (context) => const MusicFeaturesScreen(),
-      AppRoutes.trackVote: (context) => const MusicTrackVoteScreen(),
-      AppRoutes.controlDelegation: (context) => const MusicControlDelegationScreen(),
-      AppRoutes.player: (context) => const PlayerScreen(),
-      AppRoutes.trackSelection: (context) => _buildTrackSelection(context),
-      AppRoutes.deezerTrackDetail: (context) => _buildDeezerTrackDetail(context),
-      AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
-      AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
-      '/profile_info': (context) => const ProfileInfoScreen(),
-    };
-  }
-
-  Widget _buildPlaylistEditor(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    return PlaylistEditorScreen(playlistId: args is String ? args : null);
-  }
-
-  Widget _buildPlaylistSharing(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is Playlist) {
-      return PlaylistSharingScreen(playlist: args);
-    }
-    return const Scaffold(
-      body: Center(child: Text('Invalid playlist data')),
-    );
-  }
-
-  Widget _buildTrackSelection(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    return TrackSelectionScreen(playlistId: args is String ? args : null);
-  }
-
-  Widget _buildDeezerTrackDetail(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String) {
-      return DeezerTrackDetailScreen(trackId: args);
-    }
-    return const Scaffold(
-      body: Center(child: Text('Invalid track ID')),
-    );
-  }
-
-  Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
-    if (settings.name?.startsWith('/deezer_track/') == true) {
-      final trackId = settings.name!.split('/').last;
-      return MaterialPageRoute(
-        builder: (context) => DeezerTrackDetailScreen(trackId: trackId),
-      );
-    }
-    
-    if (settings.name?.startsWith('/playlist/') == true) {
-      final playlistId = settings.name!.split('/').last;
-      return MaterialPageRoute(
-        builder: (context) => PlaylistEditorScreen(playlistId: playlistId),
-      );
-    }
-    
-    return MaterialPageRoute(
-      builder: (context) => const Scaffold(
-        body: Center(child: Text('Page not found')),
-      ),
     );
   }
 }
@@ -138,20 +62,23 @@ class _AppScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playerService = Provider.of<MusicPlayerService>(context);
-    final hasCurrentTrack = playerService.currentTrack != null;
+    return Consumer<MusicPlayerService>(
+      builder: (context, playerService, _) {
+        final hasCurrentTrack = playerService.currentTrack != null;
 
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(child: child),
-          if (hasCurrentTrack)
-            GestureDetector(
-              onTap: () => _showPlayerBottomSheet(context),
-              child: const MiniPlayerWidget(),
-            ),
-        ],
-      ),
+        return Scaffold(
+          body: Column(
+            children: [
+              Expanded(child: child),
+              if (hasCurrentTrack)
+                GestureDetector(
+                  onTap: () => _showPlayerBottomSheet(context),
+                  child: const MiniPlayerWidget(),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -163,104 +90,147 @@ class _AppScaffold extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => Consumer<DynamicThemeProvider>(
-        builder: (context, themeProvider, _) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  themeProvider.backgroundColor,
-                  themeProvider.primaryColor.withOpacity(0.1),
-                ],
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Consumer<MusicPlayerService>(
-                  builder: (context, playerService, _) {
-                    final track = playerService.currentTrack;
-                    if (track == null) return const SizedBox.shrink();
+      builder: (context) => const _PlayerBottomSheet(),
+    );
+  }
+}
 
-                    return Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: themeProvider.surfaceColor.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: themeProvider.primaryColor.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 100, height: 100,
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                bottomLeft: Radius.circular(12),
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                bottomLeft: Radius.circular(12),
-                              ),
-                              child: track.imageUrl?.isNotEmpty == true
-                                  ? Image.network(track.imageUrl!, fit: BoxFit.cover, 
-                                      errorBuilder: (_, __, ___) => Container(
-                                        color: themeProvider.surfaceColor,
-                                        child: const Icon(Icons.music_note, color: Colors.white),
-                                      ))
-                                  : Container(
-                                      color: themeProvider.surfaceColor,
-                                      child: const Icon(Icons.music_note, color: Colors.white),
-                                    ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(track.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  const SizedBox(height: 4),
-                                  Text(track.artist, style: const TextStyle(color: Colors.grey, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              color: themeProvider.primaryColor,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: IconButton(
-                              onPressed: playerService.togglePlay,
-                              icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 24),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
+class _PlayerBottomSheet extends StatelessWidget {
+  const _PlayerBottomSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DynamicThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                themeProvider.backgroundColor,
+                themeProvider.primaryColor.withOpacity(0.1),
               ],
             ),
-          );
-        },
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Consumer<MusicPlayerService>(
+                builder: (context, playerService, _) {
+                  final track = playerService.currentTrack;
+                  if (track == null) return const SizedBox.shrink();
+
+                  return _buildTrackCard(track, playerService, themeProvider);
+                },
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTrackCard(Track track, MusicPlayerService playerService, DynamicThemeProvider themeProvider) {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: themeProvider.surfaceColor.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: themeProvider.primaryColor.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _buildTrackImage(track, themeProvider),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    track.name, 
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.w600, 
+                      fontSize: 16,
+                    ), 
+                    maxLines: 1, 
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    track.artist, 
+                    style: const TextStyle(color: Colors.grey, fontSize: 14), 
+                    maxLines: 1, 
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _buildPlayButton(playerService, themeProvider),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrackImage(Track track, DynamicThemeProvider themeProvider) {
+    return Container(
+      width: 100, 
+      height: 100,
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          bottomLeft: Radius.circular(12),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(12),
+          bottomLeft: Radius.circular(12),
+        ),
+        child: track.imageUrl?.isNotEmpty == true
+            ? Image.network(
+                track.imageUrl!, 
+                fit: BoxFit.cover, 
+                errorBuilder: (_, __, ___) => Container(
+                  color: themeProvider.surfaceColor,
+                  child: const Icon(Icons.music_note, color: Colors.white),
+                ),
+              )
+            : Container(
+                color: themeProvider.surfaceColor,
+                child: const Icon(Icons.music_note, color: Colors.white),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildPlayButton(MusicPlayerService playerService, DynamicThemeProvider themeProvider) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        color: themeProvider.primaryColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: IconButton(
+        onPressed: playerService.togglePlay,
+        icon: Icon(
+          playerService.isPlaying ? Icons.pause : Icons.play_arrow, 
+          color: Colors.white, 
+          size: 24,
+        ),
       ),
     );
   }

@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/consolidated_core.dart';
-import '../../widgets/unified_components.dart';
+import '../../core/form_helpers.dart';
+import '../../widgets/app_widgets.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {
   const SocialNetworkLinkScreen({Key? key}) : super(key: key);
@@ -35,23 +36,24 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with 
           padding: const EdgeInsets.all(20),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 450),
-            child: UnifiedComponents.formCard(
+            child: FormHelpers.buildCard( 
               title: 'Link with Social Network',
+              titleIcon: Icons.link,
               child: Consumer<ProfileProvider>(
                 builder: (context, profileProvider, child) {
                   return Column(
                     children: [
                       if (hasError)
-                        UnifiedComponents.errorBanner(
+                        AppWidgets.errorBanner(
                           message: errorMessage!,
                           onDismiss: clearMessages,
                         ),
 
                       if (hasSuccess)
-                        UnifiedComponents.successBanner(message: successMessage!),
+                        AppWidgets.successBanner(message: successMessage!),
 
                       if (profileProvider.socialType != null) ...[
-                        UnifiedComponents.infoBanner(
+                        AppWidgets.infoBanner(
                           title: 'Connected',
                           message: 'Your account is linked to ${profileProvider.socialType!}',
                           icon: Icons.check_circle,

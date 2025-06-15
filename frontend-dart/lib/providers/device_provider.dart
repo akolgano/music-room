@@ -1,11 +1,12 @@
 // lib/providers/device_provider.dart
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../core/service_locator.dart';
+import '../services/device_service.dart';
 import '../models/models.dart';
 import '../core/consolidated_core.dart';
 
 class DeviceProvider with ChangeNotifier, StateManagement {
-  final ApiService _api = ApiService();
+  final DeviceService _deviceService = getIt<DeviceService>();
   
   Device? _currentDevice;
   List<Device> _userDevices = [];
@@ -33,36 +34,31 @@ class DeviceProvider with ChangeNotifier, StateManagement {
     final uuid = 'mobile-${DateTime.now().millisecondsSinceEpoch}';
     final licenseKey = _generateLicenseKey();
 
-    final device = await _api.registerDevice(uuid, licenseKey, deviceName, token);
-    if (device != null) {
-      _currentDevice = device;
-      _userDevices.add(device);
-      notifyListeners();
-    }
+    final device = await _deviceService.registerDevice(uuid, licenseKey, deviceName, token);
+    _currentDevice = device;
+    _userDevices.add(device);
+    notifyListeners();
   }
 
   Future<void> fetchUserDevices(String token) async {
-    final result = await executeAsync(() => _api.getUserDevices(token));
+    final result = await executeAsync(() => _deviceService.getUserDevices(token));
     if (result != null) _userDevices = result;
   }
 
   Future<Device?> registerDevice(String uuid, String licenseKey, String deviceName, String token) async {
     return executeAsync(() async {
-      final device = await _api.registerDevice(uuid, licenseKey, deviceName, token);
-      if (device != null) {
-        _userDevices.add(device);
-        if (_currentDevice == null) {
-          _currentDevice = device;
-        }
-        notifyListeners();
-        return device;
+      final device = await _deviceService.registerDevice(uuid, licenseKey, deviceName, token);
+      _userDevices.add(device);
+      if (_currentDevice == null) {
+        _currentDevice = device;
       }
-      throw Exception('Failed to register device');
+      notifyListeners();
+      return device;
     });
   }
 
   Future<bool> checkControlPermission(String deviceUuid, String token) async {
-    final result = await executeAsync(() => _api.checkControlPermission(deviceUuid, token));
+    final result = await executeAsync(() => _deviceService.checkControlPermission(deviceUuid, token));
     return result ?? false;
   }
 

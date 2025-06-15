@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/consolidated_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../core/form_helpers.dart';
+import '../../widgets/app_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 
@@ -55,29 +56,13 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                           const SizedBox(height: 24),
                           
                           if (profileProvider.hasError) ...[
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.withOpacity(0.3)),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      profileProvider.errorMessage ?? 'An error occurred',
-                                      style: const TextStyle(color: Colors.red, fontSize: 14),
-                                    ),
-                                  ),  
-                                ],
-                              ),
+                            AppWidgets.errorBanner(
+                              message: profileProvider.errorMessage ?? 'An error occurred',
+                              onDismiss: () => profileProvider.clearError(),
                             ),
                             const SizedBox(height: 16),
                           ],
-                          FormComponents.textField(
+                          FormHelpers.buildTextFormField(
                             controller: _currentPasswordController,
                             labelText: 'Current Password',
                             obscureText: true,
@@ -85,7 +70,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                                       v!.length < 8 ? 'Password must be at least 8 characters' : null,
                           ),
                           const SizedBox(height: 24),
-                          FormComponents.textField(
+                          FormHelpers.buildTextFormField(
                             controller: _newPasswordController,
                             labelText: 'New Password',
                             obscureText: true,
@@ -95,9 +80,9 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                           const SizedBox(height: 24),
                           profileProvider.isLoading
                             ? const CircularProgressIndicator(color: AppTheme.primary)
-                            : ElevatedButton(
+                            : FormHelpers.buildPrimaryButton(
+                                text: 'Submit',
                                 onPressed: _submit,
-                                child: const Text('Submit'),
                               ),
                           const SizedBox(height: 24),
                           TextButton(

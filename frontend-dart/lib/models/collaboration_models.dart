@@ -1,7 +1,13 @@
 // lib/models/collaboration_models.dart
-enum ConflictType { trackMove, trackAdd, trackRemove, trackUpdate }
+import 'package:flutter/material.dart';
 
-enum PlaylistPermission { read, edit, share, delete }
+enum ConflictType {
+  trackAdd,
+  trackRemove,
+  trackMove,
+  playlistEdit,
+  permission,
+}
 
 class PlaylistOperation {
   final String id;
@@ -22,61 +28,163 @@ class PlaylistOperation {
     required this.version,
   });
 
-  factory PlaylistOperation.fromJson(Map<String, dynamic> json) => PlaylistOperation(
-    id: json['id'].toString(),
-    userId: json['user_id'].toString(),
-    username: json['username'] ?? 'User',
-    type: ConflictType.values.firstWhere((t) => t.name == json['type'], orElse: () => ConflictType.trackUpdate),
-    data: json['data'] ?? {},
-    timestamp: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
-    version: json['version'] ?? 1,
-  );
+  factory PlaylistOperation.fromJson(Map<String, dynamic> json) {
+    return PlaylistOperation(
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      username: json['username'] as String,
+      type: ConflictType.values.firstWhere(
+        (e) => e.toString().split('.').last == json['type'],
+        orElse: () => ConflictType.playlistEdit,
+      ),
+      data: json['data'] as Map<String, dynamic>,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      version: json['version'] as int,
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'user_id': userId,
-    'username': username,
-    'type': type.name,
-    'data': data,
-    'timestamp': timestamp.toIso8601String(),
-    'version': version,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'username': username,
+      'type': type.toString().split('.').last,
+      'data': data,
+      'timestamp': timestamp.toIso8601String(),
+      'version': version,
+    };
+  }
+}
+
+enum PermissionType {
+  edit,
+  view,
+  comment,
+  share,
+}
+
+class PlaylistPermission {
+  final PermissionType type;
+  final String name;
+  final String description;
+  final bool isGranted;
+
+  PlaylistPermission({
+    required this.type,
+    required this.name,
+    required this.description,
+    this.isGranted = false,
+  });
+
+  factory PlaylistPermission.fromJson(Map<String, dynamic> json) {
+    return PlaylistPermission(
+      type: PermissionType.values.firstWhere(
+        (e) => e.toString().split('.').last == json['type'],
+        orElse: () => PermissionType.view,
+      ),
+      name: json['name'] as String,
+      description: json['description'] as String,
+      isGranted: json['is_granted'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.toString().split('.').last,
+      'name': name,
+      'description': description,
+      'is_granted': isGranted,
+    };
+  }
 }
 
 class PlaylistCollaborator {
   final String userId;
   final String username;
+  final String email;
   final List<PlaylistPermission> permissions;
-  final DateTime joinedAt;
   final bool isOnline;
-  final DateTime? lastActivity;
+  final DateTime? lastSeen;
+  final String role;
 
   PlaylistCollaborator({
     required this.userId,
     required this.username,
+    required this.email,
     required this.permissions,
-    required this.joinedAt,
-    required this.isOnline,
-    this.lastActivity,
+    this.isOnline = false,
+    this.lastSeen,
+    this.role = 'viewer',
   });
 
-  factory PlaylistCollaborator.fromJson(Map<String, dynamic> json) => PlaylistCollaborator(
-    userId: json['user_id'].toString(),
-    username: json['username'] ?? 'User',
-    permissions: (json['permissions'] as List?)?.map((p) => PlaylistPermission.values.firstWhere((perm) => perm.name == p)).toList() ?? [],
-    joinedAt: DateTime.parse(json['joined_at'] ?? DateTime.now().toIso8601String()),
-    isOnline: json['is_online'] ?? false,
-    lastActivity: json['last_activity'] != null ? DateTime.parse(json['last_activity']) : null,
-  );
+  factory PlaylistCollaborator.fromJson(Map<String, dynamic> json) {
+    final permissionsJson = json['permissions'] as List<dynamic>? ?? [];
+    final permissions = permissionsJson
+        .map((p) => PlaylistPermission.fromJson(p as Map<String, dynamic>))
+        .toList();
 
-  bool hasPermission(PlaylistPermission permission) => permissions.contains(permission);
+    return PlaylistCollaborator(
+      userId: json['user_id'] as String,
+      username: json['username'] as String,
+      email: json['email'] as String,
+      permissions: permissions,
+      isOnline: json['is_online'] as bool? ?? false,
+      lastSeen: json['last_seen'] != null 
+          ? DateTime.parse(json['last_seen'] as String)
+          : null,
+      role: json['role'] as String? ?? 'viewer',
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-    'user_id': userId,
-    'username': username,
-    'permissions': permissions.map((p) => p.name).toList(),
-    'joined_at': joinedAt.toIso8601String(),
-    'is_online': isOnline,
-    'last_activity': lastActivity?.toIso8601String(),
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': userId,
+      'username': username,
+      'email': email,
+      'permissions': permissions.map((p) => p.toJson()).toList(),
+      'is_online': isOnline,
+      'last_seen': lastSeen?.toIso8601String(),
+      'role': role,
+    };
+  }
+
+  bool hasPermission(PermissionType type) {
+    return permissions.any((p) => p.type == type && p.isGranted);
+  }
+}
+
+class ConflictResolution {
+  final String operationId;
+  final String resolution;
+  final String resolvedBy;
+  final DateTime resolvedAt;
+  final Map<String, dynamic> metadata;
+
+  ConflictResolution({
+    required this.operationId,
+    required this.resolution,
+    required this.resolvedBy,
+    required this.resolvedAt,
+    this.metadata = const {},
+  });
+
+  factory ConflictResolution.fromJson(Map<String, dynamic> json) {
+    return ConflictResolution(
+      operationId: json['operation_id'] as String,
+      resolution: json['resolution'] as String,
+      resolvedBy: json['resolved_by'] as String,
+      resolvedAt: DateTime.parse(json['resolved_at'] as String),
+      metadata: json['metadata'] as Map<String, dynamic>? ?? {},
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'operation_id': operationId,
+      'resolution': resolution,
+      'resolved_by': resolvedBy,
+      'resolved_at': resolvedAt.toIso8601String(),
+      'metadata': metadata,
+    };
+  }
 }

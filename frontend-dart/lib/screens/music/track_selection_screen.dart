@@ -30,10 +30,7 @@ class TrackSelectionScreen extends StatelessWidget {
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch, arguments: playlistId),
               icon: const Icon(Icons.search),
               label: const Text('Search Tracks'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.black,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
             ),
           ],
         ),

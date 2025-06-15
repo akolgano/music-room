@@ -5,10 +5,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/consolidated_core.dart';
-import '../../widgets/unified_components.dart';
+import '../../widgets/app_widgets.dart';
 import '../../models/models.dart';
-import '../base_screen.dart';
-import '../profile/profile_screen.dart'; 
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,23 +16,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-  
-  @override
-  String get screenTitle => AppConstants.appName;
-  
-  @override
-  List<Widget> get actions => [
-    IconButton(
-      icon: const Icon(Icons.search),
-      onPressed: () => navigateTo(AppRoutes.trackSearch),
-    ),
-    IconButton(
-      icon: const Icon(Icons.add),
-      onPressed: () => navigateTo(AppRoutes.playlistEditor),
-    ),
-  ];
   
   @override
   void initState() {
@@ -43,35 +27,54 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
   }
 
   @override
-  Widget buildContent() {
-    return buildTabScaffold(
-      tabs: const [
-        Tab(icon: Icon(Icons.home), text: 'Home'),
-        Tab(icon: Icon(Icons.library_music), text: 'Library'),
-        Tab(icon: Icon(Icons.person), text: 'Profile'),
-      ],
-      tabViews: [
-        _buildDashboard(),
-        _buildPlaylists(),
-        const ProfileScreen(isEmbedded: true),
-      ],
-      controller: _tabController,
+  Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: Text(AppConstants.appName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+          ),
+        ],
+      ),
+      body: AppWidgets.tabScaffold(
+        tabs: const [
+          Tab(icon: Icon(Icons.home), text: 'Home'),
+          Tab(icon: Icon(Icons.library_music), text: 'Library'),
+          Tab(icon: Icon(Icons.person), text: 'Profile'),
+        ],
+        tabViews: [
+          _buildDashboard(auth),
+          _buildPlaylists(),
+          const ProfileScreen(isEmbedded: true),
+        ],
+        controller: _tabController,
+      ),
     );
   }
 
-  Widget _buildDashboard() {
+  Widget _buildDashboard(AuthProvider auth) {
     return SingleChildScrollView(
-      padding: AppSizes.screenPadding,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          UnifiedComponents.infoBanner(
+          AppWidgets.infoBanner(
             title: 'Welcome back, ${auth.displayName}!',
             message: 'Ready to discover and share music?',
             icon: Icons.music_note,
           ),
           const SizedBox(height: 32),
-          UnifiedComponents.sectionTitle('Quick Actions'),
+          AppWidgets.sectionTitle('Quick Actions'),
           const SizedBox(height: 16),
           GridView.count(
             shrinkWrap: true,
@@ -80,29 +83,29 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
             children: [
-              UnifiedComponents.quickActionCard(
-                title: AppStrings.searchTracks,
+              AppWidgets.quickActionCard(
+                title: 'Search Tracks',
                 icon: Icons.search,
                 color: Colors.blue,
-                onTap: () => navigateTo(AppRoutes.trackSearch),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
               ),
-              UnifiedComponents.quickActionCard(
-                title: AppStrings.createPlaylist,
+              AppWidgets.quickActionCard(
+                title: 'Create Playlist',
                 icon: Icons.add_circle,
                 color: Colors.green,
-                onTap: () => navigateTo(AppRoutes.playlistEditor),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
               ),
-              UnifiedComponents.quickActionCard(
+              AppWidgets.quickActionCard(
                 title: 'Find Friends',
                 icon: Icons.people,
                 color: Colors.purple,
-                onTap: () => navigateTo(AppRoutes.friends),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.friends),
               ),
-              UnifiedComponents.quickActionCard(
-                title: AppStrings.publicPlaylists,
+              AppWidgets.quickActionCard(
+                title: 'Public Playlists',
                 icon: Icons.public,
                 color: Colors.orange,
-                onTap: () => navigateTo(AppRoutes.publicPlaylists),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.publicPlaylists),
               ),
             ],
           ),
@@ -115,25 +118,16 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
     return Consumer<MusicProvider>(
       builder: (context, music, _) {
         if (music.isLoading) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: AppTheme.primary),
-                SizedBox(height: 16),
-                Text('Loading playlists...', style: TextStyle(color: Colors.white)),
-              ],
-            ),
-          );
+          return AppWidgets.loading('Loading playlists...');
         }
 
         if (music.playlists.isEmpty) {
-          return UnifiedComponents.emptyState(
+          return AppWidgets.emptyState(
             icon: Icons.playlist_play,
             title: 'No playlists yet',
             subtitle: 'Create your first playlist to get started!',
             buttonText: 'Create Playlist',
-            onButtonPressed: () => navigateTo(AppRoutes.playlistEditor),
+            onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           );
         }
 
@@ -145,10 +139,14 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
             itemCount: music.playlists.length,
             itemBuilder: (context, index) {
               final playlist = music.playlists[index];
-              return UnifiedComponents.playlistCard(
+              return AppWidgets.playlistCard(
                 playlist: playlist,
-                onTap: () => navigateTo(AppRoutes.playlistEditor, arguments: playlist.id),
-                onPlay: () => showInfo('Playing ${playlist.name}'),
+                onTap: () => Navigator.pushNamed(
+                  context, 
+                  AppRoutes.playlistEditor, 
+                  arguments: playlist.id,
+                ),
+                onPlay: () => _showInfo('Playing ${playlist.name}'),
               );
             },
           ),
@@ -158,17 +156,33 @@ class _HomeScreenState extends BaseScreen<HomeScreen> with TickerProviderStateMi
   }
 
   Future<void> _loadData() async {
-    await runAsyncAction(
-      () async {
-        final music = Provider.of<MusicProvider>(context, listen: false);
-        final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-        
-        if (auth.isLoggedIn && auth.token != null) {
-          await music.fetchUserPlaylists(auth.token!);
-        }
-        await profileProvider.loadProfile(auth.token);
-      },
-      errorMessage: 'Failed to load data',
-    );
+    try {
+      final music = Provider.of<MusicProvider>(context, listen: false);
+      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      
+      if (auth.isLoggedIn && auth.token != null) {
+        await Future.wait([
+          music.fetchUserPlaylists(auth.token!),
+          profileProvider.loadProfile(auth.token),
+        ]);
+      }
+    } catch (e) {
+      _showError('Failed to load data: $e');
+    }
+  }
+
+  void _showInfo(String message) {
+    AppWidgets.showSnackBar(context, message);
+  }
+
+  void _showError(String message) {
+    AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 }
