@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 import '../../widgets/unified_components.dart';
-import '../../utils/social_login_utils.dart';
-import '../../utils/async_operation_utils.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {
   const SocialNetworkLinkScreen({Key? key}) : super(key: key);
@@ -15,7 +13,7 @@ class SocialNetworkLinkScreen extends StatefulWidget {
   State<SocialNetworkLinkScreen> createState() => _SocialNetworkLinkScreenState();
 }
 
-class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with AsyncOperationMixin {
+class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with AsyncOperationStateMixin<SocialNetworkLinkScreen> {
 
   @override                                                                 
   void initState() {     

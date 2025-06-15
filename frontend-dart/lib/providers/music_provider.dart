@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import '../models/models.dart';
-import 'base_provider.dart';
+import '../core/consolidated_core.dart'; 
 
 class MusicProvider extends BaseProvider {
   final ApiService _api = ApiService();
@@ -23,7 +23,7 @@ class MusicProvider extends BaseProvider {
   Future<void> fetchPublicPlaylists(String token) async => _fetchPlaylists(token, true);
 
   Future<void> _fetchPlaylists(String token, bool publicOnly) async {
-    final result = await execute(() => _api.getPlaylists(token: token, publicOnly: publicOnly));
+    final result = await executeAsync(() => _api.getPlaylists(token: token, publicOnly: publicOnly));
     if (result != null) {
       _playlists = result;
       _hasConnectionError = false;
@@ -34,11 +34,11 @@ class MusicProvider extends BaseProvider {
 
   Future<Playlist?> getPlaylistDetails(String id, String token) async {
     if (id.isEmpty || id == 'null') return null;
-    return await execute(() => _api.getPlaylist(id, token));
+    return await executeAsync(() => _api.getPlaylist(id, token));
   }
 
   Future<String?> createPlaylist(String name, String description, bool isPublic, String token, [String? deviceUuid]) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final id = await _api.createPlaylist(name, description, isPublic, token, deviceUuid);
       await fetchUserPlaylists(token); 
       return id;
@@ -50,12 +50,12 @@ class MusicProvider extends BaseProvider {
   Future<void> searchDeezerTracks(String query) => _performSearch(query, true);
 
   Future<void> _performSearch(String query, bool deezer) async {
-    final result = await execute(() => _api.searchTracks(query, deezer: deezer));
+    final result = await executeAsync(() => _api.searchTracks(query, deezer: deezer));
     if (result != null) _searchResults = result;
   }
 
   Future<Track?> getDeezerTrack(String trackId) async {
-    return await execute(() => _api.getDeezerTrack(trackId));
+    return await executeAsync(() => _api.getDeezerTrack(trackId));
   }
 
   Future<String?> getDeezerTrackPreviewUrl(String trackId) async {
@@ -64,7 +64,7 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<void> fetchPlaylistTracks(String playlistId, String token) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final response = await _api.get('/playlists/playlist/$playlistId/tracks', token);
       final tracksData = response['tracks'] as List<dynamic>;
       return tracksData.map((t) => PlaylistTrack.fromJson(t)).toList();
@@ -73,7 +73,7 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token, String? deviceUuid) async {
-    return await execute(() async {
+    return await executeAsync(() async {
       final existingTrack = _playlistTracks.firstWhere(
         (t) => t.trackId == trackId,
         orElse: () => PlaylistTrack(trackId: '', name: '', position: -1),
@@ -157,7 +157,7 @@ class MusicProvider extends BaseProvider {
     required String token,
     String? deviceUuid,
   }) async {
-    await execute(() async {
+    await executeAsync(() async {
       await _api.removeTrackFromPlaylist(
         playlistId: playlistId,
         trackId: trackId,
@@ -171,19 +171,19 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<bool> changePlaylistVisibility(String playlistId, bool isPublic, String token) async {
-    final result = await execute(() => _api.post('/playlists/$playlistId/visibility', {
+    final result = await executeAsync(() => _api.post('/playlists/$playlistId/visibility', {
       'public': isPublic,
     }, token));
     return result != null;
   }
 
   Future<bool> performMusicAction(String endpoint, Map<String, dynamic> data, String token) async {
-    final result = await execute(() => _api.post(endpoint, data, token));
+    final result = await executeAsync(() => _api.post(endpoint, data, token));
     return result != null;
   }
 
   Future<Map<String, dynamic>?> getMusicData(String endpoint, String token) async {
-    return await execute(() => _api.get(endpoint, token));
+    return await executeAsync(() => _api.get(endpoint, token));
   }
 
   Future<void> moveTrackInPlaylist({
@@ -193,7 +193,7 @@ class MusicProvider extends BaseProvider {
     int rangeLength = 1,
     required String token,
   }) async {
-    await execute(() => _api.moveTrackInPlaylist(
+    await executeAsync(() => _api.moveTrackInPlaylist(
       playlistId: playlistId,
       rangeStart: rangeStart,
       insertBefore: insertBefore,
@@ -207,7 +207,7 @@ class MusicProvider extends BaseProvider {
     required int userId,
     required String token,
   }) async {
-    await execute(() => _api.inviteUserToPlaylist(
+    await executeAsync(() => _api.inviteUserToPlaylist(
       playlistId: playlistId,
       userId: userId,
       token: token,
@@ -215,7 +215,7 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final response = await _api.get('/playlists/playlist/$playlistId/tracks/', token);
       final tracksData = response['tracks'] as List<dynamic>;
       return tracksData.map((t) {
@@ -233,14 +233,14 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<String?> generatePlaylistShareLink(String playlistId, String token) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       return 'musicroom://playlist/$playlistId';
     });
     return result;
   }
 
   Future<void> savePublicPlaylist(String playlistId, String token) async {
-    await execute(() => _api.post('/playlists/$playlistId/save/', {}, token));
+    await executeAsync(() => _api.post('/playlists/$playlistId/save/', {}, token));
   }
 
   Future<void> searchTracksWithFilters({
@@ -257,7 +257,7 @@ class MusicProvider extends BaseProvider {
       'limit': limit.toString(),
     };
     
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final endpoint = deezer ? '/deezer/search/' : '/tracks/search/';
       final uri = Uri.parse('http://localhost:8000$endpoint').replace(queryParameters: params);
       final response = await http.get(uri);
@@ -275,7 +275,7 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<Map<String, dynamic>> getPlaylistStatistics(String playlistId, String token) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final playlist = await getPlaylistDetails(playlistId, token);
       if (playlist == null) return <String, dynamic>{};
       
@@ -292,7 +292,7 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<List<Map<String, dynamic>>> getPlaylistCollaborators(String playlistId, String token) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final response = await _api.get('/playlists/$playlistId/collaborators/', token);
       return List<Map<String, dynamic>>.from(response['collaborators'] ?? []);
     });
@@ -306,7 +306,7 @@ class MusicProvider extends BaseProvider {
     bool? isPublic,
     required String token,
   }) async {
-    await execute(() async {
+    await executeAsync(() async {
       final updates = <String, dynamic>{};
       if (name != null) updates['name'] = name;
       if (description != null) updates['description'] = description;
@@ -319,7 +319,7 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<Map<String, dynamic>> exportPlaylist(String playlistId, String token) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final playlist = await getPlaylistDetails(playlistId, token);
       if (playlist == null) return <String, dynamic>{};
       
@@ -345,7 +345,7 @@ class MusicProvider extends BaseProvider {
     required String token,
     int limit = 20,
   }) async {
-    final result = await execute(() async {
+    final result = await executeAsync(() async {
       final results = await _api.searchTracks('popular music', deezer: true);
       return results.take(limit).toList();
     });
@@ -353,7 +353,7 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
-    await execute(() => _api.addTrackFromDeezer(deezerTrackId, token));
+    await executeAsync(() => _api.addTrackFromDeezer(deezerTrackId, token));
   }
 
   void clearSearchResults() {

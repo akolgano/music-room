@@ -1,6 +1,6 @@
 // lib/screens/music/music_features_screen.dart
 import 'package:flutter/material.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 import '../../widgets/unified_components.dart';
 import 'track_search_screen.dart';
 

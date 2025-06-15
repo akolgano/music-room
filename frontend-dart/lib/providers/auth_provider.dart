@@ -1,6 +1,7 @@
 // lib/providers/auth_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../core/consolidated_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -92,28 +93,25 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> facebookLogin() async {
     return await _execute(() async {
-      final LoginResult result = await FacebookAuth.instance.login();
-      if (result.status == LoginStatus.success) {
-        final fbAccessToken = result.accessToken!.tokenString;
-        final authResult = await _api.facebookLogin(fbAccessToken);
+      final result = await SocialLoginUtils.loginWithFacebook();
+      if (result.success) {
+        final authResult = await _api.facebookLogin(result.token!);
         _setUserData(authResult.token, authResult.user.id, authResult.user.username);
       } else {
-        throw Exception("Facebook login failed!");
+        throw Exception(result.error ?? "Facebook login failed!");
       }
     });
   }
 
   Future<bool> googleLoginApp() async {
     return await _execute(() async {
-      final user = await googleSignIn?.signIn();
-      if (user == null) throw Exception("Google login failed!");
-      
-      final auth = await user.authentication;
-      final idToken = auth.idToken;
-      if (idToken == null) throw Exception("Google login failed!");
-
-      final authResult = await _api.googleLogin('app', idToken);
-      _setUserData(authResult.token, authResult.user.id, authResult.user.username);
+      final result = await SocialLoginUtils.loginWithGoogle();
+      if (result.success) {
+        final authResult = await _api.googleLogin('app', result.token!);
+        _setUserData(authResult.token, authResult.user.id, authResult.user.username);
+      } else {
+        throw Exception(result.error ?? "Google login failed!");
+      }
     });
   }
 

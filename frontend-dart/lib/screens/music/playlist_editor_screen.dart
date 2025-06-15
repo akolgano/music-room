@@ -8,7 +8,7 @@ import '../../providers/friend_provider.dart';
 import '../../providers/playlist_license_provider.dart';
 import '../../models/models.dart';
 import '../../models/collaboration_models.dart'; 
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/websocket_service.dart';
 import '../../services/api_service.dart';
@@ -322,7 +322,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             controller: _nameController,
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
-            validator: Validators.playlistName,
+            validator: AppValidators.playlistName,
           ),
           const SizedBox(height: 16),
           FormComponents.textField(
@@ -330,7 +330,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             labelText: 'Description (optional)',
             prefixIcon: Icons.description,
             maxLines: 3,
-            validator: Validators.description,
+            validator: AppValidators.description,
           ),
           const SizedBox(height: 16),
           _buildVisibilitySwitch(),
@@ -357,7 +357,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             controller: _nameController,
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
-            validator: Validators.playlistName,
+            validator: AppValidators.playlistName,
           ),
           const SizedBox(height: 16),
           FormComponents.textField(
@@ -365,7 +365,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             labelText: 'Description (optional)',
             prefixIcon: Icons.description,
             maxLines: 3,
-            validator: Validators.description,
+            validator: AppValidators.description,
           ),
           const SizedBox(height: 16),
           _buildVisibilitySwitch(),
