@@ -1,6 +1,6 @@
 // lib/screens/music/track_vote_screen.dart
 import 'package:flutter/material.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 
 class MusicTrackVoteScreen extends StatelessWidget {
   const MusicTrackVoteScreen({Key? key}) : super(key: key);

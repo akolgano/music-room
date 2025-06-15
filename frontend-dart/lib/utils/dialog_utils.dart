@@ -1,6 +1,6 @@
 // lib/utils/dialog_utils.dart
 import 'package:flutter/material.dart';
-import '../core/app_core.dart';
+import '../core/consolidated_core.dart';
 
 class DialogUtils {
   static Future<bool?> showConfirmDialog(
@@ -430,6 +430,51 @@ class DialogUtils {
 
   static void hideLoadingDialog(BuildContext context) {
     Navigator.of(context).pop();
+  }
+
+  static Future<Map<String, dynamic>?> showProfileUpdateDialog({
+    required BuildContext context,
+    required String title,
+    required List<Widget> fields,
+  }) {
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Row(
+          children: [
+            const Icon(Icons.edit, color: AppTheme.primary),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title, style: const TextStyle(color: Colors.white))),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: fields,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop({'success': true}),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<void> showUpdateSuccessDialog({
+    required BuildContext context,
+    String? customMessage,
+  }) {
+    return showSuccessDialog(
+      context: context,
+      title: 'Update Successful',
+      message: customMessage ?? 'Your information has been updated successfully.',
+    );
   }
 }
 

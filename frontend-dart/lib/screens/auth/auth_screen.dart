@@ -1,12 +1,9 @@
 // lib/screens/auth/auth_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 import '../../widgets/unified_components.dart';
 import '../../providers/auth_provider.dart';
-import '../../utils/social_login_utils.dart';
-import '../../utils/async_operation_utils.dart';
-import '../../utils/validation_utils.dart';
 import './forgot_password_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -16,7 +13,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with AsyncOperationMixin, TickerProviderStateMixin {
+class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<AuthScreen>, TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();

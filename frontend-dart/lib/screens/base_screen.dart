@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/base_provider.dart';
-import '../core/app_core.dart';
+import '../core/consolidated_core.dart';
 import '../utils/dialog_utils.dart';
 import '../widgets/unified_components.dart';
 
@@ -16,7 +15,6 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   Widget? get floatingActionButton => null;
   bool get showDrawer => true;
   bool get isLoading => false;
-
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
 
   void navigateTo(String route, {Object? arguments}) => Navigator.pushNamed(context, route, arguments: arguments);

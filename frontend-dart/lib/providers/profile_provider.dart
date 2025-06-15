@@ -6,11 +6,9 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-import '../services/profile_api_service.dart';
 
 class ProfileProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
-  final ProfileApiService _profileApiService = ProfileApiService();
   
   String? _userId;
   String? _username;
@@ -128,13 +126,13 @@ class ProfileProvider with ChangeNotifier {
         _socialId = social['social_id'];
       }
 
-      final profilePublic = await _profileApiService.getProfilePublic(token);
+      final profilePublic = await _apiService.getProfilePublic(token);
       _avatar = profilePublic['avatar'];
       _gender = profilePublic['gender'];
       _location = profilePublic['location'];
       _bio = profilePublic['bio'];
 
-      final profilePrivate = await _profileApiService.getProfilePrivate(token);
+      final profilePrivate = await _apiService.getProfilePrivate(token);
       _firstName = profilePrivate['first_name'];
       _lastName = profilePrivate['last_name'];
       _phone = profilePrivate['phone'];
@@ -142,7 +140,7 @@ class ProfileProvider with ChangeNotifier {
       _country = profilePrivate['country'];
       _postalCode = profilePrivate['postal_code'];
 
-      final profileFriend = await _profileApiService.getProfileFriend(token);
+      final profileFriend = await _apiService.getProfileFriend(token);
       _hobbies = profileFriend ['hobbies'];
       _friendInfo = profileFriend ['friend_info'];
       final dobDb = profileFriend ['dob'];
@@ -150,7 +148,7 @@ class ProfileProvider with ChangeNotifier {
         _dob = DateTime.parse(dobDb);
       }
 
-      final profileMusic = await _profileApiService.getProfileMusic(token);
+      final profileMusic = await _apiService.getProfileMusic(token);
       _musicPreferences = profileMusic['music_preferences'];
 
       _isLoading = false;
@@ -293,7 +291,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _profileApiService.updateAvatar(token, avatarBase64, mimeType);
+      await _apiService.updateAvatar(token, avatarBase64, mimeType);
       
       _isLoading = false;
       notifyListeners();
@@ -313,7 +311,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _profileApiService.updatePublicBasic(token, gender, location);
+      await _apiService.updatePublicBasic(token, gender, location);
       
       _isLoading = false;
       notifyListeners();
@@ -333,7 +331,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _profileApiService.updatePublicBio(token, bio);
+      await _apiService.updatePublicBio(token, bio);
       
       _isLoading = false;
       notifyListeners();
@@ -353,7 +351,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _profileApiService.updatePrivateInfo(token, firstName, lastName, phone, street, country, postalCode);
+      await _apiService.updatePrivateInfo(token, firstName, lastName, phone, street, country, postalCode);
       
       _isLoading = false;
       notifyListeners();
@@ -373,7 +371,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _profileApiService.updateFriendInfo(token, dob, hobbies, friendInfo);
+      await _apiService.updateFriendInfo(token, dob, hobbies, friendInfo);
       
       _isLoading = false;
       notifyListeners();
@@ -393,7 +391,7 @@ class ProfileProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _profileApiService.updateMusicPreferences(token, musicPreferences);
+      await _apiService.updateMusicPreferences(token, musicPreferences);
       
       _isLoading = false;
       notifyListeners();

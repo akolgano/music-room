@@ -1,7 +1,7 @@
 // lib/widgets/common_widgets.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/app_core.dart';
+import '../core/consolidated_core.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../models/models.dart';

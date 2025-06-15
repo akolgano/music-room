@@ -1,7 +1,7 @@
 // lib/screens/playlists/playlists_screen.dart
 import 'package:flutter/material.dart';
 import '../../providers/music_provider.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 import '../../widgets/unified_components.dart';
 import '../../models/models.dart';
 import '../base_screen.dart';

@@ -1,7 +1,7 @@
 // lib/providers/playlist_license_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'base_provider.dart';
+import '../core/consolidated_core.dart';
 import '../models/collaboration_models.dart'; 
 
 class PlaylistLicense {
@@ -54,7 +54,7 @@ class PlaylistLicenseProvider extends ChangeNotifier with StateManagement {
   bool get canCurrentUserEdit => _currentLicense?.canEdit ?? false;
 
   Future<void> loadPlaylistLicense(String playlistId, String token) async {
-    await execute(() async {
+    await executeAsync(() async {
       final response = await _api.get('/playlists/$playlistId/license/', token);
       _currentLicense = PlaylistLicense.fromJson(response['license']);
       
@@ -72,7 +72,7 @@ class PlaylistLicenseProvider extends ChangeNotifier with StateManagement {
 
   Future<bool> updateLicensePermissions(String playlistId, String userId, 
       List<PlaylistPermission> permissions, String token) async {
-    return await execute(() async {
+    return await executeAsync(() async {
       await _api.post('/playlists/$playlistId/permissions/', {
         'user_id': userId,
         'permissions': permissions.map((p) => p.name).toList(),
@@ -84,7 +84,7 @@ class PlaylistLicenseProvider extends ChangeNotifier with StateManagement {
   }
 
   Future<bool> setInviteOnlyMode(String playlistId, bool inviteOnly, String token) async {
-    return await execute(() async {
+    return await executeAsync(() async {
       await _api.post('/playlists/$playlistId/license/update/', {
         'invite_only_edit': inviteOnly,
       }, token);

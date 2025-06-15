@@ -2,16 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 import '../../widgets/unified_components.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
 import 'social_network_link_screen.dart';
-import '../profile/public_info_screen.dart';
-import '../profile/private_info_screen.dart';
-import '../profile/friend_info_screen.dart';
-import '../profile/music_preference_screen.dart';
+import 'profile_info_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
@@ -46,19 +43,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         children: [
           _buildProfileHeader(),
           const SizedBox(height: 16),
-          
           _buildProfileInformationSection(),
-          _buildSocialNetworkSection(),
-          
-          Consumer<ProfileProvider>(
-            builder: (context, profileProvider, _) {
-              if (profileProvider.isPasswordUsable) {
-                return _buildSecuritySection();
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          
+          _buildSecuritySection(),
           _buildAccountActionsSection(),
         ],
       ),
@@ -140,80 +126,49 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       title: 'Profile Information',
       items: [
         UnifiedComponents.settingsItem(
-          icon: Icons.public,
-          title: 'Public Information', 
-          subtitle: 'Information visible to everyone',
+          icon: Icons.edit,
+          title: 'Edit Profile Information', 
+          subtitle: 'Manage public, private, friend, and music info',
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => PublicInfoScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const ProfileInfoScreen()),
           ),
         ),
-        UnifiedComponents.settingsItem(
-          icon: Icons.people,
-          title: 'Friends Information',
-          subtitle: 'Information visible to friends only',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FriendInfoScreen(),
-            ),
-          ),
-        ),
-        UnifiedComponents.settingsItem(
-          icon: Icons.lock,
-          title: 'Private Information',
-          subtitle: 'Information visible only to you',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PrivateInfoScreen(),
-            ),
-          ),
-        ),
-        UnifiedComponents.settingsItem(
-          icon: Icons.music_note,
-          title: 'Music Preferences',
-          subtitle: 'Your music tastes and preferences',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MusicPreferenceScreen(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialNetworkSection() {
-    return UnifiedComponents.settingsSection(
-      title: 'Social Network',
-      items: [
         UnifiedComponents.settingsItem(
           icon: Icons.link,
-          title: 'Link Social Account',
+          title: 'Social Network Links',
           subtitle: 'Connect Facebook or Google account',
-          onTap: () => Navigator.push(context, MaterialPageRoute(
-            builder: (context) => const SocialNetworkLinkScreen())),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SocialNetworkLinkScreen()),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildSecuritySection() {
-    return UnifiedComponents.settingsSection(
-      title: 'Security',
-      items: [
-        UnifiedComponents.settingsItem(
-          icon: Icons.password,
-          title: 'Change Password',
-          subtitle: 'Change your account password',
-          onTap: () => Navigator.push(context, MaterialPageRoute(
-            builder: (context) => const UserPasswordChangeScreen())),
-        ),
-      ],
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, _) {
+        if (!profileProvider.isPasswordUsable) {
+          return const SizedBox.shrink();
+        }
+
+        return UnifiedComponents.settingsSection(
+          title: 'Security',
+          items: [
+            UnifiedComponents.settingsItem(
+              icon: Icons.password,
+              title: 'Change Password',
+              subtitle: 'Change your account password',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const UserPasswordChangeScreen()),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

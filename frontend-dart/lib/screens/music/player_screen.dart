@@ -1,6 +1,6 @@
 // lib/screens/music/player_screen.dart
 import 'package:flutter/material.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 import '../../widgets/common_widgets.dart';
 import '../../utils/dialog_utils.dart';
 

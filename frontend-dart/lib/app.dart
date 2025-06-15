@@ -1,7 +1,7 @@
 // lib/app.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'core/app_core.dart';
+import 'core/consolidated_core.dart';  
 import 'providers/auth_provider.dart';
 import 'providers/dynamic_theme_provider.dart';
 import 'services/music_player_service.dart';
@@ -25,6 +25,7 @@ import 'screens/music/track_selection_screen.dart';
 import 'screens/music/deezer_track_detail_screen.dart';
 import 'screens/profile/user_password_change_screen.dart';
 import 'screens/profile/social_network_link_screen.dart';
+import 'screens/profile/profile_info_screen.dart';
 import 'models/models.dart';
 
 class MusicRoomApp extends StatelessWidget {
@@ -74,6 +75,7 @@ class MusicRoomApp extends StatelessWidget {
       AppRoutes.deezerTrackDetail: (context) => _buildDeezerTrackDetail(context),
       AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
       AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
+      '/profile_info': (context) => const ProfileInfoScreen(),
     };
   }
 
@@ -201,8 +203,8 @@ class _AppScaffold extends StatelessWidget {
                         children: [
                           Container(
                             width: 100, height: 100,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
+                            decoration: const BoxDecoration(
+                              borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(12),
                                 bottomLeft: Radius.circular(12),
                               ),

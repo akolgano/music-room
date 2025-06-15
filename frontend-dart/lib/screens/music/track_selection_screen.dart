@@ -1,6 +1,6 @@
 // lib/screens/music/track_selection_screen.dart
 import 'package:flutter/material.dart';
-import '../../core/app_core.dart';
+import '../../core/consolidated_core.dart';
 
 class TrackSelectionScreen extends StatelessWidget {
   final String? playlistId;
