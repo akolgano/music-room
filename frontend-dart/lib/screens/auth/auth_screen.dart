@@ -18,10 +18,18 @@ class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<A
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _otpController = TextEditingController();
   
   bool _isLogin = true;
   bool _isPasswordVisible = false;
   bool _socialLoginLoading = false;
+
+  bool _isOtp = false;
+  String? _username;
+  String? _email;
+  String? _password;
+
+  bool _isLoading = false;
   
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -116,22 +124,28 @@ class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<A
       titleIcon: _isLogin ? Icons.login : Icons.person_add,
       child: Column(
         children: [
+
+          if(!_isOtp) ... [
           UnifiedComponents.textField(
             controller: _usernameController,
             labelText: AppStrings.username,
             prefixIcon: Icons.person,
             validator: ValidationUtils.username,
           ),
-          if (!_isLogin) ...[
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
+          ],
+
+          if (!_isLogin && !_isOtp) ...[
             UnifiedComponents.textField(
               controller: _emailController,
               labelText: AppStrings.email,
               prefixIcon: Icons.email,
               validator: ValidationUtils.email,
             ),
-          ],
           const SizedBox(height: 16),
+          ],
+
+          if(!_isOtp) ...[
           UnifiedComponents.textField(
             controller: _passwordController,
             labelText: AppStrings.password,
@@ -151,11 +165,23 @@ class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<A
             ],
           ),
           const SizedBox(height: 24),
+          ],
+          
+          if (_isOtp) ...[
+            UnifiedComponents.textField(
+              controller: _otpController,
+              labelText: 'One Time Passcode',
+              prefixIcon: Icons.email,
+              validator: (value) => ValidationUtils.otp(value),
+            ),
+            const SizedBox(height: 24),
+          ],
+
           UnifiedComponents.primaryButton(
             text: _isLogin ? AppStrings.signIn : AppStrings.signUp,
             onPressed: _submit,
             icon: _isLogin ? Icons.login : Icons.person_add,
-            isLoading: isLoading,
+            isLoading: _isLoading,
           ),
           const SizedBox(height: 16),
           const Divider(color: AppTheme.surfaceVariant),
@@ -239,6 +265,7 @@ class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<A
     setState(() {
       _isLogin = !_isLogin;
       _clearForm();
+      _isOtp = false;
     });
   }
 
@@ -249,13 +276,19 @@ class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<A
     _isPasswordVisible = false;
     _formKey.currentState?.reset();
     clearMessages();
+    _otpController.clear();
+    _username = null;
+    _email = null;
+    _password = null;
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    setState((){_isLoading = true;});
     
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    bool success;
+    bool success = false;
     
     if (_isLogin) {
       success = await executeBool(
@@ -266,7 +299,33 @@ class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<A
         successMessage: AppStrings.loginSuccessful,
         errorMessage: 'Login failed. Please check your credentials.',
       );
-    } else {
+    } else if (!_isOtp){
+
+          _username = _usernameController.text.trim();
+          _email = _emailController.text.trim();
+          _password = _passwordController.text;
+          bool isSentOtp = false;
+
+          isSentOtp = await authProvider.signupEmailOtp(_email);
+          if (isSentOtp) {
+            setState((){_isOtp = true;});
+            AppUtils.showSnackBar(context, "Please check your email for OTP verifictaion");
+          }
+          else {
+            showError('Signup send OTP failed. Please try again.');
+          }
+          setState((){_isLoading = false;});
+          return;
+      }
+      else if (_isOtp) {
+        success = await authProvider.signup(
+          _username!, 
+          _email!,
+          _password!,
+          _otpController.text
+        );
+      }
+      /*else {
       success = await executeBool(
         operation: () => authProvider.signup(
           _usernameController.text.trim(), 
@@ -276,10 +335,19 @@ class _AuthScreenState extends State<AuthScreen> with AsyncOperationStateMixin<A
         successMessage: AppStrings.accountCreated,
         errorMessage: 'Account creation failed. Please try again.',
       );
-    }
+      }*/
     
     if (success) {
+      showSuccess('$AppStrings.accountCreated');
     }
+    else {
+      if (authProvider.hasError){
+        showError('${authProvider.errorMessage}');
+      }
+    }
+
+    setState((){_isLoading = false;});
+
   }
 
   Future<void> _loginWithSocial(String provider) async {

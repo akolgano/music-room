@@ -55,12 +55,34 @@ class ApiService {
     }
   }
 
+  
   String _extractErrorMessage(dynamic errorData, int statusCode) {
-    if (errorData is Map<String, dynamic>) {
+    /*
+      errorData could also be in this format 
+      {username: [Username is already taken.], email: [Email is already taken.]} 
+      from UserSerializer error, which I do not know how to modify the django built in error message.
+    */
+    /*if (errorData is Map<String, dynamic>) {
       return errorData['error'] ?? 
              errorData['detail'] ?? 
              errorData['message'] ?? 
              '${AppStrings.error}: $statusCode';
+    } else if (errorData is String) {
+      return errorData;
+    }*/
+    if (errorData is Map<String, dynamic>) {
+      final messages = errorData.entries.map((entry) {
+        final key = entry.key;
+        final value = entry.value;
+
+        if (value is List) {
+          return '$key: ${value.join(', ')}';
+        } else {
+          return '$key: $value';
+        }
+      }).toList();
+      final errorMessage = messages.toString();
+      return errorMessage;
     } else if (errorData is String) {
       return errorData;
     }
@@ -78,12 +100,12 @@ class ApiService {
     );
   }
 
-  Future<AuthResult> signup(String username, String email, String password) async {
+  Future<AuthResult> signup(String username, String email, String password, int otp) async {
     return _handleRequest(
       () => http.post(
-        Uri.parse('$_baseUrl/users/signup/'), 
+        Uri.parse('$_baseUrl/users/signup/'),
         headers: _getHeaders(), 
-        body: json.encode({'username': username, 'email': email, 'password': password})
+        body: json.encode({'username': username, 'email': email, 'password': password, 'otp': otp})
       ),
       (data) => AuthResult.fromJson(data),
     );
@@ -284,6 +306,17 @@ class ApiService {
         Uri.parse('$_baseUrl/profile/music/update/'),
         headers: _getHeaders(token),
         body: json.encode({'musicPreferences': musicPreferences}),
+      ),
+      (_) => null,
+    );
+  }
+
+  Future<void> signupEmailOtp(String? email) async {
+    await _handleRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/users/signup_email_otp/'),
+        headers: _getHeaders(),
+        body: json.encode({'email': email}),
       ),
       (_) => null,
     );

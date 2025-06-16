@@ -10,3 +10,12 @@ def send_forgot_password_email(otp, email, username):
     msg = EmailMultiAlternatives(subject, text_content, os.environ.get('EMAIL_HOST_USER'), [email])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
+
+def send_signup_otp_email(otp, email):
+    subject = 'OTP for Email verification'
+    text_content = f'Your OTP to verify email is {otp}. Expired in 5 minutes.'
+    html_content = f'<p>Your OTP to verify email is <strong>{otp}</strong>. Expired in 5 minutes.</p>'
+
+    msg = EmailMultiAlternatives(subject, text_content, os.environ.get('EMAIL_HOST_USER'), [email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()

@@ -36,3 +36,12 @@ class OneTimePasscode(models.Model):
 
     def __str__(self):
         return f"OTP code for {self.user.email} (expires at {self.expired_at})"
+
+class SignupOneTimePasscode(models.Model):
+    email = models.EmailField(unique=True)
+    code = models.IntegerField()
+    expired_at = models.DateTimeField(default=get_expiry_time)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"OTP code for {self.email} (expires at {self.expired_at})"

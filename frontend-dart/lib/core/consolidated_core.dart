@@ -101,6 +101,12 @@ class AppValidators {
       return null;
     };
   }
+
+  static String? otp(String? value) {
+    if (value?.isEmpty ?? true) return 'Please enter OTP';
+    if (!RegExp(r'^\d{6}$').hasMatch(value!)) return 'OTP must be exactly 6 digits';
+    return null;
+  }
 }
 
 class ValidationUtils {
@@ -110,6 +116,7 @@ class ValidationUtils {
   static String? username(String? value) => AppValidators.username(value);
   static String? phoneNumber(String? value, {bool required = false}) => AppValidators.phoneNumber(value, required: required);
   static String? lengthRange(String? value, int min, int max, [String? fieldName]) => AppValidators.lengthRange(value, min, max, fieldName);
+  static String? otp(String? value) => AppValidators.otp(value);
 }
 
 class Validators {

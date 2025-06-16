@@ -76,9 +76,10 @@ class AuthProvider with ChangeNotifier {
     });
   }
 
-  Future<bool> signup(String username, String email, String password) async {
+  Future<bool> signup(String username, String email, String password, String otpStr) async {
+    int otp = int.parse(otpStr);
     return await _execute(() async {
-      final authResult = await _api.signup(username, email, password);
+      final authResult = await _api.signup(username, email, password, otp);
       _setUserData(authResult.token, authResult.user.id, authResult.user.username);
     });
   }
@@ -149,6 +150,26 @@ class AuthProvider with ChangeNotifier {
     final responseData = json.decode(response.body);
     if (response.statusCode != 200) {
       throw responseData;
+    }
+  }
+
+  Future<bool> signupEmailOtp(String? email) async {
+    try{
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await _api.signupEmailOtp(email);
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+
+    } catch (e) {
+        _errorMessage = e.toString();
+        _isLoading = false;
+        notifyListeners();
+        return false;
     }
   }
 
