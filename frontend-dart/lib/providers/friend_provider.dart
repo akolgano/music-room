@@ -1,10 +1,11 @@
 // lib/providers/friend_provider.dart
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../core/service_locator.dart';
+import '../services/friend_service.dart';
 import '../core/consolidated_core.dart';
 
 class FriendProvider with ChangeNotifier, StateManagement {
-  final ApiService _api = ApiService();
+  final FriendService _friendService = getIt<FriendService>();
   
   List<int> _friends = [];
   List<Map<String, dynamic>> _pendingRequests = [];
@@ -13,22 +14,22 @@ class FriendProvider with ChangeNotifier, StateManagement {
   List<Map<String, dynamic>> get pendingRequests => List.unmodifiable(_pendingRequests);
 
   Future<void> fetchFriends(String token) async {
-    final result = await executeAsync(() => _api.getFriends(token));
+    final result = await executeAsync(() => _friendService.getFriends(token));
     if (result != null) _friends = result;
   }
 
   Future<String?> sendFriendRequest(String token, int userId) async {
-    return await executeAsync(() => _api.sendFriendRequest(userId, token));
+    return await executeAsync(() => _friendService.sendFriendRequest(userId, token));
   }
 
   Future<void> fetchPendingRequests(String token) async {
-    final result = await executeAsync(() => _api.getPendingFriendRequests(token));
+    final result = await executeAsync(() => _friendService.getPendingFriendRequests(token));
     if (result != null) _pendingRequests = result;
   }
 
   Future<String?> acceptFriendRequest(String token, int friendshipId) async {
     return executeAsync(() async {
-      final message = await _api.acceptFriendRequest(friendshipId, token);
+      final message = await _friendService.acceptFriendRequest(friendshipId, token);
       final requestIndex = _pendingRequests.indexWhere((req) => 
         int.tryParse(req['id']?.toString() ?? '0') == friendshipId);
       if (requestIndex != -1) {
@@ -45,7 +46,7 @@ class FriendProvider with ChangeNotifier, StateManagement {
 
   Future<String?> rejectFriendRequest(String token, int friendshipId) async {
     return executeAsync(() async {
-      final message = await _api.rejectFriendRequest(friendshipId, token);
+      final message = await _friendService.rejectFriendRequest(friendshipId, token);
       _pendingRequests.removeWhere((req) => 
         int.tryParse(req['id']?.toString() ?? '0') == friendshipId);
       notifyListeners();
@@ -55,7 +56,7 @@ class FriendProvider with ChangeNotifier, StateManagement {
 
   Future<void> removeFriend(String token, int friendId) async {
     await executeAsync(() async {
-      await _api.removeFriend(friendId, token);
+      await _friendService.removeFriend(friendId, token);
       _friends.remove(friendId);
     });
   }

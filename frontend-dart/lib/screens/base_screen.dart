@@ -3,30 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../core/consolidated_core.dart';
+import '../widgets/app_widgets.dart';
 import '../utils/dialog_utils.dart';
-import '../widgets/unified_components.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
-  
   String get screenTitle;
   Widget buildContent();
   
   List<Widget> get actions => [];
   Widget? get floatingActionButton => null;
-  bool get showDrawer => true;
-  bool get isLoading => false;
+  bool get showBackButton => true;
+
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
 
-  void navigateTo(String route, {Object? arguments}) => Navigator.pushNamed(context, route, arguments: arguments);
+  void navigateTo(String route, {Object? arguments}) => 
+      Navigator.pushNamed(context, route, arguments: arguments);
   void navigateBack([dynamic result]) => Navigator.pop(context, result);
   void navigateToHome() => navigateTo(AppRoutes.home);
 
-  void showSuccess(String message) => UnifiedComponents.showSnackBar(context, message, backgroundColor: Colors.green);
-  void showError(String message) => UnifiedComponents.showSnackBar(context, message, backgroundColor: AppTheme.error);
-  void showInfo(String message) => UnifiedComponents.showSnackBar(context, message);
+  void showSuccess(String message) => AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
+  void showError(String message) => AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
+  void showInfo(String message) => AppWidgets.showSnackBar(context, message);
 
   Future<bool> showConfirmDialog(String title, String message, {bool isDangerous = false}) async =>
-      await DialogUtils.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous) ?? false;
+      await DialogUtils.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous);
 
   Future<String?> showTextInputDialog(String title, {String? initialValue, String? hintText}) async =>
       await DialogUtils.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText);
@@ -35,12 +35,10 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   Future<void> runAsyncAction(
     Future<void> Function() operation, {
-    String? loadingMessage,
     String? successMessage,
     String? errorMessage,
   }) async {
     try {
-      if (loadingMessage != null) showInfo(loadingMessage);
       await operation();
       if (successMessage != null) showSuccess(successMessage);
     } catch (e) {
@@ -48,64 +46,42 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     }
   }
 
-  Future<void> runAsync(Future<void> Function() operation) async {
-    try {
-      await operation();
-    } catch (e) {
-      showError(e.toString());
-    }
-  }
+  Widget buildLoadingState({String? message}) => AppWidgets.loading(message);
+  Widget buildErrorState({required String message, VoidCallback? onRetry, String? retryText}) => 
+      AppWidgets.errorState(message: message, onRetry: onRetry, retryText: retryText);
+  Widget buildEmptyState({required IconData icon, required String title, String? subtitle, String? buttonText, VoidCallback? onButtonPressed}) => 
+      AppWidgets.emptyState(icon: icon, title: title, subtitle: subtitle, buttonText: buttonText, onButtonPressed: onButtonPressed);
 
   Widget buildConsumerContent<P extends ChangeNotifier>({
-    required Widget Function(BuildContext, P) builder,
-    Widget Function(String)? errorBuilder,
-    Widget Function()? loadingBuilder,
-  }) => Consumer<P>(
-    builder: (context, provider, _) {
-      if (provider is StateManagement) {
-        if (provider.isLoading) return loadingBuilder?.call() ?? buildLoadingState();
-        if (provider.hasError) return errorBuilder?.call(provider.errorMessage!) ?? buildErrorState(message: provider.errorMessage!);
-      }
-      return builder(context, provider);
-    },
-  );
+    required Widget Function(BuildContext context, P provider) builder,
+  }) {
+    return Consumer<P>(builder: (context, provider, _) => builder(context, provider));
+  }
 
-  Widget buildListWithRefresh<I>({
-    required List<I> items,
-    required Widget Function(I, int) itemBuilder,
+  Widget buildListWithRefresh<E>({
+    required List<E> items,
+    required Widget Function(E, int) itemBuilder,
     required Future<void> Function() onRefresh,
     Widget? emptyState,
     EdgeInsets? padding,
   }) {
-    if (items.isEmpty && emptyState != null) {
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(height: MediaQuery.of(context).size.height * 0.6, child: emptyState),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
+    return AppWidgets.refreshableList<E>(
+      items: items,
+      itemBuilder: itemBuilder,
       onRefresh: onRefresh,
-      color: AppTheme.primary,
-      child: ListView.builder(
-        padding: padding ?? const EdgeInsets.all(16),
-        itemCount: items.length,
-        itemBuilder: (context, index) => itemBuilder(items[index], index),
-      ),
+      emptyState: emptyState,
+      padding: padding,
     );
   }
 
-  Widget buildListContent<I>({
-    required List<I> items,
-    required Widget Function(I, int) itemBuilder,
+  Widget buildListContent<E>({
+    required List<E> items,
+    required Widget Function(E, int) itemBuilder,
     required Future<void> Function() onRefresh,
     Widget? emptyState,
     EdgeInsets? padding,
   }) {
-    return buildListWithRefresh<I>(
+    return buildListWithRefresh<E>(
       items: items,
       itemBuilder: itemBuilder,
       onRefresh: onRefresh,
@@ -118,47 +94,49 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     required List<Tab> tabs,
     required List<Widget> tabViews,
     TabController? controller,
-  }) => DefaultTabController(
-    length: tabs.length,
-    child: Column(
-      children: [
-        TabBar(controller: controller, labelColor: AppTheme.primary, unselectedLabelColor: Colors.grey, tabs: tabs),
-        Expanded(child: TabBarView(controller: controller, children: tabViews)),
-      ],
-    ),
-  );
-
-  Widget buildTabScaffold({
-    required List<Tab> tabs,
-    required List<Widget> tabViews,
-    TabController? controller,
-  }) => buildTabContent(tabs: tabs, tabViews: tabViews, controller: controller);
-
-  Widget buildLoadingState({String? message}) => UnifiedComponents.loading(message);
-  
-  Widget buildErrorState({required String message, VoidCallback? onRetry, String? retryText}) => 
-      UnifiedComponents.error(message: message, onRetry: onRetry, retryText: retryText);
-
-  Widget buildEmptyState({required IconData icon, required String title, String? subtitle, String? buttonText, VoidCallback? onButtonPressed}) => 
-      UnifiedComponents.emptyState(icon: icon, title: title, subtitle: subtitle, buttonText: buttonText, onButtonPressed: onButtonPressed);
+  }) {
+    return AppWidgets.tabScaffold(
+      tabs: tabs,
+      tabViews: tabViews,
+      controller: controller,
+    );
+  }
 
   PreferredSizeWidget buildStandardAppBar({List<Widget>? actions}) {
     return AppBar(
       backgroundColor: AppTheme.background,
       title: Text(screenTitle),
-      actions: actions ?? this.actions,
+      actions: actions,
+      automaticallyImplyLeading: showBackButton,
     );
   }
 
-  PreferredSizeWidget? buildAppBar() {
-    return buildStandardAppBar();
+  Widget buildTabScaffold({
+    required List<Tab> tabs,
+    required List<Widget> tabViews,
+    TabController? controller,
+  }) {
+    return buildTabContent(
+      tabs: tabs,
+      tabViews: tabViews,
+      controller: controller,
+    );
+  }
+
+  Future<void> runAsync(Future<void> Function() operation) async {
+    await operation();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: buildAppBar(),
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: Text(screenTitle),
+        actions: actions,
+        automaticallyImplyLeading: showBackButton,
+      ),
       body: buildContent(),
       floatingActionButton: floatingActionButton,
     );

@@ -1,4 +1,4 @@
-// lib/screens/music/playlist_editor_screen.dart
+// lib/screens/playlists/playlist_editor_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -9,7 +9,9 @@ import '../../providers/playlist_license_provider.dart';
 import '../../models/models.dart';
 import '../../models/collaboration_models.dart'; 
 import '../../core/consolidated_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/widgets.dart'; 
+import '../../widgets/app_cards.dart';
+import '../../widgets/form_components.dart';
 import '../../services/websocket_service.dart';
 import '../../services/api_service.dart';
 import '../../services/music_player_service.dart';
@@ -213,7 +215,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
                 collaborator.permissions.map((p) => p.name).join(', '),
                 style: const TextStyle(color: Colors.grey),
               ),
-              trailing: StatusIndicator(
+              trailing: AppWidgets.statusIndicator(
                 isConnected: collaborator.isOnline,
                 connectedText: 'Online',
                 disconnectedText: 'Offline',
@@ -278,7 +280,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
                     );
                   }
                   
-                  return AppCards.track(
+                  return AppWidgets.trackCard(
                     key: ValueKey(track.id), 
                     track: track,
                     onTap: () => _playTrack(track),
