@@ -52,6 +52,81 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   Widget buildEmptyState({required IconData icon, required String title, String? subtitle, String? buttonText, VoidCallback? onButtonPressed}) => 
       AppWidgets.emptyState(icon: icon, title: title, subtitle: subtitle, buttonText: buttonText, onButtonPressed: onButtonPressed);
 
+  Widget buildConsumerContent<P extends ChangeNotifier>({
+    required Widget Function(BuildContext context, P provider) builder,
+  }) {
+    return Consumer<P>(builder: (context, provider, _) => builder(context, provider));
+  }
+
+  Widget buildListWithRefresh<E>({
+    required List<E> items,
+    required Widget Function(E, int) itemBuilder,
+    required Future<void> Function() onRefresh,
+    Widget? emptyState,
+    EdgeInsets? padding,
+  }) {
+    return AppWidgets.refreshableList<E>(
+      items: items,
+      itemBuilder: itemBuilder,
+      onRefresh: onRefresh,
+      emptyState: emptyState,
+      padding: padding,
+    );
+  }
+
+  Widget buildListContent<E>({
+    required List<E> items,
+    required Widget Function(E, int) itemBuilder,
+    required Future<void> Function() onRefresh,
+    Widget? emptyState,
+    EdgeInsets? padding,
+  }) {
+    return buildListWithRefresh<E>(
+      items: items,
+      itemBuilder: itemBuilder,
+      onRefresh: onRefresh,
+      emptyState: emptyState,
+      padding: padding,
+    );
+  }
+
+  Widget buildTabContent({
+    required List<Tab> tabs,
+    required List<Widget> tabViews,
+    TabController? controller,
+  }) {
+    return AppWidgets.tabScaffold(
+      tabs: tabs,
+      tabViews: tabViews,
+      controller: controller,
+    );
+  }
+
+  PreferredSizeWidget buildStandardAppBar({List<Widget>? actions}) {
+    return AppBar(
+      backgroundColor: AppTheme.background,
+      title: Text(screenTitle),
+      actions: actions,
+      automaticallyImplyLeading: showBackButton,
+    );
+  }
+
+  Widget buildTabScaffold({
+    required List<Tab> tabs,
+    required List<Widget> tabViews,
+    TabController? controller,
+  }) {
+    return buildTabContent(
+      tabs: tabs,
+      tabViews: tabViews,
+      controller: controller,
+    );
+  }
+
+  Future<void> runAsync(Future<void> Function() operation) async {
+    await operation();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -24,7 +24,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   String get screenTitle => 'Profile';
 
   @override
-  bool get showDrawer => !widget.isEmbedded;
+  bool get showBackButton => !widget.isEmbedded;
 
   @override
   void initState() {

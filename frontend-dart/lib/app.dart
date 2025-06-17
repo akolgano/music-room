@@ -7,26 +7,7 @@ import 'providers/auth_provider.dart';
 import 'providers/dynamic_theme_provider.dart';
 import 'services/music_player_service.dart';
 import 'widgets/app_widgets.dart';
-import 'screens/home/home_screen.dart';
-import 'screens/auth/auth_screen.dart';
-import 'screens/profile/profile_screen.dart';
-import 'screens/music/track_search_screen.dart';
-import 'screens/music/playlist_editor_screen.dart';
-import 'screens/playlists/playlists_screen.dart';
-import 'screens/friends/friends_list_screen.dart';
-import 'screens/friends/add_friend_screen.dart';
-import 'screens/friends/friend_request_screen.dart';
-import 'screens/devices/device_management_screen.dart';
-import 'screens/music/playlist_sharing_screen.dart';
-import 'screens/music/music_features_screen.dart';
-import 'screens/music/track_vote_screen.dart';
-import 'screens/music/control_delegation_screen.dart';
-import 'screens/music/player_screen.dart';
-import 'screens/music/track_selection_screen.dart';
-import 'screens/music/deezer_track_detail_screen.dart';
-import 'screens/profile/user_password_change_screen.dart';
-import 'screens/profile/social_network_link_screen.dart';
-import 'screens/profile/profile_info_screen.dart';
+import 'screens/screens.dart';
 import 'models/models.dart';
 
 class MusicRoomApp extends StatelessWidget {

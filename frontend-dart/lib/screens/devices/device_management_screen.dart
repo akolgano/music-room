@@ -8,6 +8,8 @@ import '../../core/consolidated_core.dart';
 import '../../models/models.dart';
 import '../../models/api_models.dart';
 import '../../widgets/widgets.dart'; 
+import '../../widgets/common_widgets.dart';
+import '../../widgets/app_cards.dart';
 import '../../services/api_service.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
@@ -50,11 +52,6 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
-  }
-
-  @override
-  PreferredSizeWidget? buildAppBar({List<Widget>? actions}) {
-    return buildStandardAppBar(actions: actions ?? this.actions);
   }
 
   @override
@@ -148,7 +145,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        StatusIndicator(
+                        AppWidgets.statusIndicator(
                           isConnected: device.isActive,
                           connectedText: 'Active',
                           disconnectedText: 'Inactive',
@@ -227,7 +224,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
             icon: Icons.info,
           ),
           const SizedBox(height: 16),
-          const SectionTitle('Delegate to Friends'),
+          AppWidgets.sectionTitle('Delegate to Friends'),
           const SizedBox(height: 8),
           if (_friends.isEmpty)
             buildEmptyState(
