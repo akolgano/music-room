@@ -49,17 +49,14 @@ class AuthService {
       try {
         final request = LogoutRequest(username: _currentUser!.username);
         await _api.logout('Token $_currentToken', request);
-      } catch (e) {
-      }
+      } catch (e) {}
     }
-    
     await _clearAuth();
   }
 
   Future<AuthResult> facebookLogin(String accessToken) async {
     final request = SocialLoginRequest(accessToken: accessToken);
     final result = await _api.facebookLogin(request);
-    
     await _storeAuth(result.token, result.user);
     return result;
   }
@@ -67,7 +64,6 @@ class AuthService {
   Future<AuthResult> googleLogin(String type, String idToken) async {
     final request = SocialLoginRequest(type: type, idToken: idToken);
     final result = await _api.googleLogin(request);
-    
     await _storeAuth(result.token, result.user);
     return result;
   }
@@ -75,7 +71,6 @@ class AuthService {
   Future<void> _storeAuth(String token, User user) async {
     _currentToken = token;
     _currentUser = user;
-    
     await _storage.set('auth_token', token);
     await _storage.set('current_user', user.toJson());
   }
@@ -83,9 +78,25 @@ class AuthService {
   Future<void> _clearAuth() async {
     _currentToken = null;
     _currentUser = null;
-    
     await _storage.delete('auth_token');
     await _storage.delete('current_user');
   }
-}
 
+  Future<void> sendSignupEmailOtp(String email) async {
+    final request = EmailOtpRequest(email: email);
+    await _api.sendSignupEmailOtp(request);
+  }
+
+  Future<AuthResult> signupWithOtp(String username, String email, String password, int otp) async {
+    final request = SignupWithOtpRequest(
+      username: username, 
+      email: email, 
+      password: password, 
+      otp: otp
+    );
+    final result = await _api.signupWithOtp(request);
+    
+    await _storeAuth(result.token, result.user);
+    return result;
+  }
+}

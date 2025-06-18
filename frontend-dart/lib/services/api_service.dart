@@ -159,13 +159,6 @@ class ApiService {
     return MessageResponse.fromJson(response.data);
   }
 
-  Future<PendingRequestsResponse> getPendingFriendRequests(String token) async {
-    final response = await _dio.get('/users/pending_friend_requests/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PendingRequestsResponse.fromJson(response.data);
-  }
-
   Future<MessageResponse> acceptFriendRequest(String token, FriendRequestActionRequest request) async {
     final response = await _dio.post('/users/accept_friend_request/',
       data: request.toJson(),
@@ -184,42 +177,6 @@ class ApiService {
 
   Future<void> removeFriend(String token, RemoveFriendRequest request) async {
     await _dio.post('/users/remove_friend/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<DevicesResponse> getUserDevices(String token) async {
-    final response = await _dio.get('/devices/user/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return DevicesResponse.fromJson(response.data);
-  }
-
-  Future<DevicesResponse> getAllUserDevices(String token) async {
-    final response = await _dio.get('/devices/all/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return DevicesResponse.fromJson(response.data);
-  }
-
-  Future<DeviceResponse> registerDevice(String token, RegisterDeviceRequest request) async {
-    final response = await _dio.post('/devices/register/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-    return DeviceResponse.fromJson(response.data);
-  }
-
-  Future<PermissionResponse> checkControlPermission(String deviceUuid, String token) async {
-    final response = await _dio.get('/devices/$deviceUuid/permission/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PermissionResponse.fromJson(response.data);
-  }
-
-  Future<void> delegateDeviceControl(String token, DelegateControlRequest request) async {
-    await _dio.post('/devices/delegate_control/',
       data: request.toJson(),
       options: Options(headers: {'Authorization': token})
     );
@@ -363,10 +320,7 @@ class ApiService {
   }
 
   Future<void> updateFriendInfo(String token, FriendInfoUpdateRequest request) async {
-    await _dio.post('/profile/friend/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
+    await _dio.post('/profile/friend/', data: request.toJson(), options: Options(headers: {'Authorization': token}));
   }
 
   Future<void> updateFriendInfoData(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {
@@ -375,10 +329,7 @@ class ApiService {
   }
 
   Future<void> updateMusicPreferences(String token, MusicPreferencesUpdateRequest request) async {
-    await _dio.post('/profile/music/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
+    await _dio.post('/profile/music/', data: request.toJson(), options: Options(headers: {'Authorization': token}));
   }
 
   Future<void> updateMusicPreferencesData(String? token, List<String>? musicPreferences) async {
@@ -408,5 +359,57 @@ class ApiService {
   Future<void> googleLinkData(String type, String? token, String idToken) async {
     final request = SocialLinkRequest(type: type, idToken: idToken);
     await googleLink(token!, request);
+  }
+
+  Future<void> sendSignupEmailOtp(EmailOtpRequest request) async {
+    await _dio.post('/users/signup_email_otp/', data: request.toJson());
+  }
+
+  Future<AuthResult> signupWithOtp(SignupWithOtpRequest request) async {
+    final response = await _dio.post('/users/signup/', data: request.toJson());
+    return AuthResult.fromJson(response.data);
+  }
+
+  Future<PendingRequestsResponse> getPendingFriendRequests(String token) async {
+    final response = await _dio.get('/users/pending_friend_requests/',
+      options: Options(headers: {'Authorization': token})
+    );
+    return PendingRequestsResponse.fromJson(response.data);
+  }
+
+  Future<DevicesResponse> getUserDevices(String token) async {
+    final response = await _dio.get('/devices/user/',
+      options: Options(headers: {'Authorization': token})
+    );
+    return DevicesResponse.fromJson(response.data);
+  }
+
+  Future<DevicesResponse> getAllUserDevices(String token) async {
+    final response = await _dio.get('/devices/all/',
+      options: Options(headers: {'Authorization': token})
+    );
+    return DevicesResponse.fromJson(response.data);
+  }
+
+  Future<DeviceResponse> registerDevice(String token, RegisterDeviceRequest request) async {
+    final response = await _dio.post('/devices/register/',
+      data: request.toJson(),
+      options: Options(headers: {'Authorization': token})
+    );
+    return DeviceResponse.fromJson(response.data);
+  }
+
+  Future<PermissionResponse> checkControlPermission(String deviceUuid, String token) async {
+    final response = await _dio.get('/devices/$deviceUuid/can-control/',
+      options: Options(headers: {'Authorization': token})
+    );
+    return PermissionResponse.fromJson(response.data);
+  }
+
+  Future<void> delegateDeviceControl(String token, DelegateControlRequest request) async {
+    await _dio.post('/devices/delegate/',
+      data: request.toJson(),
+      options: Options(headers: {'Authorization': token})
+    );
   }
 }

@@ -224,42 +224,6 @@ class RemoveFriendRequest {
   Map<String, dynamic> toJson() => {'friend_id': friendId};
 }
 
-class RegisterDeviceRequest {
-  final String uuid;
-  final String licenseKey;
-  final String deviceName;
-
-  const RegisterDeviceRequest({
-    required this.uuid,
-    required this.licenseKey,
-    required this.deviceName,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'uuid': uuid,
-    'license_key': licenseKey,
-    'device_name': deviceName,
-  };
-}
-
-class DelegateControlRequest {
-  final String deviceUuid;
-  final int delegateUserId;
-  final bool canControl;
-
-  const DelegateControlRequest({
-    required this.deviceUuid,
-    required this.delegateUserId,
-    required this.canControl,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'device_uuid': deviceUuid,
-    'delegate_user_id': delegateUserId,
-    'can_control': canControl,
-  };
-}
-
 class PasswordChangeRequest {
   final String currentPassword;
   final String newPassword;
@@ -479,38 +443,6 @@ class MessageResponse {
   );
 }
 
-class DevicesResponse {
-  final List<Device> devices;
-
-  const DevicesResponse({required this.devices});
-
-  factory DevicesResponse.fromJson(Map<String, dynamic> json) => DevicesResponse(
-    devices: (json['devices'] as List<dynamic>)
-        .map((d) => Device.fromJson(d as Map<String, dynamic>))
-        .toList(),
-  );
-}
-
-class DeviceResponse {
-  final Device device;
-
-  const DeviceResponse({required this.device});
-
-  factory DeviceResponse.fromJson(Map<String, dynamic> json) => DeviceResponse(
-    device: Device.fromJson(json['device'] as Map<String, dynamic>),
-  );
-}
-
-class PermissionResponse {
-  final bool canControl;
-
-  const PermissionResponse({required this.canControl});
-
-  factory PermissionResponse.fromJson(Map<String, dynamic> json) => PermissionResponse(
-    canControl: json['can_control'] as bool,
-  );
-}
-
 class UserResponse {
   final String id;
   final String username;
@@ -567,14 +499,7 @@ class ProfilePrivateResponse {
   final String? country;
   final String? postalCode;
 
-  const ProfilePrivateResponse({
-    this.firstName,
-    this.lastName,
-    this.phone,
-    this.street,
-    this.country,
-    this.postalCode,
-  });
+  const ProfilePrivateResponse({this.firstName, this.lastName, this.phone, this.street, this.country, this.postalCode});
 
   factory ProfilePrivateResponse.fromJson(Map<String, dynamic> json) => ProfilePrivateResponse(
     firstName: json['first_name'] as String?,
@@ -591,11 +516,7 @@ class ProfileFriendResponse {
   final List<String>? hobbies;
   final String? friendInfo;
 
-  const ProfileFriendResponse({
-    this.dob,
-    this.hobbies,
-    this.friendInfo,
-  });
+  const ProfileFriendResponse({this.dob, this.hobbies, this.friendInfo});
 
   factory ProfileFriendResponse.fromJson(Map<String, dynamic> json) => ProfileFriendResponse(
     dob: json['dob'] as String?,
@@ -606,10 +527,106 @@ class ProfileFriendResponse {
 
 class ProfileMusicResponse {
   final List<String>? musicPreferences;
-
   const ProfileMusicResponse({this.musicPreferences});
 
   factory ProfileMusicResponse.fromJson(Map<String, dynamic> json) => ProfileMusicResponse(
     musicPreferences: (json['music_preferences'] as List<dynamic>?)?.cast<String>(),
+  );
+}
+
+class EmailOtpRequest {
+  final String email;
+
+  const EmailOtpRequest({required this.email});
+
+  Map<String, dynamic> toJson() => {'email': email};
+}
+
+class SignupWithOtpRequest {
+  final String username;
+  final String email;
+  final String password;
+  final int otp;
+
+  const SignupWithOtpRequest({
+    required this.username,
+    required this.email,
+    required this.password,
+    required this.otp,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'username': username,
+    'email': email,
+    'password': password,
+    'otp': otp,
+  };
+}
+
+class RegisterDeviceRequest {
+  final String uuid;
+  final String licenseKey;
+  final String deviceName;
+
+  const RegisterDeviceRequest({
+    required this.uuid,
+    required this.licenseKey,
+    required this.deviceName,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'uuid': uuid,
+    'license_key': licenseKey,
+    'device_name': deviceName,
+  };
+}
+
+class DelegateControlRequest {
+  final String deviceUuid;
+  final int delegateUserId;
+  final bool canControl;
+
+  const DelegateControlRequest({
+    required this.deviceUuid,
+    required this.delegateUserId,
+    required this.canControl,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'device_uuid': deviceUuid,
+    'delegate_user_id': delegateUserId,
+    'can_control': canControl,
+  };
+}
+
+class DevicesResponse {
+  final List<Device> devices;
+
+  const DevicesResponse({required this.devices});
+
+  factory DevicesResponse.fromJson(Map<String, dynamic> json) => DevicesResponse(
+    devices: (json['devices'] as List<dynamic>?)
+        ?.map((d) => Device.fromJson(d as Map<String, dynamic>))
+        .toList() ?? [],
+  );
+}
+
+class DeviceResponse {
+  final Device device;
+
+  const DeviceResponse({required this.device});
+
+  factory DeviceResponse.fromJson(Map<String, dynamic> json) => DeviceResponse(
+    device: Device.fromJson(json['device'] as Map<String, dynamic>),
+  );
+}
+
+class PermissionResponse {
+  final bool canControl;
+
+  const PermissionResponse({required this.canControl});
+
+  factory PermissionResponse.fromJson(Map<String, dynamic> json) => PermissionResponse(
+    canControl: json['can_control'] as bool,
   );
 }

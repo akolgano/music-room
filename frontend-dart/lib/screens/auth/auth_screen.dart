@@ -6,6 +6,7 @@ import '../../core/consolidated_core.dart';
 import '../../core/async_helpers.dart';
 import '../../core/form_helpers.dart';
 import '../../widgets/app_widgets.dart';
+import 'signup_with_otp_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -153,10 +154,19 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       );
 
   Widget _buildModeToggle() => TextButton(
-    onPressed: () => setState(() {
-      _isLogin = !_isLogin;
-      _clearForm();
-    }),
+    onPressed: () {
+      if (_isLogin) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SignupWithOtpScreen()),
+        );
+      } else {
+        setState(() {
+          _isLogin = true;
+          _clearForm();
+        });
+      }
+    },
     child: RichText(
       text: TextSpan(
         style: const TextStyle(color: AppTheme.textSecondary),
