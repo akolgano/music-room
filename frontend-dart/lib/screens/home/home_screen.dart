@@ -143,10 +143,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 playlist: playlist,
                 onTap: () => Navigator.pushNamed(
                   context, 
-                  AppRoutes.playlistEditor, 
+                  AppRoutes.playlistDetail, 
                   arguments: playlist.id,
                 ),
-                onPlay: () => _showInfo('Playing ${playlist.name}'),
+                onPlay: () => _playPlaylist(playlist),
+                showPlayButton: true,
               );
             },
           ),
@@ -170,6 +171,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     } catch (e) {
       _showError('Failed to load data: $e');
     }
+  }
+
+  void _playPlaylist(Playlist playlist) {
+    _showInfo('Playing "${playlist.name}"');
   }
 
   void _showInfo(String message) {

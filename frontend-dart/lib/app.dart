@@ -26,8 +26,7 @@ class MusicRoomApp extends StatelessWidget {
             child: _AppScaffold(child: child!),
           ),
           home: Consumer<AuthProvider>(
-            builder: (context, auth, _) => 
-              auth.isLoggedIn ? const HomeScreen() : const AuthScreen(),
+            builder: (context, auth, _) => auth.isLoggedIn ? const HomeScreen() : const AuthScreen(),
           ),
           routes: AppBuilder.buildRoutes(),
           onGenerateRoute: AppBuilder.generateRoute,
@@ -68,9 +67,7 @@ class _AppScaffold extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (context) => const _PlayerBottomSheet(),
     );
   }
@@ -103,7 +100,6 @@ class _PlayerBottomSheet extends StatelessWidget {
                 builder: (context, playerService, _) {
                   final track = playerService.currentTrack;
                   if (track == null) return const SizedBox.shrink();
-
                   return _buildTrackCard(track, playerService, themeProvider);
                 },
               ),
@@ -201,10 +197,7 @@ class _PlayerBottomSheet extends StatelessWidget {
   Widget _buildPlayButton(MusicPlayerService playerService, DynamicThemeProvider themeProvider) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      decoration: BoxDecoration(
-        color: themeProvider.primaryColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(color: themeProvider.primaryColor, borderRadius: BorderRadius.circular(20)),
       child: IconButton(
         onPressed: playerService.togglePlay,
         icon: Icon(

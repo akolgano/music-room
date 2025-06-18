@@ -7,13 +7,30 @@ import '../models/api_models.dart';
 import '../core/consolidated_core.dart';
 
 class AuthProvider with ChangeNotifier {
-  final AuthService _authService = getIt<AuthService>();
+  late final AuthService _authService;
   
   bool _isLoading = false;
   String? _errorMessage;
 
+  AuthProvider() {
+    try {
+      _authService = getIt<AuthService>();
+      _initializeAuthState();
+    } catch (e) {
+      print('Error initializing AuthProvider: $e');
+      _authService = getIt<AuthService>();
+    }
+  }
+
+  Future<void> _initializeAuthState() async {
+    try {
+      notifyListeners();
+    } catch (e) {
+      print('Error loading stored auth state: $e');
+    }
+  }
+  
   bool get isLoggedIn => _authService.isLoggedIn;
-  String? get token => _authService.currentToken;
   String? get userId => _authService.currentUser?.id;
   String? get username => _authService.currentUser?.username;
   String get displayName => username ?? 'User';
@@ -21,8 +38,12 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
-
   User? get currentUser => _authService.currentUser;
+
+  String? get token {
+    final currentToken = _authService.currentToken;
+    return currentToken;
+  }
 
   Map<String, String> get authHeaders => {
     'Content-Type': 'application/json',

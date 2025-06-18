@@ -1,4 +1,5 @@
 // lib/screens/auth/signup_with_otp_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -24,6 +25,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   bool _otpSent = false;
   bool _canResendOtp = true;
   int _resendCountdown = 0;
+  Timer? _countdownTimer;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +120,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                     onPressed: () => setState(() {
                       _otpSent = false;
                       _otpController.clear();
+                      _stopCountdown();
                     }),
                     child: const Text('Change Email', style: TextStyle(color: Colors.white)),
                   ),
@@ -192,16 +195,32 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   }
 
   void _startResendCountdown() {
-    Stream.periodic(const Duration(seconds: 1))
-        .take(60)
-        .listen((tick) {
-      setState(() {
-        _resendCountdown = (60 - tick - 1).toInt(); // Fixed: explicitly convert to int
-        if (_resendCountdown <= 0) {
-          _canResendOtp = true;
-        }
-      });
+    _stopCountdown(); 
+    
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {  
+        setState(() {
+          _resendCountdown--;
+          if (_resendCountdown <= 0) {
+            _canResendOtp = true;
+            timer.cancel();
+          }
+        });
+      } else {
+        timer.cancel();
+      }
     });
+  }
+
+  void _stopCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    if (mounted) {
+      setState(() {
+        _canResendOtp = true;
+        _resendCountdown = 0;
+      });
+    }
   }
 
   void _showSuccess(String message) {
@@ -214,6 +233,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   @override
   void dispose() {
+    _stopCountdown();
     _emailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
