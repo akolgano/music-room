@@ -7,75 +7,40 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audioplayers: ^6.4.0
-  audio_session: ^0.2.2
   auto_size_text: ^3.0.0
   cached_network_image: ^3.4.1
-  connectivity_plus: ^6.1.4
   cupertino_icons: ^1.0.8
-  easy_localization: ^3.0.3
-  flutter_dotenv: ^5.2.1
-  flutter_riverpod: ^2.4.9
-  flutter_form_builder: ^10.0.1
+  flutter_screenutil: ^5.9.3
   flutter_staggered_animations: ^1.1.1
-  form_builder_validators: ^11.1.2
-  validators: ^3.0.0
-  form_validator: ^2.1.1  
-  gap: ^3.0.1
-  hooks_riverpod: ^2.4.9
-  http: ^1.4.0
-  palette_generator: ^0.3.3+3
-  intl: ^0.20.2
+  shimmer: ^3.0.0
+  connectivity_plus: ^6.1.4
+  dio: ^5.8.0+1
+  pretty_dio_logger: ^1.4.0
+  web_socket_channel: ^3.0.3
   just_audio: ^0.10.0
   just_audio_web: ^0.4.9
-  provider: ^6.1.4
-  shared_preferences: ^2.5.3
-  uuid: ^4.5.1
-  sentry_flutter: ^8.14.2
-  web_socket_channel: ^3.0.3
-  flutter_facebook_auth: ^7.1.1
-  google_sign_in: ^6.3.0
-  google_sign_in_web: ^0.12.4+4
-  google_sign_in_platform_interface: ^2.5.0
-  js: ^0.6.7
-  image_picker: ^1.1.2
-  mime: ^2.0.0
-  riverpod: ^2.4.9
-  freezed_annotation: ^2.4.4
-  dio: ^5.8.0+1
-  retrofit: ^4.4.2
-  pretty_dio_logger: ^1.4.0
-  reactive_forms: ^16.1.1
-  go_router: ^13.0.0
-  animations: ^2.0.8
-  shimmer: ^3.0.0
-  lottie: ^3.3.1
-  dartz: ^0.10.1
-  equatable: ^2.0.5
-  build_runner: ^2.4.15
-  get_it: ^8.0.3
-  json_annotation: ^4.9.0
-  flutter_screenutil: ^5.9.3
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  logger: ^2.5.0
-  styled_widget: ^0.4.1
+  get_it: ^8.0.3
+  provider: ^6.1.4
+  flutter_facebook_auth: ^7.1.1
+  google_sign_in: ^6.3.0
+  google_sign_in_platform_interface: ^2.5.0
+  google_sign_in_web: ^0.12.4+4
+  flutter_dotenv: ^5.2.1
+  form_validator: ^2.1.1
+  intl: ^0.20.2
+  palette_generator: ^0.3.3+3
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
   build_runner: ^2.4.7
-  freezed: ^2.4.6
-  json_serializable: ^6.7.1
-  retrofit_generator: ^9.2.0
-  riverpod_generator: ^2.3.9
-  auto_route_generator: ^7.3.2
+  flutter_lints: ^6.0.0
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
     - .env
-
   fonts:
     - family: Gotham
       fonts:
@@ -85,15 +50,3 @@ flutter:
           weight: 500
         - asset: assets/fonts/GothamBook.ttf
           weight: 400
-build_runner:
-  builders:
-    freezed:
-      enabled: true
-    json_serializable:
-      enabled: true
-    retrofit_generator:
-      enabled: true
-    riverpod_generator:
-      enabled: true
-    auto_route_generator:
-      enabled: true

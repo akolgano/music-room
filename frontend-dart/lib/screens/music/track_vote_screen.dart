@@ -9,10 +9,7 @@ class MusicTrackVoteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Track Voting'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Track Voting')),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

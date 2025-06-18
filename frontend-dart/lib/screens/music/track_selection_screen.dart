@@ -4,17 +4,13 @@ import '../../core/consolidated_core.dart';
 
 class TrackSelectionScreen extends StatelessWidget {
   final String? playlistId;
-  
   const TrackSelectionScreen({Key? key, this.playlistId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Track Selection'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Track Selection')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

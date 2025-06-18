@@ -1,13 +1,7 @@
 // lib/models/collaboration_models.dart
 import 'package:flutter/material.dart';
 
-enum ConflictType {
-  trackAdd,
-  trackRemove,
-  trackMove,
-  playlistEdit,
-  permission,
-}
+enum ConflictType {trackAdd, trackRemove, trackMove, playlistEdit, permission}
 
 class PlaylistOperation {
   final String id;
@@ -56,12 +50,7 @@ class PlaylistOperation {
   }
 }
 
-enum PermissionType {
-  edit,
-  view,
-  comment,
-  share,
-}
+enum PermissionType {edit, view, comment, share}
 
 class PlaylistPermission {
   final PermissionType type;

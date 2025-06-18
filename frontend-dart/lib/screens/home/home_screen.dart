@@ -11,7 +11,6 @@ import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -139,13 +138,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             itemCount: music.playlists.length,
             itemBuilder: (context, index) {
               final playlist = music.playlists[index];
+              print('Playlist ID: ${playlist.id}, Name: ${playlist.name}'); 
+              
               return AppWidgets.playlistCard(
                 playlist: playlist,
-                onTap: () => Navigator.pushNamed(
-                  context, 
-                  AppRoutes.playlistDetail, 
-                  arguments: playlist.id,
-                ),
+                onTap: () {
+                  print('Navigating to playlist with ID: ${playlist.id}'); 
+                  if (playlist.id.isNotEmpty && playlist.id != 'null') {
+                    Navigator.pushNamed(
+                      context, 
+                      AppRoutes.playlistDetail, 
+                      arguments: playlist.id,
+                    );
+                  } else {
+                    _showError('Invalid playlist ID');
+                  }
+                },
                 onPlay: () => _playPlaylist(playlist),
                 showPlayButton: true,
               );

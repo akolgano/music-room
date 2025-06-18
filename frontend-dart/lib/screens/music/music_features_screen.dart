@@ -11,10 +11,7 @@ class MusicFeaturesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Music Features'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Music Features')),
       body: SingleChildScrollView(
         padding: AppSizes.screenPadding,
         child: Column(

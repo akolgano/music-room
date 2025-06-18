@@ -65,13 +65,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     Widget? emptyState,
     EdgeInsets? padding,
   }) {
-    return AppWidgets.refreshableList<E>(
-      items: items,
-      itemBuilder: itemBuilder,
-      onRefresh: onRefresh,
-      emptyState: emptyState,
-      padding: padding,
-    );
+    return AppWidgets.refreshableList<E>(items: items, itemBuilder: itemBuilder, onRefresh: onRefresh, emptyState: emptyState, padding: padding);
   }
 
   Widget buildListContent<E>({

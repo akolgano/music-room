@@ -33,17 +33,6 @@ class AppCards {
     onSelectionChanged: onSelectionChanged,
   );
 
-  static Widget info({
-    required String title,
-    required String message,
-    required IconData icon,
-    Color color = AppTheme.primary,
-    VoidCallback? onTap,
-  }) => AppWidgets.infoBanner(
-    title: title,
-    message: message,
-    icon: icon,
-    color: color,
-    onAction: onTap,
-  );
+  static Widget info({required String title, required String message, required IconData icon, Color color = AppTheme.primary, VoidCallback? onTap})
+    => AppWidgets.infoBanner(title: title, message: message, icon: icon, color: color, onAction: onTap);
 }

@@ -39,16 +39,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         onPressed: () => navigateTo(AppRoutes.playlistEditor, arguments: widget.playlistId),
         tooltip: 'Edit Playlist',
       ),
-    IconButton(
-      icon: const Icon(Icons.share),
-      onPressed: _sharePlaylist,
-      tooltip: 'Share Playlist',
-    ),
-    IconButton(
-      icon: const Icon(Icons.refresh),
-      onPressed: _loadData,
-      tooltip: 'Refresh',
-    ),
+    IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
+    IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData, tooltip: 'Refresh'),
   ];
 
   @override
@@ -71,9 +63,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   Widget buildContent() {
-    if (_playlist == null) {
-      return buildLoadingState(message: 'Loading playlist...');
-    }
+    if (_playlist == null) return buildLoadingState(message: 'Loading playlist...');
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -135,10 +125,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primary.withOpacity(0.8),
-                  AppTheme.primary.withOpacity(0.4),
-                ],
+                colors: [AppTheme.primary.withOpacity(0.8), AppTheme.primary.withOpacity(0.4)],
               ),
               boxShadow: [
                 BoxShadow(
@@ -475,36 +462,53 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     });
 
     _webSocketService.operationsStream.listen((operation) {
-      if (mounted) {
-        _loadData(); 
-      }
+      if (mounted) _loadData();
     });
   }
 
   Future<void> _loadData() async {
-    await runAsyncAction(
-      () async {
-        final musicProvider = getProvider<MusicProvider>();
-        
-        _playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
-        
-        if (_playlist != null) {
+    print('Loading playlist data for ID: ${widget.playlistId}');
+    
+    setState(() {});
+    
+    try {
+      final musicProvider = getProvider<MusicProvider>();
+      
+      print('Fetching playlist details...'); 
+      final playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
+      print('Playlist loaded: ${playlist?.name ?? 'null'}'); 
+      
+      if (playlist != null) {
+        setState(() {
+          _playlist = playlist;
           _isOwner = _playlist!.creator == auth.username;
-          
-          await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
+        });
+        
+        print('Is owner: $_isOwner, Creator: ${_playlist!.creator}, Username: ${auth.username}'); 
+        
+        print('Fetching playlist tracks...'); 
+        await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
+        
+        setState(() {
           _tracks = musicProvider.playlistTracks;
-          
-          if (_webSocketService.currentPlaylistId != widget.playlistId) {
-            await _webSocketService.connectToPlaylist(
-              widget.playlistId,
-              auth.userId!,
-              auth.token!,
-            );
-          }
+        });
+        
+        print('Tracks loaded: ${_tracks.length}'); 
+        
+        if (_webSocketService.currentPlaylistId != widget.playlistId) {
+          print('Connecting to WebSocket...'); 
+          await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
         }
-      },
-      errorMessage: 'Failed to load playlist details',
-    );
+      } else {
+        print('Playlist is null after loading!'); 
+        showError('Failed to load playlist data');
+      }
+      
+      print('Load data completed. Playlist: ${_playlist?.name}, Tracks: ${_tracks.length}'); 
+    } catch (e) {
+      print('Error loading data: $e');
+      showError('Failed to load playlist details: $e');
+    }
   }
 
   Future<void> _playPlaylist() async {
@@ -512,7 +516,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       showInfo('No tracks to play');
       return;
     }
-    
     await _playTrackAt(0);
     showInfo('Playing "${_playlist!.name}"');
   }
@@ -522,7 +525,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       showInfo('No tracks to shuffle');
       return;
     }
-    
     showInfo('Shuffling "${_playlist!.name}"');
   }
 
@@ -558,20 +560,13 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Future<void> _removeTrack(String trackId) async {
     if (!_isOwner) return;
     
-    final confirmed = await showConfirmDialog(
-      'Remove Track',
-      'Remove this track from the playlist?',
-    );
+    final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
     
     if (confirmed) {
       await runAsyncAction(
         () async {
           final musicProvider = getProvider<MusicProvider>();
-          await musicProvider.removeTrackFromPlaylist(
-            playlistId: widget.playlistId,
-            trackId: trackId,
-            token: auth.token!,
-          );
+          await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId, trackId: trackId, token: auth.token!);
           await _loadData(); 
         },
         successMessage: 'Track removed from playlist',
@@ -581,9 +576,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   void _sharePlaylist() {
-    if (_playlist != null) {
-      navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
-    }
+    if (_playlist != null) navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
   }
 
   @override

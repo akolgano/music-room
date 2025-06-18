@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
+import '../../services/music_player_service.dart';
 import '../../models/models.dart';
 import '../../core/consolidated_core.dart';
 import '../../widgets/widgets.dart';
@@ -22,6 +23,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   bool _isPublic = false;
   bool _isLoading = false;
   Playlist? _playlist;
+  List<PlaylistTrack> _tracks = [];
+  
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
 
   @override
@@ -39,7 +42,9 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   @override
   void initState() {
     super.initState();
-    if (_isEditMode) WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
+    if (_isEditMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
+    }
   }
 
   @override
@@ -122,45 +127,63 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
                   isLoading: _isLoading,
                 ),
               ),
-              Text('${_tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
             ],
           ),
-          const SizedBox(height: 12),
-          _tracks.isEmpty 
-            ? const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Icon(Icons.music_note, size: 48, color: Colors.grey),
-                      SizedBox(height: 8),
-                      Text('No tracks yet', style: TextStyle(color: Colors.grey)),
-                    ],
+          if (_isEditMode) ...[
+            const SizedBox(height: 24),
+            const Divider(color: Colors.grey),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Playlist Tracks',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-              )
-            : ReorderableListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _tracks.length,
-                onReorder: _reorderTracks,
-                itemBuilder: (context, index) {
-                  final track = _tracks[index].track;
-                  return track == null 
-                    ? ListTile(
-                        key: ValueKey(_tracks[index].trackId),
-                        title: Text(_tracks[index].name, style: const TextStyle(color: Colors.white)),
-                        subtitle: const Text('Track unavailable', style: TextStyle(color: Colors.grey)),
-                      )
-                    : AppWidgets.trackCard(
-                        key: ValueKey(track.id),
-                        track: track,
-                        onTap: () => _playTrack(track),
-                        onRemove: () => _removeTrack(track.id),
-                        showAddButton: false,
-                      );
-                },
-              ),
+                Text('${_tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _tracks.isEmpty 
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Icon(Icons.music_note, size: 48, color: Colors.grey),
+                        SizedBox(height: 8),
+                        Text('No tracks yet', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                )
+              : ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _tracks.length,
+                  onReorder: _reorderTracks,
+                  itemBuilder: (context, index) {
+                    final track = _tracks[index].track;
+                    return track == null 
+                      ? ListTile(
+                          key: ValueKey(_tracks[index].trackId),
+                          title: Text(_tracks[index].name, style: const TextStyle(color: Colors.white)),
+                          subtitle: const Text('Track unavailable', style: TextStyle(color: Colors.grey)),
+                        )
+                      : AppWidgets.trackCard(
+                          key: ValueKey(track.id),
+                          track: track,
+                          onTap: () => _playTrack(track),
+                          onRemove: () => _removeTrack(track.id),
+                          showAddButton: false,
+                        );
+                  },
+                ),
+          ],
         ],
       ),
     );
@@ -178,6 +201,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         _nameController.text = _playlist!.name;
         _descriptionController.text = _playlist!.description;
         _isPublic = _playlist!.isPublic;
+        await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
+        _tracks = musicProvider.playlistTracks;
       }
     } catch (e) {
       showError('Failed to load playlist: $e');
@@ -252,6 +277,78 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       setState(() => _isLoading = false);
     }
   }
+
+  void _reorderTracks(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final PlaylistTrack item = _tracks.removeAt(oldIndex);
+      _tracks.insert(newIndex, item);
+    });
+    _updateTrackOrder(oldIndex, newIndex);
+  }
+
+  Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
+    if (!_isEditMode) return;
+    
+    try {
+      final musicProvider = getProvider<MusicProvider>();
+      await musicProvider.moveTrackInPlaylist(
+        playlistId: widget.playlistId!,
+        rangeStart: oldIndex,
+        insertBefore: newIndex,
+        token: auth.token!,
+      );
+    } catch (e) {
+      showError('Failed to update track order: $e');
+      await _loadPlaylistData();
+    }
+  }
+
+  Future<void> _playTrack(Track track) async {
+    try {
+      final playerService = getProvider<MusicPlayerService>();
+      
+      String? previewUrl = track.previewUrl;
+      if (previewUrl == null && track.deezerTrackId != null) {
+        final musicProvider = getProvider<MusicProvider>();
+        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
+      }
+      
+      if (previewUrl != null && previewUrl.isNotEmpty) {
+        await playerService.playTrack(track, previewUrl);
+        showSuccess('Playing "${track.name}"');
+      } else {
+        showInfo('No preview available for "${track.name}"');
+      }
+    } catch (e) {
+      showError('Failed to play track: $e');
+    }
+  }
+
+  Future<void> _removeTrack(String trackId) async {
+    if (!_isEditMode) return;
+    
+    final confirmed = await showConfirmDialog(
+      'Remove Track',
+      'Remove this track from the playlist?',
+    );
+    
+    if (confirmed) {
+      await runAsyncAction(
+        () async {
+          final musicProvider = getProvider<MusicProvider>();
+          await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId!, trackId: trackId, token: auth.token!);
+          await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
+          _tracks = musicProvider.playlistTracks;
+        },
+        successMessage: 'Track removed from playlist',
+        errorMessage: 'Failed to remove track',
+      );
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();

@@ -5,15 +5,8 @@ class LoginRequest {
   final String username;
   final String password;
 
-  const LoginRequest({
-    required this.username,
-    required this.password,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'username': username,
-    'password': password,
-  };
+  const LoginRequest({required this.username, required this.password});
+  Map<String, dynamic> toJson() => {'username': username, 'password': password};
 }
 
 class SignupRequest {
@@ -348,9 +341,13 @@ class PlaylistDetailResponse {
 
   const PlaylistDetailResponse({required this.playlist});
 
-  factory PlaylistDetailResponse.fromJson(Map<String, dynamic> json) => PlaylistDetailResponse(
-    playlist: Playlist.fromJson(json['playlist'] as Map<String, dynamic>),
-  );
+  factory PlaylistDetailResponse.fromJson(Map<String, dynamic> json) {
+    dynamic playlistData = json['playlist'];
+    
+    if (playlistData is List && playlistData.isNotEmpty) playlistData = playlistData[0];
+    
+    return PlaylistDetailResponse(playlist: Playlist.fromJson(playlistData as Map<String, dynamic>));
+  }
 }
 
 class CreatePlaylistResponse {

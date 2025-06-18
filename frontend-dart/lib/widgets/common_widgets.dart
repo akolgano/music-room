@@ -28,11 +28,7 @@ class CommonWidgets {
     VoidCallback? onRetry,
     String? retryText,
   }) {
-    return AppWidgets.errorState(
-      message: message,
-      onRetry: onRetry,
-      retryText: retryText,
-    );
+    return AppWidgets.errorState(message: message, onRetry: onRetry, retryText: retryText);
   }
 
   static Widget statusIndicator({

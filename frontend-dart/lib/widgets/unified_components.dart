@@ -31,13 +31,7 @@ class UnifiedComponents {
     showPlayButton: showPlayButton,
   );
 
-  static Widget settingsSection({
-    required String title,
-    required List<Widget> items,
-  }) => AppWidgets.settingsSection(
-    title: title,
-    items: items,
-  );
+  static Widget settingsSection({required String title, required List<Widget> items}) => AppWidgets.settingsSection(title: title, items: items);
 
   static Widget settingsItem({
     required IconData icon,
