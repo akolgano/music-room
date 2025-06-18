@@ -176,96 +176,139 @@ class AppTheme {
   static const error = Color(0xFFE91429);
   static const success = Color(0xFF00C851);
 
-  static ThemeData get darkTheme => ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    primaryColor: primary,
-    scaffoldBackgroundColor: background,
-    cardColor: surface,
-    colorScheme: const ColorScheme.dark(
-      primary: primary,
-      surface: surface,
-      background: background,
-      error: error,
-      onPrimary: Colors.white,
-      onSurface: onSurface,
-      onBackground: Colors.white,
-    ),
-    appBarTheme: const AppBarTheme(backgroundColor: background, foregroundColor: Colors.white, elevation: 0),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primary,
-        foregroundColor: Colors.black,
-        minimumSize: const Size(88, 50), 
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+  static ThemeData _buildTheme({bool responsive = false}) {
+    double fontSize(double size) => responsive && !kIsWeb ? size.sp : size;
+    double dimension(double size) => responsive && !kIsWeb ? size.w : size;
+    double radius(double size) => responsive && !kIsWeb ? size.r : size;
+    EdgeInsets padding(double size) => responsive && !kIsWeb ? EdgeInsets.all(size.w) : EdgeInsets.all(size);
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      primaryColor: primary,
+      scaffoldBackgroundColor: background,
+      cardColor: surface,
+      colorScheme: const ColorScheme.dark(
+        primary: primary,
+        surface: surface,
+        background: background,
+        error: error,
+        onPrimary: Colors.white,
+        onSurface: onSurface,
+        onBackground: Colors.white,
       ),
-    ),
-  );
-
-  static ThemeData getResponsiveDarkTheme() => ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    primaryColor: primary,
-    scaffoldBackgroundColor: background,
-    cardColor: surface,
-    colorScheme: const ColorScheme.dark(
-      primary: primary,
-      surface: surface,
-      background: background,
-      error: error,
-      onPrimary: Colors.white,
-      onSurface: onSurface,
-      onBackground: Colors.white,
-    ),
-    appBarTheme: const AppBarTheme(backgroundColor: background, foregroundColor: Colors.white, elevation: 0),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primary,
-        foregroundColor: Colors.black,
-        minimumSize: Size(88.w, 50.h), 
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.r)),
+      appBarTheme: AppBarTheme(
+        backgroundColor: background, 
+        foregroundColor: Colors.white, 
+        elevation: 0,
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize(20),
+          fontWeight: FontWeight.w600,
+        ),
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.black,
+          minimumSize: Size(dimension(88), dimension(50)), 
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius(25))),
+          textStyle: TextStyle(fontSize: fontSize(16), fontWeight: FontWeight.w600),
+        ),
+      ),
+      textTheme: TextTheme(
+        displayLarge: TextStyle(fontSize: fontSize(32), fontWeight: FontWeight.bold, color: Colors.white),
+        displayMedium: TextStyle(fontSize: fontSize(28), fontWeight: FontWeight.bold, color: Colors.white),
+        displaySmall: TextStyle(fontSize: fontSize(24), fontWeight: FontWeight.bold, color: Colors.white),
+        headlineLarge: TextStyle(fontSize: fontSize(22), fontWeight: FontWeight.w600, color: Colors.white),
+        headlineMedium: TextStyle(fontSize: fontSize(20), fontWeight: FontWeight.w600, color: Colors.white),
+        headlineSmall: TextStyle(fontSize: fontSize(18), fontWeight: FontWeight.w600, color: Colors.white),
+        titleLarge: TextStyle(fontSize: fontSize(16), fontWeight: FontWeight.w500, color: Colors.white),
+        titleMedium: TextStyle(fontSize: fontSize(14), fontWeight: FontWeight.w500, color: Colors.white),
+        titleSmall: TextStyle(fontSize: fontSize(12), fontWeight: FontWeight.w500, color: Colors.white),
+        bodyLarge: TextStyle(fontSize: fontSize(16), color: Colors.white),
+        bodyMedium: TextStyle(fontSize: fontSize(14), color: Colors.white),
+        bodySmall: TextStyle(fontSize: fontSize(12), color: Colors.white70),
+        labelLarge: TextStyle(fontSize: fontSize(14), fontWeight: FontWeight.w500, color: Colors.white),
+        labelMedium: TextStyle(fontSize: fontSize(12), fontWeight: FontWeight.w500, color: Colors.white),
+        labelSmall: TextStyle(fontSize: fontSize(10), fontWeight: FontWeight.w500, color: Colors.white),
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme => _buildTheme();
+  static ThemeData getResponsiveDarkTheme() => _buildTheme(responsive: true);
+
+  static InputDecoration getInputDecoration({
+    required String labelText, 
+    String? hintText, 
+    IconData? prefixIcon
+  }) => InputDecoration(
+    labelText: labelText,
+    hintText: hintText,
+    prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: onSurfaceVariant) : null,
+    filled: true,
+    fillColor: surfaceVariant,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
+      borderSide: BorderSide.none
     ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
+      borderSide: const BorderSide(color: primary, width: 2)
+    ),
+    labelStyle: TextStyle(fontSize: kIsWeb ? 16 : 16.sp, color: onSurfaceVariant),
+    hintStyle: TextStyle(fontSize: kIsWeb ? 14 : 14.sp, color: onSurfaceVariant.withOpacity(0.7)),
   );
 
-  static InputDecoration getInputDecoration({required String labelText, String? hintText, IconData? prefixIcon}) =>
-      InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: onSurfaceVariant) : null,
-        filled: true,
-        fillColor: surfaceVariant,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: primary, width: 2)),
-      );
-
-  static Widget buildHeaderCard({required Widget child}) => Card(
+  static Widget _buildCard({
+    required Widget child,
+    EdgeInsets? margin,
+    EdgeInsets? padding,
+    double? elevation,
+    double? borderRadius,
+  }) => Card(
     color: surface,
-    elevation: 8,
-    margin: const EdgeInsets.all(16),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    child: Padding(padding: const EdgeInsets.all(24), child: child),
-  );
-
-  static Widget buildFormCard({required String title, IconData? titleIcon, required Widget child}) => Card(
-    color: surface,
-    elevation: 4,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    elevation: elevation ?? 4,
+    margin: margin ?? EdgeInsets.all(kIsWeb ? 16 : 16.w),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))),
     child: Padding(
-      padding: const EdgeInsets.all(20), 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              if (titleIcon != null) ...[Icon(titleIcon, color: primary, size: 20), const SizedBox(width: 8)],
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)), 
+      padding: padding ?? EdgeInsets.all(kIsWeb ? 24 : 24.w), 
+      child: child
+    ),
+  );
+
+  static Widget buildHeaderCard({required Widget child}) => _buildCard(child: child, elevation: 8);
+
+  static Widget buildFormCard({
+    required String title, 
+    IconData? titleIcon, 
+    required Widget child
+  }) => _buildCard(
+    borderRadius: kIsWeb ? 12 : 12.r,
+    padding: EdgeInsets.all(kIsWeb ? 20 : 20.w),
+    margin: EdgeInsets.zero,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (titleIcon != null) ...[
+              Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
+              SizedBox(width: kIsWeb ? 8 : 8.w)
             ],
-          ),
-          const SizedBox(height: 16), 
-          child,
-        ],
-      ),
+            Flexible(
+              child: Text(
+                title, 
+                style: TextStyle(fontSize: kIsWeb ? 18 : 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                overflow: TextOverflow.ellipsis,
+              ), 
+            ),
+          ],
+        ),
+        SizedBox(height: kIsWeb ? 16 : 16.h), 
+        child,
+      ],
     ),
   );
 }
@@ -348,29 +391,44 @@ class SocialLoginUtils {
     }
   }
 
-  static Future<SocialLoginResult> loginWithFacebook() async {
+  static Future<SocialLoginResult> _performSocialLogin(
+    Future<dynamic> Function() loginFunction,
+    String Function(dynamic) tokenExtractor,
+    String provider,
+  ) async {
     try {
-      final LoginResult result = await FacebookAuth.instance.login();
-      return result.status == LoginStatus.success 
-          ? SocialLoginResult.success(result.accessToken!.tokenString, 'facebook')
-          : SocialLoginResult.error('Facebook login failed or was cancelled');
+      final result = await loginFunction();
+      final token = tokenExtractor(result);
+      return token != null 
+        ? SocialLoginResult.success(token, provider.toLowerCase())
+        : SocialLoginResult.error('$provider login failed or was cancelled');
     } catch (e) {
-      return SocialLoginResult.error('Facebook login error: $e');
+      return SocialLoginResult.error('$provider login error: $e');
     }
   }
 
+  static Future<SocialLoginResult> loginWithFacebook() async {
+    return _performSocialLogin(
+      () async {
+        final result = await FacebookAuth.instance.login();
+        return result.status == LoginStatus.success ? result.accessToken : null;
+      },
+      (result) => result?.tokenString,
+      'Facebook',
+    );
+  }
+
   static Future<SocialLoginResult> loginWithGoogle() async {
-    try {
-      if (_googleSignIn == null) return SocialLoginResult.error('Google Sign-In not initialized');
-      final user = await _googleSignIn!.signIn();
-      if (user == null) return SocialLoginResult.error('Google login was cancelled');
-      final auth = await user.authentication;
-      final idToken = auth.idToken;
-      return idToken == null ? SocialLoginResult.error('Failed to get Google ID token') 
-                             : SocialLoginResult.success(idToken, 'google');
-    } catch (e) {
-      return SocialLoginResult.error('Google login error: $e');
-    }
+    if (_googleSignIn == null) return SocialLoginResult.error('Google Sign-In not initialized');
+    
+    return _performSocialLogin(
+      () async {
+        final user = await _googleSignIn!.signIn();
+        return user != null ? await user.authentication : null;
+      },
+      (result) => result?.idToken,
+      'Google',
+    );
   }
 
   static Future<void> signOut() async {
@@ -405,15 +463,16 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final icon = provider == 'Google' ? Icons.g_mobiledata : Icons.facebook;
-    final color = provider == 'Google' ? Colors.red : Colors.blue;
+    final isGoogle = provider == 'Google';
+    final icon = isGoogle ? Icons.g_mobiledata : Icons.facebook;
+    final color = isGoogle ? Colors.red : Colors.blue;
 
     return ElevatedButton.icon(
       onPressed: isLoading ? null : onPressed,
-      icon: isLoading ? const SizedBox(width: 16, height: 16,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ) : Icon(icon, color: color),
-      label: Text('$provider'),
+      icon: isLoading 
+        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+        : Icon(icon, color: color),
+      label: Text(provider),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.surface,
         foregroundColor: Colors.white,

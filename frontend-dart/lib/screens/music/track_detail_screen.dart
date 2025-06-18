@@ -17,12 +17,7 @@ class TrackDetailScreen extends StatefulWidget {
   final Track? track;
   final String? playlistId; 
   
-  const TrackDetailScreen({
-    Key? key,
-    this.trackId,
-    this.track,
-    this.playlistId,
-  }) : super(key: key);
+  const TrackDetailScreen({Key? key, this.trackId, this.track, this.playlistId}) : super(key: key);
   
   @override
   State<TrackDetailScreen> createState() => _TrackDetailScreenState();

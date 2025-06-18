@@ -3,12 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/consolidated_core.dart';
 
 class UIHelpers {
-  static PreferredSizeWidget buildAppBar({
-    required String title,
-    List<Widget>? actions,
-    Widget? leading,
-    bool automaticallyImplyLeading = true,
-  }) {
+  static PreferredSizeWidget buildAppBar({required String title, List<Widget>? actions, Widget? leading, bool automaticallyImplyLeading = true}) {
     return AppBar(
       backgroundColor: AppTheme.background,
       title: Text(title),

@@ -25,9 +25,7 @@ class MusicRoomApp extends StatelessWidget {
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
             child: _AppScaffold(child: child!),
           ),
-          home: Consumer<AuthProvider>(
-            builder: (context, auth, _) => auth.isLoggedIn ? const HomeScreen() : const AuthScreen(),
-          ),
+          home: Consumer<AuthProvider>(builder: (context, auth, _) => auth.isLoggedIn ? const HomeScreen() : const AuthScreen()),
           routes: AppBuilder.buildRoutes(),
           onGenerateRoute: AppBuilder.generateRoute,
         );
@@ -167,10 +165,7 @@ class _PlayerBottomSheet extends StatelessWidget {
       width: 100, 
       height: 100,
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12),
-          bottomLeft: Radius.circular(12),
-        ),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(

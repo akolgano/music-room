@@ -9,10 +9,7 @@ class MusicControlDelegationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Control Delegation'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Control Delegation')),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

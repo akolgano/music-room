@@ -4,11 +4,7 @@ class User {
   final String username;
   final String? email;
 
-  const User({
-    required this.id,
-    required this.username,
-    this.email,
-  });
+  const User({required this.id, required this.username, this.email});
 
   factory User.fromJson(Map<String, dynamic> json) => User(
     id: json['id'].toString(),
@@ -112,7 +108,7 @@ class Playlist {
 
   factory Playlist.fromJson(Map<String, dynamic> json) => Playlist(
     id: json['id'].toString(),
-    name: json['name'] as String,
+    name: (json['name'] ?? json['playlist_name']) as String,
     description: json['description'] as String,
     isPublic: json['public'] ?? false,
     creator: json['creator'] as String,
@@ -277,13 +273,9 @@ class BatchAddResult {
   bool get isCompleteSuccess => successCount == totalTracks;
   
   String get summaryMessage {
-    if (isCompleteSuccess) {
-      return 'All $totalTracks tracks added successfully!';
-    } else if (hasPartialSuccess) {
-      return '$successCount/$totalTracks tracks added successfully';
-    } else {
-      return 'Failed to add tracks to playlist';
-    }
+    if (isCompleteSuccess) return 'All $totalTracks tracks added successfully!';
+    else if (hasPartialSuccess) return '$successCount/$totalTracks tracks added successfully';
+    else return 'Failed to add tracks to playlist';
   }
 
   String get detailedMessage {
@@ -301,12 +293,7 @@ class SocialLoginResult {
   final String? provider;
   final String? error;
 
-  const SocialLoginResult._({
-    required this.success,
-    this.token,
-    this.provider,
-    this.error,
-  });
+  const SocialLoginResult._({required this.success, this.token, this.provider, this.error});
 
   factory SocialLoginResult.success(String token, String provider) => 
       SocialLoginResult._(success: true, token: token, provider: provider);

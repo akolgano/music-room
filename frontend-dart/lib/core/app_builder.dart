@@ -19,27 +19,13 @@ import '../screens/screens.dart';
 class AppBuilder {
   static List<SingleChildWidget> buildProviders() {
     return [
-      ChangeNotifierProvider<DynamicThemeProvider>(
-        create: (_) => getIt<DynamicThemeProvider>(),
-      ),
-      ChangeNotifierProvider<AuthProvider>(
-        create: (_) => AuthProvider(),
-      ),
-      ChangeNotifierProvider<MusicProvider>(
-        create: (_) => MusicProvider(),
-      ),
-      ChangeNotifierProvider<FriendProvider>(
-        create: (_) => FriendProvider(),
-      ),
-      ChangeNotifierProvider<ProfileProvider>(
-        create: (_) => ProfileProvider(),
-      ),
-      ChangeNotifierProvider<DeviceProvider>(
-        create: (_) => DeviceProvider(),
-      ),
-      ChangeNotifierProvider<PlaylistLicenseProvider>(
-        create: (_) => PlaylistLicenseProvider(),
-      ),
+      ChangeNotifierProvider<DynamicThemeProvider>(create: (_) => getIt<DynamicThemeProvider>()),
+      ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+      ChangeNotifierProvider<MusicProvider>(create: (_) => MusicProvider()),
+      ChangeNotifierProvider<FriendProvider>(create: (_) => FriendProvider()),
+      ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
+      ChangeNotifierProvider<DeviceProvider>(create: (_) => DeviceProvider()),
+      ChangeNotifierProvider<PlaylistLicenseProvider>(create: (_) => PlaylistLicenseProvider()),
     ];
   }
 
@@ -50,13 +36,9 @@ class AppBuilder {
           final themeProvider = Provider.of<DynamicThemeProvider>(context, listen: false);
           return getIt<MusicPlayerService>();
         },
-        update: (context, themeProvider, previous) {
-          return previous ?? getIt<MusicPlayerService>();
-        },
+        update: (context, themeProvider, previous) => previous ?? getIt<MusicPlayerService>(),
       ),
-      Provider<WebSocketService>(
-        create: (_) => WebSocketService(),
-      ),
+      Provider<WebSocketService>(create: (_) => WebSocketService()),
     ];
   }
 
@@ -65,21 +47,15 @@ class AppBuilder {
       AppRoutes.home: (context) => const HomeScreen(),
       AppRoutes.auth: (context) => const AuthScreen(),
       AppRoutes.profile: (context) => const ProfileScreen(),
-      AppRoutes.playlistEditor: (context) => _buildPlaylistEditor(context),
-      AppRoutes.playlistDetail: (context) => _buildPlaylistDetail(context),
-      AppRoutes.trackDetail: (context) => _buildTrackDetail(context),
       AppRoutes.trackSearch: (context) => const TrackSearchScreen(),
       AppRoutes.publicPlaylists: (context) => const PublicPlaylistsScreen(),
       AppRoutes.friends: (context) => const FriendsListScreen(),
       AppRoutes.addFriend: (context) => const AddFriendScreen(),
       AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
       AppRoutes.deviceManagement: (context) => const DeviceManagementScreen(),
-      AppRoutes.playlistSharing: (context) => _buildPlaylistSharing(context),
       AppRoutes.musicFeatures: (context) => const MusicFeaturesScreen(),
       AppRoutes.trackVote: (context) => const MusicTrackVoteScreen(),
       AppRoutes.controlDelegation: (context) => const MusicControlDelegationScreen(),
-      AppRoutes.trackSelection: (context) => _buildTrackSelection(context),
-      AppRoutes.deezerTrackDetail: (context) => _buildDeezerTrackDetail(context),
       AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
       AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
       '/profile_info': (context) => const ProfileInfoScreen(),
@@ -112,8 +88,11 @@ class AppBuilder {
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
+    print('Generating route for: ${settings.name} with arguments: ${settings.arguments}'); 
+    
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
             if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
@@ -125,6 +104,7 @@ class AppBuilder {
 
     if (_protectedRoutes.contains(settings.name)) {
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
             if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
@@ -137,6 +117,7 @@ class AppBuilder {
     if (settings.name?.startsWith('/playlist/') == true) {
       final playlistId = settings.name!.split('/').last;
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
             if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
@@ -149,6 +130,7 @@ class AppBuilder {
     if (settings.name?.startsWith('/track/') == true) {
       final trackId = settings.name!.split('/').last;
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
             if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
@@ -161,6 +143,7 @@ class AppBuilder {
     if (settings.name?.startsWith('/deezer_track/') == true) {
       final trackId = settings.name!.split('/').last;
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
             if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
@@ -169,29 +152,75 @@ class AppBuilder {
         ),
       );
     }
-    return MaterialPageRoute(builder: (context) => _buildErrorScreen('Page not found'));
+
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (context) => _buildErrorScreen('Page not found'),
+    );
   }
 
   static Widget _buildProtectedRoute(RouteSettings settings) {
-    final routes = buildRoutes();
-    final builder = routes[settings.name];
-    if (builder != null) return Builder(builder: builder);
-    return _buildErrorScreen('Page not found');
+    print('Building protected route: ${settings.name} with arguments: ${settings.arguments}');
+    
+    switch (settings.name) {
+      case AppRoutes.playlistEditor:
+        return _buildPlaylistEditor(settings);
+      case AppRoutes.playlistDetail:
+        return _buildPlaylistDetail(settings);
+      case AppRoutes.trackDetail:
+        return _buildTrackDetail(settings);
+      case AppRoutes.playlistSharing:
+        return _buildPlaylistSharing(settings);
+      case AppRoutes.trackSelection:
+        return _buildTrackSelection(settings);
+      case AppRoutes.deezerTrackDetail:
+        return _buildDeezerTrackDetail(settings);
+      default:
+        final routes = buildRoutes();
+        final builder = routes[settings.name];
+        if (builder != null) {
+          return Builder(builder: builder);
+        }
+        return _buildErrorScreen('Page not found');
+    }
   }
 
-  static Widget _buildPlaylistEditor(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
+  static Widget _buildPlaylistEditor(RouteSettings settings) {
+    final args = settings.arguments;
     return PlaylistEditorScreen(playlistId: args is String ? args : null);
   }
 
-  static Widget _buildPlaylistDetail(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String) return PlaylistDetailScreen(playlistId: args);
-    return _buildErrorScreen('Invalid playlist ID');
+  static Widget _buildPlaylistDetail(RouteSettings settings) {
+    final args = settings.arguments;
+    print('Playlist detail args: $args, type: ${args.runtimeType}'); 
+    
+    if (args == null) {
+      print('No arguments provided for playlist detail'); 
+      return _buildErrorScreen('No playlist ID provided');
+    }
+    
+    String? playlistId;
+    
+    if (args is String) {
+      playlistId = args;
+    } else if (args is Map<String, dynamic> && args.containsKey('id')) {
+      playlistId = args['id'].toString();
+    } else {
+      print('Invalid arguments type for playlist detail: ${args.runtimeType}'); 
+      return _buildErrorScreen('Invalid playlist ID format');
+    }
+    
+    if (playlistId == null || playlistId.isEmpty || playlistId == 'null') {
+      print('Invalid playlist ID: $playlistId'); 
+      return _buildErrorScreen('Invalid playlist ID');
+    }
+    
+    print('Building PlaylistDetailScreen with ID: $playlistId'); 
+    return PlaylistDetailScreen(playlistId: playlistId);
   }
 
-  static Widget _buildTrackDetail(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
+  static Widget _buildTrackDetail(RouteSettings settings) {
+    final args = settings.arguments;
     if (args is Map<String, dynamic>) {
       return TrackDetailScreen(
         trackId: args['trackId'] as String?,
@@ -206,19 +235,19 @@ class AppBuilder {
     return _buildErrorScreen('Invalid track data');
   }
 
-  static Widget _buildPlaylistSharing(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
+  static Widget _buildPlaylistSharing(RouteSettings settings) {
+    final args = settings.arguments;
     if (args is Playlist) return PlaylistSharingScreen(playlist: args);
     return _buildErrorScreen('Invalid playlist data');
   }
 
-  static Widget _buildTrackSelection(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
+  static Widget _buildTrackSelection(RouteSettings settings) {
+    final args = settings.arguments;
     return TrackSelectionScreen(playlistId: args is String ? args : null);
   }
 
-  static Widget _buildDeezerTrackDetail(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
+  static Widget _buildDeezerTrackDetail(RouteSettings settings) {
+    final args = settings.arguments;
     if (args is String) return TrackDetailScreen(trackId: args);
     if (args is Track) return TrackDetailScreen(track: args);
     return _buildErrorScreen('Invalid track data');
@@ -228,16 +257,22 @@ class AppBuilder {
     return Builder(
       builder: (context) => Scaffold(
         backgroundColor: AppTheme.background,
+        appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Error')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.error, size: 64, color: AppTheme.error),
               const SizedBox(height: 16),
-              Text(message, style: const TextStyle(color: Colors.white)),
+              Text(
+                message, 
+                style: const TextStyle(color: Colors.white, fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
                 child: const Text('Go Back'),
               ),
             ],

@@ -37,8 +37,19 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<Playlist?> getPlaylistDetails(String id, String token) async {
-    if (id.isEmpty || id == 'null') return null;
-    return await executeAsync(() => _musicService.getPlaylistDetails(id, token));
+    print('MusicProvider: Getting playlist details for ID: $id');
+    
+    if (id.isEmpty || id == 'null') {
+      print('MusicProvider: Invalid playlist ID');
+      return null;
+    }
+    
+    return await executeAsync(() async {
+      print('MusicProvider: Calling music service...');
+      final playlist = await _musicService.getPlaylistDetails(id, token);
+      print('MusicProvider: Received playlist: ${playlist.name}');
+      return playlist;
+    });
   }
 
   Future<String?> createPlaylist(String name, String description, bool isPublic, String token, [String? deviceUuid]) async {
@@ -201,11 +212,7 @@ class MusicProvider extends BaseProvider {
     ));
   }
 
-  Future<void> inviteUserToPlaylist({
-    required String playlistId,
-    required int userId,
-    required String token,
-  }) async {
+  Future<void> inviteUserToPlaylist({required String playlistId, required int userId, required String token}) async {
     await executeAsync(() => _musicService.inviteUserToPlaylist(playlistId, userId, token));
   }
 

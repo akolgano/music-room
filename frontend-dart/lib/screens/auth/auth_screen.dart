@@ -28,10 +28,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 2), 
-      vsync: this
-    )..repeat();
+    _rotationController = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat();
   }
 
   @override

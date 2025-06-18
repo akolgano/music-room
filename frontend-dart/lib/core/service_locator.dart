@@ -25,9 +25,7 @@ Future<void> setupServiceLocator() async {
     final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
     dio.options.baseUrl = baseUrl;
     
-    dio.options.headers = {
-      'Content-Type': 'application/json',
-    };
+    dio.options.headers = {'Content-Type': 'application/json'};
     
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,
@@ -43,16 +41,12 @@ Future<void> setupServiceLocator() async {
         final token = getIt.isRegistered<AuthService>() 
           ? getIt<AuthService>().currentToken 
           : null;
-        if (token != null) {
-          options.headers['Authorization'] = 'Token $token';
-        }
+        if (token != null) options.headers['Authorization'] = 'Token $token';
         handler.next(options);
       },
       onError: (error, handler) {
         if (error.response?.statusCode == 401) {
-          if (getIt.isRegistered<AuthService>()) {
-            getIt<AuthService>().logout();
-          }
+          if (getIt.isRegistered<AuthService>()) getIt<AuthService>().logout();
         }
         handler.next(error);
       },

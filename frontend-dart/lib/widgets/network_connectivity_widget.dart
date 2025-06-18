@@ -34,11 +34,8 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
     
     if (mounted) {
       setState(() {
-        if (!_isConnected) {
-          _showBanner = true;
-        } else if (wasConnected != _isConnected) {
-          _showBanner = false;
-        }
+        if (!_isConnected) _showBanner = true;
+        else if (wasConnected != _isConnected) _showBanner = false;
       });
     }
   }

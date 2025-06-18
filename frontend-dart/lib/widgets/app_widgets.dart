@@ -4,14 +4,26 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../core/consolidated_core.dart';
 import '../models/models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 
+class R {
+  static double s(double size) => kIsWeb ? size : size.sp;
+  static double w(double size) => kIsWeb ? size : size.w;
+  static double h(double size) => kIsWeb ? size : size.h;
+  static double r(double size) => kIsWeb ? size : size.r;
+  static EdgeInsets p(double size) => kIsWeb ? EdgeInsets.all(size) : EdgeInsets.all(size.w);
+  static EdgeInsets sym({double? h, double? v}) => kIsWeb ? EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0) : EdgeInsets.symmetric(horizontal: (h ?? 0).w, vertical: (v ?? 0).h);
+}
+
 class AppWidgets {
+  static final _primaryStyle = TextStyle(color: Colors.white, fontSize: R.s(16), fontWeight: FontWeight.w600);
+  static final _secondaryStyle = TextStyle(color: Colors.white70, fontSize: R.s(14));
+  static final _greyStyle = TextStyle(color: Colors.grey, fontSize: R.s(12));
+
   static Widget textField({
     required TextEditingController controller,
     required String labelText,
@@ -29,41 +41,8 @@ class AppWidgets {
     onChanged: onChanged,
     minLines: minLines,
     maxLines: maxLines,
-    style: TextStyle(color: Colors.white, fontSize: 16.sp),
+    style: _primaryStyle,
     decoration: AppTheme.getInputDecoration(labelText: labelText, hintText: hintText, prefixIcon: prefixIcon),
-  );
-
-  static Widget primaryButton({
-    required String text,
-    required VoidCallback? onPressed,
-    IconData? icon,
-    bool isLoading = false,
-    bool fullWidth = true,
-  }) => _buildButton(
-    text: text,
-    onPressed: onPressed,
-    icon: icon,
-    isLoading: isLoading,
-    fullWidth: fullWidth,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: AppTheme.primary,
-      foregroundColor: Colors.black,
-      minimumSize: Size(88.w, 50.h),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.r)),
-    ),
-  );
-
-  static Widget secondaryButton({
-    required String text,
-    required VoidCallback? onPressed,
-    IconData? icon,
-    bool fullWidth = true,
-  }) => _buildButton(
-    text: text,
-    onPressed: onPressed,
-    icon: icon,
-    fullWidth: fullWidth,
-    isOutlined: true,
   );
 
   static Widget _buildButton({
@@ -73,16 +52,16 @@ class AppWidgets {
     bool isLoading = false,
     bool fullWidth = true,
     bool isOutlined = false,
-    ButtonStyle? style,
+    Color? backgroundColor,
+    Color? foregroundColor,
   }) {
-    final child = isLoading 
-      ? SizedBox(width: 16.w, height: 16.h, child: const CircularProgressIndicator(strokeWidth: 2))
+    final content = isLoading 
+      ? SizedBox(width: R.w(16), height: R.h(16), child: const CircularProgressIndicator(strokeWidth: 2))
       : Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) Icon(icon, size: 16.sp),
-            if (icon != null) SizedBox(width: 8.w),
-            AutoSizeText(text, maxLines: 1),
+            if (icon != null) ...[Icon(icon, size: R.s(16)), SizedBox(width: R.w(8))],
+            Text(text, style: TextStyle(fontSize: R.s(14))),
           ],
         );
 
@@ -90,30 +69,47 @@ class AppWidgets {
       ? OutlinedButton(
           onPressed: onPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white,
-            side: const BorderSide(color: Colors.white),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            foregroundColor: foregroundColor ?? Colors.white,
+            side: BorderSide(color: foregroundColor ?? Colors.white),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(8))),
           ),
-          child: child,
+          child: content,
         )
-      : ElevatedButton(onPressed: isLoading ? null : onPressed, style: style, child: child);
+      : ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor ?? AppTheme.primary,
+            foregroundColor: foregroundColor ?? Colors.black,
+            minimumSize: Size(R.w(88), R.h(50)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(25))),
+          ),
+          child: content,
+        );
     
-    return fullWidth ? SizedBox(width: double.infinity, height: 50.h, child: button) : button;
+    return fullWidth ? SizedBox(width: double.infinity, height: R.h(50), child: button) : button;
   }
+
+  static Widget primaryButton({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool fullWidth = true,
+  }) => _buildButton(text: text, onPressed: onPressed, icon: icon, isLoading: isLoading, fullWidth: fullWidth);
+
+  static Widget secondaryButton({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool fullWidth = true,
+  }) => _buildButton(text: text, onPressed: onPressed, icon: icon, fullWidth: fullWidth, isOutlined: true);
 
   static Widget loading([String? message]) => Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: const CircularProgressIndicator(color: AppTheme.primary),
-        ),
-        if (message != null) ...[
-          SizedBox(height: 16.h),
-          AutoSizeText(message, style: const TextStyle(color: Colors.white)),
-        ],
+        const CircularProgressIndicator(color: AppTheme.primary),
+        if (message != null) ...[SizedBox(height: R.h(16)), Text(message, style: _secondaryStyle)],
       ],
     ),
   );
@@ -126,20 +122,17 @@ class AppWidgets {
     VoidCallback? onButtonPressed,
   }) => Center(
     child: Padding(
-      padding: EdgeInsets.all(32.w),
+      padding: R.p(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64.sp, color: Colors.grey),
-          SizedBox(height: 16.h),
-          AutoSizeText(title, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white), textAlign: TextAlign.center),
-          if (subtitle != null) ...[
-            SizedBox(height: 8.h),
-            AutoSizeText(subtitle, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
-          ],
+          Icon(icon, size: R.s(64), color: Colors.grey),
+          SizedBox(height: R.h(16)),
+          Text(title, style: _primaryStyle.copyWith(fontSize: R.s(18), fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          if (subtitle != null) ...[SizedBox(height: R.h(8)), Text(subtitle, style: _secondaryStyle, textAlign: TextAlign.center)],
           if (buttonText != null && onButtonPressed != null) ...[
-            SizedBox(height: 24.h),
-            ElevatedButton(onPressed: onButtonPressed, child: Text(buttonText)),
+            SizedBox(height: R.h(24)),
+            ElevatedButton(onPressed: onButtonPressed, child: Text(buttonText, style: TextStyle(fontSize: R.s(14)))),
           ],
         ],
       ),
@@ -150,11 +143,63 @@ class AppWidgets {
     required String message,
     VoidCallback? onRetry,
     String? retryText,
-  }) => emptyState(
-    icon: Icons.error_outline,
-    title: message,
-    buttonText: retryText ?? 'Retry',
-    onButtonPressed: onRetry,
+  }) => Center(
+    child: Padding(
+      padding: R.p(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: R.s(64), color: AppTheme.error),
+          SizedBox(height: R.h(16)),
+          Text('Error', style: _primaryStyle.copyWith(fontSize: R.s(18), fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          SizedBox(height: R.h(8)),
+          Text(message, style: _secondaryStyle, textAlign: TextAlign.center),
+          if (onRetry != null) ...[
+            SizedBox(height: R.h(24)),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
+              child: Text(retryText ?? 'Retry', style: TextStyle(fontSize: R.s(14))),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+
+  static Widget _banner({
+    required String title,
+    required String message,
+    required IconData icon,
+    required Color color,
+    VoidCallback? onAction,
+    String? actionText,
+  }) => Container(
+    padding: R.p(16),
+    margin: R.sym(h: 16, v: 8),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(R.r(8)),
+      border: Border.all(color: color.withOpacity(0.3)),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: color, size: R.s(24)),
+        SizedBox(width: R.w(12)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: R.s(16))),
+              SizedBox(height: R.h(4)),
+              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: R.s(14))),
+            ],
+          ),
+        ),
+        if (actionText != null && onAction != null)
+          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color, fontSize: R.s(14)))),
+      ],
+    ),
   );
 
   static Widget infoBanner({
@@ -164,67 +209,31 @@ class AppWidgets {
     Color color = AppTheme.primary,
     VoidCallback? onAction,
     String? actionText,
-  }) => Container(
-    padding: EdgeInsets.all(16.w),
-    margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-    decoration: BoxDecoration(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(8.r),
-      border: Border.all(color: color.withOpacity(0.3)),
-    ),
-    child: Row(
-      children: [
-        Icon(icon, color: color, size: 24.sp),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AutoSizeText(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16.sp)),
-              SizedBox(height: 4.h),
-              AutoSizeText(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: 14.sp)),
-            ],
-          ),
-        ),
-        if (actionText != null && onAction != null)
-          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color))),
-      ],
-    ),
-  );
+  }) => _banner(title: title, message: message, icon: icon, color: color, onAction: onAction, actionText: actionText);
 
   static Widget errorBanner({required String message, VoidCallback? onDismiss}) => 
-    infoBanner(
-      title: 'Error',
-      message: message,
-      icon: Icons.error_outline,
-      color: Colors.red,
-      actionText: onDismiss != null ? 'Dismiss' : null,
-      onAction: onDismiss,
-    );
+    _banner(title: 'Error', message: message, icon: Icons.error_outline, color: Colors.red, actionText: onDismiss != null ? 'Dismiss' : null, onAction: onDismiss);
 
   static Widget successBanner({required String message}) => 
-    infoBanner(
-      title: 'Success',
-      message: message,
-      icon: Icons.check_circle,
-      color: Colors.green,
-    );
+    _banner(title: 'Success', message: message, icon: Icons.check_circle, color: Colors.green);
 
   static Widget formCard({required String title, IconData? titleIcon, required Widget child}) => 
     AppTheme.buildFormCard(title: title, titleIcon: titleIcon, child: child);
 
   static Widget sectionTitle(String title) => Padding(
-    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-    child: AutoSizeText(title, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+    padding: R.sym(h: 16, v: 8),
+    child: Text(title, style: _primaryStyle.copyWith(fontSize: R.s(20), fontWeight: FontWeight.bold)),
   );
 
   static Widget trackCard({
-    Key? key, 
+    Key? key,
     required Track track,
     bool isSelected = false,
     bool isInPlaylist = false,
     bool showAddButton = true,
     bool showPlayButton = true,
+    bool showExplicitAddButton = false,
+    String? playlistContext,
     VoidCallback? onTap,
     VoidCallback? onAdd,
     VoidCallback? onPlay,
@@ -232,7 +241,7 @@ class AppWidgets {
     VoidCallback? onAddToLibrary,
     ValueChanged<bool?>? onSelectionChanged,
   }) => Consumer2<MusicPlayerService, DynamicThemeProvider>(
-    key: key, 
+    key: key,
     builder: (context, playerService, themeProvider, _) {
       final isCurrentTrack = playerService.currentTrack?.id == track.id;
       final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
@@ -244,22 +253,27 @@ class AppWidgets {
           verticalOffset: 50.0,
           child: FadeInAnimation(
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+              margin: R.sym(h: 16, v: 4),
               decoration: BoxDecoration(
                 color: isSelected ? themeProvider.primaryColor.withOpacity(0.2) : 
                        isCurrentTrack ? themeProvider.primaryColor.withOpacity(0.1) : 
                        themeProvider.surfaceColor,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(R.r(12)),
                 border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
               ),
-              child: ListTile(
-                leading: onSelectionChanged != null
-                    ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
-                    : _buildTrackImage(track.imageUrl, themeProvider.surfaceColor),
-                title: AutoSizeText(track.name, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16.sp), maxLines: 1),
-                subtitle: AutoSizeText(track.artist, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14.sp), maxLines: 1),
-                trailing: _buildTrackActions(showAddButton, showPlayButton, onAdd, onPlay, onRemove, trackIsPlaying, themeProvider),
-                onTap: onTap,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: onSelectionChanged != null
+                        ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
+                        : _buildImage(track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
+                    title: Text(track.name, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(track.artist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    trailing: onSelectionChanged == null ? _buildTrackActions(showAddButton, showPlayButton, onAdd, onPlay, onRemove, trackIsPlaying, themeProvider, isInPlaylist) : null,
+                    onTap: onTap,
+                  ),
+                  if (showExplicitAddButton) _buildExplicitButton(onAdd, isInPlaylist, playlistContext, themeProvider),
+                ],
               ),
             ),
           ),
@@ -268,73 +282,105 @@ class AppWidgets {
     },
   );
 
+  static Widget _buildImage(String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) => Container(
+    width: R.w(size), height: R.h(size),
+    decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(R.r(8))),
+    child: imageUrl?.isNotEmpty == true
+        ? ClipRRect(borderRadius: BorderRadius.circular(R.r(8)), child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover))
+        : Icon(defaultIcon, color: Colors.white, size: R.s(size * 0.5)),
+  );
+
+  static Widget _buildTrackActions(bool showAddButton, bool showPlayButton, VoidCallback? onAdd, VoidCallback? onPlay, VoidCallback? onRemove, bool trackIsPlaying, DynamicThemeProvider themeProvider, bool isInPlaylist) {
+    final actions = <Widget>[];
+    
+    if (showPlayButton && onPlay != null) {
+      actions.add(IconButton(
+        icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor, size: R.s(24)), 
+        onPressed: onPlay,
+      ));
+    }
+    
+    if (showAddButton && onAdd != null && !isInPlaylist) {
+      actions.add(IconButton(
+        icon: Icon(Icons.add_circle_outline, color: Colors.white, size: R.s(20)), 
+        onPressed: onAdd, tooltip: 'Add to Playlist',
+      ));
+    }
+    
+    if (isInPlaylist) actions.add(Icon(Icons.check_circle, color: Colors.green, size: R.s(20)));
+    if (onRemove != null) actions.add(IconButton(icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)), onPressed: onRemove));
+    
+    return actions.isNotEmpty ? Wrap(spacing: R.w(4), children: actions) : const SizedBox.shrink();
+  }
+
+  static Widget _buildExplicitButton(VoidCallback? onAdd, bool isInPlaylist, String? playlistContext, DynamicThemeProvider themeProvider) {
+    if (isInPlaylist) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(R.w(16), 0, R.w(16), R.h(12)),
+        child: Container(
+          padding: R.sym(h: 16, v: 8),
+          decoration: BoxDecoration(
+            color: Colors.green.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(R.r(20)),
+            border: Border.all(color: Colors.green.withOpacity(0.5)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 16),
+              SizedBox(width: R.w(8)),
+              Text('Already in playlist', style: TextStyle(color: Colors.green, fontSize: R.s(14), fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    if (onAdd != null) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(R.w(16), 0, R.w(16), R.h(12)),
+        child: ElevatedButton.icon(
+          onPressed: onAdd,
+          icon: const Icon(Icons.add, size: 18),
+          label: Text(playlistContext != null ? 'Add to $playlistContext' : 'Add to Playlist', style: TextStyle(fontSize: R.s(14), fontWeight: FontWeight.w600)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: themeProvider.primaryColor, foregroundColor: Colors.black, elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(20))),
+            padding: R.sym(h: 20, v: 10),
+          ),
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink();
+  }
+
   static Widget playlistCard({
     required Playlist playlist,
     required VoidCallback? onTap,
     VoidCallback? onPlay,
     bool showPlayButton = false,
   }) => Card(
-    margin: EdgeInsets.only(bottom: 12.h),
+    margin: EdgeInsets.only(bottom: R.h(12)),
     color: AppTheme.surface,
     child: ListTile(
-      leading: _buildPlaylistImage(playlist.imageUrl),
-      title: AutoSizeText(playlist.name, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 16.sp), maxLines: 1),
+      leading: _buildImage(playlist.imageUrl, 56, AppTheme.primary.withOpacity(0.2), Icons.library_music),
+      title: Text(playlist.name, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AutoSizeText('${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
-          AutoSizeText('By ${playlist.creator}', style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
+          Text('${playlist.tracks.length} tracks', style: _secondaryStyle),
+          Text('By ${playlist.creator}', style: _greyStyle),
         ],
       ),
       trailing: showPlayButton && onPlay != null
-          ? IconButton(icon: Icon(Icons.play_circle_outline, color: AppTheme.primary, size: 24.sp), onPressed: onPlay)
-          : Icon(Icons.chevron_right, color: Colors.grey, size: 20.sp),
+          ? IconButton(icon: Icon(Icons.play_circle_outline, color: AppTheme.primary, size: R.s(24)), onPressed: onPlay)
+          : Icon(Icons.chevron_right, color: Colors.grey, size: R.s(20)),
       onTap: onTap,
     ),
   );
-
-  static Widget _buildPlaylistImage(String? imageUrl) => Container(
-    width: 56.w, height: 56.h,
-    decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8.r)),
-    child: imageUrl?.isNotEmpty == true
-        ? ClipRRect(borderRadius: BorderRadius.circular(8.r), child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover))
-        : Icon(Icons.library_music, color: AppTheme.primary, size: 24.sp),
-  );
-
-  static Widget _buildTrackImage(String? imageUrl, Color backgroundColor) => Container(
-    width: 56.w, height: 56.h,
-    decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(8.r)),
-    child: imageUrl?.isNotEmpty == true
-        ? ClipRRect(borderRadius: BorderRadius.circular(8.r), child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover))
-        : Icon(Icons.music_note, color: Colors.white, size: 28.sp),
-  );
-
-  static Widget _buildTrackActions(bool showAddButton, bool showPlayButton, VoidCallback? onAdd, VoidCallback? onPlay, VoidCallback? onRemove, bool trackIsPlaying, DynamicThemeProvider themeProvider) {
-    List<Widget> actions = [];
-
-    if (showPlayButton && onPlay != null) {
-      actions.add(IconButton(
-        icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor, size: 24.sp), 
-        onPressed: onPlay,
-      ));
-    }
-
-    if (showAddButton && onAdd != null) {
-      actions.add(IconButton(
-        icon: Icon(Icons.add_circle_outline, color: Colors.white, size: 20.sp), 
-        onPressed: onAdd,
-      ));
-    }
-
-    if (onRemove != null) {
-      actions.add(IconButton(
-        icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: 20.sp), 
-        onPressed: onRemove,
-      ));
-    }
-
-    return actions.isNotEmpty ? Wrap(spacing: 4.w, children: actions) : const SizedBox.shrink();
-  }
 
   static Widget switchTile({
     required bool value,
@@ -343,121 +389,92 @@ class AppWidgets {
     String? subtitle,
     IconData? icon,
   }) => SwitchListTile(
-    value: value,
-    onChanged: onChanged,
-    title: AutoSizeText(title, style: const TextStyle(color: Colors.white)),
-    subtitle: subtitle != null ? AutoSizeText(subtitle, style: const TextStyle(color: Colors.grey)) : null,
+    value: value, onChanged: onChanged,
+    title: Text(title, style: _primaryStyle),
+    subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle) : null,
     secondary: icon != null ? Icon(icon, color: AppTheme.primary) : null,
     activeColor: AppTheme.primary,
   );
 
-  static Widget statusIndicator({
-    required bool isConnected,
-    String? connectedText,
-    String? disconnectedText,
-  }) {
+  static Widget statusIndicator({required bool isConnected, String? connectedText, String? disconnectedText}) {
     final color = isConnected ? Colors.green : Colors.red;
     final text = isConnected ? (connectedText ?? 'Connected') : (disconnectedText ?? 'Disconnected');
-    
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8.w, height: 8.h, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        SizedBox(width: 4.w),
-        AutoSizeText(text, style: TextStyle(color: color, fontSize: 12.sp)),
+        Container(width: R.w(8), height: R.h(8), decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        SizedBox(width: R.w(4)),
+        Text(text, style: TextStyle(color: color, fontSize: R.s(12))),
       ],
     );
   }
 
-  static Widget quickActionCard({
-    required String title,
-    required IconData icon,
-    required Color color,
-    VoidCallback? onTap,
-  }) => Card(
+  static Widget quickActionCard({required String title, required IconData icon, required Color color, VoidCallback? onTap}) => Card(
     color: AppTheme.surface,
     child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12.r),
+      onTap: onTap, borderRadius: BorderRadius.circular(R.r(12)),
       child: Padding(
-        padding: EdgeInsets.all(16.w),
+        padding: R.p(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 32.sp),
-            SizedBox(height: 8.h),
-            AutoSizeText(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+            Icon(icon, color: color, size: R.s(32)),
+            SizedBox(height: R.h(8)),
+            Text(title, style: _secondaryStyle.copyWith(fontWeight: FontWeight.w500), textAlign: TextAlign.center),
           ],
         ),
       ),
     ),
   );
 
-  static Widget featureCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    VoidCallback? onTap,
-  }) => Card(
-    color: AppTheme.surface,
-    margin: EdgeInsets.only(bottom: 12.h),
+  static Widget featureCard({required IconData icon, required String title, required String description, VoidCallback? onTap}) => Card(
+    color: AppTheme.surface, margin: EdgeInsets.only(bottom: R.h(12)),
     child: ListTile(
       leading: Container(
-        padding: EdgeInsets.all(8.w),
-        decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8.r)),
+        padding: R.p(8),
+        decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(R.r(8))),
         child: Icon(icon, color: AppTheme.primary),
       ),
-      title: AutoSizeText(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-      subtitle: AutoSizeText(description, style: const TextStyle(color: Colors.grey)),
-      trailing: Icon(Icons.chevron_right, color: Colors.grey, size: 20.sp),
+      title: Text(title, style: _primaryStyle),
+      subtitle: Text(description, style: _secondaryStyle),
+      trailing: Icon(Icons.chevron_right, color: Colors.grey, size: R.s(20)),
       onTap: onTap,
     ),
   );
 
   static Widget settingsSection({required String title, required List<Widget> items}) => Card(
-    color: AppTheme.surface,
-    margin: EdgeInsets.only(bottom: 16.h),
+    color: AppTheme.surface, margin: EdgeInsets.only(bottom: R.h(16)),
     child: Padding(
-      padding: EdgeInsets.all(16.w),
+      padding: R.p(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AutoSizeText(title, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-          SizedBox(height: 8.h),
+          Text(title, style: TextStyle(fontSize: R.s(16), fontWeight: FontWeight.bold, color: AppTheme.primary)),
+          SizedBox(height: R.h(8)),
           ...items,
         ],
       ),
     ),
   );
 
-  static Widget settingsItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-    Color color = Colors.white,
-  }) => ListTile(
+  static Widget settingsItem({required IconData icon, required String title, required String subtitle, VoidCallback? onTap, Color color = Colors.white}) => ListTile(
     leading: Icon(icon, color: color),
-    title: AutoSizeText(title, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
-    subtitle: AutoSizeText(subtitle, style: const TextStyle(color: Colors.grey)),
-    trailing: Icon(Icons.chevron_right, color: Colors.grey, size: 20.sp),
+    title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w500, fontSize: R.s(16))),
+    subtitle: Text(subtitle, style: TextStyle(color: Colors.grey, fontSize: R.s(14))),
+    trailing: Icon(Icons.chevron_right, color: Colors.grey, size: R.s(20)),
     onTap: onTap,
   );
 
   static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
+      content: Text(message, style: TextStyle(fontSize: R.s(14))),
       backgroundColor: backgroundColor ?? AppTheme.primary,
       behavior: SnackBarBehavior.floating,
       duration: const Duration(seconds: 3),
     ));
   }
 
-  static Widget tabScaffold({
-    required List<Tab> tabs,
-    required List<Widget> tabViews,
-    TabController? controller,
-  }) => DefaultTabController(
+  static Widget tabScaffold({required List<Tab> tabs, required List<Widget> tabViews, TabController? controller}) => DefaultTabController(
     length: tabs.length,
     child: Column(
       children: [
@@ -479,25 +496,19 @@ class AppWidgets {
         onRefresh: onRefresh,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(height: 600.h, child: emptyState),
+          child: SizedBox(height: R.h(600), child: emptyState),
         ),
       );
     }
 
     return RefreshIndicator(
-      onRefresh: onRefresh,
-      color: AppTheme.primary,
+      onRefresh: onRefresh, color: AppTheme.primary,
       child: AnimationLimiter(
         child: ListView.builder(
-          padding: padding ?? EdgeInsets.all(16.w),
-          itemCount: items.length,
+          padding: padding ?? R.p(16), itemCount: items.length,
           itemBuilder: (context, index) => AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 375),
-            child: SlideAnimation(
-              verticalOffset: 50.0,
-              child: FadeInAnimation(child: itemBuilder(items[index], index)),
-            ),
+            position: index, duration: const Duration(milliseconds: 375),
+            child: SlideAnimation(verticalOffset: 50.0, child: FadeInAnimation(child: itemBuilder(items[index], index))),
           ),
         ),
       ),
@@ -516,36 +527,32 @@ class MiniPlayerWidget extends StatelessWidget {
         if (track == null) return const SizedBox.shrink();
 
         return Container(
-          height: 60.h,
+          height: R.h(60),
           decoration: BoxDecoration(
             color: themeProvider.surfaceColor,
             boxShadow: [BoxShadow(color: themeProvider.primaryColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, -2))],
           ),
           child: Row(
             children: [
-              Container(
-                width: 60.w, height: 60.h,
+              SizedBox(
+                width: R.w(60), height: R.h(60),
                 child: track.imageUrl?.isNotEmpty == true
                     ? CachedNetworkImage(imageUrl: track.imageUrl!, fit: BoxFit.cover)
                     : Container(color: themeProvider.surfaceColor, child: const Icon(Icons.music_note, color: Colors.white)),
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w),
+                  padding: EdgeInsets.symmetric(horizontal: R.w(12)),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AutoSizeText(track.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      AutoSizeText(track.artist, style: const TextStyle(color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(track.name, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: R.s(14)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(track.artist, style: TextStyle(color: Colors.grey, fontSize: R.s(12)), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
               ),
-              IconButton(
-                onPressed: playerService.togglePlay,
-                icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor),
-              ),
+              IconButton(onPressed: playerService.togglePlay, icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor)),
             ],
           ),
         );
