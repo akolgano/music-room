@@ -10,406 +10,137 @@ class ApiService {
     _dio.options.headers = {'Content-Type': 'application/json'};
   }
 
-  Future<AuthResult> login(LoginRequest request) async {
-    final response = await _dio.post('/users/login/', data: request.toJson());
-    return AuthResult.fromJson(response.data);
+  Future<T> _post<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
+    final response = await _dio.post(endpoint, 
+      data: data?.toJson?.call() ?? data,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
+    );
+    return fromJson(response.data);
   }
 
-  Future<AuthResult> signup(SignupRequest request) async {
-    final response = await _dio.post('/users/signup/', data: request.toJson());
-    return AuthResult.fromJson(response.data);
+  Future<T> _get<T>(String endpoint, T Function(Map<String, dynamic>) fromJson, {String? token, Map<String, dynamic>? queryParams}) async {
+    final response = await _dio.get(endpoint,
+      queryParameters: queryParams,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
+    );
+    return fromJson(response.data);
   }
 
-  Future<void> logout(String token, LogoutRequest request) async {
-    await _dio.post('/users/logout/', 
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
+  Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async {
+    await _dio.post(endpoint,
+      data: data?.toJson?.call() ?? data,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
     );
   }
 
-  Future<AuthResult> facebookLogin(SocialLoginRequest request) async {
-    final response = await _dio.post('/users/facebook_login/', data: request.toJson());
-    return AuthResult.fromJson(response.data);
+  Future<void> _delete(String endpoint, {String? token}) async {
+    await _dio.delete(endpoint, options: token != null ? Options(headers: {'Authorization': token}) : null);
   }
 
-  Future<AuthResult> googleLogin(SocialLoginRequest request) async {
-    final response = await _dio.post('/users/google_login/', data: request.toJson());
-    return AuthResult.fromJson(response.data);
-  }
+  Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
+  Future<AuthResult> signup(SignupRequest request) => _post('/users/signup/', request, AuthResult.fromJson);
+  Future<void> logout(String token, LogoutRequest request) => _postVoid('/users/logout/', request, token: token);
+  Future<AuthResult> facebookLogin(SocialLoginRequest request) => _post('/users/facebook_login/', request, AuthResult.fromJson);
+  Future<AuthResult> googleLogin(SocialLoginRequest request) => _post('/users/google_login/', request, AuthResult.fromJson);
+  Future<void> forgotPassword(ForgotPasswordRequest request) => _postVoid('/users/forgot_password/', request);
+  Future<void> forgotChangePassword(ChangePasswordRequest request) => _postVoid('/users/forgot_change_password/', request);
+  Future<void> sendSignupEmailOtp(EmailOtpRequest request) => _postVoid('/users/signup_email_otp/', request);
+  Future<AuthResult> signupWithOtp(SignupWithOtpRequest request) => _post('/users/signup/', request, AuthResult.fromJson);
 
-  Future<void> forgotPassword(ForgotPasswordRequest request) async {
-    await _dio.post('/users/forgot_password/', data: request.toJson());
-  }
-
-  Future<void> forgotChangePassword(ChangePasswordRequest request) async {
-    await _dio.post('/users/forgot_change_password/', data: request.toJson());
-  }
-
-  Future<PlaylistsResponse> getSavedPlaylists(String token) async {
-    final response = await _dio.get('/playlists/saved_playlists/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PlaylistsResponse.fromJson(response.data);
-  }
-
-  Future<PlaylistsResponse> getPublicPlaylists(String token) async {
-    final response = await _dio.get('/playlists/public_playlists/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PlaylistsResponse.fromJson(response.data);
-  }
-
-  Future<PlaylistDetailResponse> getPlaylist(String id, String token) async {
-    final response = await _dio.get('/playlists/playlists/$id',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PlaylistDetailResponse.fromJson(response.data);
-  }
-
+  Future<PlaylistsResponse> getSavedPlaylists(String token) => _get('/playlists/saved_playlists/', PlaylistsResponse.fromJson, token: token);
+  Future<PlaylistsResponse> getPublicPlaylists(String token) => _get('/playlists/public_playlists/', PlaylistsResponse.fromJson, token: token);
+  Future<PlaylistDetailResponse> getPlaylist(String id, String token) => _get('/playlists/playlists/$id', PlaylistDetailResponse.fromJson, token: token);
+  
   Future<CreatePlaylistResponse> createPlaylist(String token, CreatePlaylistRequest request) async {
-    final response = await _dio.post('/playlists',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-    return CreatePlaylistResponse.fromJson(response.data);
+    try {
+      final response = await _dio.post('/playlists/playlists', data: request.toJson(), options: Options(headers: {'Authorization': token}));
+      return CreatePlaylistResponse.fromJson(response.data);
+    } catch (e) {
+      print('Playlist creation error: $e'); 
+      rethrow;
+    }
   }
 
   Future<void> updatePlaylist(String id, String token, UpdatePlaylistRequest request) async {
-    await _dio.post('/playlists/$id/update/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
+    throw UnimplementedError('Update playlist endpoint not implemented in backend');
   }
 
-  Future<TrackSearchResponse> searchTracks(String query) async {
-    final response = await _dio.get('/tracks/search/', queryParameters: {'query': query});
-    return TrackSearchResponse.fromJson(response.data);
-  }
+  Future<void> changePlaylistVisibility(String playlistId, String token, VisibilityRequest request) => 
+      _postVoid('/playlists/$playlistId/change-visibility/', request, token: token);
 
-  Future<DeezerSearchResponse> searchDeezerTracks(String query) async {
-    final response = await _dio.get('/deezer/search/', queryParameters: {'q': query});
-    return DeezerSearchResponse.fromJson(response.data);
-  }
+  Future<void> inviteUserToPlaylist(String playlistId, String token, InviteUserRequest request) => 
+      _postVoid('/playlists/$playlistId/invite-user/', request, token: token);
 
-  Future<Track> getDeezerTrack(String trackId) async {
-    final response = await _dio.get('/deezer/track/$trackId/');
-    return Track.fromJson(response.data);
-  }
+  Future<TrackSearchResponse> searchTracks(String query) => _get('/tracks/search/', TrackSearchResponse.fromJson, queryParams: {'query': query});
+  Future<DeezerSearchResponse> searchDeezerTracks(String query) => _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
+  Future<Track> getDeezerTrack(String trackId) => _get('/deezer/track/$trackId/', Track.fromJson);
+  Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/deezer/add_track/', request, token: token);
 
-  Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) async {
-    await _dio.post('/deezer/add_track/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<PlaylistTracksResponse> getPlaylistTracks(String playlistId, String token) => 
+      _get('/playlists/playlist/$playlistId/tracks/', PlaylistTracksResponse.fromJson, token: token);
 
-  Future<PlaylistTracksResponse> getPlaylistTracks(String playlistId, String token) async {
-    final response = await _dio.get('/playlists/$playlistId/tracks',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PlaylistTracksResponse.fromJson(response.data);
-  }
+  Future<void> addTrackToPlaylist(String playlistId, String token, AddTrackRequest request) => 
+      _postVoid('/playlists/$playlistId/add/', request, token: token);
 
-  Future<void> addTrackToPlaylist(String playlistId, String token, AddTrackRequest request) async {
-    await _dio.post('/playlists/$playlistId/tracks',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) => 
+      _delete('/playlists/$playlistId/remove_tracks', token: token);
 
-  Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) async {
-    await _dio.delete('/playlists/$playlistId/tracks/$trackId',
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<void> moveTrackInPlaylist(String playlistId, String token, MoveTrackRequest request) => 
+      _postVoid('/playlists/move-track/', request, token: token);
 
-  Future<void> moveTrackInPlaylist(String playlistId, String token, MoveTrackRequest request) async {
-    await _dio.post('/playlists/$playlistId/move_track/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<FriendsResponse> getFriends(String token) => _get('/users/get_friends/', FriendsResponse.fromJson, token: token);
+  Future<PendingRequestsResponse> getPendingFriendRequests(String token) => _get('/users/pending_friend_requests/', PendingRequestsResponse.fromJson, token: token);
+  Future<MessageResponse> sendFriendRequest(String token, FriendRequestRequest request) => _post('/users/send_friend_request/', request, MessageResponse.fromJson, token: token);
+  Future<MessageResponse> acceptFriendRequest(String token, FriendRequestActionRequest request) => _post('/users/accept_friend_request/', request, MessageResponse.fromJson, token: token);
+  Future<MessageResponse> rejectFriendRequest(String token, FriendRequestActionRequest request) => _post('/users/reject_friend_request/', request, MessageResponse.fromJson, token: token);
+  Future<void> removeFriend(String token, RemoveFriendRequest request) => _postVoid('/users/remove_friend/', request, token: token);
 
-  Future<void> changePlaylistVisibility(String playlistId, String token, VisibilityRequest request) async {
-    await _dio.post('/playlists/$playlistId/visibility/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<UserResponse> getUser(String token) => _get('/users/get_user/', UserResponse.fromJson, token: token);
+  Future<Map<String, dynamic>> getUserData(String? token) => _get('/users/get_user/', (data) => data, token: token);
+  Future<void> userPasswordChange(String token, PasswordChangeRequest request) => _postVoid('/users/password_change/', request, token: token);
+  Future<void> userPasswordChangeData(String? token, String currentPassword, String newPassword) => 
+      userPasswordChange(token!, PasswordChangeRequest(currentPassword: currentPassword, newPassword: newPassword));
 
-  Future<void> inviteUserToPlaylist(String playlistId, String token, InviteUserRequest request) async {
-    await _dio.post('/playlists/$playlistId/invite/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<ProfilePublicResponse> getProfilePublic(String token) => _get('/profile/public/', ProfilePublicResponse.fromJson, token: token);
+  Future<Map<String, dynamic>> getProfilePublicData(String? token) => _get('/profile/public/', (data) => data, token: token);
+  Future<ProfilePrivateResponse> getProfilePrivate(String token) => _get('/profile/private/', ProfilePrivateResponse.fromJson, token: token);
+  Future<Map<String, dynamic>> getProfilePrivateData(String? token) => _get('/profile/private/', (data) => data, token: token);
+  Future<ProfileFriendResponse> getProfileFriend(String token) => _get('/profile/friend/', ProfileFriendResponse.fromJson, token: token);
+  Future<Map<String, dynamic>> getProfileFriendData(String? token) => _get('/profile/friend/', (data) => data, token: token);
+  Future<ProfileMusicResponse> getProfileMusic(String token) => _get('/profile/music/', ProfileMusicResponse.fromJson, token: token);
+  Future<Map<String, dynamic>> getProfileMusicData(String? token) => _get('/profile/music/', (data) => data, token: token);
 
-  Future<FriendsResponse> getFriends(String token) async {
-    final response = await _dio.get('/users/get_friends/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return FriendsResponse.fromJson(response.data);
-  }
+  Future<void> updateAvatar(String token, AvatarUpdateRequest request) => _postVoid('/profile/avatar/', request, token: token);
+  Future<void> updateAvatarData(String? token, String? avatarBase64, String? mimeType) => 
+      updateAvatar(token!, AvatarUpdateRequest(avatar: avatarBase64, mimeType: mimeType));
 
-  Future<MessageResponse> sendFriendRequest(String token, FriendRequestRequest request) async {
-    final response = await _dio.post('/users/send_friend_request/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-    return MessageResponse.fromJson(response.data);
-  }
+  Future<void> updatePublicBasic(String token, PublicBasicUpdateRequest request) => _postVoid('/profile/public/basic/', request, token: token);
+  Future<void> updatePublicBasicData(String? token, String? gender, String? location) => 
+      updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
 
-  Future<MessageResponse> acceptFriendRequest(String token, FriendRequestActionRequest request) async {
-    final response = await _dio.post('/users/accept_friend_request/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-    return MessageResponse.fromJson(response.data);
-  }
+  Future<void> updatePublicBio(String token, BioUpdateRequest request) => _postVoid('/profile/public/bio/', request, token: token);
+  Future<void> updatePublicBioData(String? token, String? bio) => updatePublicBio(token!, BioUpdateRequest(bio: bio));
 
-  Future<MessageResponse> rejectFriendRequest(String token, FriendRequestActionRequest request) async {
-    final response = await _dio.post('/users/reject_friend_request/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-    return MessageResponse.fromJson(response.data);
-  }
+  Future<void> updatePrivateInfo(String token, PrivateInfoUpdateRequest request) => _postVoid('/profile/private/', request, token: token);
+  Future<void> updatePrivateInfoData(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) => 
+      updatePrivateInfo(token!, PrivateInfoUpdateRequest(firstName: firstName, lastName: lastName, phone: phone, street: street, country: country, postalCode: postalCode));
 
-  Future<void> removeFriend(String token, RemoveFriendRequest request) async {
-    await _dio.post('/users/remove_friend/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<void> updateFriendInfo(String token, FriendInfoUpdateRequest request) => _postVoid('/profile/friend/', request, token: token);
+  Future<void> updateFriendInfoData(String? token, String? dob, List<String>? hobbies, String? friendInfo) => 
+      updateFriendInfo(token!, FriendInfoUpdateRequest(dob: dob, hobbies: hobbies, friendInfo: friendInfo));
 
-  Future<UserResponse> getUser(String token) async {
-    final response = await _dio.get('/users/get_user/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return UserResponse.fromJson(response.data);
-  }
+  Future<void> updateMusicPreferences(String token, MusicPreferencesUpdateRequest request) => _postVoid('/profile/music/', request, token: token);
+  Future<void> updateMusicPreferencesData(String? token, List<String>? musicPreferences) => 
+      updateMusicPreferences(token!, MusicPreferencesUpdateRequest(musicPreferences: musicPreferences));
 
-  Future<Map<String, dynamic>> getUserData(String? token) async {
-    final response = await _dio.get('/users/get_user/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return response.data;
-  }
+  Future<void> facebookLink(String token, SocialLinkRequest request) => _postVoid('/users/facebook_link/', request, token: token);
+  Future<void> facebookLinkData(String? token, String accessToken) => facebookLink(token!, SocialLinkRequest(accessToken: accessToken));
+  Future<void> googleLink(String token, SocialLinkRequest request) => _postVoid('/users/google_link/', request, token: token);
+  Future<void> googleLinkData(String type, String? token, String idToken) => googleLink(token!, SocialLinkRequest(type: type, idToken: idToken));
 
-  Future<void> userPasswordChange(String token, PasswordChangeRequest request) async {
-    await _dio.post('/users/password_change/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<void> userPasswordChangeData(String? token, String currentPassword, String newPassword) async {
-    final request = PasswordChangeRequest(currentPassword: currentPassword, newPassword: newPassword);
-    await userPasswordChange(token!, request);
-  }
-
-  Future<ProfilePublicResponse> getProfilePublic(String token) async {
-    final response = await _dio.get('/profile/public/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return ProfilePublicResponse.fromJson(response.data);
-  }
-
-  Future<Map<String, dynamic>> getProfilePublicData(String? token) async {
-    final response = await _dio.get('/profile/public/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return response.data;
-  }
-
-  Future<ProfilePrivateResponse> getProfilePrivate(String token) async {
-    final response = await _dio.get('/profile/private/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return ProfilePrivateResponse.fromJson(response.data);
-  }
-
-  Future<Map<String, dynamic>> getProfilePrivateData(String? token) async {
-    final response = await _dio.get('/profile/private/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return response.data;
-  }
-
-  Future<ProfileFriendResponse> getProfileFriend(String token) async {
-    final response = await _dio.get('/profile/friend/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return ProfileFriendResponse.fromJson(response.data);
-  }
-
-  Future<Map<String, dynamic>> getProfileFriendData(String? token) async {
-    final response = await _dio.get('/profile/friend/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return response.data;
-  }
-
-  Future<ProfileMusicResponse> getProfileMusic(String token) async {
-    final response = await _dio.get('/profile/music/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return ProfileMusicResponse.fromJson(response.data);
-  }
-
-  Future<Map<String, dynamic>> getProfileMusicData(String? token) async {
-    final response = await _dio.get('/profile/music/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return response.data;
-  }
-
-  Future<void> updateAvatar(String token, AvatarUpdateRequest request) async {
-    await _dio.post('/profile/avatar/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<void> updateAvatarData(String? token, String? avatarBase64, String? mimeType) async {
-    final request = AvatarUpdateRequest(avatar: avatarBase64, mimeType: mimeType);
-    await updateAvatar(token!, request);
-  }
-
-  Future<void> updatePublicBasic(String token, PublicBasicUpdateRequest request) async {
-    await _dio.post('/profile/public/basic/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<void> updatePublicBasicData(String? token, String? gender, String? location) async {
-    final request = PublicBasicUpdateRequest(gender: gender, location: location);
-    await updatePublicBasic(token!, request);
-  }
-
-  Future<void> updatePublicBio(String token, BioUpdateRequest request) async {
-    await _dio.post('/profile/public/bio/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<void> updatePublicBioData(String? token, String? bio) async {
-    final request = BioUpdateRequest(bio: bio);
-    await updatePublicBio(token!, request);
-  }
-
-  Future<void> updatePrivateInfo(String token, PrivateInfoUpdateRequest request) async {
-    await _dio.post('/profile/private/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<void> updatePrivateInfoData(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) async {
-    final request = PrivateInfoUpdateRequest(
-      firstName: firstName,
-      lastName: lastName,
-      phone: phone,
-      street: street,
-      country: country,
-      postalCode: postalCode,
-    );
-    await updatePrivateInfo(token!, request);
-  }
-
-  Future<void> updateFriendInfo(String token, FriendInfoUpdateRequest request) async {
-    await _dio.post('/profile/friend/', data: request.toJson(), options: Options(headers: {'Authorization': token}));
-  }
-
-  Future<void> updateFriendInfoData(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {
-    final request = FriendInfoUpdateRequest(dob: dob, hobbies: hobbies, friendInfo: friendInfo);
-    await updateFriendInfo(token!, request);
-  }
-
-  Future<void> updateMusicPreferences(String token, MusicPreferencesUpdateRequest request) async {
-    await _dio.post('/profile/music/', data: request.toJson(), options: Options(headers: {'Authorization': token}));
-  }
-
-  Future<void> updateMusicPreferencesData(String? token, List<String>? musicPreferences) async {
-    final request = MusicPreferencesUpdateRequest(musicPreferences: musicPreferences);
-    await updateMusicPreferences(token!, request);
-  }
-
-  Future<void> facebookLink(String token, SocialLinkRequest request) async {
-    await _dio.post('/users/facebook_link/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<void> facebookLinkData(String? token, String accessToken) async {
-    final request = SocialLinkRequest(accessToken: accessToken);
-    await facebookLink(token!, request);
-  }
-
-  Future<void> googleLink(String token, SocialLinkRequest request) async {
-    await _dio.post('/users/google_link/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
-
-  Future<void> googleLinkData(String type, String? token, String idToken) async {
-    final request = SocialLinkRequest(type: type, idToken: idToken);
-    await googleLink(token!, request);
-  }
-
-  Future<void> sendSignupEmailOtp(EmailOtpRequest request) async {
-    await _dio.post('/users/signup_email_otp/', data: request.toJson());
-  }
-
-  Future<AuthResult> signupWithOtp(SignupWithOtpRequest request) async {
-    final response = await _dio.post('/users/signup/', data: request.toJson());
-    return AuthResult.fromJson(response.data);
-  }
-
-  Future<PendingRequestsResponse> getPendingFriendRequests(String token) async {
-    final response = await _dio.get('/users/pending_friend_requests/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PendingRequestsResponse.fromJson(response.data);
-  }
-
-  Future<DevicesResponse> getUserDevices(String token) async {
-    final response = await _dio.get('/devices/user/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return DevicesResponse.fromJson(response.data);
-  }
-
-  Future<DevicesResponse> getAllUserDevices(String token) async {
-    final response = await _dio.get('/devices/all/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return DevicesResponse.fromJson(response.data);
-  }
-
-  Future<DeviceResponse> registerDevice(String token, RegisterDeviceRequest request) async {
-    final response = await _dio.post('/devices/register/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-    return DeviceResponse.fromJson(response.data);
-  }
-
-  Future<PermissionResponse> checkControlPermission(String deviceUuid, String token) async {
-    final response = await _dio.get('/devices/$deviceUuid/can-control/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return PermissionResponse.fromJson(response.data);
-  }
-
-  Future<void> delegateDeviceControl(String token, DelegateControlRequest request) async {
-    await _dio.post('/devices/delegate/',
-      data: request.toJson(),
-      options: Options(headers: {'Authorization': token})
-    );
-  }
+  Future<DevicesResponse> getUserDevices(String token) => _get('/devices/user/', DevicesResponse.fromJson, token: token);
+  Future<DevicesResponse> getAllUserDevices(String token) => _get('/devices/all/', DevicesResponse.fromJson, token: token);
+  Future<DeviceResponse> registerDevice(String token, RegisterDeviceRequest request) => _post('/devices/register/', request, DeviceResponse.fromJson, token: token);
+  Future<PermissionResponse> checkControlPermission(String deviceUuid, String token) => _get('/devices/$deviceUuid/can-control/', PermissionResponse.fromJson, token: token);
+  Future<void> delegateDeviceControl(String token, DelegateControlRequest request) => _postVoid('/devices/delegate/', request, token: token);
 }

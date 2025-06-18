@@ -194,17 +194,27 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    final success = await AsyncHelpers.executeOperation(
-      operation: () => _isLogin 
-          ? authProvider.login(_usernameController.text.trim(), _passwordController.text)
-          : authProvider.signup(
-              _usernameController.text.trim(), 
-              _emailController.text.trim(), 
-              _passwordController.text
-            ),
-      onError: _showError,
-      onSuccess: (_) => Navigator.pushReplacementNamed(context, AppRoutes.home),
-    );
+    try {
+      bool success;
+      if (_isLogin) {
+        success = await authProvider.login(_usernameController.text.trim(), _passwordController.text);
+      } else {
+        success = await authProvider.signup(
+          _usernameController.text.trim(), 
+          _emailController.text.trim(), 
+          _passwordController.text
+        );
+      }
+      
+      if (success) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      } else {
+        final errorMessage = authProvider.errorMessage ?? 'Authentication failed';
+        _showError(errorMessage);
+      }
+    } catch (e) {
+      _showError('An unexpected error occurred: $e');
+    }
     
     setState(() => _isLoading = false);
   }
@@ -214,13 +224,23 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    final success = await AsyncHelpers.executeOperation(
-      operation: () => provider == 'Google' 
-          ? authProvider.googleLoginApp()
-          : authProvider.facebookLogin(),
-      onError: _showError,
-      onSuccess: (_) => Navigator.pushReplacementNamed(context, AppRoutes.home),
-    );
+    try {
+      bool success;
+      if (provider == 'Google') {
+        success = await authProvider.googleLoginApp();
+      } else {
+        success = await authProvider.facebookLogin();
+      }
+      
+      if (success) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      } else {
+        final errorMessage = authProvider.errorMessage ?? '$provider authentication failed';
+        _showError(errorMessage);
+      }
+    } catch (e) {
+      _showError('$provider authentication error: $e');
+    }
     
     setState(() => _isLoading = false);
   }

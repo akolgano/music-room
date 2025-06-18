@@ -36,7 +36,7 @@ class _PublicPlaylistsScreenState extends BaseScreen<PublicPlaylistsScreen> {
         onRefresh: _loadPlaylists,
         itemBuilder: (playlist, index) => UnifiedComponents.playlistCard(
           playlist: playlist,
-          onTap: () => _viewPlaylist(playlist),
+          onTap: () => _viewPlaylist(playlist), 
           onPlay: () => _playPlaylist(playlist),
           showPlayButton: true,
         ),
@@ -61,6 +61,6 @@ class _PublicPlaylistsScreenState extends BaseScreen<PublicPlaylistsScreen> {
     );
   }
 
-  void _viewPlaylist(Playlist playlist) => navigateTo(AppRoutes.playlistEditor, arguments: playlist.id);
+  void _viewPlaylist(Playlist playlist) => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id); 
   void _playPlaylist(Playlist playlist) => showInfo('Playing ${playlist.name}');
 }

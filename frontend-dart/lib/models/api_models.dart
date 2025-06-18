@@ -91,17 +91,9 @@ class SocialLinkRequest {
   final String? idToken;
   final String? type;
 
-  const SocialLinkRequest({
-    this.accessToken,
-    this.idToken,
-    this.type,
-  });
+  const SocialLinkRequest({this.accessToken, this.idToken, this.type});
 
-  Map<String, dynamic> toJson() => {
-    'access_token': accessToken,
-    'id_token': idToken,
-    'type': type,
-  };
+  Map<String, dynamic> toJson() => {'access_token': accessToken, 'id_token': idToken, 'type': type};
 }
 
 class CreatePlaylistRequest {
@@ -110,19 +102,13 @@ class CreatePlaylistRequest {
   final bool public;
   final String? deviceUuid;
 
-  const CreatePlaylistRequest({
-    required this.name,
-    required this.description,
-    required this.public,
-    this.deviceUuid,
-  });
+  const CreatePlaylistRequest({required this.name, required this.description, required this.public, this.deviceUuid});
 
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'description': description,
-    'public': public,
-    'device_uuid': deviceUuid,
-  };
+  Map<String, dynamic> toJson() {
+    final json = { 'name': name, 'description': description, 'public': public };
+    if (deviceUuid != null) json['device_uuid'] = deviceUuid!;
+    return json;
+  }
 }
 
 class UpdatePlaylistRequest {
@@ -372,9 +358,14 @@ class CreatePlaylistResponse {
 
   const CreatePlaylistResponse({required this.playlistId});
 
-  factory CreatePlaylistResponse.fromJson(Map<String, dynamic> json) => CreatePlaylistResponse(
-    playlistId: json['playlist_id'] as String,
-  );
+  factory CreatePlaylistResponse.fromJson(Map<String, dynamic> json) {
+    if (json['playlist_id'] == null) {
+      throw Exception('playlist_id is null in response: $json');
+    }
+    return CreatePlaylistResponse(
+      playlistId: json['playlist_id'].toString(),
+    );
+  }
 }
 
 class TrackSearchResponse {

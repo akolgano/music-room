@@ -2,10 +2,8 @@ name: music_room
 description: "Music, Collaboration and mobility"
 publish_to: 'none'
 version: 1.0.0+1
-
 environment:
   sdk: ^3.7.2
-
 dependencies:
   flutter:
     sdk: flutter
@@ -21,6 +19,8 @@ dependencies:
   flutter_form_builder: ^10.0.1
   flutter_staggered_animations: ^1.1.1
   form_builder_validators: ^11.1.2
+  validators: ^3.0.0
+  form_validator: ^2.1.1  
   gap: ^3.0.1
   hooks_riverpod: ^2.4.9
   http: ^1.4.0
