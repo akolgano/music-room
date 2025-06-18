@@ -20,6 +20,7 @@ from django.db.models import Q
 from . import email_sender
 from . import utils
 from .models import OneTimePasscode
+from .models import SignupOneTimePasscode
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from apps.remote_auth.models import SocialNetwork
@@ -61,7 +62,16 @@ def logout_view(request):
 
 @api_view(['POST'])
 def signup(request):
+    otp_code = request.data.get('otp')
     email = request.data.get('email')
+
+    otp = SignupOneTimePasscode.objects.filter(email=email, expired_at__gt=timezone.now()).first()
+    if not otp:
+        return JsonResponse({'error': 'Signup OTP not found or expired.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if otp.code != otp_code:
+        return JsonResponse({'error': 'Signup OTP not match'}, status=status.HTTP_400_BAD_REQUEST)
+
     social = SocialNetwork.objects.filter(email=email).first()
     if social:
         return JsonResponse({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -273,3 +283,23 @@ def get_user(request):
         return JsonResponse(data, status=status.HTTP_200_OK)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def signup_email_otp(request):
+    email = request.data.get('email')
+
+    if not email:
+        return JsonResponse({'error': 'Invalid email'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    otp = utils.create_otp_signup(email)
+
+    if not otp:
+        return JsonResponse({'error': 'Signup OTP creation failed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        email_sender.send_signup_otp_email(otp.code, email)
+    except Exception:
+        return JsonResponse({'error': 'Signup OTP email send failed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    return JsonResponse({'email': email}, status=status.HTTP_200_OK)
