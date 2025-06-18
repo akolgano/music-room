@@ -74,11 +74,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> forgotChangePassword(String email, String otp, String password) async {
     return await _execute(() async {
-      final request = ChangePasswordRequest(
-        email: email, 
-        otp: int.parse(otp), 
-        password: password
-      );
+      final request = ChangePasswordRequest(email: email, otp: int.parse(otp), password: password);
       await _authService.api.forgotChangePassword(request);
     });
   }
@@ -86,22 +82,27 @@ class AuthProvider with ChangeNotifier {
   Future<bool> facebookLogin() async {
     return await _execute(() async {
       final result = await SocialLoginUtils.loginWithFacebook();
-      if (result.success) {
-        await _authService.facebookLogin(result.token!);
-      } else {
-        throw Exception(result.error ?? "Facebook login failed!");
-      }
+      if (result.success) await _authService.facebookLogin(result.token!);
+      else throw Exception(result.error ?? "Facebook login failed!");
     });
   }
 
   Future<bool> googleLoginApp() async {
     return await _execute(() async {
       final result = await SocialLoginUtils.loginWithGoogle();
-      if (result.success) {
-        await _authService.googleLogin('app', result.token!);
-      } else {
-        throw Exception(result.error ?? "Google login failed!");
-      }
+      if (result.success) await _authService.googleLogin('app', result.token!);
+      else throw Exception(result.error ?? "Google login failed!");
+    });
+  }
+
+  Future<bool> sendSignupEmailOtp(String email) async {
+    return await _execute(() => _authService.sendSignupEmailOtp(email));
+  }
+
+  Future<bool> signupWithOtp(String username, String email, String password, String otp) async {
+    return await _execute(() async {
+      final otpInt = int.parse(otp);
+      await _authService.signupWithOtp(username, email, password, otpInt);
     });
   }
 }

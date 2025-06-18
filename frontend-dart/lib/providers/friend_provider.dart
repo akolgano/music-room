@@ -60,4 +60,13 @@ class FriendProvider with ChangeNotifier, StateManagement {
       _friends.remove(friendId);
     });
   }
+
+  Future<List<Map<String, dynamic>>> getFriendsWithDetails(String token) async {
+    return await executeAsync(() async {
+      return _friends.map((id) => {
+        'id': id,
+        'username': 'User $id',
+      }).toList();
+    }) ?? [];
+  }
 }

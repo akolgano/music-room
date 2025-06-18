@@ -61,6 +61,7 @@ class AppBuilder {
       AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
       AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
       '/profile_info': (context) => const ProfileInfoScreen(),
+      '/signup_otp': (context) => const SignupWithOtpScreen(),
     };
   }
 

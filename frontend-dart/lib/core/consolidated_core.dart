@@ -328,6 +328,7 @@ class AppRoutes {
   static const String deezerTrackDetail = '/deezer_track_detail';
   static const String userPasswordChange = '/user_password_change';
   static const String socialNetworkLink = '/social_network_link';
+  static const String signupOtp = '/signup_otp';
 }
 
 class SocialLoginUtils {
