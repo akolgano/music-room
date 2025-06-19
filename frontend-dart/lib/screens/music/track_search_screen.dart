@@ -5,8 +5,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/music_player_service.dart';
-import '../../core/consolidated_core.dart';
-import '../../core/form_helpers.dart';
+import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../models/models.dart';
 import '../../utils/dialog_utils.dart';
@@ -232,7 +231,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     return Row(
       children: [
         Expanded(
-          child: FormHelpers.buildTextFormField(
+          child: AppWidgets.textField(
             controller: _searchController,
             labelText: '',
             hintText: _isAddingToPlaylist 
@@ -243,7 +242,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
           ),
         ),
         const SizedBox(width: 8),
-        FormHelpers.buildPrimaryButton(
+        AppWidgets.primaryButton(
           text: 'Search',
           onPressed: _searchController.text.isNotEmpty ? _performSearch : null,
           isLoading: musicProvider.isLoading,
@@ -531,13 +530,14 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       final result = await _musicProvider.addMultipleTracksFromDeezer(
         tracks: deezerTracks,
         token: _authProvider.token!,
+        addToTracksApi: true,
         onProgress: (current, total, trackName) {},
       );
 
       if (result.isCompleteSuccess) {
-        _showMessage('${result.successCount} tracks added to your library automatically!', isError: false);
+        _showMessage('${result.successCount} tracks added to your library and tracks database!', isError: false);
       } else if (result.hasPartialSuccess) {
-        _showMessage('${result.successCount} tracks added to library, ${result.failureCount} failed', isError: false);
+        _showMessage('${result.successCount} tracks added, ${result.failureCount} failed', isError: false);
       } else if (result.hasErrors) {
         _showMessage('Failed to add tracks to library automatically');
       }
@@ -720,10 +720,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.black,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
             child: const Text('Confirm'),
           ),
         ],
@@ -750,10 +747,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
               leading: Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
                 child: Icon(icons?[index] ?? Icons.music_note, color: AppTheme.primary),
               ),
               title: Text(items[index], style: const TextStyle(color: Colors.white)),

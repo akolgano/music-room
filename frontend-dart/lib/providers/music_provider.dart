@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/service_locator.dart';
 import '../services/music_service.dart';
 import '../models/models.dart';
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 
 class MusicProvider extends BaseProvider {
   final MusicService _musicService = getIt<MusicService>();
@@ -224,6 +224,7 @@ class MusicProvider extends BaseProvider {
     required List<Track> tracks,
     required String token,
     Function(int current, int total, String trackName)? onProgress,
+    bool addToTracksApi = false,
   }) async {
     int successCount = 0;
     int failureCount = 0;
@@ -240,12 +241,13 @@ class MusicProvider extends BaseProvider {
       
       try {
         await _musicService.addTrackFromDeezer(track.deezerTrackId!, token);
+        
+        if (addToTracksApi) await _musicService.addTrackFromDeezerToTracks(track.deezerTrackId!, token);
+        
         successCount++;
         successfulTracks.add(track.name);
         
-        if (i < validTracks.length - 1) {
-          await Future.delayed(const Duration(milliseconds: 200));
-        }
+        if (i < validTracks.length - 1) await Future.delayed(const Duration(milliseconds: 200));
       } catch (e) {
         failureCount++;
         errors.add('Failed to add "${track.name}": ${e.toString()}');
@@ -285,5 +287,9 @@ class MusicProvider extends BaseProvider {
 
   bool get hasValidDeezerTracks {
     return deezerTracksFromSearch.isNotEmpty;
+  }
+
+  Future<void> addSingleTrackFromDeezerToTracks(String trackId, String token) async {
+    await executeAsync(() => _musicService.addTrackFromDeezerToTracks(trackId, token));
   }
 }

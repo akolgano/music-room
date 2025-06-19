@@ -8,7 +8,7 @@ import '../../providers/device_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../models/models.dart';
-import '../../core/consolidated_core.dart';
+import '../../core/core.dart';
 import '../../widgets/widgets.dart';
 import '../base_screen.dart';
 
@@ -44,9 +44,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         itemBuilder: (context) => [
           const PopupMenuItem(
             value: 'add_to_playlist',
-            child: Row(
-              children: [Icon(Icons.playlist_add, size: 16), SizedBox(width: 8), Text('Add to Playlist')],
-            ),
+            child: Row(children: [Icon(Icons.playlist_add, size: 16), SizedBox(width: 8), Text('Add to Playlist')]),
           ),
           if (_track!.deezerTrackId != null)
             const PopupMenuItem(

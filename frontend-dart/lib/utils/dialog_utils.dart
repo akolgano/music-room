@@ -1,6 +1,6 @@
 // lib/utils/dialog_utils.dart
 import 'package:flutter/material.dart';
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 
 class DialogUtils {
   static Future<bool> showConfirmDialog(

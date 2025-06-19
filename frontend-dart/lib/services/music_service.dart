@@ -83,11 +83,7 @@ class MusicService {
     int rangeLength = 1,
     required String token,
   }) async {
-    final request = MoveTrackRequest(
-      rangeStart: rangeStart,
-      insertBefore: insertBefore,
-      rangeLength: rangeLength,
-    );
+    final request = MoveTrackRequest(rangeStart: rangeStart, insertBefore: insertBefore, rangeLength: rangeLength);
     await _api.moveTrackInPlaylist(playlistId, 'Token $token', request);
   }
 
@@ -99,5 +95,9 @@ class MusicService {
   Future<void> inviteUserToPlaylist(String playlistId, int userId, String token) async {
     final request = InviteUserRequest(userId: userId);
     await _api.inviteUserToPlaylist(playlistId, 'Token $token', request);
+  }
+
+  Future<void> addTrackFromDeezerToTracks(String trackId, String token) async {
+    await _api.addTrackFromDeezerToTracks(trackId, 'Token $token');
   }
 }

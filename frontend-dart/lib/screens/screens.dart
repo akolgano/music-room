@@ -7,8 +7,6 @@ export 'music/control_delegation_screen.dart';
 export 'music/track_detail_screen.dart';
 export 'music/music_features_screen.dart';
 export 'music/track_search_screen.dart';
-export 'music/track_selection_screen.dart';
-export 'music/track_vote_screen.dart';
 export 'playlists/playlist_editor_screen.dart';
 export 'playlists/playlist_detail_screen.dart';
 export 'playlists/playlist_sharing_screen.dart';

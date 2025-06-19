@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/service_locator.dart';
 import '../services/device_service.dart';
 import '../models/models.dart';
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 
 class DeviceProvider with ChangeNotifier, StateManagement {
   final DeviceService _deviceService = getIt<DeviceService>();

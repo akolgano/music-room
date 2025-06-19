@@ -1,8 +1,7 @@
 // lib/screens/profile/profile_info_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/consolidated_core.dart';
-import '../../core/form_helpers.dart';
+import '../../core/core.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/app_widgets.dart';
@@ -82,7 +81,7 @@ class _PrivateInfoTabState extends State<_PrivateInfoTab> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    FormHelpers.buildTextFormField(
+                    AppWidgets.textField(
                       controller: _phoneController,
                       labelText: 'Phone Number',
                       validator: (value) => AppValidators.phoneNumber(value, false), 

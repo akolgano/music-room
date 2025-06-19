@@ -6,7 +6,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../models/models.dart';
-import '../../core/consolidated_core.dart';
+import '../../core/core.dart';
 import '../../widgets/widgets.dart';
 import '../../services/websocket_service.dart';
 import '../base_screen.dart';

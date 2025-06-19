@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
-import '../../core/consolidated_core.dart';
+import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';

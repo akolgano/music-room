@@ -1,7 +1,7 @@
 // lib/utils/app_utils.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 
 class AppUtils {
   static String formatDate(DateTime? date) => date != null ? DateFormat('yyyy-MM-dd').format(date) : '';

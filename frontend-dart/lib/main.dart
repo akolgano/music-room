@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'core/consolidated_core.dart';
+import 'core/core.dart';
 import 'core/service_locator.dart';
 import 'core/app_builder.dart';
 import 'widgets/network_connectivity_widget.dart';

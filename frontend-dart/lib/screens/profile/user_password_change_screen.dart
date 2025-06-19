@@ -1,8 +1,7 @@
 // lib/screens/profile/user_password_change_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/consolidated_core.dart';
-import '../../core/form_helpers.dart';
+import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
@@ -62,7 +61,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          FormHelpers.buildTextFormField(
+                          AppWidgets.textField(
                             controller: _currentPasswordController,
                             labelText: 'Current Password',
                             obscureText: true,
@@ -70,7 +69,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                                       v!.length < 8 ? 'Password must be at least 8 characters' : null,
                           ),
                           const SizedBox(height: 24),
-                          FormHelpers.buildTextFormField(
+                          AppWidgets.textField(
                             controller: _newPasswordController,
                             labelText: 'New Password',
                             obscureText: true,
@@ -80,7 +79,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                           const SizedBox(height: 24),
                           profileProvider.isLoading
                             ? const CircularProgressIndicator(color: AppTheme.primary)
-                            : FormHelpers.buildPrimaryButton(
+                            : AppWidgets.primaryButton(
                                 text: 'Submit',
                                 onPressed: _submit,
                               ),

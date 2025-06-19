@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
-import '../../core/consolidated_core.dart';
+import '../../core/core.dart';
 import '../../models/models.dart';
 import '../../widgets/app_widgets.dart';
 import '../../utils/dialog_utils.dart';

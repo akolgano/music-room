@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 import '../models/models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';

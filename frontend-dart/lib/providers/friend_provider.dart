@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../core/service_locator.dart';
 import '../services/friend_service.dart';
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 
 class FriendProvider with ChangeNotifier, StateManagement {
   final FriendService _friendService = getIt<FriendService>();

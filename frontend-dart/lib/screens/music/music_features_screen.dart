@@ -1,7 +1,7 @@
 // lib/screens/music/music_features_screen.dart
 import 'package:flutter/material.dart';
-import '../../core/consolidated_core.dart';
-import '../../widgets/unified_components.dart';
+import '../../core/core.dart';
+import '../../widgets/app_widgets.dart'; 
 import 'track_search_screen.dart';
 
 class MusicFeaturesScreen extends StatelessWidget {
@@ -16,40 +16,35 @@ class MusicFeaturesScreen extends StatelessWidget {
         padding: AppSizes.screenPadding,
         child: Column(
           children: [
-            UnifiedComponents.sectionTitle('Playlist Management'),
-            UnifiedComponents.featureCard(
+            AppWidgets.sectionTitle('Playlist Management'), 
+            AppWidgets.featureCard( 
               icon: Icons.playlist_add,
               title: 'Create New Playlist',
               description: 'Create a new playlist with enhanced options',
               onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
             ),
-            UnifiedComponents.featureCard(
+            AppWidgets.featureCard( 
               icon: Icons.public,
               title: 'Public Playlists',
               description: 'Discover and explore playlists created by other users',
               onTap: () => Navigator.pushNamed(context, AppRoutes.publicPlaylists),
             ),
-            UnifiedComponents.featureCard(
+            AppWidgets.featureCard( 
               icon: Icons.search,
               title: 'Track Selection',
               description: 'Search and select tracks to add to playlists',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.trackSelection),
+              onTap: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
-            UnifiedComponents.sectionTitle('Collaboration Features'),
-            UnifiedComponents.featureCard(
-              icon: Icons.how_to_vote,
-              title: 'Track Voting',
-              description: 'Vote on tracks for collaborative playlist creation',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.trackVote),
-            ),
-            UnifiedComponents.featureCard(
+            AppWidgets.sectionTitle('Collaboration Features'), 
+            // Remove the track voting feature card
+            AppWidgets.featureCard( 
               icon: Icons.admin_panel_settings,
               title: 'Control Delegation',
               description: 'Delegate playlist control to other users',
               onTap: () => Navigator.pushNamed(context, AppRoutes.controlDelegation),
             ),
-            UnifiedComponents.sectionTitle('Deezer Integration'),
-            UnifiedComponents.featureCard(
+            AppWidgets.sectionTitle('Deezer Integration'), 
+            AppWidgets.featureCard( 
               icon: Icons.music_note,
               title: 'Search Deezer Tracks',
               description: 'Find and add tracks from Deezer',

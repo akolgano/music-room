@@ -4,7 +4,7 @@ import '../core/service_locator.dart';
 import '../services/auth_service.dart';
 import '../models/models.dart';
 import '../models/api_models.dart';
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 
 class AuthProvider with ChangeNotifier {
   late final AuthService _authService;

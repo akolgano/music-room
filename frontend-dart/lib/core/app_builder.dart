@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-import '../core/consolidated_core.dart';
+import '../core/core.dart';
 import '../core/service_locator.dart';
 import '../providers/auth_provider.dart';
 import '../providers/music_provider.dart';
@@ -54,7 +54,6 @@ class AppBuilder {
       AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
       AppRoutes.deviceManagement: (context) => const DeviceManagementScreen(),
       AppRoutes.musicFeatures: (context) => const MusicFeaturesScreen(),
-      AppRoutes.trackVote: (context) => const MusicTrackVoteScreen(),
       AppRoutes.controlDelegation: (context) => const MusicControlDelegationScreen(),
       AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
       AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
@@ -77,10 +76,8 @@ class AppBuilder {
     AppRoutes.deviceManagement,
     AppRoutes.playlistSharing,
     AppRoutes.musicFeatures,
-    AppRoutes.trackVote,
     AppRoutes.controlDelegation,
     AppRoutes.player,
-    AppRoutes.trackSelection,
     AppRoutes.deezerTrackDetail,
     AppRoutes.userPasswordChange,
     AppRoutes.socialNetworkLink,
@@ -171,8 +168,6 @@ class AppBuilder {
         return _buildTrackDetail(settings);
       case AppRoutes.playlistSharing:
         return _buildPlaylistSharing(settings);
-      case AppRoutes.trackSelection:
-        return _buildTrackSelection(settings);
       case AppRoutes.deezerTrackDetail:
         return _buildDeezerTrackDetail(settings);
       default:
@@ -227,11 +222,8 @@ class AppBuilder {
         track: args['track'] as Track?,
         playlistId: args['playlistId'] as String?,
       );
-    } else if (args is String) {
-      return TrackDetailScreen(trackId: args);
-    } else if (args is Track) {
-      return TrackDetailScreen(track: args);
-    }
+    } else if (args is String) return TrackDetailScreen(trackId: args);
+    else if (args is Track) return TrackDetailScreen(track: args);
     return _buildErrorScreen('Invalid track data');
   }
 
@@ -239,11 +231,6 @@ class AppBuilder {
     final args = settings.arguments;
     if (args is Playlist) return PlaylistSharingScreen(playlist: args);
     return _buildErrorScreen('Invalid playlist data');
-  }
-
-  static Widget _buildTrackSelection(RouteSettings settings) {
-    final args = settings.arguments;
-    return TrackSelectionScreen(playlistId: args is String ? args : null);
   }
 
   static Widget _buildDeezerTrackDetail(RouteSettings settings) {
