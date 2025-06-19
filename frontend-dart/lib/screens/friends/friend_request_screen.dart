@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/consolidated_core.dart';
-import '../../widgets/common_widgets.dart';
+import '../../widgets/app_widgets.dart';  
 
 class FriendRequestScreen extends StatefulWidget {
   const FriendRequestScreen({Key? key}) : super(key: key);
@@ -42,14 +42,11 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Friend Requests'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Friend Requests')),
       body: _isLoading
-          ? CommonWidgets.loadingWidget()
+          ? AppWidgets.loading()  
           : _pendingRequests.isEmpty
-              ? CommonWidgets.emptyState(
+              ? AppWidgets.emptyState(  
                   icon: Icons.mail,
                   title: 'No pending friend requests',
                   subtitle: 'When someone sends you a friend request, it will appear here',

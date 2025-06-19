@@ -15,3 +15,5 @@ http://localhost:8000/admin admin/admin
 Refer to this link to setup flutter in linux https://docs.flutter.dev/get-started/install/linux/web
 
 After you have flutter installed and configured, `cd frontend-dart` then `flutter run` for mobile version, else `docker compose up` will suffice for web version.
+
+If you face network issue for windows run this command in powershell as admin `net stop winnat`, restart docker desktop, `net start winnat`.

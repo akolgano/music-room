@@ -65,7 +65,13 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     Widget? emptyState,
     EdgeInsets? padding,
   }) {
-    return AppWidgets.refreshableList<E>(items: items, itemBuilder: itemBuilder, onRefresh: onRefresh, emptyState: emptyState, padding: padding);
+    return AppWidgets.refreshableList<E>(
+      items: items, 
+      itemBuilder: itemBuilder, 
+      onRefresh: onRefresh, 
+      emptyState: emptyState, 
+      padding: padding
+    );
   }
 
   Widget buildListContent<E>({
@@ -89,18 +95,14 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     required List<Widget> tabViews,
     TabController? controller,
   }) {
-    return AppWidgets.tabScaffold(
-      tabs: tabs,
-      tabViews: tabViews,
-      controller: controller,
-    );
+    return AppWidgets.tabScaffold(tabs: tabs, tabViews: tabViews, controller: controller);
   }
 
   PreferredSizeWidget buildStandardAppBar({List<Widget>? actions}) {
     return AppBar(
       backgroundColor: AppTheme.background,
       title: Text(screenTitle),
-      actions: actions,
+      actions: actions ?? this.actions,
       automaticallyImplyLeading: showBackButton,
     );
   }

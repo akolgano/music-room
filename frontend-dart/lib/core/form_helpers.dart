@@ -22,11 +22,7 @@ class FormHelpers {
       minLines: minLines,
       maxLines: maxLines,
       style: const TextStyle(color: Colors.white),
-      decoration: AppTheme.getInputDecoration(
-        labelText: labelText, 
-        hintText: hintText, 
-        prefixIcon: prefixIcon
-      ),
+      decoration: AppTheme.getInputDecoration(labelText: labelText, hintText: hintText, prefixIcon: prefixIcon),
     );
   }
 

@@ -8,8 +8,7 @@ import '../../core/consolidated_core.dart';
 import '../../models/models.dart';
 import '../../models/api_models.dart';
 import '../../widgets/widgets.dart'; 
-import '../../widgets/common_widgets.dart';
-import '../../widgets/app_cards.dart';
+import '../../widgets/app_widgets.dart';  
 import '../../services/api_service.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
@@ -32,10 +31,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
 
   @override
   List<Widget> get actions => [
-    IconButton(
-      icon: const Icon(Icons.refresh),
-      onPressed: _loadData,
-    ),
+    IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
   ];
 
   @override
@@ -57,10 +53,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
   @override
   Widget buildContent() {
     return buildTabScaffold(
-      tabs: const [
-        Tab(text: 'My Devices'),
-        Tab(text: 'Control Delegation'),
-      ],
+      tabs: const [Tab(text: 'My Devices'), Tab(text: 'Control Delegation')],
       tabViews: [
         _buildMyDevicesTab(),
         _buildControlDelegationTab(),
@@ -98,7 +91,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
     return Consumer<DeviceProvider>(
       builder: (context, deviceProvider, _) {
         if (deviceProvider.userDevices.isEmpty) {
-          return CommonWidgets.emptyState(
+          return AppWidgets.emptyState(
             icon: Icons.devices,
             title: 'No devices registered',
             subtitle: 'Register your first device to start using Music Room',
@@ -218,7 +211,7 @@ class _DeviceManagementScreenState extends BaseScreen<DeviceManagementScreen> wi
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppCards.info(
+          AppWidgets.infoBanner(
             title: 'Control Delegation',
             message: 'Allow your friends to control music playback on your devices. This enables collaborative playlist management and remote control.',
             icon: Icons.info,

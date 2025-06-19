@@ -45,22 +45,14 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           const PopupMenuItem(
             value: 'add_to_playlist',
             child: Row(
-              children: [
-                Icon(Icons.playlist_add, size: 16),
-                SizedBox(width: 8),
-                Text('Add to Playlist'),
-              ],
+              children: [Icon(Icons.playlist_add, size: 16), SizedBox(width: 8), Text('Add to Playlist')],
             ),
           ),
           if (_track!.deezerTrackId != null)
             const PopupMenuItem(
               value: 'add_to_library',
               child: Row(
-                children: [
-                  Icon(Icons.library_add, size: 16),
-                  SizedBox(width: 8),
-                  Text('Add to Library'),
-                ],
+                children: [Icon(Icons.library_add, size: 16), SizedBox(width: 8), Text('Add to Library')],
               ),
             ),
         ],
@@ -76,9 +68,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   @override
   Widget buildContent() {
-    if (_track == null) {
-      return buildLoadingState(message: 'Loading track details...');
-    }
+    if (_track == null) return buildLoadingState(message: 'Loading track details...');
 
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
@@ -128,9 +118,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
                       color: themeProvider.surfaceColor,
-                      child: const Center(
-                        child: CircularProgressIndicator(color: AppTheme.primary),
-                      ),
+                      child: const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
                     ),
                     errorWidget: (context, url, error) => Container(
                       color: themeProvider.surfaceColor,
@@ -146,30 +134,20 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           const SizedBox(height: 24),
           Text(
             _track!.name,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             _track!.artist,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white.withOpacity(0.8),
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.white.withOpacity(0.8)),
             textAlign: TextAlign.center,
           ),
           if (_track!.album.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               _track!.album,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white.withOpacity(0.6),
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.6)),
               textAlign: TextAlign.center,
             ),
           ],

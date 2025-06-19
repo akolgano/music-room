@@ -33,11 +33,14 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   Set<String> _selectedTracks = {};
   bool _isMultiSelectMode = false;
   bool _isAddingTracks = false;
+  bool _isAutoAddingToLibrary = false; 
   List<Playlist> _userPlaylists = []; 
 
   bool get _isAddingToPlaylist => widget.playlistId != null;
   bool get _hasSelection => _selectedTracks.isNotEmpty;
   bool get _canAddTracks => _hasSelection && !_isAddingTracks;
+  bool get _hasSearchResults => _musicProvider.searchResults.isNotEmpty;
+  
   MusicProvider get _musicProvider => Provider.of<MusicProvider>(context, listen: false);
   DeviceProvider get _deviceProvider => Provider.of<DeviceProvider>(context, listen: false);
   AuthProvider get _authProvider => Provider.of<AuthProvider>(context, listen: false);
@@ -69,7 +72,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
             _buildSearchHeader(music),
             _buildModeSelector(),
             if (_isAddingToPlaylist && _isMultiSelectMode) _buildQuickActions(),
-            if (_isAddingTracks) _buildProgressIndicator(),
+            if (_isAddingTracks || _isAutoAddingToLibrary) _buildProgressIndicator(),
             Expanded(child: _buildResults(music.searchResults)),
           ],
         ),
@@ -134,6 +137,41 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         children: [
           if (_isAddingToPlaylist) _buildPlaylistBanner(),
           _buildSearchRow(musicProvider),
+          if (_searchDeezer && _hasSearchResults) _buildAutoAddBanner(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoAddBanner() {
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_awesome, color: Colors.green, size: 20),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'Deezer tracks are automatically added to your library',
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          if (_isAutoAddingToLibrary)
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.green),
+            ),
         ],
       ),
     );
@@ -304,7 +342,9 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              'Adding ${_selectedTracks.length} tracks...',
+              _isAutoAddingToLibrary 
+                ? 'Adding ${_musicProvider.searchResults.length} tracks to library...'
+                : 'Adding ${_selectedTracks.length} tracks...',
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
@@ -355,7 +395,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       onSelectionChanged: _isMultiSelectMode ? (value) => _toggleSelection(track.id) : null,
       onAdd: !_isMultiSelectMode && !isInPlaylist ? () => _handleAddTrack(track) : null, 
       onPlay: _searchDeezer ? () => _playTrack(track) : null,
-      onAddToLibrary: _searchDeezer && track.deezerTrackId != null ? () => _addToLibrary(track) : null,
       showAddButton: false,
     );
   }
@@ -473,10 +512,41 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     await _executeWithErrorHandling(() async {
       if (_searchDeezer) {
         await _musicProvider.searchDeezerTracks(_searchController.text);
+        await _autoAddDeezerTracksToLibrary();
       } else {
         await _musicProvider.searchTracks(_searchController.text);
       }
     }, errorMessage: 'Search failed. Please try again.');
+  }
+
+  Future<void> _autoAddDeezerTracksToLibrary() async {
+    if (!_searchDeezer || !_musicProvider.hasValidDeezerTracks) return;
+
+    final deezerTracks = _musicProvider.deezerTracksFromSearch;
+    if (deezerTracks.isEmpty) return;
+
+    setState(() => _isAutoAddingToLibrary = true);
+    
+    try {
+      final result = await _musicProvider.addMultipleTracksFromDeezer(
+        tracks: deezerTracks,
+        token: _authProvider.token!,
+        onProgress: (current, total, trackName) {},
+      );
+
+      if (result.isCompleteSuccess) {
+        _showMessage('${result.successCount} tracks added to your library automatically!', isError: false);
+      } else if (result.hasPartialSuccess) {
+        _showMessage('${result.successCount} tracks added to library, ${result.failureCount} failed', isError: false);
+      } else if (result.hasErrors) {
+        _showMessage('Failed to add tracks to library automatically');
+      }
+
+    } catch (e) {
+      _showMessage('Error adding tracks to library: $e');
+    } finally {
+      setState(() => _isAutoAddingToLibrary = false);
+    }
   }
 
   Future<void> _playTrack(Track track) async {
@@ -498,18 +568,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         _showMessage('No preview available for this track');
       }
     }, errorMessage: 'Failed to play preview');
-  }
-
-  Future<void> _addToLibrary(Track track) async {
-    if (track.deezerTrackId == null) {
-      _showMessage('Cannot add non-Deezer track to library');
-      return;
-    }
-    
-    await _executeWithErrorHandling(() async {
-      await _musicProvider.addTrackFromDeezer(track.deezerTrackId!, _authProvider.token!);
-      _showMessage('Added "${track.name}" to your library!', isError: false);
-    }, errorMessage: 'Failed to add track to library');
   }
 
   Future<void> _addTrackToPlaylist(String playlistId, Track track) async {
@@ -646,6 +704,31 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       message, 
       backgroundColor: isError ? AppTheme.error : Colors.green
     );
+  }
+
+  Future<bool> _showConfirmDialog(String title, String message) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 
   Future<int?> _showSelectionDialog({

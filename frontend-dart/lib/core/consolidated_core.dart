@@ -53,6 +53,23 @@ class DateTimeUtils {
   }
 }
 
+class AsyncUtils {
+  static Future<bool> executeSimple<T>({
+    required Future<T> Function() operation,
+    Function(String)? onError,
+    Function(T)? onSuccess,
+  }) async {
+    try {
+      final result = await operation();
+      onSuccess?.call(result);
+      return true;
+    } catch (e) {
+      onError?.call(e.toString());
+      return false;
+    }
+  }
+}
+
 mixin StateManagement on ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
@@ -375,9 +392,7 @@ class SocialLoginUtils {
     try {
       final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
       if (kIsWeb && fbAppId != null) {
-        await FacebookAuth.instance.webAndDesktopInitialize(
-          appId: fbAppId, cookie: true, xfbml: true, version: "v22.0",
-        );
+        await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v22.0");
       }
       if (!kIsWeb) {
         final googleClientId = dotenv.env['GOOGLE_CLIENT_ID_APP'];

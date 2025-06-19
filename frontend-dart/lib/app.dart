@@ -195,11 +195,7 @@ class _PlayerBottomSheet extends StatelessWidget {
       decoration: BoxDecoration(color: themeProvider.primaryColor, borderRadius: BorderRadius.circular(20)),
       child: IconButton(
         onPressed: playerService.togglePlay,
-        icon: Icon(
-          playerService.isPlaying ? Icons.pause : Icons.play_arrow, 
-          color: Colors.white, 
-          size: 24,
-        ),
+        icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 24),
       ),
     );
   }

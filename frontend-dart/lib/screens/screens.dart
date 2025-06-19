@@ -4,7 +4,6 @@ export 'auth/forgot_password_screen.dart';
 export 'auth/signup_with_otp_screen.dart';
 export 'home/home_screen.dart';
 export 'music/control_delegation_screen.dart';
-export 'music/deezer_track_detail_screen.dart';
 export 'music/track_detail_screen.dart';
 export 'music/music_features_screen.dart';
 export 'music/track_search_screen.dart';
