@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/consolidated_core.dart';
-import '../../core/form_helpers.dart';
+import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import 'signup_with_otp_screen.dart';
 
@@ -96,7 +95,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       key: _formKey,
       child: Column(
         children: [
-          FormHelpers.buildTextFormField(
+          AppWidgets.textField(
             controller: _usernameController,
             labelText: 'Username',
             prefixIcon: Icons.person,
@@ -104,7 +103,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           ),
           if (!_isLogin) ...[
             const SizedBox(height: 16),
-            FormHelpers.buildTextFormField(
+            AppWidgets.textField(
               controller: _emailController,
               labelText: 'Email',
               prefixIcon: Icons.email,
@@ -112,7 +111,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             ),
           ],
           const SizedBox(height: 16),
-          FormHelpers.buildTextFormField(
+          AppWidgets.textField(
             controller: _passwordController,
             labelText: 'Password',
             prefixIcon: Icons.lock,
@@ -120,7 +119,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             validator: AppValidators.password,
           ),
           const SizedBox(height: 24),
-          FormHelpers.buildPrimaryButton(
+          AppWidgets.primaryButton(
             text: _isLogin ? 'Sign In' : 'Sign Up',
             onPressed: _isLoading ? null : _submit,
             isLoading: _isLoading,
@@ -143,7 +142,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   );
 
   Widget _buildSocialButton(String provider, IconData icon) => 
-      FormHelpers.buildSecondaryButton(
+      AppWidgets.secondaryButton(
         text: provider,
         icon: icon,
         onPressed: () => _socialLogin(provider),

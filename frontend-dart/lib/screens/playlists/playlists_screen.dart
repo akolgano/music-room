@@ -1,8 +1,8 @@
 // lib/screens/playlists/playlists_screen.dart
 import 'package:flutter/material.dart';
 import '../../providers/music_provider.dart';
-import '../../core/consolidated_core.dart';
-import '../../widgets/unified_components.dart';
+import '../../core/core.dart';
+import '../../widgets/app_widgets.dart'; 
 import '../../models/models.dart';
 import '../base_screen.dart';
 
@@ -34,13 +34,13 @@ class _PublicPlaylistsScreenState extends BaseScreen<PublicPlaylistsScreen> {
       builder: (context, musicProvider) => buildListWithRefresh<Playlist>(
         items: musicProvider.playlists,
         onRefresh: _loadPlaylists,
-        itemBuilder: (playlist, index) => UnifiedComponents.playlistCard(
+        itemBuilder: (playlist, index) => AppWidgets.playlistCard( 
           playlist: playlist,
           onTap: () => _viewPlaylist(playlist), 
           onPlay: () => _playPlaylist(playlist),
           showPlayButton: true,
         ),
-        emptyState: UnifiedComponents.emptyState(
+        emptyState: AppWidgets.emptyState( 
           icon: Icons.public,
           title: 'No public playlists',
           subtitle: 'Public playlists created by users will appear here',

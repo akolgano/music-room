@@ -1,7 +1,7 @@
 // lib/screens/friends/friends_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/consolidated_core.dart';
+import '../../core/core.dart';
 import '../../providers/friend_provider.dart';
 import '../../widgets/app_widgets.dart';  
 import '../base_screen.dart';

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../providers/friend_provider.dart';
-import '../../core/consolidated_core.dart';
+import '../../core/core.dart';
 import '../../models/models.dart';
 import '../../models/api_models.dart';
 import '../../widgets/widgets.dart'; 

@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
-import '../../core/consolidated_core.dart';
-import '../../core/form_helpers.dart';
+import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {
@@ -36,7 +35,7 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with 
           padding: const EdgeInsets.all(20),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 450),
-            child: FormHelpers.buildCard( 
+            child: AppTheme.buildFormCard( 
               title: 'Link with Social Network',
               titleIcon: Icons.link,
               child: Consumer<ProfileProvider>(

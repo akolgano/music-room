@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/consolidated_core.dart';
-import '../../core/form_helpers.dart';
+import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 
 class SignupWithOtpScreen extends StatefulWidget {
@@ -58,21 +57,21 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         child: Column(
           children: [
             if (!_otpSent) ...[
-              FormHelpers.buildTextFormField(
+              AppWidgets.textField(
                 controller: _emailController,
                 labelText: 'Email',
                 prefixIcon: Icons.email,
                 validator: AppValidators.email,
               ),
               const SizedBox(height: 16),
-              FormHelpers.buildTextFormField(
+              AppWidgets.textField(
                 controller: _usernameController,
                 labelText: 'Username',
                 prefixIcon: Icons.person,
                 validator: AppValidators.username,
               ),
               const SizedBox(height: 16),
-              FormHelpers.buildTextFormField(
+              AppWidgets.textField(
                 controller: _passwordController,
                 labelText: 'Password',
                 prefixIcon: Icons.lock,
@@ -80,7 +79,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                 validator: AppValidators.password,
               ),
               const SizedBox(height: 24),
-              FormHelpers.buildPrimaryButton(
+              AppWidgets.primaryButton(
                 text: 'Send Verification Code',
                 onPressed: _isLoading ? null : _sendOtp,
                 isLoading: _isLoading,
@@ -93,7 +92,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                 icon: Icons.email,
               ),
               const SizedBox(height: 16),
-              FormHelpers.buildTextFormField(
+              AppWidgets.textField(
                 controller: _otpController,
                 labelText: 'Verification Code',
                 prefixIcon: Icons.lock,
@@ -127,7 +126,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                 ],
               ),
               const SizedBox(height: 24),
-              FormHelpers.buildPrimaryButton(
+              AppWidgets.primaryButton(
                 text: 'Create Account',
                 onPressed: _isLoading ? null : _signup,
                 isLoading: _isLoading,

@@ -37,45 +37,79 @@ class MusicPlayerService with ChangeNotifier {
 
   Future<void> playTrack(Track track, String url) async {
     try {
+      await _audioPlayer.stop();
+      
+      _position = Duration.zero;
+      _duration = Duration.zero;
+      
       _currentTrack = track;
+      
       await _audioPlayer.setUrl(url);
       await _audioPlayer.play();
       
-      if (track.imageUrl != null) {
-        themeProvider.extractAndApplyDominantColor(track.imageUrl);
-      }
+      if (track.imageUrl != null) themeProvider.extractAndApplyDominantColor(track.imageUrl);
       
+      print('Successfully started playing: ${track.name}');
       notifyListeners();
     } catch (e) {
-      print('Error playing track: $e');
+      print('Error playing track "${track.name}": $e');
+      _currentTrack = null;
+      _isPlaying = false;
+      _position = Duration.zero;
+      _duration = Duration.zero;
+      notifyListeners();
       rethrow;
     }
   }
 
   Future<void> play() async {
-    await _audioPlayer.play();
+    try {
+      await _audioPlayer.play();
+    } catch (e) {
+      print('Error resuming playback: $e');
+      rethrow;
+    }
   }
 
   Future<void> pause() async {
-    await _audioPlayer.pause();
+    try {
+      await _audioPlayer.pause();
+    } catch (e) {
+      print('Error pausing playback: $e');
+      rethrow;
+    }
   }
 
   Future<void> stop() async {
-    await _audioPlayer.stop();
-    _currentTrack = null;
-    notifyListeners();
+    try {
+      await _audioPlayer.stop();
+      _currentTrack = null;
+      _position = Duration.zero;
+      _duration = Duration.zero;
+      notifyListeners();
+    } catch (e) {
+      print('Error stopping playback: $e');
+      rethrow;
+    }
   }
 
   Future<void> togglePlay() async {
-    if (_isPlaying) {
-      await pause();
-    } else {
-      await play();
+    try {
+      if (_isPlaying) await pause();
+      else await play();
+    } catch (e) {
+      print('Error toggling playback: $e');
+      rethrow;
     }
   }
 
   Future<void> seek(Duration position) async {
-    await _audioPlayer.seek(position);
+    try {
+      await _audioPlayer.seek(position);
+    } catch (e) {
+      print('Error seeking to position: $e');
+      rethrow;
+    }
   }
 
   @override
