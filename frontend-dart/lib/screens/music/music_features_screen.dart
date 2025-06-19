@@ -35,7 +35,6 @@ class MusicFeaturesScreen extends StatelessWidget {
               description: 'Search and select tracks to add to playlists',
               onTap: () => Navigator.pushNamed(context, AppRoutes.trackSelection),
             ),
-            
             UnifiedComponents.sectionTitle('Collaboration Features'),
             UnifiedComponents.featureCard(
               icon: Icons.how_to_vote,
@@ -49,7 +48,6 @@ class MusicFeaturesScreen extends StatelessWidget {
               description: 'Delegate playlist control to other users',
               onTap: () => Navigator.pushNamed(context, AppRoutes.controlDelegation),
             ),
-            
             UnifiedComponents.sectionTitle('Deezer Integration'),
             UnifiedComponents.featureCard(
               icon: Icons.music_note,
@@ -57,9 +55,7 @@ class MusicFeaturesScreen extends StatelessWidget {
               description: 'Find and add tracks from Deezer',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (ctx) => const TrackSearchScreen(searchDeezer: true),
-                ),
+                MaterialPageRoute(builder: (ctx) => const TrackSearchScreen(searchDeezer: true)),
               ),
             ),
           ],

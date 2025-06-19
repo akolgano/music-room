@@ -287,6 +287,51 @@ class BatchAddResult {
   }
 }
 
+class BatchLibraryAddResult {
+  final int totalTracks;
+  final int successCount;
+  final int failureCount;
+  final List<String> errors;
+  final List<String> successfulTracks;
+
+  const BatchLibraryAddResult({
+    required this.totalTracks,
+    required this.successCount,
+    required this.failureCount,
+    this.errors = const [],
+    this.successfulTracks = const [],
+  });
+
+  bool get hasErrors => failureCount > 0;
+  bool get hasPartialSuccess => successCount > 0 && failureCount > 0;
+  bool get isCompleteSuccess => successCount == totalTracks && failureCount == 0;
+  
+  String get summaryMessage {
+    if (isCompleteSuccess) {
+      return 'All $totalTracks tracks added to your library successfully!';
+    } else if (hasPartialSuccess) {
+      return '$successCount/$totalTracks tracks added to your library';
+    } else {
+      return 'Failed to add tracks to your library';
+    }
+  }
+
+  String get detailedMessage {
+    final parts = <String>[];
+    if (successCount > 0) parts.add('$successCount added');
+    if (failureCount > 0) parts.add('$failureCount failed');
+    return parts.join(', ');
+  }
+
+  List<String> get successSample {
+    return successfulTracks.take(3).toList();
+  }
+
+  List<String> get errorSample {
+    return errors.take(3).toList();
+  }
+}
+
 class SocialLoginResult {
   final bool success;
   final String? token;

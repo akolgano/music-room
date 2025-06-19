@@ -38,9 +38,7 @@ Future<void> setupServiceLocator() async {
     
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        final token = getIt.isRegistered<AuthService>() 
-          ? getIt<AuthService>().currentToken 
-          : null;
+        final token = getIt.isRegistered<AuthService>() ? getIt<AuthService>().currentToken : null;
         if (token != null) options.headers['Authorization'] = 'Token $token';
         handler.next(options);
       },

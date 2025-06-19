@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/consolidated_core.dart';
-import '../../core/async_helpers.dart';
 import '../../core/form_helpers.dart';
 import '../../widgets/app_widgets.dart';
 import 'signup_with_otp_screen.dart';
@@ -243,10 +242,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   }
 
   void _showError(String message) {
-    AppWidgets.showSnackBar(
-      context,
-      message,
-      backgroundColor: AppTheme.error,
-    );
+    AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
   }
 }

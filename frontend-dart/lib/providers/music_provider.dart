@@ -167,7 +167,7 @@ class MusicProvider extends BaseProvider {
         failureCount++;
         errors.add('Failed to add track: $e');
       }
-}
+    }
 
     return BatchAddResult(
       totalTracks: trackIds.length,
@@ -220,6 +220,47 @@ class MusicProvider extends BaseProvider {
     await executeAsync(() => _musicService.addTrackFromDeezer(deezerTrackId, token));
   }
 
+  Future<BatchLibraryAddResult> addMultipleTracksFromDeezer({
+    required List<Track> tracks,
+    required String token,
+    Function(int current, int total, String trackName)? onProgress,
+  }) async {
+    int successCount = 0;
+    int failureCount = 0;
+    List<String> errors = [];
+    List<String> successfulTracks = [];
+
+    final validTracks = tracks.where((track) => 
+      track.deezerTrackId != null && track.deezerTrackId!.isNotEmpty).toList();
+
+    for (int i = 0; i < validTracks.length; i++) {
+      final track = validTracks[i];
+      
+      onProgress?.call(i + 1, validTracks.length, track.name);
+      
+      try {
+        await _musicService.addTrackFromDeezer(track.deezerTrackId!, token);
+        successCount++;
+        successfulTracks.add(track.name);
+        
+        if (i < validTracks.length - 1) {
+          await Future.delayed(const Duration(milliseconds: 200));
+        }
+      } catch (e) {
+        failureCount++;
+        errors.add('Failed to add "${track.name}": ${e.toString()}');
+      }
+    }
+
+    return BatchLibraryAddResult(
+      totalTracks: validTracks.length,
+      successCount: successCount,
+      failureCount: failureCount,
+      errors: errors,
+      successfulTracks: successfulTracks,
+    );
+  }
+
   void clearSearchResults() {
     _searchResults.clear();
     notifyListeners();
@@ -235,5 +276,14 @@ class MusicProvider extends BaseProvider {
 
   bool isTrackInPlaylist(String trackId) {
     return _playlistTracks.any((t) => t.trackId == trackId);
+  }
+
+  List<Track> get deezerTracksFromSearch {
+    return _searchResults.where((track) => 
+      track.deezerTrackId != null && track.deezerTrackId!.isNotEmpty).toList();
+  }
+
+  bool get hasValidDeezerTracks {
+    return deezerTracksFromSearch.isNotEmpty;
   }
 }
