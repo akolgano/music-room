@@ -11,7 +11,7 @@ urlpatterns = [
     path('public_playlists/', views.get_all_shared_playlists, name='public_playlists'),
     path('playlist/<int:playlist_id>/tracks/', views.playlist_tracks),
     path('<int:playlist_id>/add/', views.add_track),
-    path('move-track/', views.move_track_in_playlist),
+    path('<int:playlist_id>/move-track/', views.move_track_in_playlist),
     path('<int:playlist_id>/change-visibility/', views.change_visibility),
     path('<int:playlist_id>/invite-user/', views.invite_user),
 ]
