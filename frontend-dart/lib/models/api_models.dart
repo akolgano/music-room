@@ -72,11 +72,52 @@ class SocialLoginRequest {
     this.type,
   });
 
-  Map<String, dynamic> toJson() => {
-    'access_token': accessToken,
-    'id_token': idToken,
-    'type': type,
-  };
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{};
+    
+    if (type != null) {
+      json['type'] = type;
+    }
+    
+    if (accessToken != null) {
+      json['access_token'] = accessToken;
+    }
+    
+    if (idToken != null) {
+      json['id_token'] = idToken;
+    }
+    
+    if (idToken != null) {
+      json['token'] = idToken;
+    } else if (accessToken != null) {
+      json['token'] = accessToken;
+    }
+    
+    return json;
+  }
+}
+
+class SocialLoginResult {
+  final bool success;
+  final String? token;
+  final String? provider;
+  final String? error;
+  final String? tokenType;
+
+  SocialLoginResult.success(this.token, this.provider, {this.tokenType}) 
+      : success = true, error = null;
+  
+  SocialLoginResult.error(this.error) 
+      : success = false, token = null, provider = null, tokenType = null;
+  
+  @override
+  String toString() {
+    if (success) {
+      return 'SocialLoginResult.success(token: ${token?.substring(0, 20)}..., provider: $provider, tokenType: $tokenType)';
+    } else {
+      return 'SocialLoginResult.error($error)';
+    }
+  }
 }
 
 class SocialLinkRequest {

@@ -11,13 +11,27 @@ import 'widgets/app_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   try {
+    print('Starting app initialization...');
+    
     await dotenv.load();
+    print('Environment variables loaded');
+    
     await setupServiceLocator();
-    await SocialLoginUtils.initialize();
+    print('Service locator setup complete');
+    
+    try {
+      await SocialLoginUtils.initialize();
+      print('Social login services initialized successfully');
+    } catch (e) {
+      print('Warning: Social login initialization failed: $e');
+    }
+    
+    print('Starting MyApp...');
     runApp(const MyApp());
   } catch (e) {
-    print('Error during app initialization: $e');
+    print('Critical error during app initialization: $e');
     runApp(const ErrorApp());
   }
 }

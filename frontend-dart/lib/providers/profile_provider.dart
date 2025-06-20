@@ -6,6 +6,7 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
+import '../core/core.dart';
 
 class ProfileProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -62,14 +63,7 @@ class ProfileProvider with ChangeNotifier {
   
   GoogleSignIn? googleSignIn;
 
-  ProfileProvider() {
-    if (!kIsWeb) {
-      googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile', 'openid'],
-        clientId: dotenv.env['GOOGLE_CLIENT_ID_APP'],
-      );
-    }
-  }
+  ProfileProvider() {}
 
   void clearError() {
     _errorMessage = null;
@@ -241,15 +235,24 @@ class ProfileProvider with ChangeNotifier {
   }
 
   Future<bool> googleLinkApp(String? token) async {
-    try{
+    try {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
 
-      final user = await googleSignIn?.signIn();
+      final googleSignIn = SocialLoginUtils.googleSignInInstance;
+      
+      if (googleSignIn == null) {
+        _errorMessage = "Google Sign-In not initialized";
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final user = await googleSignIn.signIn();
 
       if (user == null) {
-        _errorMessage = "Google login failed !";
+        _errorMessage = "Google login failed!";
         _isLoading = false;
         notifyListeners();
         return false;
@@ -259,7 +262,7 @@ class ProfileProvider with ChangeNotifier {
       final idToken = auth.idToken;
 
       if (idToken == null) {
-        _errorMessage = "Google login failed !";
+        _errorMessage = "Google login failed!";
         _isLoading = false;
         notifyListeners();
         return false;
@@ -272,10 +275,10 @@ class ProfileProvider with ChangeNotifier {
       return true;
 
     } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
     }
   }
 
