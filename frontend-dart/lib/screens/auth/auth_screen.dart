@@ -71,14 +71,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     titleIcon: Icons.music_note,
     child: Column(
       children: [
-        AnimatedBuilder(
-          animation: _rotationController,
-          child: const Icon(Icons.music_note, size: 40, color: AppTheme.primary),
-          builder: (context, child) => Transform.rotate(
-            angle: _rotationController.value * 2 * 3.14159, 
-            child: child
-          ),
-        ),
+        const Icon(Icons.music_note, size: 40, color: AppTheme.primary),
         const SizedBox(height: 16),
         Text(
           _isLogin ? 'Sign in to continue your musical journey' : 'Create an account to start sharing music',
@@ -95,12 +88,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       key: _formKey,
       child: Column(
         children: [
-          AppWidgets.textField(
-            controller: _usernameController,
-            labelText: 'Username',
-            prefixIcon: Icons.person,
-            validator: AppValidators.username,
-          ),
+          AppWidgets.textField(controller: _usernameController, labelText: 'Username', prefixIcon: Icons.person, validator: AppValidators.username),
           if (!_isLogin) ...[
             const SizedBox(height: 16),
             AppWidgets.textField(

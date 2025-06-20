@@ -11,13 +11,75 @@ import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 
 class R {
-  static double s(double size) => kIsWeb ? size : size.sp;
-  static double w(double size) => kIsWeb ? size : size.w;
-  static double h(double size) => kIsWeb ? size : size.h;
-  static double r(double size) => kIsWeb ? size : size.r;
-  static EdgeInsets p(double size) => kIsWeb ? EdgeInsets.all(size) : EdgeInsets.all(size.w);
-  static EdgeInsets sym({double? h, double? v}) => kIsWeb ? EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0) : EdgeInsets.symmetric(horizontal: (h ?? 0).w, vertical: (v ?? 0).h);
+  static double s(double size) {
+    if (kIsWeb) return size;
+    try {
+      final result = size.sp;
+      return result.isFinite && result > 0 && result < 1000 ? result : size;
+    } catch (e) {
+      print('ScreenUtil error for size $size: $e');
+      return size;
+    }
+  }
+  
+  static double w(double size) {
+    if (kIsWeb) return size;
+    try {
+      final result = size.w;
+      return result.isFinite && result > 0 && result < 10000 ? result : size;
+    } catch (e) {
+      print('ScreenUtil error for width $size: $e');
+      return size;
+    }
+  }
+  
+  static double h(double size) {
+    if (kIsWeb) return size;
+    try {
+      final result = size.h;
+      return result.isFinite && result > 0 && result < 10000 ? result : size;
+    } catch (e) {
+      print('ScreenUtil error for height $size: $e');
+      return size;
+    }
+  }
+  
+  static double r(double size) {
+    if (kIsWeb) return size;
+    try {
+      final result = size.r;
+      return result.isFinite && result > 0 && result < 1000 ? result : size;
+    } catch (e) {
+      print('ScreenUtil error for radius $size: $e');
+      return size;
+    }
+  }
+  
+  static EdgeInsets p(double size) {
+    if (kIsWeb) return EdgeInsets.all(size);
+    try {
+      final result = EdgeInsets.all(size.w);
+      return result;
+    } catch (e) {
+      print('ScreenUtil error for padding $size: $e');
+      return EdgeInsets.all(size);
+    }
+  }
+  
+  static EdgeInsets sym({double? h, double? v}) {
+    if (kIsWeb) return EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0);
+    try {
+      return EdgeInsets.symmetric(
+        horizontal: (h ?? 0).w, 
+        vertical: (v ?? 0).h
+      );
+    } catch (e) {
+      print('ScreenUtil error for symmetric padding h:$h v:$v: $e');
+      return EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0);
+    }
+  }
 }
+
 
 class AppWidgets {
   static final _primaryStyle = TextStyle(color: Colors.white, fontSize: R.s(16), fontWeight: FontWeight.w600);
@@ -544,15 +606,43 @@ class MiniPlayerWidget extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: R.w(12)),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start, 
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(track.name, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: R.s(14)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(track.artist, style: TextStyle(color: Colors.grey, fontSize: R.s(12)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(
+                        track.name, 
+                        style: TextStyle(
+                          color: Colors.white, 
+                          fontWeight: FontWeight.w600, 
+                          fontSize: R.s(14)
+                        ), 
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis
+                      ),
+                      Text(
+                        track.artist, 
+                        style: TextStyle(
+                          color: Colors.grey, 
+                          fontSize: R.s(12)
+                        ), 
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis
+                      ),
                     ],
                   ),
                 ),
               ),
-              IconButton(onPressed: playerService.togglePlay, icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor)),
+              IconButton(
+                onPressed: playerService.togglePlay, 
+                icon: Icon(
+                  playerService.isPlaying ? Icons.pause : Icons.play_arrow, 
+                  color: themeProvider.primaryColor
+                )
+              ),
+              IconButton(
+                onPressed: () => playerService.stop(),
+                icon: Icon(Icons.close, color: Colors.grey, size: R.s(20)),
+              ),
             ],
           ),
         );

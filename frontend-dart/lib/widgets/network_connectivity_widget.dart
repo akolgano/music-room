@@ -58,11 +58,7 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            _isConnected ? Icons.wifi : Icons.wifi_off,
-            color: Colors.white,
-            size: 16,
-          ),
+          Icon(_isConnected ? Icons.wifi : Icons.wifi_off, color: Colors.white, size: 16),
           const SizedBox(width: 8),
           Text(
             _isConnected ? 'Back online' : 'No internet connection',
