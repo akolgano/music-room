@@ -187,11 +187,7 @@ class WebSocketService with ChangeNotifier {
     try {
       if (_channel != null) {
         if (_isConnected && _currentUserId != null) {
-          _sendMessage({
-            'type': 'user_left',
-            'user_id': _currentUserId,
-            'timestamp': DateTime.now().toIso8601String(),
-          });
+          _sendMessage({'type': 'user_left', 'user_id': _currentUserId, 'timestamp': DateTime.now().toIso8601String()});
         }
         
         await _channel!.sink.close();

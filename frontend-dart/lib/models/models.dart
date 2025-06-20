@@ -6,16 +6,9 @@ class User {
 
   const User({required this.id, required this.username, this.email});
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json['id'].toString(),
-    username: json['username'] as String,
-    email: json['email'] as String?,
-  );
+  factory User.fromJson(Map<String, dynamic> json) => User(id: json['id'].toString(), username: json['username'] as String, email: json['email'] as String?);
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'username': username,
-    'email': email,
+  Map<String, dynamic> toJson() => {'id': id, 'username': username, 'email': email,
   };
 }
 
@@ -294,26 +287,16 @@ class BatchLibraryAddResult {
   final List<String> errors;
   final List<String> successfulTracks;
 
-  const BatchLibraryAddResult({
-    required this.totalTracks,
-    required this.successCount,
-    required this.failureCount,
-    this.errors = const [],
-    this.successfulTracks = const [],
-  });
+  const BatchLibraryAddResult({required this.totalTracks, required this.successCount, required this.failureCount, this.errors = const [], this.successfulTracks = const []});
 
   bool get hasErrors => failureCount > 0;
   bool get hasPartialSuccess => successCount > 0 && failureCount > 0;
   bool get isCompleteSuccess => successCount == totalTracks && failureCount == 0;
   
   String get summaryMessage {
-    if (isCompleteSuccess) {
-      return 'All $totalTracks tracks added to your library successfully!';
-    } else if (hasPartialSuccess) {
-      return '$successCount/$totalTracks tracks added to your library';
-    } else {
-      return 'Failed to add tracks to your library';
-    }
+    if (isCompleteSuccess) return 'All $totalTracks tracks added to your library successfully!';
+    else if (hasPartialSuccess) return '$successCount/$totalTracks tracks added to your library';
+    else return 'Failed to add tracks to your library';
   }
 
   String get detailedMessage {

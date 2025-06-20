@@ -6,8 +6,13 @@ import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../models/models.dart';
+import '../../models/sort_models.dart';
+import '../../services/track_sorting_service.dart';
 import '../../core/core.dart';
-import '../../widgets/widgets.dart';
+import '../../widgets/widgets.dart'; 
+import '../../widgets/app_widgets.dart';
+import '../../widgets/track_sort_bottom_sheet.dart';
+import '../../widgets/sort_button.dart';
 import '../../services/websocket_service.dart';
 import '../base_screen.dart';
 
@@ -320,44 +325,102 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   Widget _buildTracksSection() {
-    return Card(
-      color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer<MusicProvider>(
+      builder: (context, musicProvider, _) {
+        final sortedTracks = musicProvider.sortedPlaylistTracks;
+        final currentSort = musicProvider.currentSortOption;
+        
+        return Card(
+          color: AppTheme.surface,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.queue_music, color: AppTheme.primary, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Tracks',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                    const Row(
+                      children: [
+                        Icon(Icons.queue_music, color: AppTheme.primary, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Tracks',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '${sortedTracks.length} tracks',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(width: 8),
+                        SortButton(
+                          currentSort: currentSort,
+                          onPressed: _showSortOptions,
+                          showLabel: false,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                Text(
-                  '${_tracks.length} tracks',
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                
+                if (currentSort.field != TrackSortField.position) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(currentSort.icon, size: 14, color: AppTheme.primary),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Sorted by ${currentSort.displayName}',
+                          style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            musicProvider.resetToCustomOrder();
+                            showInfo('Restored to custom order');
+                          },
+                          child: const Icon(
+                            Icons.close,
+                            size: 14,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                
+                const SizedBox(height: 16),
+                
+                if (sortedTracks.isEmpty)
+                  _buildEmptyTracksState()
+                else
+                  _buildTracksList(sortedTracks, currentSort),
               ],
             ),
-            const SizedBox(height: 16),
-            if (_tracks.isEmpty)
-              _buildEmptyTracksState()
-            else
-              _buildTracksList(),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -403,48 +466,120 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
-  Widget _buildTracksList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _tracks.length,
-      itemBuilder: (context, index) {
-        final playlistTrack = _tracks[index];
-        final track = playlistTrack.track;
-        
-        if (track == null) {
-          return ListTile(
-            leading: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.music_off, color: Colors.white),
-            ),
-            title: Text(
-              playlistTrack.name,
-              style: const TextStyle(color: Colors.white),
-            ),
-            subtitle: const Text(
-              'Track unavailable',
-              style: TextStyle(color: Colors.grey),
-            ),
-            trailing: Text(
-              '${index + 1}',
-              style: const TextStyle(color: Colors.grey),
-            ),
-          );
-        }
+  Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
+    final canReorder = currentSort.field == TrackSortField.position && _isOwner;
+    
+    if (canReorder) {
+      return ReorderableListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: tracks.length,
+        onReorder: _onReorderTracks,
+        itemBuilder: (context, index) {
+          final playlistTrack = tracks[index];
+          final track = playlistTrack.track;
+          
+          return _buildTrackItem(track, playlistTrack, index, key: ValueKey(playlistTrack.trackId));
+        },
+      );
+    } else {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: tracks.length,
+        itemBuilder: (context, index) {
+          final playlistTrack = tracks[index];
+          final track = playlistTrack.track;
+          
+          return _buildTrackItem(track, playlistTrack, index);
+        },
+      );
+    }
+  }
 
-        return AppWidgets.trackCard(
-          track: track,
-          onTap: () => _playTrackAt(index),
-          onPlay: () => _playTrackAt(index),
-          onRemove: _isOwner ? () => _removeTrack(track.id) : null,
-          showAddButton: false,
+  Widget _buildTrackItem(Track? track, PlaylistTrack playlistTrack, int index, {Key? key}) {
+    if (track == null) {
+      return ListTile(
+        key: key,
+        leading: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.grey,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.music_off, color: Colors.white),
+        ),
+        title: Text(
+          playlistTrack.name,
+          style: const TextStyle(color: Colors.white),
+        ),
+        subtitle: const Text(
+          'Track unavailable',
+          style: TextStyle(color: Colors.grey),
+        ),
+        trailing: Text(
+          '${index + 1}',
+          style: const TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return AppWidgets.trackCard(
+      key: key,
+      track: track,
+      onTap: () => _playTrackAt(index),
+      onPlay: () => _playTrackAt(index),
+      onRemove: _isOwner ? () => _removeTrack(track.id) : null,
+      showAddButton: false,
+    );
+  }
+
+  void _onReorderTracks(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final musicProvider = getProvider<MusicProvider>();
+      final tracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
+      final item = tracks.removeAt(oldIndex);
+      tracks.insert(newIndex, item);
+      
+      for (int i = 0; i < tracks.length; i++) {
+        tracks[i] = PlaylistTrack(
+          trackId: tracks[i].trackId,
+          name: tracks[i].name,
+          position: i,
+          track: tracks[i].track,
         );
+      }
+    });
+    
+    _updateTrackOrder(oldIndex, newIndex);
+  }
+
+  Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
+    try {
+      final musicProvider = getProvider<MusicProvider>();
+      await musicProvider.moveTrackInPlaylist(playlistId: widget.playlistId, rangeStart: oldIndex, insertBefore: newIndex, token: auth.token!);
+    } catch (e) {
+      showError('Failed to update track order: $e');
+      await _loadData(); 
+    }
+  }
+
+  void _showSortOptions() {
+    TrackSortBottomSheet.show(
+      context,
+      currentSort: getProvider<MusicProvider>().currentSortOption,
+      onSortChanged: (sortOption) {
+        final musicProvider = getProvider<MusicProvider>();
+        musicProvider.setSortOption(sortOption);
+        
+        final isCustomOrder = sortOption.field == TrackSortField.position;
+        showInfo(isCustomOrder 
+            ? 'Tracks restored to custom order'
+            : 'Tracks sorted by ${sortOption.displayName}');
       },
     );
   }
@@ -454,9 +589,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       if (mounted) {
         setState(() {
           _notifications.add(notification);
-          if (_notifications.length > 3) {
-            _notifications.removeAt(0);
-          }
+          if (_notifications.length > 3) _notifications.removeAt(0);
         });
       }
     });

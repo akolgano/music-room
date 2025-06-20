@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
       designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
+      useInheritedMediaQuery: true,
       builder: (context, child) {
         return MultiProvider(
           providers: [...AppBuilder.buildProviders(), ...AppBuilder.buildAdditionalProviders()],
@@ -54,21 +55,6 @@ class MyApp extends StatelessWidget {
             onGenerateRoute: AppBuilder.generateRoute,
             initialRoute: '/',
             debugShowCheckedModeBanner: false,
-            builder: (context, child) {
-              return NetworkConnectivityWidget(
-                child: Stack(
-                  children: [
-                    child ?? const SizedBox.shrink(),
-                    const Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: MiniPlayerWidget(),
-                    ),
-                  ],
-                ),
-              );
-            },
           ),
         );
       },

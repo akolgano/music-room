@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/service_locator.dart';
 import '../services/music_service.dart';
 import '../models/models.dart';
+import '../models/sort_models.dart';
+import '../services/track_sorting_service.dart';
 import '../core/core.dart';
 
 class MusicProvider extends BaseProvider {
@@ -17,6 +19,22 @@ class MusicProvider extends BaseProvider {
   List<Track> get searchResults => List.unmodifiable(_searchResults);
   List<PlaylistTrack> get playlistTracks => List.unmodifiable(_playlistTracks);
   bool get hasConnectionError => _hasConnectionError;
+  TrackSortOption _currentSortOption = TrackSortOption.defaultOptions.first;
+  List<PlaylistTrack> _originalPlaylistTracks = [];
+
+  TrackSortOption get currentSortOption => _currentSortOption;
+  List<PlaylistTrack> get sortedPlaylistTracks => 
+      TrackSortingService.sortTracks(_playlistTracks, _currentSortOption);
+
+  void setSortOption(TrackSortOption sortOption) {
+    _currentSortOption = sortOption;
+    notifyListeners();
+  }
+
+  void resetToCustomOrder() {
+    _currentSortOption = TrackSortOption.defaultOptions.first;
+    notifyListeners();
+  }
 
   Future<void> fetchUserPlaylists(String token) async => _fetchPlaylists(token, false);
   Future<void> fetchPublicPlaylists(String token) async => _fetchPlaylists(token, true);
@@ -100,7 +118,10 @@ class MusicProvider extends BaseProvider {
 
   Future<void> fetchPlaylistTracks(String playlistId, String token) async {
     final result = await executeAsync(() => _musicService.getPlaylistTracks(playlistId, token));
-    if (result != null) _playlistTracks = result;
+    if (result != null) {
+      _playlistTracks = result;
+      _originalPlaylistTracks = List.from(result);
+    }
   }
 
   Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token, String? deviceUuid) async {
@@ -118,14 +139,88 @@ class MusicProvider extends BaseProvider {
         );
       }
 
-      await _musicService.addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
-      await fetchPlaylistTracks(playlistId, token);
+      final track = getTrackById(trackId);
+      
+      if (track != null && track.deezerTrackId != null && track.deezerTrackId!.isNotEmpty) {
+        try {
+          print('Adding Deezer track ${track.deezerTrackId} to backend database first...');
+          await _musicService.addTrackFromDeezerToTracks(track.deezerTrackId!, token);
+          print('Successfully added Deezer track to backend database');
+        } catch (e) {
+          print('Warning: Failed to add Deezer track to backend database: $e');
+        }
+      } else if (track == null) {
+        try {
+          print('Attempting to add trackId $trackId to backend database (might be Deezer ID)...');
+          await _musicService.addTrackFromDeezerToTracks(trackId, token);
+          print('Successfully added track to backend database');
+        } catch (e) {
+          print('Warning: Failed to add trackId to backend database: $e');
+        }
+      }
 
-      return const AddTrackResult(
-        success: true,
-        message: 'Track added successfully',
-        isDuplicate: false,
-      );
+      try {
+        await _musicService.addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
+        await fetchPlaylistTracks(playlistId, token);
+
+        return const AddTrackResult(
+          success: true,
+          message: 'Track added successfully',
+          isDuplicate: false,
+        );
+      } catch (e) {
+        if (e.toString().contains('No Track matches the given query')) {
+          print('Track $trackId not found in backend after first attempt, trying fallback...');
+          
+          if (track?.deezerTrackId != null && track!.deezerTrackId!.isNotEmpty) {
+            try {
+              print('Fallback: Re-adding track ${track.deezerTrackId} to backend database...');
+              await _musicService.addTrackFromDeezerToTracks(track.deezerTrackId!, token);
+              print('Fallback: Track added to backend, retrying playlist add...');
+              
+              await _musicService.addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
+              await fetchPlaylistTracks(playlistId, token);
+              
+              return const AddTrackResult(
+                success: true,
+                message: 'Track added successfully (fallback import from Deezer)',
+                isDuplicate: false,
+              );
+            } catch (retryError) {
+              print('Fallback failed: $retryError');
+              return AddTrackResult(
+                success: false,
+                message: 'Failed to add track after importing from Deezer: $retryError',
+                isDuplicate: false,
+              );
+            }
+          } else {
+            try {
+              print('Fallback: Attempting to use trackId $trackId as deezerTrackId...');
+              await _musicService.addTrackFromDeezerToTracks(trackId, token);
+              print('Fallback: Track added to backend, retrying playlist add...');
+              
+              await _musicService.addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
+              await fetchPlaylistTracks(playlistId, token);
+              
+              return const AddTrackResult(
+                success: true,
+                message: 'Track added successfully (fallback import from Deezer)',
+                isDuplicate: false,
+              );
+            } catch (retryError) {
+              print('Fallback failed: $retryError');
+              return AddTrackResult(
+                success: false,
+                message: 'Track not found in backend and could not be imported from Deezer',
+                isDuplicate: false,
+              );
+            }
+          }
+        } else {
+          rethrow;
+        }
+      }
     }) ?? const AddTrackResult(
       success: false,
       message: 'Failed to add track to playlist',

@@ -45,18 +45,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      body: AppWidgets.tabScaffold(
-        tabs: const [
-          Tab(icon: Icon(Icons.home), text: 'Home'),
-          Tab(icon: Icon(Icons.library_music), text: 'Library'),
-          Tab(icon: Icon(Icons.person), text: 'Profile'),
+      body: Column(
+        children: [
+          Expanded(
+            child: AppWidgets.tabScaffold(
+              tabs: const [
+                Tab(icon: Icon(Icons.home), text: 'Home'),
+                Tab(icon: Icon(Icons.library_music), text: 'Library'),
+                Tab(icon: Icon(Icons.person), text: 'Profile'),
+              ],
+              tabViews: [
+                _buildDashboard(auth),
+                _buildPlaylists(),
+                const ProfileScreen(isEmbedded: true),
+              ],
+              controller: _tabController,
+            ),
+          ),
+          const MiniPlayerWidget(),
         ],
-        tabViews: [
-          _buildDashboard(auth),
-          _buildPlaylists(),
-          const ProfileScreen(isEmbedded: true),
-        ],
-        controller: _tabController,
       ),
     );
   }

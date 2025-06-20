@@ -13,6 +13,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   List<Widget> get actions => [];
   Widget? get floatingActionButton => null;
   bool get showBackButton => true;
+  bool get showMiniPlayer => true;
 
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
 
@@ -133,7 +134,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
         actions: actions,
         automaticallyImplyLeading: showBackButton,
       ),
-      body: buildContent(),
+      body: Column(
+        children: [
+          Expanded(child: buildContent()),
+          if (showMiniPlayer) const MiniPlayerWidget(),
+        ],
+      ),
       floatingActionButton: floatingActionButton,
     );
   }

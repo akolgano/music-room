@@ -6,9 +6,12 @@ import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/music_player_service.dart';
+import '../../services/track_sorting_service.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/sort_button.dart';
 import '../../models/models.dart';
+import '../../models/sort_models.dart';
 import '../../utils/dialog_utils.dart';
 
 class TrackSearchScreen extends StatefulWidget {
@@ -16,12 +19,7 @@ class TrackSearchScreen extends StatefulWidget {
   final bool searchDeezer;
   final Track? initialTrack;
 
-  const TrackSearchScreen({
-    Key? key, 
-    this.playlistId, 
-    this.searchDeezer = true, 
-    this.initialTrack
-  }) : super(key: key);
+  const TrackSearchScreen({Key? key, this.playlistId, this.searchDeezer = true, this.initialTrack}) : super(key: key);
 
   @override
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
@@ -33,7 +31,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   Set<String> _selectedTracks = {};
   bool _isMultiSelectMode = false;
   bool _isAddingTracks = false;
-  bool _isAutoAddingToLibrary = false; 
+  bool _isAutoAddingToBackend = false; 
   List<Playlist> _userPlaylists = [];
   
   Timer? _searchTimer;
@@ -50,6 +48,13 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   DeviceProvider get _deviceProvider => Provider.of<DeviceProvider>(context, listen: false);
   AuthProvider get _authProvider => Provider.of<AuthProvider>(context, listen: false);
   MusicPlayerService get _playerService => Provider.of<MusicPlayerService>(context, listen: false);
+
+  TrackSortOption _searchSortOption = const TrackSortOption(
+    field: TrackSortField.name,
+    order: SortOrder.ascending,
+    displayName: 'Track Name (A-Z)',
+    icon: Icons.sort_by_alpha,
+  );
 
   @override
   void initState() {
@@ -77,7 +82,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
             _buildSearchHeader(music),
             _buildModeSelector(),
             if (_isAddingToPlaylist && _isMultiSelectMode) _buildQuickActions(),
-            if (_isAddingTracks || _isAutoAddingToLibrary) _buildProgressIndicator(),
+            if (_isAddingTracks || _isAutoAddingToBackend) _buildProgressIndicator(),
             Expanded(child: _buildResults(music.searchResults)),
           ],
         ),
@@ -161,17 +166,19 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
         children: [
           const Icon(Icons.auto_awesome, color: Colors.green, size: 20),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Deezer tracks are automatically added to your library',
-              style: TextStyle(
+              _isAutoAddingToBackend 
+                ? 'Adding tracks to backend database...'
+                : 'Deezer tracks are automatically added to the database',
+              style: const TextStyle(
                 color: Colors.green,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
             ),
           ),
-          if (_isAutoAddingToLibrary)
+          if (_isAutoAddingToBackend)
             const SizedBox(
               width: 16,
               height: 16,
@@ -259,6 +266,86 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     );
   }
 
+  void _showSearchSortOptions() {
+    final searchSortOptions = TrackSortOption.defaultOptions
+        .where((option) => option.field != TrackSortField.position && option.field != TrackSortField.dateAdded)
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  const Icon(Icons.sort, color: AppTheme.primary),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Sort Search Results',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            ...searchSortOptions.map((option) {
+              final isSelected = option == _searchSortOption;
+              return ListTile(
+                leading: Icon(
+                  option.icon,
+                  color: isSelected ? AppTheme.primary : Colors.white70,
+                ),
+                title: Text(
+                  option.displayName,
+                  style: TextStyle(
+                    color: isSelected ? AppTheme.primary : Colors.white,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+                trailing: isSelected
+                    ? const Icon(Icons.check, color: AppTheme.primary)
+                    : null,
+                onTap: () {
+                  setState(() {
+                    _searchSortOption = option;
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _onSearchTextChanged(String value) {
     setState(() {}); 
     
@@ -287,7 +374,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       await _executeWithErrorHandling(() async {
         if (_searchDeezer) {
           await _musicProvider.searchDeezerTracks(_searchController.text);
-          await _autoAddDeezerTracksToLibrary();
+          await _autoAddDeezerTracksToBackend(); 
         } else {
           await _musicProvider.searchTracks(_searchController.text);
         }
@@ -387,8 +474,8 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              _isAutoAddingToLibrary 
-                ? 'Adding ${_musicProvider.searchResults.length} tracks to library...'
+              _isAutoAddingToBackend 
+                ? 'Adding ${_musicProvider.searchResults.length} tracks to backend database...'
                 : 'Adding ${_selectedTracks.length} tracks...',
               style: const TextStyle(
                 color: Colors.white,
@@ -428,10 +515,37 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       }
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 16), 
-      itemCount: tracks.length, 
-      itemBuilder: (ctx, i) => _buildTrackItem(tracks[i])
+    final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
+
+    return Column(
+      children: [
+        if (tracks.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${tracks.length} results',
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                SortButton(
+                  currentSort: _searchSortOption,
+                  onPressed: _showSearchSortOptions,
+                  showLabel: true,
+                ),
+              ],
+            ),
+          ),
+        
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 16), 
+            itemCount: sortedTracks.length, 
+            itemBuilder: (ctx, i) => _buildTrackItem(sortedTracks[i])
+          ),
+        ),
+      ],
     );
   }
 
@@ -568,41 +682,76 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     await _executeWithErrorHandling(() async {
       if (_searchDeezer) {
         await _musicProvider.searchDeezerTracks(_searchController.text);
-        await _autoAddDeezerTracksToLibrary();
+        await _autoAddDeezerTracksToBackend(); 
       } else {
         await _musicProvider.searchTracks(_searchController.text);
       }
     }, errorMessage: 'Search failed. Please try again.');
   }
 
-  Future<void> _autoAddDeezerTracksToLibrary() async {
+  Future<void> _autoAddDeezerTracksToBackend() async {
     if (!_searchDeezer || !_musicProvider.hasValidDeezerTracks) return;
 
     final deezerTracks = _musicProvider.deezerTracksFromSearch;
     if (deezerTracks.isEmpty) return;
 
-    setState(() => _isAutoAddingToLibrary = true);
+    setState(() => _isAutoAddingToBackend = true);
     
     try {
-      final result = await _musicProvider.addMultipleTracksFromDeezer(
-        tracks: deezerTracks,
-        token: _authProvider.token!,
-        addToTracksApi: true,
-        onProgress: (current, total, trackName) {},
-      );
+      int successCount = 0;
+      int failureCount = 0;
+      final errors = <String>[];
 
-      if (result.isCompleteSuccess) {
-        _showMessage('${result.successCount} tracks added to your library and tracks database!', isError: false);
-      } else if (result.hasPartialSuccess) {
-        _showMessage('${result.successCount} tracks added, ${result.failureCount} failed', isError: false);
-      } else if (result.hasErrors) {
-        _showMessage('Failed to add tracks to library automatically');
+      print('Starting to add ${deezerTracks.length} Deezer tracks to backend database...');
+
+      for (final track in deezerTracks) {
+        if (track.deezerTrackId?.isNotEmpty == true) {
+          try {
+            print('Adding track ${track.name} (ID: ${track.deezerTrackId}) to backend...');
+            await _musicProvider.addSingleTrackFromDeezerToTracks(
+              track.deezerTrackId!, 
+              _authProvider.token!
+            );
+            successCount++;
+            print('Successfully added ${track.name} to backend database');
+          } catch (e) {
+            failureCount++;
+            final errorMsg = 'Failed to add "${track.name}" to backend: $e';
+            errors.add(errorMsg);
+            print('Error adding ${track.name} to backend: $e');
+          }
+          
+          await Future.delayed(const Duration(milliseconds: 100));
+        } else {
+          failureCount++;
+          errors.add('Track "${track.name}" has no Deezer ID');
+          print('Skipping ${track.name} - no Deezer ID');
+        }
+      }
+
+      if (successCount == deezerTracks.length) {
+        _showMessage('All $successCount tracks added to backend database!', isError: false);
+        print('All tracks successfully added to backend database');
+      } else if (successCount > 0) {
+        _showMessage('$successCount/${ deezerTracks.length} tracks added to backend database', isError: false);
+        print('Partial success: $successCount/${ deezerTracks.length} tracks added');
+      } else {
+        _showMessage('Failed to add any tracks to backend database');
+        print('Failed to add any tracks to backend database');
+      }
+
+      if (errors.isNotEmpty) {
+        print('Errors occurred while adding tracks:');
+        for (final error in errors.take(3)) { 
+          print('  - $error');
+        }
       }
 
     } catch (e) {
-      _showMessage('Error adding tracks to library: $e');
+      _showMessage('Error adding tracks to backend database: $e');
+      print('Critical error while adding tracks to backend: $e');
     } finally {
-      setState(() => _isAutoAddingToLibrary = false);
+      setState(() => _isAutoAddingToBackend = false);
     }
   }
 
@@ -759,11 +908,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   }
 
   void _showMessage(String message, {bool isError = true}) {
-    AppWidgets.showSnackBar(
-      context, 
-      message, 
-      backgroundColor: isError ? AppTheme.error : Colors.green
-    );
+    AppWidgets.showSnackBar(context, message, backgroundColor: isError ? AppTheme.error : Colors.green);
   }
 
   Future<bool> _showConfirmDialog(String title, String message) async {
