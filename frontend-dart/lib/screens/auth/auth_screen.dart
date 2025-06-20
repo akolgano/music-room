@@ -205,10 +205,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       } else {
         final errorMessage = authProvider.errorMessage ?? 'Authentication failed';
-        _showError(errorMessage);
+        AppWidgets.showSnackBar(context, errorMessage, backgroundColor: AppTheme.error);
       }
     } catch (e) {
-      _showError('An unexpected error occurred: $e');
+      AppWidgets.showSnackBar(context, 'An unexpected error occurred: $e', backgroundColor: AppTheme.error);
     }
     
     setState(() => _isLoading = false);
@@ -220,6 +220,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
     try {
+      print('Starting $provider login process...');
+      
+      if (provider == 'Google') {
+        print('Checking Google Sign-In initialization...');
+        if (!SocialLoginUtils.isInitialized) {
+          print('Re-initializing SocialLoginUtils...');
+          await SocialLoginUtils.initialize();
+          await Future.delayed(const Duration(milliseconds: 1000)); 
+        }
+        
+        if (SocialLoginUtils.googleSignInInstance == null) {
+          throw Exception('Google Sign-In is not available. Please check your configuration.');
+        }
+        print('Google Sign-In instance is available, proceeding...');
+      }
+      
       bool success;
       if (provider == 'Google') {
         success = await authProvider.googleLoginApp();
@@ -228,19 +244,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       }
       
       if (success) {
+        print('$provider login successful, navigating to home...');
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       } else {
         final errorMessage = authProvider.errorMessage ?? '$provider authentication failed';
-        _showError(errorMessage);
+        print('$provider login failed: $errorMessage');
+        AppWidgets.showSnackBar(context, errorMessage, backgroundColor: AppTheme.error);
       }
     } catch (e) {
-      _showError('$provider authentication error: $e');
+      print('$provider login exception: $e');
+      AppWidgets.showSnackBar(context, '$provider authentication error: $e', backgroundColor: AppTheme.error);
     }
     
     setState(() => _isLoading = false);
-  }
-
-  void _showError(String message) {
-    AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
   }
 }

@@ -110,9 +110,27 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> googleLoginApp() async {
     return await _execute(() async {
+      if (!SocialLoginUtils.isInitialized) {
+        print('SocialLoginUtils not initialized, initializing now...');
+        await SocialLoginUtils.initialize();
+        
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+      
+      if (SocialLoginUtils.googleSignInInstance == null) {
+        throw Exception('Google Sign-In is not properly configured. Please check your setup.');
+      }
+      
+      print('Attempting Google login through SocialLoginUtils...');
       final result = await SocialLoginUtils.loginWithGoogle();
-      if (result.success) await _authService.googleLogin('app', result.token!);
-      else throw Exception(result.error ?? "Google login failed!");
+      
+      if (result.success && result.token != null && result.token!.isNotEmpty) {
+        print('Google login successful, authenticating with backend...');
+        await _authService.googleLogin('app', result.token!);
+      } else {
+        print('Google login failed: ${result.error}');
+        throw Exception(result.error ?? "Google login failed - no valid token received");
+      }
     });
   }
 

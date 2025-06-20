@@ -1,4 +1,5 @@
 // lib/screens/music/track_search_screen.dart
+import 'dart:async'; 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_provider.dart';
@@ -33,7 +34,12 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   bool _isMultiSelectMode = false;
   bool _isAddingTracks = false;
   bool _isAutoAddingToLibrary = false; 
-  List<Playlist> _userPlaylists = []; 
+  List<Playlist> _userPlaylists = [];
+  
+  Timer? _searchTimer;
+  static const Duration _searchDelay = Duration(milliseconds: 800); 
+  static const int _minSearchLength = 2; 
+  bool _isAutoSearching = false; 
 
   bool get _isAddingToPlaylist => widget.playlistId != null;
   bool get _hasSelection => _selectedTracks.isNotEmpty;
@@ -235,22 +241,62 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
             controller: _searchController,
             labelText: '',
             hintText: _isAddingToPlaylist 
-              ? 'Search for tracks to add to playlist'
-              : 'Search for tracks',
+              ? 'Type to search for tracks to add to playlist'
+              : 'Type to search for tracks',
             prefixIcon: Icons.search,
-            onChanged: (_) => setState(() {}),
+            onChanged: _onSearchTextChanged, 
           ),
         ),
         const SizedBox(width: 8),
         AppWidgets.primaryButton(
           text: 'Search',
           onPressed: _searchController.text.isNotEmpty ? _performSearch : null,
-          isLoading: musicProvider.isLoading,
+          isLoading: musicProvider.isLoading || _isAutoSearching,
           icon: Icons.search,
           fullWidth: false,
         ),
       ],
     );
+  }
+
+  void _onSearchTextChanged(String value) {
+    setState(() {}); 
+    
+    _searchTimer?.cancel();
+    
+    if (value.trim().length < _minSearchLength) {
+      _musicProvider.clearSearchResults();
+      return;
+    }
+    
+    _searchTimer = Timer(_searchDelay, () {
+      if (mounted && _searchController.text.trim().length >= _minSearchLength) {
+        _performAutoSearch();
+      }
+    });
+  }
+
+  Future<void> _performAutoSearch() async {
+    if (!mounted || _searchController.text.trim().length < _minSearchLength) {
+      return;
+    }
+    
+    setState(() => _isAutoSearching = true);
+    
+    try {
+      await _executeWithErrorHandling(() async {
+        if (_searchDeezer) {
+          await _musicProvider.searchDeezerTracks(_searchController.text);
+          await _autoAddDeezerTracksToLibrary();
+        } else {
+          await _musicProvider.searchTracks(_searchController.text);
+        }
+      }, errorMessage: 'Auto-search failed');
+    } finally {
+      if (mounted) {
+        setState(() => _isAutoSearching = false);
+      }
+    }
   }
 
   Widget _buildModeSelector() {
@@ -360,18 +406,26 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       return AppWidgets.emptyState(
         icon: Icons.search, 
         title: 'Ready to find music?', 
-        subtitle: 'Enter a song title, artist name, or album to get started'
+        subtitle: 'Start typing to search for tracks automatically!'
       );
     }
     
-    if (tracks.isEmpty) {
-      return AppWidgets.emptyState(
-        icon: Icons.search_off,
-        title: 'No tracks found',
-        subtitle: 'Try different keywords',
-        buttonText: 'Clear Search',
-        onButtonPressed: _clearSearch,
-      );
+    if (tracks.isEmpty && _searchController.text.isNotEmpty) {
+      if (_searchController.text.length < _minSearchLength) {
+        return AppWidgets.emptyState(
+          icon: Icons.edit,
+          title: 'Keep typing...',
+          subtitle: 'Type at least $_minSearchLength characters to start searching',
+        );
+      } else {
+        return AppWidgets.emptyState(
+          icon: Icons.search_off,
+          title: 'No tracks found',
+          subtitle: 'Try different keywords',
+          buttonText: 'Clear Search',
+          onButtonPressed: _clearSearch,
+        );
+      }
     }
 
     return ListView.builder(
@@ -441,6 +495,9 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   void _setSearchMode(bool deezer) {
     setState(() => _searchDeezer = deezer);
+    if (_searchController.text.trim().length >= _minSearchLength) {
+      _performAutoSearch();
+    }
   }
 
   void _toggleMultiSelectMode() {
@@ -679,9 +736,12 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   void _clearSearch() {
     _searchController.clear();
+    _searchTimer?.cancel(); 
     _clearSelection();
     _musicProvider.clearSearchResults();
-    setState(() {});
+    setState(() {
+      _isAutoSearching = false;
+    });
   }
 
   Future<void> _executeWithErrorHandling(
@@ -776,6 +836,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   @override
   void dispose() {
+    _searchTimer?.cancel(); 
     _searchController.dispose();
     super.dispose();
   }

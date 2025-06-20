@@ -1,4 +1,4 @@
-// lib/core/consolidated_core.dart
+// lib/core/core.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -387,59 +387,129 @@ class SocialLoginUtils {
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
+    
     try {
+      print('Initializing social login services...');
+      
       final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
       if (kIsWeb && fbAppId != null) {
-        await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v22.0");
+        await FacebookAuth.instance.webAndDesktopInitialize(
+          appId: fbAppId, 
+          cookie: true, 
+          xfbml: true, 
+          version: "v22.0"
+        );
+        print('Facebook initialized for web');
       }
-      if (!kIsWeb) {
-        final googleClientId = dotenv.env['GOOGLE_CLIENT_ID_APP'];
-        if (googleClientId != null) {
-          _googleSignIn = GoogleSignIn(scopes: ['email', 'profile', 'openid'], clientId: googleClientId);
-        }
+      
+      final googleClientId = kIsWeb 
+          ? dotenv.env['GOOGLE_CLIENT_ID_WEB']
+          : dotenv.env['GOOGLE_CLIENT_ID_APP'];
+          
+      if (googleClientId != null) {
+        _googleSignIn = GoogleSignIn(
+          scopes: ['email', 'profile', 'openid'],
+          clientId: googleClientId,
+        );
+        print('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...');
+      } else {
+        print('Warning: Google Client ID not found in environment variables');
       }
+      
       _isInitialized = true;
+      print('Social login initialization completed successfully');
     } catch (e) {
       print('Social login initialization error: $e');
     }
   }
 
+  static GoogleSignIn? get googleSignInInstance => _googleSignIn;
+  static bool get isInitialized => _isInitialized;
+
   static Future<SocialLoginResult> _performSocialLogin(
     Future<dynamic> Function() loginFunction,
-    String Function(dynamic) tokenExtractor,
+    Map<String, String?> Function(dynamic) tokenExtractor,
     String provider,
   ) async {
     try {
+      print('Attempting $provider login...');
       final result = await loginFunction();
-      final token = tokenExtractor(result);
-      return token != null 
-        ? SocialLoginResult.success(token, provider.toLowerCase())
-        : SocialLoginResult.error('$provider login failed or was cancelled');
+      final tokens = tokenExtractor(result);
+      
+      final idToken = tokens['idToken'];
+      final accessToken = tokens['accessToken'];
+      
+      final token = idToken ?? accessToken;
+      
+      if (token != null && token.isNotEmpty) {
+        print('$provider login successful with token type: ${idToken != null ? 'idToken' : 'accessToken'}');
+        return SocialLoginResult.success(token, provider.toLowerCase());
+      } else {
+        print('$provider login failed - no valid token received');
+        print('Available tokens: idToken=${idToken != null}, accessToken=${accessToken != null}');
+        return SocialLoginResult.error('$provider login failed - no valid token received');
+      }
     } catch (e) {
+      print('$provider login error: $e');
       return SocialLoginResult.error('$provider login error: $e');
     }
   }
 
   static Future<SocialLoginResult> loginWithFacebook() async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     return _performSocialLogin(
       () async {
         final result = await FacebookAuth.instance.login();
         return result.status == LoginStatus.success ? result.accessToken : null;
       },
-      (result) => result?.tokenString,
+      (result) => {
+        'accessToken': result?.tokenString,
+        'idToken': null,
+      },
       'Facebook',
     );
   }
 
   static Future<SocialLoginResult> loginWithGoogle() async {
-    if (_googleSignIn == null) return SocialLoginResult.error('Google Sign-In not initialized');
+    if (!_isInitialized) {
+      print('Google Sign-In not initialized, initializing now...');
+      await initialize();
+    }
+    
+    if (_googleSignIn == null) {
+      print('Google Sign-In instance is null after initialization');
+      return SocialLoginResult.error('Google Sign-In not properly initialized. Please check your configuration.');
+    }
     
     return _performSocialLogin(
       () async {
-        final user = await _googleSignIn!.signIn();
-        return user != null ? await user.authentication : null;
+        try {
+          print('Attempting Google Sign-In...');
+          
+          await _googleSignIn!.signOut();
+          
+          final user = await _googleSignIn!.signIn();
+          if (user != null) {
+            print('Google user signed in: ${user.email}');
+            final auth = await user.authentication;
+            print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
+            return auth;
+          } else {
+            print('Google sign-in was cancelled by user');
+            return null;
+          }
+        } catch (e) {
+          print('Google Sign-In attempt failed: $e');
+          rethrow;
+        }
       },
-      (result) => result?.idToken,
+      (result) => {
+        'idToken': result?.idToken,
+        'accessToken': result?.accessToken,
+      },
       'Google',
     );
   }
@@ -447,13 +517,19 @@ class SocialLoginUtils {
   static Future<void> signOut() async {
     try {
       await FacebookAuth.instance.logOut();
-      if (_googleSignIn != null) await _googleSignIn!.signOut();
+      if (_googleSignIn != null) {
+        await _googleSignIn!.signOut();
+      }
+      print('Social sign out completed');
     } catch (e) {
       print('Social sign out error: $e');
     }
   }
 
-  static void setupGoogleWebCallback(Function(dynamic) callback) => print('Google web callback setup (web-specific)');
+  static void setupGoogleWebCallback(Function(dynamic) callback) {
+    print('Google web callback setup (web-specific implementation needed)');
+  }
+  
   static Widget renderGoogleWebButton() => const SizedBox.shrink();
 }
 
@@ -472,25 +548,55 @@ class SocialLoginButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  const SocialLoginButton({Key? key, required this.provider, this.onPressed, this.isLoading = false}) : super(key: key);
+  const SocialLoginButton({
+    Key? key, 
+    required this.provider, 
+    this.onPressed, 
+    this.isLoading = false
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final isGoogle = provider == 'Google';
-    final icon = isGoogle ? Icons.g_mobiledata : Icons.facebook;
-    final color = isGoogle ? Colors.red : Colors.blue;
+    final isGoogle = provider.toLowerCase() == 'google';
+    final isFacebook = provider.toLowerCase() == 'facebook';
+    
+    IconData icon;
+    Color color;
+    
+    if (isGoogle) {
+      icon = Icons.g_mobiledata;
+      color = Colors.red;
+    } else if (isFacebook) {
+      icon = Icons.facebook;
+      color = Colors.blue;
+    } else {
+      icon = Icons.login;
+      color = AppTheme.primary;
+    }
 
     return ElevatedButton.icon(
       onPressed: isLoading ? null : onPressed,
       icon: isLoading 
-        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
-        : Icon(icon, color: color),
-      label: Text(provider),
+        ? SizedBox(
+            width: 16, 
+            height: 16, 
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ) 
+        : Icon(icon, color: color, size: 20),
+      label: Text(
+        isLoading ? 'Signing in...' : 'Continue with $provider',
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.surface,
         foregroundColor: Colors.white,
         side: BorderSide(color: color),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        elevation: 2,
       ),
     );
   }
