@@ -220,16 +220,15 @@ def add_track(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@check_access_to_playlist
+@check_access_to_playlist
 #@require_device_control
-def move_track_in_playlist(request):
+def move_track_in_playlist(request, playlist_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
 
     try:
         print('move_track_in_playlist starts')
         data = json.loads(request.body)
-        playlist_id = data['playlist_id']
         range_start = data['range_start']
         insert_before = data['insert_before']
         range_length = data.get('range_length', 1)
