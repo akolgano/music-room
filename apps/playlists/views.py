@@ -15,6 +15,7 @@ from asgiref.sync import async_to_sync
 from django.forms.models import model_to_dict
 from .decorators import check_access_to_playlist
 from apps.devices.decorators import require_device_control
+from apps.deezer.deezer_client import DeezerClient
 
 
 @api_view(['POST'])
@@ -192,24 +193,22 @@ def add_track(request, playlist_id):
         data = request.data
 
         track_id = data.get("track_id")
-        try:
-            track = Track.objects.get(id=track_id)
-        except Track.DoesNotExist:
-            try:
-                track = Track.objects.get(deezer_track_id=track_id)
-            except Track.DoesNotExist:
-                from apps.deezer.deezer_client import DeezerClient
-                client = DeezerClient()
-                track_data = client.get_track(track_id)
-                if not track_data:
-                    return JsonResponse({'error': 'Track not found on Deezer'}, status=404)
-                track = Track.objects.create(
-                    name=track_data['title'],
-                    artist=track_data['artist']['name'],
-                    album=track_data['album']['title'],
-                    deezer_track_id=track_data['id'],
-                    url=track_data['link']
-                )
+        track = Track.objects.filter(id=track_id).first() or Track.objects.filter(deezer_track_id=track_id).first()
+        if not track:
+            from apps.deezer.deezer_client import DeezerClient
+            client = DeezerClient()
+            track_data = client.get_track(track_id)
+            if not track_data:
+                return JsonResponse({'error': 'Track not found on Deezer'}, status=404)
+            track, _ = Track.objects.get_or_create(
+                deezer_track_id=track_data['id'],
+                defaults={
+                    'name': track_data['title'],
+                    'artist': track_data['artist']['name'],
+                    'album': track_data['album']['title'],
+                    'url': track_data['link']
+                }
+            )
         if PlaylistTrack.objects.filter(playlist=playlist, track=track).exists():
             return JsonResponse({'error': 'Track already in playlist'}, status=400)
 
