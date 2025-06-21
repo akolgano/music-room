@@ -189,11 +189,29 @@ def add_track(request, playlist_id):
     try:
         print('add_track starts')
         playlist = get_object_or_404(Playlist, id=playlist_id)
-        #data = json.loads(request.body)
         data = request.data
 
         track_id = data.get("track_id")
-        track = get_object_or_404(Track, id=track_id)
+        try:
+            track = Track.objects.get(id=track_id)
+        except Track.DoesNotExist:
+            try:
+                track = Track.objects.get(deezer_track_id=track_id)
+            except Track.DoesNotExist:
+                from apps.deezer.deezer_client import DeezerClient
+                client = DeezerClient()
+                track_data = client.get_track(track_id)
+                if not track_data:
+                    return JsonResponse({'error': 'Track not found on Deezer'}, status=404)
+                track = Track.objects.create(
+                    name=track_data['title'],
+                    artist=track_data['artist']['name'],
+                    album=track_data['album']['title'],
+                    deezer_track_id=track_data['id'],
+                    url=track_data['link']
+                )
+        if PlaylistTrack.objects.filter(playlist=playlist, track=track).exists():
+            return JsonResponse({'error': 'Track already in playlist'}, status=400)
 
         max_pos = PlaylistTrack.objects.filter(playlist=playlist).aggregate(models.Max('position'))['position__max'] or 0
         PlaylistTrack.objects.create(playlist=playlist, track=track, position=max_pos + 1)
@@ -210,7 +228,7 @@ def add_track(request, playlist_id):
                 'data': data,
             }
         )
-        return JsonResponse({'status': 'track added'}, status=201)
+        return JsonResponse({'status': 'track added', 'track_id': track.id}, status=201)
     except Playlist.DoesNotExist:
         return JsonResponse({'error': 'Playlist not found'}, status=404)
     except Exception as e:
