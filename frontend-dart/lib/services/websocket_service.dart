@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/collaboration_models.dart';
 
 class WebSocketService with ChangeNotifier {
   static final WebSocketService _instance = WebSocketService._internal();
@@ -16,17 +15,11 @@ class WebSocketService with ChangeNotifier {
   String? _currentUserId;
   bool _isConnected = false;
   
-  final StreamController<PlaylistOperation> _operationsController = 
-      StreamController<PlaylistOperation>.broadcast();
-  final StreamController<List<PlaylistCollaborator>> _collaboratorsController = 
-      StreamController<List<PlaylistCollaborator>>.broadcast();
   final StreamController<String> _notificationsController = 
       StreamController<String>.broadcast();
 
   bool get isConnected => _isConnected;
   String? get currentPlaylistId => _currentPlaylistId;
-  Stream<PlaylistOperation> get operationsStream => _operationsController.stream;
-  Stream<List<PlaylistCollaborator>> get collaboratorsStream => _collaboratorsController.stream;
   Stream<String> get notificationsStream => _notificationsController.stream;
 
   String get _baseWebSocketUrl {
@@ -74,84 +67,27 @@ class WebSocketService with ChangeNotifier {
       final data = json.decode(message);
       
       switch (data['type']) {
-        case 'playlist_operation':
-          final operation = PlaylistOperation.fromJson(data['operation']);
-          _operationsController.add(operation);
+        case 'playlist_updated':
+          _notificationsController.add('Playlist was updated by ${data['username'] ?? 'someone'}');
           break;
-          
-        case 'collaborators_update':
-          final collaboratorsData = data['collaborators'] as List<dynamic>;
-          final collaborators = collaboratorsData
-              .map((c) => PlaylistCollaborator.fromJson(c))
-              .toList();
-          _collaboratorsController.add(collaborators);
-          break;
-          
-        case 'conflict_detected':
-          _notificationsController.add(data['message']);
-          break;
-          
         case 'user_joined':
-          _notificationsController.add('${data['username']} joined the playlist');
+          _notificationsController.add('${data['username'] ?? 'Someone'} joined the playlist');
           break;
-          
         case 'user_left':
-          _notificationsController.add('${data['username']} left the playlist');
+          _notificationsController.add('${data['username'] ?? 'Someone'} left the playlist');
           break;
-          
-        case 'permission_changed':
-          _notificationsController.add(
-            '${data['username']} permissions updated by ${data['changed_by']}'
-          );
+        case 'track_added':
+          _notificationsController.add('${data['username'] ?? 'Someone'} added a track');
           break;
+        case 'track_removed':
+          _notificationsController.add('${data['username'] ?? 'Someone'} removed a track');
+          break;
+        default:
+          _notificationsController.add('Playlist activity detected');
       }
     } catch (e) {
       print('Error handling WebSocket message: $e');
     }
-  }
-
-  void sendOperation(PlaylistOperation operation) {
-    if (_isConnected && _channel != null) {
-      _sendMessage({
-        'type': 'playlist_operation',
-        'operation': operation.toJson(),
-      });
-    }
-  }
-
-  void sendTrackMove(String trackId, int oldIndex, int newIndex, String username) {
-    final operation = PlaylistOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: _currentUserId!,
-      username: username,
-      type: ConflictType.trackMove,
-      data: {
-        'track_id': trackId,
-        'old_index': oldIndex,
-        'new_index': newIndex,
-      },
-      timestamp: DateTime.now(),
-      version: 1,
-    );
-    
-    sendOperation(operation);
-  }
-
-  void sendTrackAdd(String trackId, int position, String username) {
-    final operation = PlaylistOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: _currentUserId!,
-      username: username,
-      type: ConflictType.trackAdd,
-      data: {
-        'track_id': trackId,
-        'position': position,
-      },
-      timestamp: DateTime.now(),
-      version: 1,
-    );
-    
-    sendOperation(operation);
   }
 
   void sendPresenceUpdate() {
@@ -173,7 +109,7 @@ class WebSocketService with ChangeNotifier {
   void _handleError(error) {
     _isConnected = false;
     notifyListeners();
-    _notificationsController.add('Connection error: $error');
+    _notificationsController.add('Connection error occurred');
   }
 
   void _handleDisconnection() {
@@ -187,7 +123,11 @@ class WebSocketService with ChangeNotifier {
     try {
       if (_channel != null) {
         if (_isConnected && _currentUserId != null) {
-          _sendMessage({'type': 'user_left', 'user_id': _currentUserId, 'timestamp': DateTime.now().toIso8601String()});
+          _sendMessage({
+            'type': 'user_left', 
+            'user_id': _currentUserId, 
+            'timestamp': DateTime.now().toIso8601String()
+          });
         }
         
         await _channel!.sink.close();
@@ -205,8 +145,6 @@ class WebSocketService with ChangeNotifier {
   @override
   void dispose() {
     disconnect();
-    _operationsController.close();
-    _collaboratorsController.close();
     _notificationsController.close();
     super.dispose();
   }
