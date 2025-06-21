@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../services/music_player_service.dart';
+import '../../services/api_service.dart';
 import '../../models/models.dart';
 import '../../models/sort_models.dart';
 import '../../services/track_sorting_service.dart';
@@ -27,6 +28,7 @@ class PlaylistDetailScreen extends StatefulWidget {
 
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   final _webSocketService = WebSocketService();
+  final _apiService = ApiService();
   
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
@@ -104,10 +106,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           const Icon(Icons.info, color: Colors.blue, size: 20),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              _notifications.last,
-              style: const TextStyle(color: Colors.blue),
-            ),
+            child: Text(_notifications.last, style: const TextStyle(color: Colors.blue)),
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.blue, size: 20),
@@ -593,23 +592,15 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         });
       }
     });
-
-    _webSocketService.operationsStream.listen((operation) {
-      if (mounted) _loadData();
-    });
   }
 
   Future<void> _loadData() async {
     print('Loading playlist data for ID: ${widget.playlistId}');
     
-    setState(() {});
-    
     try {
       final musicProvider = getProvider<MusicProvider>();
       
-      print('Fetching playlist details...'); 
       final playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
-      print('Playlist loaded: ${playlist?.name ?? 'null'}'); 
       
       if (playlist != null) {
         setState(() {
@@ -617,27 +608,29 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           _isOwner = _playlist!.creator == auth.username;
         });
         
-        print('Is owner: $_isOwner, Creator: ${_playlist!.creator}, Username: ${auth.username}'); 
-        
-        print('Fetching playlist tracks...'); 
         await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
         
         setState(() {
           _tracks = musicProvider.playlistTracks;
         });
         
-        print('Tracks loaded: ${_tracks.length}'); 
+        if (!musicProvider.allTracksHaveDetails) {
+          showInfo('Loading additional track details...');
+          await musicProvider.enhanceTracksWithDetails(auth.token!);
+          
+          setState(() {
+            _tracks = musicProvider.playlistTracks;
+          });
+        }
+        
+        print('Loaded ${_tracks.length} tracks, ${_tracks.where((t) => t.track?.deezerTrackId != null).length} with Deezer IDs');
         
         if (_webSocketService.currentPlaylistId != widget.playlistId) {
-          print('Connecting to WebSocket...'); 
           await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
         }
       } else {
-        print('Playlist is null after loading!'); 
         showError('Failed to load playlist data');
       }
-      
-      print('Load data completed. Playlist: ${_playlist?.name}, Tracks: ${_tracks.length}'); 
     } catch (e) {
       print('Error loading data: $e');
       showError('Failed to load playlist details: $e');
@@ -664,29 +657,83 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Future<void> _playTrackAt(int index) async {
     if (index < 0 || index >= _tracks.length) return;
     
-    final track = _tracks[index].track;
-    if (track == null) {
-      showError('Track is not available');
-      return;
-    }
-
+    final playlistTrack = _tracks[index];
+    
+    showInfo('Loading "${playlistTrack.name}"...');
+    
     try {
-      final playerService = getProvider<MusicPlayerService>();
+      final musicProvider = getProvider<MusicProvider>();
       
-      String? previewUrl = track.previewUrl;
-      if (previewUrl == null && track.deezerTrackId != null) {
-        final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
-      }
+      final previewUrl = await musicProvider.getPlayableTrackUrl(playlistTrack, auth.token!);
       
       if (previewUrl != null && previewUrl.isNotEmpty) {
+        final playerService = getProvider<MusicPlayerService>();
+        
+        Track? track = playlistTrack.track;
+        if (track == null) {
+          track = Track(
+            id: playlistTrack.trackId,
+            name: playlistTrack.name,
+            artist: 'Unknown Artist',
+            album: '',
+            url: '',
+            previewUrl: previewUrl,
+          );
+        }
+        
         await playerService.playTrack(track, previewUrl);
-        showSuccess('Playing "${track.name}"');
+        showSuccess('Playing "${playlistTrack.name}"');
       } else {
-        showInfo('No preview available for "${track.name}"');
+        showError('No preview available for "${playlistTrack.name}"');
       }
     } catch (e) {
       showError('Failed to play track: $e');
+    }
+  }
+
+  Future<void> _preloadTrackDetails() async {
+    if (_tracks.isEmpty) return;
+    
+    showInfo('Loading track details...');
+    
+    try {
+      final trackIds = _tracks
+          .where((t) => t.track == null || t.track!.deezerTrackId == null)
+          .map((t) => t.trackId)
+          .toList();
+      
+      if (trackIds.isEmpty) return;
+      
+      final updatedTracks = <PlaylistTrack>[];
+      
+      for (int i = 0; i < _tracks.length; i++) {
+        final playlistTrack = _tracks[i];
+        
+        if (playlistTrack.track == null || playlistTrack.track!.deezerTrackId == null) {
+          final fullTrack = await _fetchFullTrackDetails(playlistTrack.trackId);
+          
+          updatedTracks.add(PlaylistTrack(
+            trackId: playlistTrack.trackId,
+            name: playlistTrack.name,
+            position: playlistTrack.position,
+            track: fullTrack,
+          ));
+        } else {
+          updatedTracks.add(playlistTrack);
+        }
+        
+        if (i < _tracks.length - 1) {
+          await Future.delayed(const Duration(milliseconds: 200));
+        }
+      }
+      
+      setState(() {
+        _tracks = updatedTracks;
+      });
+      
+      showSuccess('Track details loaded!');
+    } catch (e) {
+      showError('Failed to load track details: $e');
     }
   }
 
@@ -705,6 +752,31 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',
       );
+    }
+  }
+
+  Future<Track?> _fetchFullTrackDetails(String trackId) async {
+    try {
+      final response = await _apiService.getTracks(
+        'Token ${auth.token!}',
+        queryParams: {'id': trackId}
+      );
+      
+      if (response['tracks'] != null && (response['tracks'] as List).isNotEmpty) {
+        final trackData = (response['tracks'] as List).first;
+        return Track.fromJson(trackData);
+      }
+      
+      try {
+        final trackData = await _apiService.lookupTrackByDeezerId(trackId, 'Token ${auth.token!}');
+        return Track.fromJson(trackData);
+      } catch (e) {
+        print('Track lookup failed for ID $trackId: $e');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching track details for ID $trackId: $e');
+      return null;
     }
   }
 

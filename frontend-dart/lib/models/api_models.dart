@@ -149,13 +149,7 @@ class UpdatePlaylistRequest {
   final String? name;
   final String? description;
   final bool? public;
-
-  const UpdatePlaylistRequest({
-    this.name,
-    this.description,
-    this.public,
-  });
-
+  const UpdatePlaylistRequest({this.name, this.description, this.public});
   Map<String, dynamic> toJson() => {'name': name, 'description': description, 'public': public};
 }
 
@@ -176,7 +170,7 @@ class AddTrackRequest {
   final String? deviceUuid;
   const AddTrackRequest({required this.trackId, this.deviceUuid});
   Map<String, dynamic> toJson() {
-    final json = <String, dynamic> { 'deezer_id': trackId };
+    final json = <String, dynamic> { 'track_id': trackId };
     if (deviceUuid != null) json['device_uuid'] = deviceUuid;
     return json;
   }

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
-import '../../utils/app_utils.dart';
+import '../../widgets/app_widgets.dart'; 
 import '../base_screen.dart';
 
 class AddFriendScreen extends StatefulWidget {
@@ -16,6 +16,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen>
     with AsyncOperationStateMixin<AddFriendScreen> {
   
   final _userIdController = TextEditingController();
+  final _formKey = GlobalKey<FormState>(); 
 
   @override
   String get screenTitle => 'Add New Friend';
@@ -32,54 +33,64 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen>
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          AppUtils.buildInfoCard(
+          AppWidgets.infoBanner(
             title: 'Find Music Friends',
             message: 'Connect to share playlists and discover music together. Ask your friends for their Music Room user ID to add them!',
             icon: Icons.people,
           ),
           const SizedBox(height: 16),
-          AppUtils.buildTextFieldCard(
+          AppTheme.buildFormCard(
             title: 'Send Friend Request',
-            controller: _userIdController,
-            labelText: 'Friend\'s User ID',
-            hintText: 'e.g., 12345',
-            prefixIcon: Icons.person_search,
-            validator: (value) {
-              if (value?.isEmpty ?? true) return 'Please enter a user ID';
-              final userId = int.tryParse(value!);
-              if (userId == null || userId <= 0) return 'Please enter a valid user ID';
-              return null;
-            },
-            onChanged: (value) => setState(() {}),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _userIdController.text.isNotEmpty && !isLoading ? _sendFriendRequest : null,
-              icon: isLoading 
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.send),
-              label: Text(isLoading ? 'Sending...' : 'Send Friend Request'),
+            titleIcon: Icons.person_add,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  AppWidgets.textField(
+                    controller: _userIdController,
+                    labelText: 'Friend\'s User ID',
+                    hintText: 'e.g., 12345',
+                    prefixIcon: Icons.person_search,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'Please enter a user ID';
+                      final userId = int.tryParse(value!);
+                      if (userId == null || userId <= 0) return 'Please enter a valid user ID';
+                      return null;
+                    },
+                    onChanged: (value) => setState(() {}),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: AppWidgets.primaryButton(
+                      text: isLoading ? 'Sending...' : 'Send Friend Request',
+                      onPressed: _userIdController.text.isNotEmpty && !isLoading ? _sendFriendRequest : null,
+                      isLoading: isLoading,
+                      icon: Icons.send,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          _buildHowItWorksCard(),
+          
+          AppWidgets.infoBanner(
+            title: 'How It Works',
+            message: '1. Get their user ID\n2. Enter it above\n3. They accept your request\n4. Start sharing music!',
+            icon: Icons.help_outline,
+            color: Colors.blue,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHowItWorksCard() {
-    return AppUtils.buildInfoCard(
-      title: 'How It Works',
-      message: '1. Get their user ID\n2. Enter it above\n3. They accept your request\n4. Start sharing music!',
-      icon: Icons.help_outline,
-      color: Colors.blue,
-    );
-  }
-
   Future<void> _sendFriendRequest() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     final userInput = _userIdController.text.trim();
     
     if (userInput.isEmpty) {

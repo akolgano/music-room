@@ -14,7 +14,6 @@ class MusicService {
       return response['id'].toString();
     } catch (e) {
       print('Track lookup failed, trying search approach: $e');
-      
       try {
         final response = await _api.searchTracksByDeezerId(deezerTrackId, token);
         final tracks = response['tracks'] as List<dynamic>?;
@@ -24,9 +23,86 @@ class MusicService {
       } catch (e2) {
         print('Track search also failed: $e2');
       }
-      
       return deezerTrackId;
     }
+  }
+
+  Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async {
+    try {
+      print('Fetching playlist tracks with full details for playlist $playlistId');
+      
+      final basicResponse = await _api.getPlaylistTracks(playlistId, 'Token $token');
+      final basicTracks = basicResponse.tracks;
+      
+      if (basicTracks.isEmpty) {
+        return basicTracks;
+      }
+      
+      print('Found ${basicTracks.length} tracks, fetching detailed information...');
+      
+      final enhancedTracks = <PlaylistTrack>[];
+      
+      for (int i = 0; i < basicTracks.length; i++) {
+        final playlistTrack = basicTracks[i];
+        
+        try {
+          Track? fullTrack = await _api.getTrackByAnyId(playlistTrack.trackId, 'Token $token');
+          
+          enhancedTracks.add(PlaylistTrack(
+            trackId: playlistTrack.trackId,
+            name: playlistTrack.name,
+            position: playlistTrack.position,
+            track: fullTrack,
+          ));
+          
+          print('Enhanced track ${i + 1}/${basicTracks.length}: ${playlistTrack.name} ${fullTrack?.deezerTrackId != null ? '✓' : '✗'}');
+        } catch (e) {
+          print('Failed to enhance track ${playlistTrack.name}: $e');
+          enhancedTracks.add(playlistTrack);
+        }
+        
+        if (i < basicTracks.length - 1) {
+          await Future.delayed(const Duration(milliseconds: 200));
+        }
+      }
+      
+      print('Enhanced ${enhancedTracks.length} tracks successfully');
+      return enhancedTracks;
+      
+    } catch (e) {
+      print('Error fetching playlist tracks with details: $e');
+      final basicResponse = await _api.getPlaylistTracks(playlistId, 'Token $token');
+      return basicResponse.tracks;
+    }
+  }
+
+  Future<Track?> getTrackWithDetails(String trackId, String token) async {
+    try {
+      return await _api.getTrackByAnyId(trackId, 'Token $token');
+    } catch (e) {
+      print('Failed to get track details for $trackId: $e');
+      return null;
+    }
+  }
+
+  Future<List<PlaylistTrack>> enhancePlaylistTracks(List<PlaylistTrack> tracks, String token) async {
+    final enhancedTracks = <PlaylistTrack>[];
+    
+    for (final track in tracks) {
+      if (track.track?.deezerTrackId != null) {
+        enhancedTracks.add(track);
+      } else {
+        try {
+          final fullTrack = await getTrackWithDetails(track.trackId, token);
+          enhancedTracks.add(PlaylistTrack(trackId: track.trackId, name: track.name, position: track.position, track: fullTrack));
+        } catch (e) {
+          print('Failed to enhance track ${track.name}: $e');
+          enhancedTracks.add(track);
+        }
+      }
+    }
+    
+    return enhancedTracks;
   }
 
   Future<List<Playlist>> getUserPlaylists(String token) async {
@@ -64,8 +140,13 @@ class MusicService {
     return response.data;
   }
 
-  Future<Track> getDeezerTrack(String trackId) async {
-    return await _api.getDeezerTrack(trackId);
+  Future<Track?> getDeezerTrack(String trackId) async {
+    try {
+      return await _api.getDeezerTrack(trackId);
+    } catch (e) {
+      print('Failed to get Deezer track $trackId: $e');
+      return null;
+    }
   }
 
   Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
