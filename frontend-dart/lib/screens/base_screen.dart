@@ -91,11 +91,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     );
   }
 
-  Widget buildTabContent({
-    required List<Tab> tabs,
-    required List<Widget> tabViews,
-    TabController? controller,
-  }) {
+  Widget buildTabContent({required List<Tab> tabs, required List<Widget> tabViews, TabController? controller}) {
     return AppWidgets.tabScaffold(tabs: tabs, tabViews: tabViews, controller: controller);
   }
 

@@ -142,7 +142,6 @@ class ProfileProvider with ChangeNotifier {
 
       final profileMusic = await _apiService.getProfileMusicData(token);
       _musicPreferences = profileMusic['music_preferences'];
-
       _isLoading = false;
       notifyListeners();
       return true;
@@ -160,9 +159,7 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       await _apiService.userPasswordChangeData(token, currentPassword, newPassword);
-
       _isLoading = false;
       notifyListeners();
       return true;
@@ -180,13 +177,10 @@ class ProfileProvider with ChangeNotifier {
         _isLoading = true;
         _errorMessage = null;
         notifyListeners();
-
         final LoginResult result = await FacebookAuth.instance.login();
         if (result.status == LoginStatus.success) {
           final fbAccessToken = result.accessToken!.tokenString;
-
           await _apiService.facebookLinkData(token, fbAccessToken);
-
           _isLoading = false;
           notifyListeners();
           return true;
@@ -210,22 +204,17 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       var idToken = account?.idToken;
-
       if (idToken == null) {
         _errorMessage = "Google login failed !";
         _isLoading = false;
         notifyListeners();
         return false;
       }
-
       await _apiService.googleLinkData('web', token, idToken);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
@@ -239,41 +228,32 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       final googleSignIn = SocialLoginUtils.googleSignInInstance;
-      
       if (googleSignIn == null) {
         _errorMessage = "Google Sign-In not initialized";
         _isLoading = false;
         notifyListeners();
         return false;
       }
-
       final user = await googleSignIn.signIn();
-
       if (user == null) {
         _errorMessage = "Google login failed!";
         _isLoading = false;
         notifyListeners();
         return false;
       }
-
       final auth = await user.authentication;
       final idToken = auth.idToken;
-
       if (idToken == null) {
         _errorMessage = "Google login failed!";
         _isLoading = false;
         notifyListeners();
         return false;
       }
-
       await _apiService.googleLinkData('app', token, idToken);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
@@ -287,13 +267,10 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       await _apiService.updateAvatarData(token, avatarBase64, mimeType);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -307,13 +284,10 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       await _apiService.updatePublicBasicData(token, gender, location);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -327,13 +301,10 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       await _apiService.updatePublicBioData(token, bio);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -347,13 +318,10 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       await _apiService.updatePrivateInfoData(token, firstName, lastName, phone, street, country, postalCode);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -367,13 +335,10 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       await _apiService.updateFriendInfoData(token, dob, hobbies, friendInfo);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -387,13 +352,10 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-
       await _apiService.updateMusicPreferencesData(token, musicPreferences);
-      
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
         _errorMessage = e.toString();
         _isLoading = false;

@@ -37,6 +37,23 @@ class ApiService {
     await _dio.delete(endpoint, options: token != null ? Options(headers: {'Authorization': token}) : null);
   }
 
+  Future<Map<String, dynamic>> lookupTrackByDeezerId(String deezerTrackId, String token) async {
+    return await _get('/tracks/lookup/$deezerTrackId/', (data) => data, token: token);
+  }
+
+  Future<Map<String, dynamic>> searchTracksByDeezerId(String deezerTrackId, String token) async {
+    return await _get(
+      '/tracks/', 
+      (data) => data, 
+      token: token, 
+      queryParams: {'deezer_track_id': deezerTrackId}
+    );
+  }
+
+  Future<Map<String, dynamic>> getTracks(String token, {Map<String, dynamic>? queryParams}) async {
+    return await _get('/tracks/', (data) => data, token: token, queryParams: queryParams);
+  }
+
   Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
   Future<AuthResult> signup(SignupRequest request) => _post('/users/signup/', request, AuthResult.fromJson);
   Future<void> logout(String token, LogoutRequest request) => _postVoid('/users/logout/', request, token: token);
@@ -71,13 +88,12 @@ class ApiService {
   Future<void> inviteUserToPlaylist(String playlistId, String token, InviteUserRequest request) => 
       _postVoid('/playlists/$playlistId/invite-user/', request, token: token);
 
-  Future<TrackSearchResponse> searchTracks(String query) => _get('/tracks/search/', TrackSearchResponse.fromJson, queryParams: {'query': query});
   Future<DeezerSearchResponse> searchDeezerTracks(String query) => _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
   Future<Track> getDeezerTrack(String trackId) => _get('/deezer/track/$trackId/', Track.fromJson);
   Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/deezer/add_from_deezer/', request, token: token);
 
   Future<void> addTrackFromDeezerToTracks(String trackId, String token) async {
-    await _postVoid('/tracks/add_from_deezer/$trackId', null, token: token);
+    await _postVoid('/tracks/add_from_deezer/$trackId/', null, token: token);
   }
 
   Future<PlaylistTracksResponse> getPlaylistTracks(String playlistId, String token) => 

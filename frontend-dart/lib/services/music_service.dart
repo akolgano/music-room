@@ -8,6 +8,27 @@ class MusicService {
 
   MusicService(this._api);
 
+  Future<String> getInternalTrackId(String deezerTrackId, String token) async {
+    try {
+      final response = await _api.lookupTrackByDeezerId(deezerTrackId, token);
+      return response['id'].toString();
+    } catch (e) {
+      print('Track lookup failed, trying search approach: $e');
+      
+      try {
+        final response = await _api.searchTracksByDeezerId(deezerTrackId, token);
+        final tracks = response['tracks'] as List<dynamic>?;
+        if (tracks?.isNotEmpty == true) {
+          return tracks!.first['id'].toString();
+        }
+      } catch (e2) {
+        print('Track search also failed: $e2');
+      }
+      
+      return deezerTrackId;
+    }
+  }
+
   Future<List<Playlist>> getUserPlaylists(String token) async {
     final response = await _api.getSavedPlaylists('Token $token');
     return response.playlists;
@@ -24,12 +45,7 @@ class MusicService {
   }
 
   Future<String> createPlaylist(String name, String description, bool isPublic, String token, [String? deviceUuid]) async {
-    final request = CreatePlaylistRequest(
-      name: name,
-      description: description,
-      public: isPublic,
-      deviceUuid: deviceUuid,
-    );
+    final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, deviceUuid: deviceUuid);
     final response = await _api.createPlaylist('Token $token', request);
     return response.playlistId;
   }
@@ -41,11 +57,6 @@ class MusicService {
       public: isPublic,
     );
     await _api.updatePlaylist(id, 'Token $token', request);
-  }
-
-  Future<List<Track>> searchTracks(String query) async {
-    final response = await _api.searchTracks(query);
-    return response.tracks;
   }
 
   Future<List<Track>> searchDeezerTracks(String query) async {
@@ -67,8 +78,8 @@ class MusicService {
     return response.tracks;
   }
 
-  Future<void> addTrackToPlaylist(String playlistId, String trackId, String token, [String? deviceUuid]) async {
-    final request = AddTrackRequest(trackId: trackId, deviceUuid: deviceUuid);
+  Future<void> addTrackToPlaylist(String playlistId, String trackId, String token) async {
+    final request = AddTrackRequest(trackId: trackId);
     await _api.addTrackToPlaylist(playlistId, 'Token $token', request);
   }
 

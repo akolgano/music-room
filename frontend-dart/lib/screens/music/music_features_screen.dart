@@ -31,12 +31,11 @@ class MusicFeaturesScreen extends StatelessWidget {
             ),
             AppWidgets.featureCard( 
               icon: Icons.search,
-              title: 'Track Selection',
-              description: 'Search and select tracks to add to playlists',
+              title: 'Search Deezer Tracks',
+              description: 'Search and add tracks from Deezer to your playlists',
               onTap: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
             AppWidgets.sectionTitle('Collaboration Features'), 
-            // Remove the track voting feature card
             AppWidgets.featureCard( 
               icon: Icons.admin_panel_settings,
               title: 'Control Delegation',
@@ -46,12 +45,15 @@ class MusicFeaturesScreen extends StatelessWidget {
             AppWidgets.sectionTitle('Deezer Integration'), 
             AppWidgets.featureCard( 
               icon: Icons.music_note,
-              title: 'Search Deezer Tracks',
-              description: 'Find and add tracks from Deezer',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (ctx) => const TrackSearchScreen(searchDeezer: true)),
-              ),
+              title: 'Browse Deezer Catalog',
+              description: 'Explore millions of tracks from Deezer\'s music catalog',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => const TrackSearchScreen())),
+            ),
+            AppWidgets.featureCard( 
+              icon: Icons.library_add,
+              title: 'Add to Library',
+              description: 'Add your favorite Deezer tracks to your personal library',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => const TrackSearchScreen())),
             ),
           ],
         ),
