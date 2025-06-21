@@ -11,6 +11,9 @@ django.log
 /venv/
 #migrations/
 .env
+tmp
+tmp/
+*/tmp
 
 # Kotlin & Android
 *.iml
@@ -29,3 +32,8 @@ django.log
 *.dex
 output.json
 frontend-dart/.env
+
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
