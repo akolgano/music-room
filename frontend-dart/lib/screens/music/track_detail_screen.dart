@@ -27,6 +27,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   Track? _track;
   bool _isInPlaylist = false;
   List<Playlist> _userPlaylists = [];
+  bool _isAddingToBackend = false;
 
   @override
   String get screenTitle => _track?.name ?? 'Track Details';
@@ -34,11 +35,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   @override
   List<Widget> get actions => [
     if (_track != null) ...[
-      IconButton(
-        icon: const Icon(Icons.share),
-        onPressed: _shareTrack,
-        tooltip: 'Share Track',
-      ),
+      IconButton(icon: const Icon(Icons.share), onPressed: _shareTrack, tooltip: 'Share Track'),
       PopupMenuButton<String>(
         onSelected: _handleMenuAction,
         itemBuilder: (context) => [
@@ -53,6 +50,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 children: [Icon(Icons.library_add, size: 16), SizedBox(width: 8), Text('Add to Library')],
               ),
             ),
+          const PopupMenuItem(
+            value: 'add_to_backend',
+            child: Row(
+              children: [Icon(Icons.cloud_upload, size: 16), SizedBox(width: 8), Text('Add to Backend Database')],
+            ),
+          ),
         ],
       ),
     ],
@@ -76,6 +79,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                if (_isAddingToBackend) _buildBackendAddingIndicator(),
                 _buildTrackHeader(themeProvider),
                 const SizedBox(height: 24),
                 _buildTrackActions(),
@@ -88,6 +92,37 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBackendAddingIndicator() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Adding track to backend database...',
+              style: const TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -188,6 +223,28 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                       ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                if (_track!.deezerTrackId != null) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isAddingToBackend ? null : _addToBackendDatabase,
+                      icon: _isAddingToBackend 
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                          )
+                        : const Icon(Icons.cloud_upload),
+                      label: Text(_isAddingToBackend ? 'Adding to Database...' : 'Add to Backend Database'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
                 if (isCurrentTrack && playerService.duration.inSeconds > 0) ...[
                   const SizedBox(height: 20),
                   _buildProgressBar(playerService),
@@ -477,6 +534,30 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     }
   }
 
+  Future<void> _addToBackendDatabase() async {
+    if (_track?.deezerTrackId == null) {
+      showError('Cannot add non-Deezer track to backend database');
+      return;
+    }
+
+    setState(() => _isAddingToBackend = true);
+
+    try {
+      print('Adding track ${_track!.name} (ID: ${_track!.deezerTrackId}) to backend database...');
+      
+      final musicProvider = getProvider<MusicProvider>();
+      await musicProvider.addSingleTrackFromDeezerToTracks(_track!.deezerTrackId!, auth.token!);
+      
+      showSuccess('✓ Added "${_track!.name}" to backend database!');
+      print('Successfully added ${_track!.name} to backend database');
+    } catch (e) {
+      showError('Failed to add track to backend database: $e');
+      print('Error adding ${_track!.name} to backend database: $e');
+    } finally {
+      setState(() => _isAddingToBackend = false);
+    }
+  }
+
   Future<void> _addToLibrary() async {
     if (_track?.deezerTrackId == null) {
       showError('Cannot add non-Deezer track to library');
@@ -501,15 +582,13 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         final musicProvider = getProvider<MusicProvider>();
         final deviceProvider = getProvider<DeviceProvider>();
         
-        final result = await musicProvider.addTrackToPlaylist(
-          widget.playlistId!,
-          _track!.id,
-          auth.token!,
-          deviceProvider.deviceUuid,
-        );
+        print('Adding track ${_track!.name} to current playlist...');
+        
+        final result = await musicProvider.addTrackToPlaylist(widget.playlistId!, _track!.id, auth.token!);
 
         if (result.success) {
           _isInPlaylist = true;
+          print('Successfully added ${_track!.name} to playlist');
         } else {
           throw Exception(result.message);
         }
@@ -531,11 +610,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       await runAsyncAction(
         () async {
           final musicProvider = getProvider<MusicProvider>();
-          await musicProvider.removeTrackFromPlaylist(
-            playlistId: widget.playlistId!,
-            trackId: _track!.id,
-            token: auth.token!,
-          );
+          await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId!, trackId: _track!.id, token: auth.token!);
           _isInPlaylist = false;
         },
         successMessage: 'Removed "${_track!.name}" from playlist',
@@ -566,10 +641,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 leading: Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.library_music, color: AppTheme.primary),
                 ),
                 title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
@@ -599,17 +671,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       () async {
         final musicProvider = getProvider<MusicProvider>();
         final deviceProvider = getProvider<DeviceProvider>();
-        
-        final result = await musicProvider.addTrackToPlaylist(
-          playlistId,
-          _track!.id,
-          auth.token!,
-          deviceProvider.deviceUuid,
-        );
-
-        if (!result.success) {
-          throw Exception(result.message);
-        }
+        print('Adding track ${_track!.name} to playlist $playlistId...');
+        final result = await musicProvider.addTrackToPlaylist(playlistId, _track!.id, auth.token!);
+        if (!result.success) throw Exception(result.message);
+        print('Successfully added ${_track!.name} to playlist');
       },
       successMessage: 'Added "${_track!.name}" to playlist!',
       errorMessage: 'Failed to add track to playlist',
@@ -624,12 +689,13 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       case 'add_to_library':
         _addToLibrary();
         break;
+      case 'add_to_backend':
+        _addToBackendDatabase();
+        break;
     }
   }
 
   void _shareTrack() {
-    if (_track != null) {
-      showInfo('Sharing "${_track!.name}" by ${_track!.artist}');
-    }
+    if (_track != null) showInfo('Sharing "${_track!.name}" by ${_track!.artist}');
   }
 }

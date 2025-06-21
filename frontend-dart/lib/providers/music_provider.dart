@@ -49,9 +49,8 @@ class MusicProvider extends BaseProvider {
     if (result != null) {
       _playlists = result;
       _hasConnectionError = false;
-    } else {
-      _hasConnectionError = true;
     }
+    else _hasConnectionError = true;
   }
 
   Future<Playlist?> getPlaylistDetails(String id, String token) async {
@@ -93,17 +92,10 @@ class MusicProvider extends BaseProvider {
       isPublic: isPublic, 
       token,
     ));
-  }
+}
 
-  Future<void> searchTracks(String query) => _performSearch(query, false);
-  Future<void> searchDeezerTracks(String query) => _performSearch(query, true);
-
-  Future<void> _performSearch(String query, bool deezer) async {
-    final result = await executeAsync(() async {
-      return deezer 
-        ? await _musicService.searchDeezerTracks(query)
-        : await _musicService.searchTracks(query);
-    });
+  Future<void> searchDeezerTracks(String query) async {
+    final result = await executeAsync(() => _musicService.searchDeezerTracks(query));
     if (result != null) _searchResults = result;
   }
 
@@ -124,7 +116,7 @@ class MusicProvider extends BaseProvider {
     }
   }
 
-  Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token, String? deviceUuid) async {
+  Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     return await executeAsync(() async {
       final existingTrack = _playlistTracks.firstWhere(
         (t) => t.trackId == trackId,
@@ -133,94 +125,60 @@ class MusicProvider extends BaseProvider {
       
       if (existingTrack.position != -1) {
         return const AddTrackResult(
-          success: false,
+          success: true,
           message: 'Track is already in this playlist',
           isDuplicate: true,
         );
       }
 
       final track = getTrackById(trackId);
-      
-      if (track != null && track.deezerTrackId != null && track.deezerTrackId!.isNotEmpty) {
-        try {
-          print('Adding Deezer track ${track.deezerTrackId} to backend database first...');
-          await _musicService.addTrackFromDeezerToTracks(track.deezerTrackId!, token);
-          print('Successfully added Deezer track to backend database');
-        } catch (e) {
-          print('Warning: Failed to add Deezer track to backend database: $e');
-        }
-      } else if (track == null) {
-        try {
-          print('Attempting to add trackId $trackId to backend database (might be Deezer ID)...');
-          await _musicService.addTrackFromDeezerToTracks(trackId, token);
-          print('Successfully added track to backend database');
-        } catch (e) {
-          print('Warning: Failed to add trackId to backend database: $e');
-        }
+      if (track == null) {
+        return const AddTrackResult(
+          success: false,
+          message: 'Track not found in search results',
+          isDuplicate: false,
+        );
       }
 
-      try {
-        await _musicService.addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
-        await fetchPlaylistTracks(playlistId, token);
+      String? deezerTrackId = track.deezerTrackId ?? track.backendId;
+      
+      if (deezerTrackId?.startsWith('deezer_') == true) {
+        deezerTrackId = deezerTrackId!.substring(7); 
+      }
+      
+      print('Adding track: ${track.name}, Clean Deezer ID: $deezerTrackId');
 
+      try {
+        print('Step 1: Adding Deezer track $deezerTrackId to backend database...');
+        await _musicService.addTrackFromDeezerToTracks(deezerTrackId!, token);
+        print('Successfully added Deezer track to backend database');
+      } catch (e) {
+        print('Backend add failed (track might already exist): $e');
+      }
+
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      try {
+        print('Adding track to playlist with clean ID: $deezerTrackId');
+        await _musicService.addTrackToPlaylist(playlistId, deezerTrackId!, token);
+        print('✓ Successfully added track with ID: $deezerTrackId');
+        
+        await fetchPlaylistTracks(playlistId, token);
         return const AddTrackResult(
           success: true,
           message: 'Track added successfully',
           isDuplicate: false,
         );
       } catch (e) {
-        if (e.toString().contains('No Track matches the given query')) {
-          print('Track $trackId not found in backend after first attempt, trying fallback...');
-          
-          if (track?.deezerTrackId != null && track!.deezerTrackId!.isNotEmpty) {
-            try {
-              print('Fallback: Re-adding track ${track.deezerTrackId} to backend database...');
-              await _musicService.addTrackFromDeezerToTracks(track.deezerTrackId!, token);
-              print('Fallback: Track added to backend, retrying playlist add...');
-              
-              await _musicService.addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
-              await fetchPlaylistTracks(playlistId, token);
-              
-              return const AddTrackResult(
-                success: true,
-                message: 'Track added successfully (fallback import from Deezer)',
-                isDuplicate: false,
-              );
-            } catch (retryError) {
-              print('Fallback failed: $retryError');
-              return AddTrackResult(
-                success: false,
-                message: 'Failed to add track after importing from Deezer: $retryError',
-                isDuplicate: false,
-              );
-            }
-          } else {
-            try {
-              print('Fallback: Attempting to use trackId $trackId as deezerTrackId...');
-              await _musicService.addTrackFromDeezerToTracks(trackId, token);
-              print('Fallback: Track added to backend, retrying playlist add...');
-              
-              await _musicService.addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
-              await fetchPlaylistTracks(playlistId, token);
-              
-              return const AddTrackResult(
-                success: true,
-                message: 'Track added successfully (fallback import from Deezer)',
-                isDuplicate: false,
-              );
-            } catch (retryError) {
-              print('Fallback failed: $retryError');
-              return AddTrackResult(
-                success: false,
-                message: 'Track not found in backend and could not be imported from Deezer',
-                isDuplicate: false,
-              );
-            }
-          }
-        } else {
-          rethrow;
-        }
+        print('✗ Failed to add track with clean ID $deezerTrackId: $e');
+        
+        return AddTrackResult(
+          success: false,
+          message: 'Unable to add track to playlist: $e',
+          isDuplicate: false,
+        );
       }
+      
     }) ?? const AddTrackResult(
       success: false,
       message: 'Failed to add track to playlist',
@@ -240,13 +198,29 @@ class MusicProvider extends BaseProvider {
     int failureCount = 0;
     List<String> errors = [];
 
+    print('Pre-loading ${trackIds.length} tracks to backend database...');
+    for (int i = 0; i < trackIds.length; i++) {
+      final trackId = trackIds[i];
+      try {
+        final track = getTrackById(trackId);
+        final deezerTrackId = track?.deezerTrackId ?? trackId;
+        await _musicService.addTrackFromDeezerToTracks(deezerTrackId, token);
+        print('Pre-loaded track $deezerTrackId to backend');
+      } catch (e) {
+        print('Failed to pre-load track $trackId: $e');
+      }
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    await Future.delayed(const Duration(milliseconds: 1000));
+
     for (int i = 0; i < trackIds.length; i++) {
       final trackId = trackIds[i];
       
       onProgress?.call(i + 1, trackIds.length);
       
       try {
-        final result = await addTrackToPlaylist(playlistId, trackId, token, deviceUuid);
+        final result = await addTrackToPlaylist(playlistId, trackId, token);
         
         if (result.success) {
           successCount++;
@@ -257,7 +231,7 @@ class MusicProvider extends BaseProvider {
           errors.add(result.message);
         }
         
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 1000));
       } catch (e) {
         failureCount++;
         errors.add('Failed to add track: $e');
@@ -338,11 +312,9 @@ class MusicProvider extends BaseProvider {
         await _musicService.addTrackFromDeezer(track.deezerTrackId!, token);
         
         if (addToTracksApi) await _musicService.addTrackFromDeezerToTracks(track.deezerTrackId!, token);
-        
         successCount++;
         successfulTracks.add(track.name);
-        
-        if (i < validTracks.length - 1) await Future.delayed(const Duration(milliseconds: 200));
+        if (i < validTracks.length - 1) await Future.delayed(const Duration(milliseconds: 1000));
       } catch (e) {
         failureCount++;
         errors.add('Failed to add "${track.name}": ${e.toString()}');

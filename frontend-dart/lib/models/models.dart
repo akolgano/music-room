@@ -33,16 +33,29 @@ class Track {
     this.imageUrl,
   });
 
-  factory Track.fromJson(Map<String, dynamic> json) => Track(
-    id: json['id'].toString(),
-    name: json['name'] ?? json['title'] ?? '',
-    artist: _extractArtist(json),
-    album: _extractAlbum(json),
-    url: json['url'] ?? json['link'] ?? '',
-    deezerTrackId: json['deezer_track_id']?.toString(),
-    previewUrl: json['preview_url'] ?? json['preview'],
-    imageUrl: _extractImageUrl(json),
-  );
+  factory Track.fromJson(Map<String, dynamic> json) {
+    String trackId;
+    String? deezerTrackId;
+    
+    if (json.containsKey('preview') || json.containsKey('link')) {
+      trackId = 'deezer_${json['id']}';
+      deezerTrackId = json['id'].toString();
+    } else {
+      trackId = json['id'].toString();
+      deezerTrackId = json['deezer_track_id']?.toString();
+    }
+    
+    return Track(
+      id: trackId,
+      name: json['name'] ?? json['title'] ?? '',
+      artist: _extractArtist(json),
+      album: _extractAlbum(json),
+      url: json['url'] ?? json['link'] ?? '',
+      deezerTrackId: deezerTrackId,
+      previewUrl: json['preview_url'] ?? json['preview'],
+      imageUrl: _extractImageUrl(json),
+    );
+  }
 
   static String _extractArtist(Map<String, dynamic> json) {
     if (json['artist'] is String) return json['artist'];
@@ -66,6 +79,14 @@ class Track {
       return json['album']['cover_medium'] ?? json['album']['cover'];
     }
     return null;
+  }
+
+  String get backendId {
+    return deezerTrackId ?? id;
+  }
+
+  bool get isDeezerTrack {
+    return deezerTrackId != null || id.startsWith('deezer_');
   }
 
   Map<String, dynamic> toJson() => {
