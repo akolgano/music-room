@@ -175,6 +175,7 @@ def playlist_tracks(request, playlist_id):
 
     data = [{
         'track_id': pt.track.id,
+        'deezer_track_id': pt.track.deezer_track_id,
         'name': pt.track.name,
         'position': pt.position,
     } for pt in tracks]
