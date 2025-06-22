@@ -42,32 +42,22 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   @override
   void initState() {
     super.initState();
-    if (_isEditMode) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
-    }
+    if (_isEditMode) WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
   }
 
   @override
   Widget buildContent() {
-    if (_isLoading && _isEditMode) {
-      return buildLoadingState(message: 'Loading playlist...');
-    }
-
+    if (_isLoading && _isEditMode) return buildLoadingState(message: 'Loading playlist...');
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
-        children: [
-          if (_isEditMode && _playlist != null) _buildPlaylistInfo(),
-          const SizedBox(height: 16),
-          _buildForm(),
-        ],
+        children: [if (_isEditMode && _playlist != null) _buildPlaylistInfo(), const SizedBox(height: 16), _buildForm()],
       ),
     );
   }
 
   Widget _buildPlaylistInfo() {
     if (_playlist == null) return const SizedBox.shrink();
-    
     return AppWidgets.infoBanner(
       title: 'Editing: ${_playlist!.name}',
       message: 'Make changes to your playlist information below',
@@ -110,13 +100,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (_isEditMode) ...[
-                Expanded(
-                  child: AppWidgets.secondaryButton(
-                    text: 'Cancel',
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icons.cancel,
-                  ),
-                ),
+                Expanded(child: AppWidgets.secondaryButton(text: 'Cancel', onPressed: () => Navigator.pop(context), icon: Icons.cancel)),
                 const SizedBox(width: 16),
               ],
               Expanded(
@@ -138,11 +122,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
               children: [
                 const Text(
                   'Playlist Tracks',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 Text('${_tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
               ],

@@ -37,16 +37,8 @@ class ApiService {
     await _dio.delete(endpoint, options: token != null ? Options(headers: {'Authorization': token}) : null);
   }
 
-  Future<Map<String, dynamic>> lookupTrackByDeezerId(String deezerTrackId, String token) async {
-    return await _get('/tracks/lookup/$deezerTrackId/', (data) => data, token: token);
-  }
-
   Future<Map<String, dynamic>> searchTracksByDeezerId(String deezerTrackId, String token) async {
-    return await _get('/tracks/', (data) => data, token: token, queryParams: {'deezer_track_id': deezerTrackId});
-  }
-
-  Future<Map<String, dynamic>> getTracks(String token, {Map<String, dynamic>? queryParams}) async {
-    return await _get('/tracks/', (data) => data, token: token, queryParams: queryParams);
+    return await _get('/tracks/search/', (data) => data, token: token, queryParams: {'deezer_track_id': deezerTrackId});
   }
 
   Future<PlaylistTracksResponse> getPlaylistTracksWithDetails(String playlistId, String token) async {
@@ -59,19 +51,17 @@ class ApiService {
         Track? fullTrack;
         
         try {
-          final trackData = await lookupTrackByDeezerId(playlistTrack.trackId, token);
-          fullTrack = Track.fromJson(trackData);
-        } catch (e) {
-          try {
-            final searchResponse = await searchTracksByDeezerId(playlistTrack.trackId, token);
-            final tracks = searchResponse['tracks'] as List<dynamic>?;
-            if (tracks?.isNotEmpty == true) {
-              fullTrack = Track.fromJson(tracks!.first);
-            }
-          } catch (e2) {
-            print('Failed to get details for track ${playlistTrack.trackId}: $e2');
+          final searchResponse = await searchTracksByDeezerId(playlistTrack.trackId, token);
+          final tracks = searchResponse['tracks'] as List<dynamic>?;
+          if (tracks?.isNotEmpty == true) {
+            fullTrack = Track.fromJson(tracks!.first);
+          } else {
+            print('No tracks found for ID ${playlistTrack.trackId}');
             fullTrack = null;
           }
+        } catch (e) {
+          print('Failed to get details for track ${playlistTrack.trackId}: $e');
+          fullTrack = null;
         }
         
         enhancedTracks.add(PlaylistTrack(
@@ -98,8 +88,12 @@ class ApiService {
       
       final futures = batch.map((trackId) async {
         try {
-          final trackData = await lookupTrackByDeezerId(trackId, token);
-          return Track.fromJson(trackData);
+          final searchResponse = await searchTracksByDeezerId(trackId, token);
+          final tracksList = searchResponse['tracks'] as List<dynamic>?;
+          if (tracksList?.isNotEmpty == true) {
+            return Track.fromJson(tracksList!.first);
+          }
+          return null;
         } catch (e) {
           print('Failed to fetch track $trackId: $e');
           return null;
@@ -117,26 +111,13 @@ class ApiService {
 
   Future<Track?> getTrackByAnyId(String identifier, String token) async {
     try {
-      final trackData = await lookupTrackByDeezerId(identifier, token);
-      return Track.fromJson(trackData);
-    } catch (e) {
-      try {
-        final response = await searchTracksByDeezerId(identifier, token);
-        final tracks = response['tracks'] as List<dynamic>?;
-        if (tracks?.isNotEmpty == true) {
-          return Track.fromJson(tracks!.first);
-        }
-      } catch (e2) {
-        try {
-          final response = await getTracks(token, queryParams: {'id': identifier});
-          final tracks = response['tracks'] as List<dynamic>?;
-          if (tracks?.isNotEmpty == true) {
-            return Track.fromJson(tracks!.first);
-          }
-        } catch (e3) {
-          print('All track lookup methods failed for $identifier');
-        }
+      final response = await searchTracksByDeezerId(identifier, token);
+      final tracks = response['tracks'] as List<dynamic>?;
+      if (tracks?.isNotEmpty == true) {
+        return Track.fromJson(tracks!.first);
       }
+    } catch (e) {
+      print('Track search failed for $identifier: $e');
     }
     return null;
   }
@@ -189,7 +170,11 @@ class ApiService {
   Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/deezer/add_from_deezer/', request, token: token);
 
   Future<void> addTrackFromDeezerToTracks(String trackId, String token) async {
-    await _postVoid('/tracks/add_from_deezer/$trackId/', null, token: token);
+    try {
+      await _postVoid('/tracks/add_from_deezer/$trackId/', null, token: token);
+    } catch (e) {
+      print('addTrackFromDeezerToTracks failed: $e');
+    }
   }
 
   Future<PlaylistTracksResponse> getPlaylistTracks(String playlistId, String token) => 

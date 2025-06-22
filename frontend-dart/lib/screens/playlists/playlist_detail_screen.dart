@@ -19,9 +19,7 @@ import '../base_screen.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
-  
   const PlaylistDetailScreen({Key? key, required this.playlistId}) : super(key: key);
-  
   @override
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
@@ -105,9 +103,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         children: [
           const Icon(Icons.info, color: Colors.blue, size: 20),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(_notifications.last, style: const TextStyle(color: Colors.blue)),
-          ),
+          Expanded(child: Text(_notifications.last, style: const TextStyle(color: Colors.blue))),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.blue, size: 20),
             onPressed: () => setState(() => _notifications.clear()),
@@ -691,52 +687,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     }
   }
 
-  Future<void> _preloadTrackDetails() async {
-    if (_tracks.isEmpty) return;
-    
-    showInfo('Loading track details...');
-    
-    try {
-      final trackIds = _tracks
-          .where((t) => t.track == null || t.track!.deezerTrackId == null)
-          .map((t) => t.trackId)
-          .toList();
-      
-      if (trackIds.isEmpty) return;
-      
-      final updatedTracks = <PlaylistTrack>[];
-      
-      for (int i = 0; i < _tracks.length; i++) {
-        final playlistTrack = _tracks[i];
-        
-        if (playlistTrack.track == null || playlistTrack.track!.deezerTrackId == null) {
-          final fullTrack = await _fetchFullTrackDetails(playlistTrack.trackId);
-          
-          updatedTracks.add(PlaylistTrack(
-            trackId: playlistTrack.trackId,
-            name: playlistTrack.name,
-            position: playlistTrack.position,
-            track: fullTrack,
-          ));
-        } else {
-          updatedTracks.add(playlistTrack);
-        }
-        
-        if (i < _tracks.length - 1) {
-          await Future.delayed(const Duration(milliseconds: 200));
-        }
-      }
-      
-      setState(() {
-        _tracks = updatedTracks;
-      });
-      
-      showSuccess('Track details loaded!');
-    } catch (e) {
-      showError('Failed to load track details: $e');
-    }
-  }
-
   Future<void> _removeTrack(String trackId) async {
     if (!_isOwner) return;
     
@@ -752,31 +702,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',
       );
-    }
-  }
-
-  Future<Track?> _fetchFullTrackDetails(String trackId) async {
-    try {
-      final response = await _apiService.getTracks(
-        'Token ${auth.token!}',
-        queryParams: {'id': trackId}
-      );
-      
-      if (response['tracks'] != null && (response['tracks'] as List).isNotEmpty) {
-        final trackData = (response['tracks'] as List).first;
-        return Track.fromJson(trackData);
-      }
-      
-      try {
-        final trackData = await _apiService.lookupTrackByDeezerId(trackId, 'Token ${auth.token!}');
-        return Track.fromJson(trackData);
-      } catch (e) {
-        print('Track lookup failed for ID $trackId: $e');
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching track details for ID $trackId: $e');
-      return null;
     }
   }
 

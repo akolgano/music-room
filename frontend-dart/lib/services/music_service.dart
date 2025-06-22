@@ -10,19 +10,14 @@ class MusicService {
 
   Future<String> getInternalTrackId(String deezerTrackId, String token) async {
     try {
-      final response = await _api.lookupTrackByDeezerId(deezerTrackId, token);
-      return response['id'].toString();
-    } catch (e) {
-      print('Track lookup failed, trying search approach: $e');
-      try {
-        final response = await _api.searchTracksByDeezerId(deezerTrackId, token);
-        final tracks = response['tracks'] as List<dynamic>?;
-        if (tracks?.isNotEmpty == true) {
-          return tracks!.first['id'].toString();
-        }
-      } catch (e2) {
-        print('Track search also failed: $e2');
+      final response = await _api.searchTracksByDeezerId(deezerTrackId, token);
+      final tracks = response['tracks'] as List<dynamic>?;
+      if (tracks?.isNotEmpty == true) {
+        return tracks!.first['id'].toString();
       }
+      return deezerTrackId;
+    } catch (e) {
+      print('Track search failed for $deezerTrackId: $e');
       return deezerTrackId;
     }
   }
@@ -34,9 +29,7 @@ class MusicService {
       final basicResponse = await _api.getPlaylistTracks(playlistId, 'Token $token');
       final basicTracks = basicResponse.tracks;
       
-      if (basicTracks.isEmpty) {
-        return basicTracks;
-      }
+      if (basicTracks.isEmpty) return basicTracks;
       
       print('Found ${basicTracks.length} tracks, fetching detailed information...');
       
@@ -94,7 +87,12 @@ class MusicService {
       } else {
         try {
           final fullTrack = await getTrackWithDetails(track.trackId, token);
-          enhancedTracks.add(PlaylistTrack(trackId: track.trackId, name: track.name, position: track.position, track: fullTrack));
+          enhancedTracks.add(PlaylistTrack(
+            trackId: track.trackId, 
+            name: track.name, 
+            position: track.position, 
+            track: fullTrack
+          ));
         } catch (e) {
           print('Failed to enhance track ${track.name}: $e');
           enhancedTracks.add(track);
@@ -190,6 +188,10 @@ class MusicService {
   }
 
   Future<void> addTrackFromDeezerToTracks(String trackId, String token) async {
-    await _api.addTrackFromDeezerToTracks(trackId, 'Token $token');
+    try {
+      await _api.addTrackFromDeezerToTracks(trackId, 'Token $token');
+    } catch (e) {
+      print('Failed to add track to tracks database (endpoint might not exist): $e');
+    }
   }
 }
