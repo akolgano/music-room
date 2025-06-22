@@ -606,16 +606,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           _tracks = musicProvider.playlistTracks;
         });
         
-        if (!musicProvider.allTracksHaveDetails) {
-          showInfo('Loading additional track details...');
-          await musicProvider.enhanceTracksWithDetails(auth.token!);
-          
-          setState(() {
-            _tracks = musicProvider.playlistTracks;
-          });
-        }
-        
-        print('Loaded ${_tracks.length} tracks, ${_tracks.where((t) => t.track?.deezerTrackId != null).length} with Deezer IDs');
+        final tracksWithDeezerIds = _tracks.where((t) => t.track?.deezerTrackId != null).length;
+        print('Loaded ${_tracks.length} tracks, $tracksWithDeezerIds with Deezer IDs (full details)');
         
         if (_webSocketService.currentPlaylistId != widget.playlistId) {
           await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);

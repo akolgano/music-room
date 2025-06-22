@@ -29,7 +29,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   Set<String> _selectedTracks = {};
   bool _isMultiSelectMode = false;
   bool _isAddingTracks = false;
-  bool _isAutoAddingToBackend = false; 
   List<Playlist> _userPlaylists = [];
   
   Timer? _searchTimer;
@@ -78,7 +77,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
           children: [
             _buildSearchHeader(music),
             if (_isAddingToPlaylist && _isMultiSelectMode) _buildQuickActions(),
-            if (_isAddingTracks || _isAutoAddingToBackend) _buildProgressIndicator(),
+            if (_isAddingTracks) _buildProgressIndicator(),
             Expanded(child: _buildResults(music.searchResults)),
           ],
         ),
@@ -125,52 +124,13 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        boxShadow: [
-          BoxShadow(color: AppTheme.primary.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
-        ],
+        boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_isAddingToPlaylist) _buildPlaylistBanner(),
           _buildSearchRow(musicProvider),
-          if (_hasSearchResults) _buildAutoAddBanner(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAutoAddBanner() {
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.auto_awesome, color: Colors.green, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _isAutoAddingToBackend 
-                ? 'Adding tracks to backend database...'
-                : 'Deezer tracks are automatically added to the database',
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          if (_isAutoAddingToBackend)
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.green),
-            ),
         ],
       ),
     );
@@ -360,7 +320,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     try {
       await _executeWithErrorHandling(() async {
         await _musicProvider.searchDeezerTracks(_searchController.text);
-        await _autoAddDeezerTracksToBackend(); 
       }, errorMessage: 'Auto-search failed');
     } finally {
       if (mounted) {
@@ -420,9 +379,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              _isAutoAddingToBackend 
-                ? 'Adding ${_musicProvider.searchResults.length} tracks to backend database...'
-                : 'Adding ${_selectedTracks.length} tracks...',
+              'Adding ${_selectedTracks.length} tracks...',
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
@@ -614,85 +571,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     
     await _executeWithErrorHandling(() async {
       await _musicProvider.searchDeezerTracks(_searchController.text);
-      await _autoAddDeezerTracksToBackend(); 
     }, errorMessage: 'Search failed. Please try again.');
-  }
-
-  Future<void> _autoAddDeezerTracksToBackend() async {
-    if (!_musicProvider.hasValidDeezerTracks) return;
-
-    final deezerTracks = _musicProvider.deezerTracksFromSearch;
-    if (deezerTracks.isEmpty) return;
-
-    setState(() => _isAutoAddingToBackend = true);
-    
-    try {
-      int successCount = 0;
-      int failureCount = 0;
-      final errors = <String>[];
-
-      print('Starting enhanced backend addition for ${deezerTracks.length} Deezer tracks...');
-
-      const batchSize = 5;
-      for (int i = 0; i < deezerTracks.length; i += batchSize) {
-        final batch = deezerTracks.skip(i).take(batchSize).toList();
-        
-        final futures = batch.map((track) async {
-          if (track.deezerTrackId?.isNotEmpty == true) {
-            try {
-              print('Adding track ${track.name} (ID: ${track.deezerTrackId}) to backend...');
-              await _musicProvider.addSingleTrackFromDeezerToTracks(
-                track.deezerTrackId!, 
-                _authProvider.token!
-              );
-              print('✓ Successfully added ${track.name} to backend database');
-              return true;
-            } catch (e) {
-              final errorMsg = 'Failed to add "${track.name}" to backend: $e';
-              errors.add(errorMsg);
-              print('✗ Error adding ${track.name} to backend: $e');
-              return false;
-            }
-          } else {
-            errors.add('Track "${track.name}" has no Deezer ID');
-            print('✗ Skipping ${track.name} - no Deezer ID');
-            return false;
-          }
-        });
-
-        final results = await Future.wait(futures);
-        successCount += results.where((success) => success).length;
-        failureCount += results.where((success) => !success).length;
-
-        if (i + batchSize < deezerTracks.length) {
-          await Future.delayed(const Duration(milliseconds: 300));
-        }
-      }
-
-      if (successCount == deezerTracks.length) {
-        _showMessage('✓ All $successCount tracks ready for playlist addition!', isError: false);
-        print('All tracks successfully prepared in backend database');
-      } else if (successCount > 0) {
-        _showMessage('✓ $successCount/${deezerTracks.length} tracks ready for playlist addition', isError: false);
-        print('Partial success: $successCount/${deezerTracks.length} tracks prepared');
-      } else {
-        _showMessage('⚠ Failed to prepare tracks in backend database');
-        print('Failed to prepare any tracks in backend database');
-      }
-
-      if (errors.isNotEmpty) {
-        print('Errors occurred while preparing tracks:');
-        for (final error in errors.take(3)) { 
-          print('  - $error');
-        }
-      }
-
-    } catch (e) {
-      _showMessage('Error preparing tracks: $e');
-      print('Critical error while preparing tracks: $e');
-    } finally {
-      setState(() => _isAutoAddingToBackend = false);
-    }
   }
 
   Future<void> _playTrack(Track track) async {
@@ -719,7 +598,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     setState(() => _isAddingTracks = true);
     
     try {
-      print('Starting enhanced track addition for: ${track.name}');
+      print('Adding track to playlist: ${track.name}');
       
       final result = await _musicProvider.addTrackToPlaylist(playlistId, track.id, _authProvider.token!);
       if (result.success) {

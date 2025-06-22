@@ -58,10 +58,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppTheme.primary.withOpacity(0.2),
-            ),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.primary.withOpacity(0.2)),
             child: const Icon(Icons.library_music, size: 40, color: Colors.white),
           ),
           const SizedBox(height: 16),
@@ -127,10 +124,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
                   onPressed: _shareToSocial,
                   icon: const Icon(Icons.ios_share),
                   label: const Text('Share'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.surface,
-                    foregroundColor: Colors.white,
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.surface, foregroundColor: Colors.white),
                 ),
               ),
             ],

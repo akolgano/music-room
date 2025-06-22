@@ -78,15 +78,9 @@ class MusicProvider extends BaseProvider {
     return result;
   }
 
-  Future<void> updatePlaylistDetails({
-    required String playlistId,
-    String? name,
-    String? description,
-    bool? isPublic,
-    required String token,
-  }) async {
+  Future<void> updatePlaylistDetails({required String playlistId, String? name, String? description, bool? isPublic, required String token}) async {
     await executeAsync(() => _musicService.updatePlaylist(playlistId, name: name, description: description, isPublic: isPublic, token));
-}
+  }
 
   Future<void> searchDeezerTracks(String query) async {
     final result = await executeAsync(() => _musicService.searchDeezerTracks(query));
@@ -109,12 +103,17 @@ class MusicProvider extends BaseProvider {
 
   Future<void> fetchPlaylistTracks(String playlistId, String token) async {
     final result = await executeAsync(() async {
-      print('Fetching playlist tracks with enhanced details...');
+      print('Fetching playlist tracks with full details...');
       final tracks = await _musicService.getPlaylistTracksWithDetails(playlistId, token);
-      print('Received ${tracks.length} tracks with details');
+      print('Received ${tracks.length} tracks from API');
+      
       for (final track in tracks) {
-        final hasDeezerId = track.track?.deezerTrackId != null;
-        print('Track: ${track.name} - Deezer ID: ${hasDeezerId ? '✓' : '✗'}');
+        print('Raw track data: trackId=${track.trackId}, name=${track.name}, position=${track.position}');
+        if (track.track != null) {
+          print('  ✓ Track object created: id=${track.track!.id}, deezerTrackId=${track.track!.deezerTrackId}, artist=${track.track!.artist}');
+        } else {
+          print('  ✗ Track object is null');
+        }
       }
       return tracks;
     });
@@ -122,29 +121,14 @@ class MusicProvider extends BaseProvider {
     if (result != null) {
       _playlistTracks = result;
       _originalPlaylistTracks = List.from(result);
-      print('Successfully loaded ${_playlistTracks.length} enhanced tracks');
+      
+      final tracksWithDetails = _playlistTracks.where((t) => t.track != null).length;
+      final tracksWithDeezerIds = _playlistTracks.where((t) => t.track?.deezerTrackId != null).length;
+      
+      print('Successfully loaded ${_playlistTracks.length} tracks:');
+      print('  - $tracksWithDetails with track objects');
+      print('  - $tracksWithDeezerIds with Deezer IDs');
     }
-  }
-
-  Future<void> enhanceTracksWithDetails(String token) async {
-    if (_playlistTracks.isEmpty) return;
-    
-    final tracksNeedingEnhancement = _playlistTracks
-        .where((t) => t.track?.deezerTrackId == null)
-        .toList();
-    
-    if (tracksNeedingEnhancement.isEmpty) {
-      print('All tracks already have detailed information');
-      return;
-    }
-    
-    print('Enhancing ${tracksNeedingEnhancement.length} tracks with missing details...');
-    
-    await executeAsync(() async {
-      final enhancedTracks = await _musicService.enhancePlaylistTracks(_playlistTracks, token);
-      return enhancedTracks;
-    });
-    if (!hasError) print('Successfully enhanced tracks with details');
   }
 
   Future<Track> getTrackWithDetails(String trackId, String token) async {
@@ -152,9 +136,7 @@ class MusicProvider extends BaseProvider {
       return await _musicService.getTrackWithDetails(trackId, token);
     });
     
-    if (result == null) {
-      throw Exception('Track not found for ID: $trackId');
-    }
+    if (result == null) throw Exception('Track not found for ID: $trackId');
     
     return result;
   }
@@ -162,26 +144,18 @@ class MusicProvider extends BaseProvider {
   Future<String?> getPlayableTrackUrl(PlaylistTrack playlistTrack, String token) async {
     Track? track = playlistTrack.track;
     
-    if (track?.deezerTrackId == null) {
-      print('Track missing details, fetching...');
-      track = await getTrackWithDetails(playlistTrack.trackId, token);
-      
-      if (track == null) {
-        print('Unable to fetch track details for ${playlistTrack.name}');
-        return null;
-      }
-    }
+    if (track != null && track.previewUrl != null) return track.previewUrl;
     
-    String? previewUrl = track?.previewUrl;
-    if (previewUrl == null && track?.deezerTrackId != null) {
+    if (track?.deezerTrackId != null) {
       try {
-        previewUrl = await getDeezerTrackPreviewUrl(track!.deezerTrackId!);
+        return await getDeezerTrackPreviewUrl(track!.deezerTrackId!);
       } catch (e) {
         print('Failed to get Deezer preview URL: $e');
       }
     }
     
-    return previewUrl;
+    print('No preview URL available for ${playlistTrack.name}');
+    return null;
   }
 
   bool get allTracksHaveDetails {
@@ -195,9 +169,9 @@ class MusicProvider extends BaseProvider {
   Future<Track?> getPlayableTrack(String trackId, String token) async {
     final existingTrack = _playlistTracks
         .where((pt) => pt.trackId == trackId && pt.track?.deezerTrackId != null)
-        .map((pt) => pt.track!)
-        .firstOrNull;
+        .map((pt) => pt.track!).firstOrNull;
     if (existingTrack != null) return existingTrack;
+    
     return await getTrackWithDetails(trackId, token);
   }
 
@@ -227,21 +201,9 @@ class MusicProvider extends BaseProvider {
 
       String? deezerTrackId = track.deezerTrackId ?? track.backendId;
       
-      if (deezerTrackId?.startsWith('deezer_') == true) {
-        deezerTrackId = deezerTrackId!.substring(7); 
-      }
+      if (deezerTrackId?.startsWith('deezer_') == true) deezerTrackId = deezerTrackId!.substring(7); 
       
       print('Adding track: ${track.name}, Clean Deezer ID: $deezerTrackId');
-
-      try {
-        print('Step 1: Adding Deezer track $deezerTrackId to backend database...');
-        await _musicService.addTrackFromDeezerToTracks(deezerTrackId!, token);
-        print('Successfully added Deezer track to backend database');
-      } catch (e) {
-        print('Backend add failed (track might already exist): $e');
-      }
-
-      await Future.delayed(const Duration(milliseconds: 1000));
 
       try {
         print('Adding track to playlist with clean ID: $deezerTrackId');
@@ -256,7 +218,6 @@ class MusicProvider extends BaseProvider {
         );
       } catch (e) {
         print('✗ Failed to add track with clean ID $deezerTrackId: $e');
-        
         return AddTrackResult(
           success: false,
           message: 'Unable to add track to playlist: $e',
@@ -283,22 +244,6 @@ class MusicProvider extends BaseProvider {
     int failureCount = 0;
     List<String> errors = [];
 
-    print('Pre-loading ${trackIds.length} tracks to backend database...');
-    for (int i = 0; i < trackIds.length; i++) {
-      final trackId = trackIds[i];
-      try {
-        final track = getTrackById(trackId);
-        final deezerTrackId = track?.deezerTrackId ?? trackId;
-        await _musicService.addTrackFromDeezerToTracks(deezerTrackId, token);
-        print('Pre-loaded track $deezerTrackId to backend');
-      } catch (e) {
-        print('Failed to pre-load track $trackId: $e');
-      }
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-
-    await Future.delayed(const Duration(milliseconds: 1000));
-
     for (int i = 0; i < trackIds.length; i++) {
       final trackId = trackIds[i];
       
@@ -323,13 +268,7 @@ class MusicProvider extends BaseProvider {
       }
     }
 
-    return BatchAddResult(
-      totalTracks: trackIds.length,
-      successCount: successCount,
-      duplicateCount: duplicateCount,
-      failureCount: failureCount,
-      errors: errors,
-    );
+    return BatchAddResult(totalTracks: trackIds.length, successCount: successCount, duplicateCount: duplicateCount, failureCount: failureCount, errors: errors);
   }
 
   Future<void> removeTrackFromPlaylist({
@@ -395,8 +334,6 @@ class MusicProvider extends BaseProvider {
       
       try {
         await _musicService.addTrackFromDeezer(track.deezerTrackId!, token);
-        
-        if (addToTracksApi) await _musicService.addTrackFromDeezerToTracks(track.deezerTrackId!, token);
         successCount++;
         successfulTracks.add(track.name);
         if (i < validTracks.length - 1) await Future.delayed(const Duration(milliseconds: 1000));
@@ -439,9 +376,5 @@ class MusicProvider extends BaseProvider {
 
   bool get hasValidDeezerTracks {
     return deezerTracksFromSearch.isNotEmpty;
-  }
-
-  Future<void> addSingleTrackFromDeezerToTracks(String trackId, String token) async {
-    await executeAsync(() => _musicService.addTrackFromDeezerToTracks(trackId, token));
   }
 }

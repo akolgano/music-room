@@ -29,12 +29,7 @@ class DeviceService {
     return response.canControl;
   }
 
-  Future<void> delegateDeviceControl({
-    required String deviceUuid,
-    required int delegateUserId,
-    required bool canControl,
-    required String token,
-  }) async {
+  Future<void> delegateDeviceControl({required String deviceUuid, required int delegateUserId, required bool canControl, required String token}) async {
     final request = DelegateControlRequest(
       deviceUuid: deviceUuid,
       delegateUserId: delegateUserId,

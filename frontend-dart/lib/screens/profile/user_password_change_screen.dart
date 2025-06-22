@@ -79,10 +79,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                           const SizedBox(height: 24),
                           profileProvider.isLoading
                             ? const CircularProgressIndicator(color: AppTheme.primary)
-                            : AppWidgets.primaryButton(
-                                text: 'Submit',
-                                onPressed: _submit,
-                              ),
+                            : AppWidgets.primaryButton(text: 'Submit', onPressed: _submit),
                           const SizedBox(height: 24),
                           TextButton(
                             onPressed: () => Navigator.pop(context),
@@ -118,10 +115,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password changed successfully'),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('Password changed successfully'), backgroundColor: Colors.green),
       );
       Navigator.pop(context);
     }

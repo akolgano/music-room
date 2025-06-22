@@ -37,91 +37,6 @@ class ApiService {
     await _dio.delete(endpoint, options: token != null ? Options(headers: {'Authorization': token}) : null);
   }
 
-  Future<Map<String, dynamic>> searchTracksByDeezerId(String deezerTrackId, String token) async {
-    return await _get('/tracks/search/', (data) => data, token: token, queryParams: {'deezer_track_id': deezerTrackId});
-  }
-
-  Future<PlaylistTracksResponse> getPlaylistTracksWithDetails(String playlistId, String token) async {
-    try {
-      final basicResponse = await getPlaylistTracks(playlistId, token);
-      
-      final enhancedTracks = <PlaylistTrack>[];
-      
-      for (final playlistTrack in basicResponse.tracks) {
-        Track? fullTrack;
-        
-        try {
-          final searchResponse = await searchTracksByDeezerId(playlistTrack.trackId, token);
-          final tracks = searchResponse['tracks'] as List<dynamic>?;
-          if (tracks?.isNotEmpty == true) {
-            fullTrack = Track.fromJson(tracks!.first);
-          } else {
-            print('No tracks found for ID ${playlistTrack.trackId}');
-            fullTrack = null;
-          }
-        } catch (e) {
-          print('Failed to get details for track ${playlistTrack.trackId}: $e');
-          fullTrack = null;
-        }
-        
-        enhancedTracks.add(PlaylistTrack(
-          trackId: playlistTrack.trackId,
-          name: playlistTrack.name,
-          position: playlistTrack.position,
-          track: fullTrack,
-        ));
-      }
-      
-      return PlaylistTracksResponse(tracks: enhancedTracks);
-    } catch (e) {
-      print('Error getting playlist tracks with details: $e');
-      rethrow;
-    }
-  }
-
-  Future<List<Track>> batchFetchTrackDetails(List<String> trackIds, String token) async {
-    final tracks = <Track>[];
-    
-    const batchSize = 5;
-    for (int i = 0; i < trackIds.length; i += batchSize) {
-      final batch = trackIds.skip(i).take(batchSize).toList();
-      
-      final futures = batch.map((trackId) async {
-        try {
-          final searchResponse = await searchTracksByDeezerId(trackId, token);
-          final tracksList = searchResponse['tracks'] as List<dynamic>?;
-          if (tracksList?.isNotEmpty == true) {
-            return Track.fromJson(tracksList!.first);
-          }
-          return null;
-        } catch (e) {
-          print('Failed to fetch track $trackId: $e');
-          return null;
-        }
-      });
-      
-      final results = await Future.wait(futures);
-      tracks.addAll(results.whereType<Track>());
-      
-      if (i + batchSize < trackIds.length) await Future.delayed(const Duration(milliseconds: 300));
-    }
-    
-    return tracks;
-  }
-
-  Future<Track?> getTrackByAnyId(String identifier, String token) async {
-    try {
-      final response = await searchTracksByDeezerId(identifier, token);
-      final tracks = response['tracks'] as List<dynamic>?;
-      if (tracks?.isNotEmpty == true) {
-        return Track.fromJson(tracks!.first);
-      }
-    } catch (e) {
-      print('Track search failed for $identifier: $e');
-    }
-    return null;
-  }
-
   Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
   Future<AuthResult> signup(SignupRequest request) => _post('/users/signup/', request, AuthResult.fromJson);
   Future<void> logout(String token, LogoutRequest request) => _postVoid('/users/logout/', request, token: token);
@@ -168,14 +83,6 @@ class ApiService {
   }
 
   Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/deezer/add_from_deezer/', request, token: token);
-
-  Future<void> addTrackFromDeezerToTracks(String trackId, String token) async {
-    try {
-      await _postVoid('/tracks/add_from_deezer/$trackId/', null, token: token);
-    } catch (e) {
-      print('addTrackFromDeezerToTracks failed: $e');
-    }
-  }
 
   Future<PlaylistTracksResponse> getPlaylistTracks(String playlistId, String token) => 
       _get('/playlists/playlist/$playlistId/tracks/', PlaylistTracksResponse.fromJson, token: token);
