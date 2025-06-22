@@ -14,20 +14,16 @@ void main() async {
   
   try {
     print('Starting app initialization...');
-    
     await dotenv.load();
     print('Environment variables loaded');
-    
     await setupServiceLocator();
     print('Service locator setup complete');
-    
     try {
       await SocialLoginUtils.initialize();
       print('Social login services initialized successfully');
     } catch (e) {
       print('Warning: Social login initialization failed: $e');
     }
-    
     print('Starting MyApp...');
     runApp(const MyApp());
   } catch (e) {
@@ -78,15 +74,9 @@ class ErrorApp extends StatelessWidget {
             children: [
               Icon(Icons.error, size: 64, color: AppTheme.error),
               SizedBox(height: 16),
-              Text(
-                'Failed to initialize app',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
+              Text('Failed to initialize app', style: TextStyle(color: Colors.white, fontSize: 18)),
               SizedBox(height: 8),
-              Text(
-                'Please restart the application',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
+              Text('Please restart the application', style: TextStyle(color: Colors.grey, fontSize: 14)),
             ],
           ),
         ),

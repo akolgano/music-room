@@ -128,11 +128,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 colors: [AppTheme.primary.withOpacity(0.8), AppTheme.primary.withOpacity(0.4)],
               ),
               boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
+                BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
               ],
             ),
             child: _playlist!.imageUrl?.isNotEmpty == true

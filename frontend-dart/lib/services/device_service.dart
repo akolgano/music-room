@@ -19,11 +19,7 @@ class DeviceService {
   }
 
   Future<Device> registerDevice(String uuid, String licenseKey, String deviceName, String token) async {
-    final request = RegisterDeviceRequest(
-      uuid: uuid,
-      licenseKey: licenseKey,
-      deviceName: deviceName,
-    );
+    final request = RegisterDeviceRequest(uuid: uuid, licenseKey: licenseKey, deviceName: deviceName);
     final response = await _api.registerDevice('Token $token', request);
     return response.device;
   }
