@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
-import '../../widgets/app_widgets.dart';  
+import '../../widgets/app_widgets.dart';
+import '../base_screen.dart';
 
 class FriendRequestScreen extends StatefulWidget {
   const FriendRequestScreen({Key? key}) : super(key: key);
@@ -13,53 +14,40 @@ class FriendRequestScreen extends StatefulWidget {
   State<FriendRequestScreen> createState() => _FriendRequestScreenState();
 }
 
-class _FriendRequestScreenState extends State<FriendRequestScreen> {
-  bool _isLoading = true;
-  List<Map<String, dynamic>> _pendingRequests = [];
+class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> {
+  @override
+  String get screenTitle => 'Friend Requests';
 
   @override
   void initState() {
     super.initState();
-    _loadPendingRequests();
-  }
-
-  Future<void> _loadPendingRequests() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      await friendProvider.fetchPendingRequests(authProvider.token!);
-      setState(() => _pendingRequests = friendProvider.pendingRequests);
-    } catch (error) {
-      _showError('Failed to load pending requests');
-    }
-
-    setState(() => _isLoading = false);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Friend Requests')),
-      body: _isLoading
-          ? AppWidgets.loading()  
-          : _pendingRequests.isEmpty
-              ? AppWidgets.emptyState(  
-                  icon: Icons.mail,
-                  title: 'No pending friend requests',
-                  subtitle: 'When someone sends you a friend request, it will appear here',
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _pendingRequests.length,
-                  itemBuilder: (ctx, i) => _buildRequestItem(_pendingRequests[i]),
-                ),
+  Widget buildContent() {
+    return buildConsumerContent<FriendProvider>(
+      builder: (context, friendProvider) {
+        if (friendProvider.isLoading) return buildLoadingState(message: 'Loading requests...');
+
+        if (friendProvider.pendingRequests.isEmpty) {
+          return buildEmptyState(
+            icon: Icons.mail_outline,
+            title: 'No friend requests',
+            subtitle: 'When someone sends you a friend request, it will appear here',
+          );
+        }
+
+        return buildListWithRefresh<Map<String, dynamic>>(
+          items: friendProvider.pendingRequests,
+          itemBuilder: (request, index) => _buildRequestCard(request),
+          onRefresh: _loadData,
+        );
+      },
     );
   }
 
-  Widget _buildRequestItem(Map<String, dynamic> request) {
+  Widget _buildRequestCard(Map<String, dynamic> request) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.surface,
@@ -79,9 +67,14 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('User ID: ${request['from_user'] ?? 'Unknown'}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 4),
-                      Text('Status: ${request['status'] ?? 'pending'}', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.7))),
+                      Text(
+                        'User ID: ${request['from_user'] ?? 'Unknown'}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Status: ${request['status'] ?? 'pending'}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
                     ],
                   ),
                 ),
@@ -91,22 +84,16 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
+                AppWidgets.secondaryButton(
+                  text: 'Reject',
                   onPressed: () => _rejectRequest(request['id']?.toString() ?? '0'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white),
-                  ),
-                  child: const Text('REJECT'),
+                  fullWidth: false,
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton(
+                AppWidgets.primaryButton(
+                  text: 'Accept',
                   onPressed: () => _acceptRequest(request['id']?.toString() ?? '0'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: const Text('ACCEPT'),
+                  fullWidth: false,
                 ),
               ],
             ),
@@ -116,51 +103,37 @@ class _FriendRequestScreenState extends State<FriendRequestScreen> {
     );
   }
 
-  void _acceptRequest(String friendshipId) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      
-      final message = await friendProvider.acceptFriendRequest(authProvider.token!, int.parse(friendshipId));
-      _showSuccess(message ?? 'Friend request accepted');
-      _loadPendingRequests();
-    } catch (error) {
-      _showError('Failed to accept request');
-    }
-  }
-
-  void _rejectRequest(String friendshipId) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
-      
-      final message = await friendProvider.rejectFriendRequest(authProvider.token!, int.parse(friendshipId));
-      _showSuccess(message ?? 'Friend request rejected');
-      _loadPendingRequests();
-    } catch (error) {
-      _showError('Failed to reject request');
-    }
-  }
-
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
+  Future<void> _loadData() async {
+    await runAsyncAction(
+      () async {
+        final friendProvider = getProvider<FriendProvider>();
+        await friendProvider.fetchPendingRequests(auth.token!);
+      },
+      errorMessage: 'Failed to load friend requests',
     );
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppTheme.error,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
+  Future<void> _acceptRequest(String friendshipId) async {
+    await runAsyncAction(
+      () async {
+        final friendProvider = getProvider<FriendProvider>();
+        await friendProvider.acceptFriendRequest(auth.token!, int.parse(friendshipId));
+        await _loadData();
+      },
+      successMessage: 'Friend request accepted!',
+      errorMessage: 'Failed to accept request',
+    );
+  }
+
+  Future<void> _rejectRequest(String friendshipId) async {
+    await runAsyncAction(
+      () async {
+        final friendProvider = getProvider<FriendProvider>();
+        await friendProvider.rejectFriendRequest(auth.token!, int.parse(friendshipId));
+        await _loadData();
+      },
+      successMessage: 'Friend request rejected',
+      errorMessage: 'Failed to reject request',
     );
   }
 }

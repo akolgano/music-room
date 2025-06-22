@@ -38,10 +38,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: _buildForm(),
-            ),
+            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400), child: _buildForm()),
           ),
         ),
       ),

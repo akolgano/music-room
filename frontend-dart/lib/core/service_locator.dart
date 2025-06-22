@@ -17,28 +17,40 @@ import '../providers/dynamic_theme_provider.dart';
 final getIt = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
+  print('Service Locator: Starting setup...');
+
   final storageService = await StorageService.init();
   getIt.registerSingleton<StorageService>(storageService);
+  print('Service Locator: StorageService registered');
 
   getIt.registerLazySingleton<Dio>(() {
+    print('Service Locator: Creating Dio instance...');
     final dio = Dio();
     
     String baseUrl;
-    if (kIsWeb) {
-      baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
-      
-      if (baseUrl == 'http://localhost:8000') {
-        final currentHost = Uri.base.host;
-        if (currentHost != 'localhost' && currentHost != '127.0.0.1') {
-          baseUrl = 'http://$currentHost:8000';
-        }
-      }
+    final envBaseUrl = dotenv.env['API_BASE_URL'];
+    
+    if (envBaseUrl != null && envBaseUrl.isNotEmpty) {
+      baseUrl = envBaseUrl;
+      print('Service Locator: Using base URL from environment: $baseUrl');
     } else {
-      baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:8000'; 
+      if (kIsWeb) {
+        baseUrl = 'http://localhost:8000';
+        print('Service Locator: Web platform detected, using default: $baseUrl');
+      } else {
+        baseUrl = 'http://10.0.2.2:8000'; 
+        print('Service Locator: Mobile platform detected, using default: $baseUrl');
+      }
     }
     
-    print('Service Locator: Setting API base URL to: $baseUrl');
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+    
+    print('Service Locator: Final base URL: $baseUrl');
     dio.options.baseUrl = baseUrl;
+    
+    print('Service Locator: Dio base URL after setting: "${dio.options.baseUrl}"');
     
     dio.options.headers = {
       'Content-Type': 'application/json',
@@ -61,7 +73,17 @@ Future<void> setupServiceLocator() async {
     
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        print('API Request: ${options.method} ${options.uri}');
+        final fullUrl = options.uri.toString();
+        print('API Request: ${options.method} $fullUrl');
+        print('Base URL: "${dio.options.baseUrl}"');
+        print('Request Path: "${options.path}"');
+        
+        if (!fullUrl.startsWith('http')) {
+          print('ERROR: Request URL does not start with http!');
+          print('   This indicates a base URL configuration issue.');
+          print('   Base URL: "${dio.options.baseUrl}"');
+          print('   Request path: "${options.path}"');
+        }
         
         final token = getIt.isRegistered<AuthService>() ? getIt<AuthService>().currentToken : null;
         if (token != null) {
@@ -74,15 +96,17 @@ Future<void> setupServiceLocator() async {
         print('API Response: ${response.statusCode} for ${response.requestOptions.uri}');
         
         if (response.data is String && response.data.toString().contains('<!DOCTYPE html>')) {
-          print('WARNING: Received HTML instead of JSON from ${response.requestOptions.uri}');
-          print('This usually means the request is not reaching the Django backend.');
+          print('WARNING: Received HTML instead of JSON!');
+          print('   This usually means the request is not reaching the Django backend.');
+          print('   Request was sent to: ${response.requestOptions.uri}');
+          print('   Check if your backend server is running on the correct port.');
         }
         
         handler.next(response);
       },
       onError: (error, handler) {
         print('API Error: ${error.response?.statusCode} ${error.message}');
-        print('Request URL: ${error.requestOptions.uri}');
+        print('   Request URL: ${error.requestOptions.uri}');
         
         if (error.response?.statusCode == 401) {
           print('Unauthorized - clearing auth token');
@@ -95,10 +119,16 @@ Future<void> setupServiceLocator() async {
       },
     ));
     
+    print('Service Locator: Dio configured successfully');
     return dio;
   });
 
-  getIt.registerLazySingleton<ApiService>(() => ApiService(getIt<Dio>()));
+  getIt.registerLazySingleton<ApiService>(() {
+    print('Service Locator: Creating ApiService with configured Dio...');
+    final dio = getIt<Dio>();
+    print('Service Locator: Retrieved Dio with base URL: "${dio.options.baseUrl}"');
+    return ApiService(dio);
+  });
 
   getIt.registerLazySingleton<AuthService>(() => AuthService(getIt<ApiService>(), getIt<StorageService>()));
   getIt.registerLazySingleton<MusicService>(() => MusicService(getIt<ApiService>()));
@@ -111,7 +141,17 @@ Future<void> setupServiceLocator() async {
     themeProvider: getIt<DynamicThemeProvider>(),
   ));
   
-  print('Service Locator setup completed');
+  print('Service Locator: All services registered');
+  
+  final testDio = getIt<Dio>();
+  print('Final verification - Dio base URL: "${testDio.options.baseUrl}"');
+  
+  if (testDio.options.baseUrl.isEmpty) {
+    print('CRITICAL ERROR: Base URL is empty after setup!');
+    throw Exception('Failed to configure API base URL');
+  }
+  
+  print('Service Locator setup completed successfully');
 }
 
 void resetServiceLocator() {

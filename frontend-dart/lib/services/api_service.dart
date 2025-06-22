@@ -1,4 +1,4 @@
-// lib/services/api_service.dart - Enhanced version
+// lib/services/api_service.dart
 import 'package:dio/dio.dart';
 import '../models/models.dart';
 import '../models/api_models.dart';
@@ -7,10 +7,24 @@ class ApiService {
   final Dio _dio;
 
   ApiService([Dio? dio]) : _dio = dio ?? Dio() {
-    _dio.options.headers = {'Content-Type': 'application/json'};
+    if (_dio.options.headers['Content-Type'] == null) {
+      _dio.options.headers['Content-Type'] = 'application/json';
+    }
+    if (_dio.options.headers['Accept'] == null) {
+      _dio.options.headers['Accept'] = 'application/json';
+    }
+    
+    if (_dio.options.baseUrl.isEmpty) {
+      _dio.options.baseUrl = 'http://localhost:8000';
+      print('ApiService: Base URL was empty, hardcoded to: http://localhost:8000');
+    }
+    
+    print('ApiService: Initialized with base URL: "${_dio.options.baseUrl}"');
   }
 
   Future<T> _post<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
+    _validateAndLogRequest('POST', endpoint);
+    
     final response = await _dio.post(endpoint, 
       data: data?.toJson?.call() ?? data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
@@ -19,14 +33,20 @@ class ApiService {
   }
 
   Future<T> _get<T>(String endpoint, T Function(Map<String, dynamic>) fromJson, {String? token, Map<String, dynamic>? queryParams}) async {
+    _validateAndLogRequest('GET', endpoint);
+    
     final response = await _dio.get(endpoint,
       queryParameters: queryParams,
       options: token != null ? Options(headers: {'Authorization': token}) : null
     );
+    
+    _validateResponse(response, endpoint);
     return fromJson(response.data);
   }
 
   Future<T> _patch<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
+    _validateAndLogRequest('PATCH', endpoint);
+    
     final response = await _dio.patch(endpoint,
       data: data?.toJson?.call() ?? data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
@@ -35,6 +55,8 @@ class ApiService {
   }
 
   Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async {
+    _validateAndLogRequest('POST', endpoint);
+    
     await _dio.post(endpoint,
       data: data?.toJson?.call() ?? data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
@@ -42,10 +64,41 @@ class ApiService {
   }
 
   Future<void> _delete(String endpoint, {String? token, dynamic data}) async {
+    _validateAndLogRequest('DELETE', endpoint);
+    
     await _dio.delete(endpoint, 
       data: data?.toJson?.call() ?? data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
     );
+  }
+
+  void _validateAndLogRequest(String method, String endpoint) {
+    final baseUrl = _dio.options.baseUrl;
+    final fullUrl = baseUrl + endpoint;
+    
+    print('ApiService: $method $endpoint');
+    print('   Base URL: "$baseUrl"');
+    print('   Full URL: "$fullUrl"');
+    
+    if (baseUrl.isEmpty) {
+      print('CRITICAL: Base URL is empty!');
+      throw Exception('API base URL is not configured');
+    }
+    
+    if (!fullUrl.startsWith('http')) {
+      print('CRITICAL: Full URL does not start with http!');
+      throw Exception('Invalid API URL configuration: $fullUrl');
+    }
+  }
+
+  void _validateResponse(Response response, String endpoint) {
+    print('ApiService: Response ${response.statusCode} for $endpoint');
+    
+    if (response.data is String && response.data.toString().contains('<!DOCTYPE html>')) {
+      print('ERROR: Received HTML instead of JSON from $endpoint');
+      print('   This usually means the request is not reaching the Django backend.');
+      throw Exception('Received HTML response instead of JSON - API routing issue');
+    }
   }
 
   Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
@@ -61,6 +114,7 @@ class ApiService {
   Future<PlaylistsResponse> getSavedPlaylists(String token) => _get('/playlists/saved_playlists/', PlaylistsResponse.fromJson, token: token);
   Future<PlaylistsResponse> getPublicPlaylists(String token) => _get('/playlists/public_playlists/', PlaylistsResponse.fromJson, token: token);
   Future<PlaylistDetailResponse> getPlaylist(String id, String token) => _get('/playlists/playlists/$id', PlaylistDetailResponse.fromJson, token: token);
+  
   Future<CreatePlaylistResponse> createPlaylist(String token, CreatePlaylistRequest request) async {
     try {
       final response = await _dio.post('/playlists/playlists', data: request.toJson(), options: Options(headers: {'Authorization': token}));
@@ -93,7 +147,7 @@ class ApiService {
 
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
-      print('API: Fetching Deezer track with ID: $trackId');
+      print('ApiService: Fetching Deezer track with ID: $trackId');
       
       String cleanTrackId = trackId;
       if (trackId.startsWith('deezer_')) {
@@ -101,10 +155,10 @@ class ApiService {
       }
       
       final endpoint = '/deezer/track/$cleanTrackId/';
-      print('API: Making request to $endpoint');
+      print('Endpoint: $endpoint');
       
       final track = await _get(endpoint, Track.fromJson, token: token);
-      print('API: Successfully parsed track: ${track.name} by ${track.artist}');
+      print('Successfully parsed track: ${track.name} by ${track.artist}');
       return track;
       
     } catch (e) {
