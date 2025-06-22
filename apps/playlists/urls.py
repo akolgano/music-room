@@ -14,4 +14,6 @@ urlpatterns = [
     path('<int:playlist_id>/move-track/', views.move_track_in_playlist),
     path('<int:playlist_id>/change-visibility/', views.change_visibility),
     path('<int:playlist_id>/invite-user/', views.invite_user),
+    path('<int:playlist_id>/license/', views.patch_playlist_license),
+    path('<int:playlist_id>/tracks/vote/', views.vote_for_track),
 ]

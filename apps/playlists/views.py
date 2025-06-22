@@ -7,14 +7,16 @@ from apps.users.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from apps.playlists.models import Playlist, PlaylistTrack
 from django.db import models
 from django.db import transaction
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.forms.models import model_to_dict
-from .decorators import check_access_to_playlist
+from .decorators import check_access_to_playlist, check_license
 from apps.devices.decorators import require_device_control
+from .serializers import PlaylistLicenseSerializer
 
 
 @api_view(['POST'])
@@ -363,3 +365,31 @@ def invite_user(request, playlist_id):
         return JsonResponse({'message': 'User invited to the playlist'}, status=201)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400) 
+
+@api_view(['PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def patch_playlist_license(request, playlist_id):
+    try:
+        playlist = Playlist.objects.get(id=playlist_id)
+    except Playlist.DoesNotExist:
+        return JsonResponse({'detail': 'Playlist not found'}, status=404)
+
+    if playlist.creator != request.user:
+        return JsonResponse({'detail': 'You do not have permission to edit this playlist license.'}, status=403)
+
+    serializer = PlaylistLicenseSerializer(playlist, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data, status=200)
+    return JsonResponse(serializer.errors, status=400)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@check_license
+def vote_for_track(request, playlist_id):
+    return JsonResponse(
+        {"detail": "Vote API not implemented yet."},
+        status=status.HTTP_501_NOT_IMPLEMENTED
+    )
