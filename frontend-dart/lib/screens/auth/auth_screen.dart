@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
+import '../base_screen.dart';
 import 'signup_with_otp_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -13,7 +14,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
+class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -22,6 +23,15 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   bool _isLogin = true;
   bool _isLoading = false;
   late AnimationController _rotationController;
+
+  @override
+  String get screenTitle => 'Authentication';
+
+  @override
+  bool get showBackButton => false;
+
+  @override
+  bool get showMiniPlayer => false;
 
   @override
   void initState() {
@@ -39,30 +49,33 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 32),
-                  _buildForm(),
-                  const SizedBox(height: 24),
-                  _buildSocialButtons(),
-                  const SizedBox(height: 16),
-                  _buildModeToggle(),
-                ],
-              ),
-            ),
+  Widget buildContent() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 32),
+              _buildForm(),
+              const SizedBox(height: 24),
+              _buildSocialButtons(),
+              const SizedBox(height: 16),
+              _buildModeToggle(),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: SafeArea(child: buildContent()),
     );
   }
 
@@ -88,7 +101,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       key: _formKey,
       child: Column(
         children: [
-          AppWidgets.textField(controller: _usernameController, labelText: 'Username', prefixIcon: Icons.person, validator: AppValidators.username),
+          AppWidgets.textField(
+            controller: _usernameController, 
+            labelText: 'Username', 
+            prefixIcon: Icons.person, 
+            validator: AppValidators.username
+          ),
           if (!_isLogin) ...[
             const SizedBox(height: 16),
             AppWidgets.textField(
@@ -169,37 +187,37 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     _emailController.clear();
     _passwordController.clear();
   }
-
+  
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
     setState(() => _isLoading = true);
     
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
     try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       bool success;
+      
       if (_isLogin) {
-        success = await authProvider.login(_usernameController.text.trim(), _passwordController.text);
+        success = await authProvider.login(_usernameController.text, _passwordController.text);
       } else {
         success = await authProvider.signup(
-          _usernameController.text.trim(), 
-          _emailController.text.trim(), 
+          _usernameController.text, 
+          _emailController.text, 
           _passwordController.text
         );
       }
       
       if (success) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        showSuccess(_isLogin ? 'Login successful!' : 'Account created successfully!');
+        navigateToHome();
       } else {
-        final errorMessage = authProvider.errorMessage ?? 'Authentication failed';
-        AppWidgets.showSnackBar(context, errorMessage, backgroundColor: AppTheme.error);
+        showError(authProvider.errorMessage ?? (_isLogin ? 'Login failed' : 'Signup failed'));
       }
     } catch (e) {
-      AppWidgets.showSnackBar(context, 'An unexpected error occurred: $e', backgroundColor: AppTheme.error);
+      showError('An error occurred: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
-    
-    setState(() => _isLoading = false);
   }
 
   Future<void> _socialLogin(String provider) async {
@@ -237,11 +255,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       } else {
         final errorMessage = authProvider.errorMessage ?? '$provider authentication failed';
         print('$provider login failed: $errorMessage');
-        AppWidgets.showSnackBar(context, errorMessage, backgroundColor: AppTheme.error);
+        showError(errorMessage);
       }
     } catch (e) {
       print('$provider login exception: $e');
-      AppWidgets.showSnackBar(context, '$provider authentication error: $e', backgroundColor: AppTheme.error);
+      showError('$provider authentication error: $e');
     }
     
     setState(() => _isLoading = false);

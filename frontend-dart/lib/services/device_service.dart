@@ -19,11 +19,7 @@ class DeviceService {
   }
 
   Future<Device> registerDevice(String uuid, String licenseKey, String deviceName, String token) async {
-    final request = RegisterDeviceRequest(
-      uuid: uuid,
-      licenseKey: licenseKey,
-      deviceName: deviceName,
-    );
+    final request = RegisterDeviceRequest(uuid: uuid, licenseKey: licenseKey, deviceName: deviceName);
     final response = await _api.registerDevice('Token $token', request);
     return response.device;
   }
@@ -33,12 +29,7 @@ class DeviceService {
     return response.canControl;
   }
 
-  Future<void> delegateDeviceControl({
-    required String deviceUuid,
-    required int delegateUserId,
-    required bool canControl,
-    required String token,
-  }) async {
+  Future<void> delegateDeviceControl({required String deviceUuid, required int delegateUserId, required bool canControl, required String token}) async {
     final request = DelegateControlRequest(
       deviceUuid: deviceUuid,
       delegateUserId: delegateUserId,

@@ -190,11 +190,9 @@ class AppBuilder {
     
     String? playlistId;
     
-    if (args is String) {
-      playlistId = args;
-    } else if (args is Map<String, dynamic> && args.containsKey('id')) {
-      playlistId = args['id'].toString();
-    } else {
+    if (args is String) playlistId = args;
+    else if (args is Map<String, dynamic> && args.containsKey('id')) playlistId = args['id'].toString();
+    else {
       print('Invalid arguments type for playlist detail: ${args.runtimeType}'); 
       return _buildErrorScreen('Invalid playlist ID format');
     }

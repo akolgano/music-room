@@ -19,9 +19,7 @@ import '../base_screen.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
-  
   const PlaylistDetailScreen({Key? key, required this.playlistId}) : super(key: key);
-  
   @override
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
@@ -29,6 +27,7 @@ class PlaylistDetailScreen extends StatefulWidget {
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   final _webSocketService = WebSocketService();
   final _apiService = ApiService();
+  Set<String> _fetchingTrackDetails = {};
   
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
@@ -105,9 +104,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         children: [
           const Icon(Icons.info, color: Colors.blue, size: 20),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(_notifications.last, style: const TextStyle(color: Colors.blue)),
-          ),
+          Expanded(child: Text(_notifications.last, style: const TextStyle(color: Colors.blue))),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.blue, size: 20),
             onPressed: () => setState(() => _notifications.clear()),
@@ -132,11 +129,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 colors: [AppTheme.primary.withOpacity(0.8), AppTheme.primary.withOpacity(0.4)],
               ),
               boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
+                BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
               ],
             ),
             child: _playlist!.imageUrl?.isNotEmpty == true
@@ -476,9 +469,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         onReorder: _onReorderTracks,
         itemBuilder: (context, index) {
           final playlistTrack = tracks[index];
-          final track = playlistTrack.track;
-          
-          return _buildTrackItem(track, playlistTrack, index, key: ValueKey(playlistTrack.trackId));
+          return _buildTrackItem(playlistTrack, index, key: ValueKey(playlistTrack.trackId));
         },
       );
     } else {
@@ -488,57 +479,175 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         itemCount: tracks.length,
         itemBuilder: (context, index) {
           final playlistTrack = tracks[index];
-          final track = playlistTrack.track;
-          
-          return _buildTrackItem(track, playlistTrack, index);
+          return _buildTrackItem(playlistTrack, index);
         },
       );
     }
   }
 
-  Widget _buildTrackItem(Track? track, PlaylistTrack playlistTrack, int index, {Key? key}) {
-    if (track == null) {
-      return ListTile(
+  Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
+    final track = playlistTrack.track;
+    
+    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails) {
+      _fetchTrackDetailsIfNeeded(playlistTrack);
+    }
+
+    if (track?.deezerTrackId != null && 
+        _fetchingTrackDetails.contains(track!.deezerTrackId) && 
+        (track.artist.isEmpty || track.album.isEmpty)) {
+      
+      return Container(
         key: key,
-        leading: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: Colors.grey,
-            borderRadius: BorderRadius.circular(8),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ListTile(
+          leading: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.3), 
+              borderRadius: BorderRadius.circular(8)
+            ),
+            child: const Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(Icons.music_note, color: Colors.white),
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: const Icon(Icons.music_off, color: Colors.white),
-        ),
-        title: Text(
-          playlistTrack.name,
-          style: const TextStyle(color: Colors.white),
-        ),
-        subtitle: const Text(
-          'Track unavailable',
-          style: TextStyle(color: Colors.grey),
-        ),
-        trailing: Text(
-          '${index + 1}',
-          style: const TextStyle(color: Colors.grey),
+          title: Text(
+            track?.name ?? playlistTrack.name,
+            style: const TextStyle(color: Colors.white),
+          ),
+          subtitle: const Text(
+            'Loading track details...',
+            style: TextStyle(color: Colors.grey),
+          ),
+          trailing: _buildTrackActions(index, playlistTrack),
         ),
       );
     }
 
-    return AppWidgets.trackCard(
+    if (track != null) {
+      return AppWidgets.playlistTrackCard(
+        key: key,
+        playlistTrack: playlistTrack,
+        onTap: () => _playTrackAt(index),
+        onPlay: () => _playTrackAt(index),
+        onRemove: _isOwner ? () => _removeTrack(track.id) : null,
+      );
+    }
+
+    return Container(
       key: key,
-      track: track,
-      onTap: () => _playTrackAt(index),
-      onPlay: () => _playTrackAt(index),
-      onRemove: _isOwner ? () => _removeTrack(track.id) : null,
-      showAddButton: false,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.music_off, color: Colors.white),
+        ),
+        title: Text(playlistTrack.name, style: const TextStyle(color: Colors.white)),
+        subtitle: const Text(
+          'Track details unavailable',
+          style: TextStyle(color: Colors.grey),
+        ),
+        trailing: _buildTrackActions(index, playlistTrack),
+      ),
     );
+  }
+
+  Widget _buildTrackActions(int index, PlaylistTrack playlistTrack) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.play_arrow, color: AppTheme.primary),
+          onPressed: () => _playTrackAt(index),
+        ),
+        if (_isOwner)
+          IconButton(
+            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+            onPressed: () => _removeTrack(playlistTrack.trackId),
+          ),
+        const Icon(Icons.drag_handle, color: Colors.grey),
+      ],
+    );
+  }
+
+  Future<void> _fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack) async {
+    final deezerTrackId = playlistTrack.track?.deezerTrackId;
+    if (deezerTrackId == null || _fetchingTrackDetails.contains(deezerTrackId)) {
+      return;
+    }
+
+    print('Fetching details for Deezer track ID: $deezerTrackId');
+    _fetchingTrackDetails.add(deezerTrackId);
+
+    try {
+      final trackDetails = await _apiService.getDeezerTrack(deezerTrackId, auth.token!);
+      
+      if (trackDetails != null && mounted) {
+        print('Successfully fetched track details: ${trackDetails.name} by ${trackDetails.artist}');
+        
+        setState(() {
+          final trackIndex = _tracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
+          if (trackIndex != -1) {
+            _tracks[trackIndex] = PlaylistTrack(
+              trackId: playlistTrack.trackId,
+              name: playlistTrack.name,
+              position: playlistTrack.position,
+              track: trackDetails,
+            );
+          }
+        });
+
+        final musicProvider = getProvider<MusicProvider>();
+        final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
+        final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
+        if (providerIndex != -1) {
+          providerTracks[providerIndex] = PlaylistTrack(
+            trackId: playlistTrack.trackId,
+            name: playlistTrack.name,
+            position: playlistTrack.position,
+            track: trackDetails,
+          );
+          musicProvider.playlistTracks.clear();
+          musicProvider.playlistTracks.addAll(providerTracks);
+          musicProvider.notifyListeners();
+        }
+      } else {
+        print('Failed to fetch track details for Deezer ID: $deezerTrackId');
+      }
+    } catch (e) {
+      print('Error fetching track details for $deezerTrackId: $e');
+    } finally {
+      _fetchingTrackDetails.remove(deezerTrackId);
+    }
   }
 
   void _onReorderTracks(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
+      if (newIndex > oldIndex) newIndex -= 1;
       final musicProvider = getProvider<MusicProvider>();
       final tracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
       final item = tracks.removeAt(oldIndex);
@@ -614,16 +723,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           _tracks = musicProvider.playlistTracks;
         });
         
-        if (!musicProvider.allTracksHaveDetails) {
-          showInfo('Loading additional track details...');
-          await musicProvider.enhanceTracksWithDetails(auth.token!);
-          
-          setState(() {
-            _tracks = musicProvider.playlistTracks;
-          });
-        }
+        print('Loaded ${_tracks.length} tracks');
         
-        print('Loaded ${_tracks.length} tracks, ${_tracks.where((t) => t.track?.deezerTrackId != null).length} with Deezer IDs');
+        _startBatchTrackDetailsFetch();
         
         if (_webSocketService.currentPlaylistId != widget.playlistId) {
           await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
@@ -634,6 +736,27 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     } catch (e) {
       print('Error loading data: $e');
       showError('Failed to load playlist details: $e');
+    }
+  }
+
+  Future<void> _startBatchTrackDetailsFetch() async {
+    final tracksNeedingDetails = _tracks.where((pt) => pt.needsTrackDetails).toList();
+    
+    if (tracksNeedingDetails.isEmpty) {
+      print('All tracks have complete details');
+      return;
+    }
+    
+    print('Starting batch fetch for ${tracksNeedingDetails.length} tracks needing details');
+    
+    for (int i = 0; i < tracksNeedingDetails.length; i++) {
+      final playlistTrack = tracksNeedingDetails[i];
+      
+      _fetchTrackDetailsIfNeeded(playlistTrack);
+      
+      if (i < tracksNeedingDetails.length - 1) {
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
     }
   }
 
@@ -658,82 +781,32 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     if (index < 0 || index >= _tracks.length) return;
     
     final playlistTrack = _tracks[index];
-    
-    showInfo('Loading "${playlistTrack.name}"...');
+    final track = playlistTrack.track;
     
     try {
-      final musicProvider = getProvider<MusicProvider>();
+      String? previewUrl;
+      Track trackToPlay;
       
-      final previewUrl = await musicProvider.getPlayableTrackUrl(playlistTrack, auth.token!);
+      if (track != null) {
+        trackToPlay = track;
+        previewUrl = track.previewUrl;
+        
+        if (previewUrl == null && track.deezerTrackId != null) {
+          print('Fetching preview URL for Deezer track: ${track.deezerTrackId}');
+          final fullTrackDetails = await _apiService.getDeezerTrack(track.deezerTrackId!, auth.token!);
+          if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
+        }
+      }
+      else trackToPlay = Track(id: playlistTrack.trackId, name: playlistTrack.name, artist: 'Unknown Artist', album: '', url: '');
       
       if (previewUrl != null && previewUrl.isNotEmpty) {
         final playerService = getProvider<MusicPlayerService>();
-        
-        Track? track = playlistTrack.track;
-        if (track == null) {
-          track = Track(
-            id: playlistTrack.trackId,
-            name: playlistTrack.name,
-            artist: 'Unknown Artist',
-            album: '',
-            url: '',
-            previewUrl: previewUrl,
-          );
-        }
-        
-        await playerService.playTrack(track, previewUrl);
+        await playerService.playTrack(trackToPlay, previewUrl);
         showSuccess('Playing "${playlistTrack.name}"');
-      } else {
-        showError('No preview available for "${playlistTrack.name}"');
       }
+      else showError('No preview available for "${playlistTrack.name}"');
     } catch (e) {
       showError('Failed to play track: $e');
-    }
-  }
-
-  Future<void> _preloadTrackDetails() async {
-    if (_tracks.isEmpty) return;
-    
-    showInfo('Loading track details...');
-    
-    try {
-      final trackIds = _tracks
-          .where((t) => t.track == null || t.track!.deezerTrackId == null)
-          .map((t) => t.trackId)
-          .toList();
-      
-      if (trackIds.isEmpty) return;
-      
-      final updatedTracks = <PlaylistTrack>[];
-      
-      for (int i = 0; i < _tracks.length; i++) {
-        final playlistTrack = _tracks[i];
-        
-        if (playlistTrack.track == null || playlistTrack.track!.deezerTrackId == null) {
-          final fullTrack = await _fetchFullTrackDetails(playlistTrack.trackId);
-          
-          updatedTracks.add(PlaylistTrack(
-            trackId: playlistTrack.trackId,
-            name: playlistTrack.name,
-            position: playlistTrack.position,
-            track: fullTrack,
-          ));
-        } else {
-          updatedTracks.add(playlistTrack);
-        }
-        
-        if (i < _tracks.length - 1) {
-          await Future.delayed(const Duration(milliseconds: 200));
-        }
-      }
-      
-      setState(() {
-        _tracks = updatedTracks;
-      });
-      
-      showSuccess('Track details loaded!');
-    } catch (e) {
-      showError('Failed to load track details: $e');
     }
   }
 
@@ -752,31 +825,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',
       );
-    }
-  }
-
-  Future<Track?> _fetchFullTrackDetails(String trackId) async {
-    try {
-      final response = await _apiService.getTracks(
-        'Token ${auth.token!}',
-        queryParams: {'id': trackId}
-      );
-      
-      if (response['tracks'] != null && (response['tracks'] as List).isNotEmpty) {
-        final trackData = (response['tracks'] as List).first;
-        return Track.fromJson(trackData);
-      }
-      
-      try {
-        final trackData = await _apiService.lookupTrackByDeezerId(trackId, 'Token ${auth.token!}');
-        return Track.fromJson(trackData);
-      } catch (e) {
-        print('Track lookup failed for ID $trackId: $e');
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching track details for ID $trackId: $e');
-      return null;
     }
   }
 

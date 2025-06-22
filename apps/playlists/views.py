@@ -18,6 +18,7 @@ from .decorators import check_access_to_playlist, check_license
 from apps.devices.decorators import require_device_control
 from .serializers import PlaylistLicenseSerializer
 from apps.deezer.deezer_client import DeezerClient
+from .serializers import PlaylistLicenseSerializer
 
 
 @api_view(['POST'])

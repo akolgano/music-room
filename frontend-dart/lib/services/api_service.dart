@@ -7,10 +7,24 @@ class ApiService {
   final Dio _dio;
 
   ApiService([Dio? dio]) : _dio = dio ?? Dio() {
-    _dio.options.headers = {'Content-Type': 'application/json'};
+    if (_dio.options.headers['Content-Type'] == null) {
+      _dio.options.headers['Content-Type'] = 'application/json';
+    }
+    if (_dio.options.headers['Accept'] == null) {
+      _dio.options.headers['Accept'] = 'application/json';
+    }
+    
+    if (_dio.options.baseUrl.isEmpty) {
+      _dio.options.baseUrl = 'http://localhost:8000';
+      print('ApiService: Base URL was empty, hardcoded to: http://localhost:8000');
+    }
+    
+    print('ApiService: Initialized with base URL: "${_dio.options.baseUrl}"');
   }
 
   Future<T> _post<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
+    _validateAndLogRequest('POST', endpoint);
+    
     final response = await _dio.post(endpoint, 
       data: data?.toJson?.call() ?? data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
@@ -19,126 +33,72 @@ class ApiService {
   }
 
   Future<T> _get<T>(String endpoint, T Function(Map<String, dynamic>) fromJson, {String? token, Map<String, dynamic>? queryParams}) async {
+    _validateAndLogRequest('GET', endpoint);
+    
     final response = await _dio.get(endpoint,
       queryParameters: queryParams,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
+    );
+    
+    _validateResponse(response, endpoint);
+    return fromJson(response.data);
+  }
+
+  Future<T> _patch<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
+    _validateAndLogRequest('PATCH', endpoint);
+    
+    final response = await _dio.patch(endpoint,
+      data: data?.toJson?.call() ?? data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
     );
     return fromJson(response.data);
   }
 
   Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async {
+    _validateAndLogRequest('POST', endpoint);
+    
     await _dio.post(endpoint,
       data: data?.toJson?.call() ?? data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
     );
   }
 
-  Future<void> _delete(String endpoint, {String? token}) async {
-    await _dio.delete(endpoint, options: token != null ? Options(headers: {'Authorization': token}) : null);
-  }
-
-  Future<Map<String, dynamic>> lookupTrackByDeezerId(String deezerTrackId, String token) async {
-    return await _get('/tracks/lookup/$deezerTrackId/', (data) => data, token: token);
-  }
-
-  Future<Map<String, dynamic>> searchTracksByDeezerId(String deezerTrackId, String token) async {
-    return await _get('/tracks/', (data) => data, token: token, queryParams: {'deezer_track_id': deezerTrackId});
-  }
-
-  Future<Map<String, dynamic>> getTracks(String token, {Map<String, dynamic>? queryParams}) async {
-    return await _get('/tracks/', (data) => data, token: token, queryParams: queryParams);
-  }
-
-  Future<PlaylistTracksResponse> getPlaylistTracksWithDetails(String playlistId, String token) async {
-    try {
-      final basicResponse = await getPlaylistTracks(playlistId, token);
-      
-      final enhancedTracks = <PlaylistTrack>[];
-      
-      for (final playlistTrack in basicResponse.tracks) {
-        Track? fullTrack;
-        
-        try {
-          final trackData = await lookupTrackByDeezerId(playlistTrack.trackId, token);
-          fullTrack = Track.fromJson(trackData);
-        } catch (e) {
-          try {
-            final searchResponse = await searchTracksByDeezerId(playlistTrack.trackId, token);
-            final tracks = searchResponse['tracks'] as List<dynamic>?;
-            if (tracks?.isNotEmpty == true) {
-              fullTrack = Track.fromJson(tracks!.first);
-            }
-          } catch (e2) {
-            print('Failed to get details for track ${playlistTrack.trackId}: $e2');
-            fullTrack = null;
-          }
-        }
-        
-        enhancedTracks.add(PlaylistTrack(
-          trackId: playlistTrack.trackId,
-          name: playlistTrack.name,
-          position: playlistTrack.position,
-          track: fullTrack,
-        ));
-      }
-      
-      return PlaylistTracksResponse(tracks: enhancedTracks);
-    } catch (e) {
-      print('Error getting playlist tracks with details: $e');
-      rethrow;
-    }
-  }
-
-  Future<List<Track>> batchFetchTrackDetails(List<String> trackIds, String token) async {
-    final tracks = <Track>[];
+  Future<void> _delete(String endpoint, {String? token, dynamic data}) async {
+    _validateAndLogRequest('DELETE', endpoint);
     
-    const batchSize = 5;
-    for (int i = 0; i < trackIds.length; i += batchSize) {
-      final batch = trackIds.skip(i).take(batchSize).toList();
-      
-      final futures = batch.map((trackId) async {
-        try {
-          final trackData = await lookupTrackByDeezerId(trackId, token);
-          return Track.fromJson(trackData);
-        } catch (e) {
-          print('Failed to fetch track $trackId: $e');
-          return null;
-        }
-      });
-      
-      final results = await Future.wait(futures);
-      tracks.addAll(results.whereType<Track>());
-      
-      if (i + batchSize < trackIds.length) await Future.delayed(const Duration(milliseconds: 300));
+    await _dio.delete(endpoint, 
+      data: data?.toJson?.call() ?? data,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
+    );
+  }
+
+  void _validateAndLogRequest(String method, String endpoint) {
+    final baseUrl = _dio.options.baseUrl;
+    final fullUrl = baseUrl + endpoint;
+    
+    print('ApiService: $method $endpoint');
+    print('   Base URL: "$baseUrl"');
+    print('   Full URL: "$fullUrl"');
+    
+    if (baseUrl.isEmpty) {
+      print('CRITICAL: Base URL is empty!');
+      throw Exception('API base URL is not configured');
     }
     
-    return tracks;
+    if (!fullUrl.startsWith('http')) {
+      print('CRITICAL: Full URL does not start with http!');
+      throw Exception('Invalid API URL configuration: $fullUrl');
+    }
   }
 
-  Future<Track?> getTrackByAnyId(String identifier, String token) async {
-    try {
-      final trackData = await lookupTrackByDeezerId(identifier, token);
-      return Track.fromJson(trackData);
-    } catch (e) {
-      try {
-        final response = await searchTracksByDeezerId(identifier, token);
-        final tracks = response['tracks'] as List<dynamic>?;
-        if (tracks?.isNotEmpty == true) {
-          return Track.fromJson(tracks!.first);
-        }
-      } catch (e2) {
-        try {
-          final response = await getTracks(token, queryParams: {'id': identifier});
-          final tracks = response['tracks'] as List<dynamic>?;
-          if (tracks?.isNotEmpty == true) {
-            return Track.fromJson(tracks!.first);
-          }
-        } catch (e3) {
-          print('All track lookup methods failed for $identifier');
-        }
-      }
+  void _validateResponse(Response response, String endpoint) {
+    print('ApiService: Response ${response.statusCode} for $endpoint');
+    
+    if (response.data is String && response.data.toString().contains('<!DOCTYPE html>')) {
+      print('ERROR: Received HTML instead of JSON from $endpoint');
+      print('   This usually means the request is not reaching the Django backend.');
+      throw Exception('Received HTML response instead of JSON - API routing issue');
     }
-    return null;
   }
 
   Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
@@ -165,9 +125,8 @@ class ApiService {
     }
   }
 
-  Future<void> updatePlaylist(String id, String token, UpdatePlaylistRequest request) async {
-    throw UnimplementedError('Update playlist endpoint not implemented in backend');
-  }
+  Future<void> updatePlaylist(String playlistId, String token, UpdatePlaylistRequest request) => 
+      _patch('/playlists/$playlistId/', request, (data) => data, token: token);
 
   Future<void> changePlaylistVisibility(String playlistId, String token, VisibilityRequest request) => 
       _postVoid('/playlists/$playlistId/change-visibility/', request, token: token);
@@ -175,22 +134,40 @@ class ApiService {
   Future<void> inviteUserToPlaylist(String playlistId, String token, InviteUserRequest request) => 
       _postVoid('/playlists/$playlistId/invite-user/', request, token: token);
 
+  Future<PlaylistLicenseResponse> getPlaylistLicense(String playlistId, String token) => 
+      _get('/playlists/$playlistId/license/', PlaylistLicenseResponse.fromJson, token: token);
+
+  Future<PlaylistLicenseResponse> updatePlaylistLicense(String playlistId, String token, PlaylistLicenseRequest request) => 
+      _patch('/playlists/$playlistId/license/', request, PlaylistLicenseResponse.fromJson, token: token);
+
+  Future<VoteResponse> voteForTrack(String playlistId, String token, VoteRequest request) => 
+      _post('/playlists/$playlistId/tracks/vote/', request, VoteResponse.fromJson, token: token);
+
   Future<DeezerSearchResponse> searchDeezerTracks(String query) => _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
 
-  Future<Track?> getDeezerTrack(String trackId) async {
+  Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
-      return await _get('/deezer/track/$trackId/', Track.fromJson);
+      print('ApiService: Fetching Deezer track with ID: $trackId');
+      
+      String cleanTrackId = trackId;
+      if (trackId.startsWith('deezer_')) {
+        cleanTrackId = trackId.substring(7);
+      }
+      
+      final endpoint = '/deezer/track/$cleanTrackId/';
+      print('Endpoint: $endpoint');
+      
+      final track = await _get(endpoint, Track.fromJson, token: token);
+      print('Successfully parsed track: ${track.name} by ${track.artist}');
+      return track;
+      
     } catch (e) {
       print('API error getting Deezer track $trackId: $e');
       return null;
     }
   }
 
-  Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/deezer/add_from_deezer/', request, token: token);
-
-  Future<void> addTrackFromDeezerToTracks(String trackId, String token) async {
-    await _postVoid('/tracks/add_from_deezer/$trackId/', null, token: token);
-  }
+  Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/tracks/add_from_deezer/', request, token: token);
 
   Future<PlaylistTracksResponse> getPlaylistTracks(String playlistId, String token) => 
       _get('/playlists/playlist/$playlistId/tracks/', PlaylistTracksResponse.fromJson, token: token);
@@ -199,10 +176,10 @@ class ApiService {
       _postVoid('/playlists/$playlistId/add/', request, token: token);
 
   Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) => 
-      _delete('/playlists/$playlistId/remove_tracks', token: token);
+      _delete('/playlists/$playlistId/remove_tracks', data: {'track_id': trackId}, token: token);
 
   Future<void> moveTrackInPlaylist(String playlistId, String token, MoveTrackRequest request) => 
-      _postVoid('/playlists/move-track/', request, token: token);
+      _postVoid('/playlists/$playlistId/move-track/', request, token: token);
 
   Future<FriendsResponse> getFriends(String token) => _get('/users/get_friends/', FriendsResponse.fromJson, token: token);
   Future<PendingRequestsResponse> getPendingFriendRequests(String token) => _get('/users/pending_friend_requests/', PendingRequestsResponse.fromJson, token: token);
@@ -226,28 +203,40 @@ class ApiService {
   Future<ProfileMusicResponse> getProfileMusic(String token) => _get('/profile/music/', ProfileMusicResponse.fromJson, token: token);
   Future<Map<String, dynamic>> getProfileMusicData(String? token) => _get('/profile/music/', (data) => data, token: token);
 
-  Future<void> updateAvatar(String token, AvatarUpdateRequest request) => _postVoid('/profile/avatar/', request, token: token);
+  Future<ProfilePublicResponse> updatePublicInfo(String token, PublicInfoUpdateRequest request) => 
+      _post('/profile/public/update/', request, ProfilePublicResponse.fromJson, token: token);
+  
+  Future<ProfilePrivateResponse> updatePrivateInfo(String token, PrivateInfoUpdateRequest request) => 
+      _post('/profile/private/update/', request, ProfilePrivateResponse.fromJson, token: token);
+  
+  Future<ProfileFriendResponse> updateFriendInfo(String token, FriendInfoUpdateRequest request) => 
+      _post('/profile/friend/update/', request, ProfileFriendResponse.fromJson, token: token);
+  
+  Future<ProfileMusicResponse> updateMusicPreferences(String token, MusicPreferencesUpdateRequest request) => 
+      _post('/profile/music/update/', request, ProfileMusicResponse.fromJson, token: token);
+
+  Future<void> updateAvatar(String token, AvatarUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
   Future<void> updateAvatarData(String? token, String? avatarBase64, String? mimeType) => 
       updateAvatar(token!, AvatarUpdateRequest(avatar: avatarBase64, mimeType: mimeType));
 
-  Future<void> updatePublicBasic(String token, PublicBasicUpdateRequest request) => _postVoid('/profile/public/basic/', request, token: token);
+  Future<void> updatePublicBasic(String token, PublicBasicUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
   Future<void> updatePublicBasicData(String? token, String? gender, String? location) => 
       updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
 
-  Future<void> updatePublicBio(String token, BioUpdateRequest request) => _postVoid('/profile/public/bio/', request, token: token);
+  Future<void> updatePublicBio(String token, BioUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
   Future<void> updatePublicBioData(String? token, String? bio) => updatePublicBio(token!, BioUpdateRequest(bio: bio));
 
-  Future<void> updatePrivateInfo(String token, PrivateInfoUpdateRequest request) => _postVoid('/profile/private/', request, token: token);
+  Future<void> updatePrivateInfoLegacy(String token, PrivateInfoUpdateRequest request) => _postVoid('/profile/private/update/', request, token: token);
   Future<void> updatePrivateInfoData(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) => 
-      updatePrivateInfo(token!, PrivateInfoUpdateRequest(firstName: firstName, lastName: lastName, phone: phone, street: street, country: country, postalCode: postalCode));
+      updatePrivateInfoLegacy(token!, PrivateInfoUpdateRequest(firstName: firstName, lastName: lastName, phone: phone, street: street, country: country, postalCode: postalCode));
 
-  Future<void> updateFriendInfo(String token, FriendInfoUpdateRequest request) => _postVoid('/profile/friend/', request, token: token);
+  Future<void> updateFriendInfoLegacy(String token, FriendInfoUpdateRequest request) => _postVoid('/profile/friend/update/', request, token: token);
   Future<void> updateFriendInfoData(String? token, String? dob, List<String>? hobbies, String? friendInfo) => 
-      updateFriendInfo(token!, FriendInfoUpdateRequest(dob: dob, hobbies: hobbies, friendInfo: friendInfo));
+      updateFriendInfoLegacy(token!, FriendInfoUpdateRequest(dob: dob, hobbies: hobbies, friendInfo: friendInfo));
 
-  Future<void> updateMusicPreferences(String token, MusicPreferencesUpdateRequest request) => _postVoid('/profile/music/', request, token: token);
+  Future<void> updateMusicPreferencesLegacy(String token, MusicPreferencesUpdateRequest request) => _postVoid('/profile/music/update/', request, token: token);
   Future<void> updateMusicPreferencesData(String? token, List<String>? musicPreferences) => 
-      updateMusicPreferences(token!, MusicPreferencesUpdateRequest(musicPreferences: musicPreferences));
+      updateMusicPreferencesLegacy(token!, MusicPreferencesUpdateRequest(musicPreferences: musicPreferences));
 
   Future<void> facebookLink(String token, SocialLinkRequest request) => _postVoid('/users/facebook_link/', request, token: token);
   Future<void> facebookLinkData(String? token, String accessToken) => facebookLink(token!, SocialLinkRequest(accessToken: accessToken));

@@ -308,6 +308,10 @@ class AppWidgets {
       final isCurrentTrack = playerService.currentTrack?.id == track.id;
       final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
 
+      String displayArtist = track.artist;
+      if (displayArtist.isEmpty && track.deezerTrackId != null) displayArtist = 'Loading artist info...';
+      else if (displayArtist.isEmpty) displayArtist = 'Unknown Artist';
+
       return AnimationConfiguration.staggeredList(
         position: 0,
         duration: const Duration(milliseconds: 375),
@@ -330,12 +334,80 @@ class AppWidgets {
                         ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
                         : _buildImage(track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
                     title: Text(track.name, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(track.artist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
                     trailing: onSelectionChanged == null ? _buildTrackActions(showAddButton, showPlayButton, onAdd, onPlay, onRemove, trackIsPlaying, themeProvider, isInPlaylist) : null,
                     onTap: onTap,
                   ),
                   if (showExplicitAddButton) _buildExplicitButton(onAdd, isInPlaylist, playlistContext, themeProvider),
                 ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  static Widget playlistTrackCard({
+    Key? key,
+    required PlaylistTrack playlistTrack,
+    bool isSelected = false,
+    VoidCallback? onTap,
+    VoidCallback? onPlay,
+    VoidCallback? onRemove,
+    ValueChanged<bool?>? onSelectionChanged,
+  }) => Consumer2<MusicPlayerService, DynamicThemeProvider>(
+    key: key,
+    builder: (context, playerService, themeProvider, _) {
+      final track = playlistTrack.track;
+      final isCurrentTrack = track != null && playerService.currentTrack?.id == track.id;
+      final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
+
+      String displayName = track?.name ?? playlistTrack.name;
+      String displayArtist = track?.artist ?? 'Unknown Artist';
+      String? imageUrl = track?.imageUrl;
+
+      if (displayArtist == 'Unknown Artist' && track?.deezerTrackId != null) displayArtist = 'Loading artist info...';
+
+      return AnimationConfiguration.staggeredList(
+        position: 0,
+        duration: const Duration(milliseconds: 375),
+        child: SlideAnimation(
+          verticalOffset: 50.0,
+          child: FadeInAnimation(
+            child: Container(
+              margin: R.sym(h: 16, v: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? themeProvider.primaryColor.withOpacity(0.2) : 
+                       isCurrentTrack ? themeProvider.primaryColor.withOpacity(0.1) : 
+                       themeProvider.surfaceColor,
+                borderRadius: BorderRadius.circular(R.r(12)),
+                border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
+              ),
+              child: ListTile(
+                leading: onSelectionChanged != null
+                    ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
+                    : _buildImage(imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
+                title: Text(displayName, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onPlay != null)
+                      IconButton(
+                        icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, 
+                                  color: themeProvider.primaryColor, size: R.s(24)), 
+                        onPressed: onPlay,
+                      ),
+                    if (onRemove != null)
+                      IconButton(
+                        icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)), 
+                        onPressed: onRemove
+                      ),
+                    Icon(Icons.drag_handle, color: Colors.grey, size: R.s(20)),
+                  ],
+                ),
+                onTap: onTap,
               ),
             ),
           ),
@@ -621,10 +693,7 @@ class MiniPlayerWidget extends StatelessWidget {
                       ),
                       Text(
                         track.artist, 
-                        style: TextStyle(
-                          color: Colors.grey, 
-                          fontSize: R.s(12)
-                        ), 
+                        style: TextStyle(color: Colors.grey, fontSize: R.s(12)), 
                         maxLines: 1, 
                         overflow: TextOverflow.ellipsis
                       ),

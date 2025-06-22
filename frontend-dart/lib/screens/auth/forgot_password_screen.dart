@@ -29,10 +29,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.black,
-              AppTheme.background,
-            ],
+            colors: [Colors.black, AppTheme.background],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -48,11 +45,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   children: [
                     if (!isLandscape) ...[
                       const SizedBox(height: 20),
-                      const Icon(
-                        Icons.music_note,
-                        size: 80,
-                        color: AppTheme.primary,
-                      ),
+                      const Icon(Icons.music_note, size: 80, color: AppTheme.primary),
                       const SizedBox(height: 20),
                       const Text(
                         'Music Room',

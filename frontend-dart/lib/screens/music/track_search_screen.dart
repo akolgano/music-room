@@ -13,23 +13,21 @@ import '../../widgets/sort_button.dart';
 import '../../models/models.dart';
 import '../../models/sort_models.dart';
 import '../../utils/dialog_utils.dart';
+import '../base_screen.dart';
 
 class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;
   final Track? initialTrack;
-
   const TrackSearchScreen({Key? key, this.playlistId, this.initialTrack}) : super(key: key);
-
   @override
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
 
-class _TrackSearchScreenState extends State<TrackSearchScreen> {
+class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   final _searchController = TextEditingController();
   Set<String> _selectedTracks = {};
   bool _isMultiSelectMode = false;
   bool _isAddingTracks = false;
-  bool _isAutoAddingToBackend = false; 
   List<Playlist> _userPlaylists = [];
   
   Timer? _searchTimer;
@@ -40,19 +38,23 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   bool get _isAddingToPlaylist => widget.playlistId != null;
   bool get _hasSelection => _selectedTracks.isNotEmpty;
   bool get _canAddTracks => _hasSelection && !_isAddingTracks;
-  bool get _hasSearchResults => _musicProvider.searchResults.isNotEmpty;
+  bool get _hasSearchResults => getProvider<MusicProvider>().searchResults.isNotEmpty;
   
-  MusicProvider get _musicProvider => Provider.of<MusicProvider>(context, listen: false);
-  DeviceProvider get _deviceProvider => Provider.of<DeviceProvider>(context, listen: false);
-  AuthProvider get _authProvider => Provider.of<AuthProvider>(context, listen: false);
-  MusicPlayerService get _playerService => Provider.of<MusicPlayerService>(context, listen: false);
+  DeviceProvider get _deviceProvider => getProvider<DeviceProvider>();
+  MusicPlayerService get _playerService => getProvider<MusicPlayerService>();
 
   TrackSortOption _searchSortOption = const TrackSortOption(
-    field: TrackSortField.name,
-    order: SortOrder.ascending,
-    displayName: 'Track Name (A-Z)',
-    icon: Icons.sort_by_alpha,
+    field: TrackSortField.name, order: SortOrder.ascending, displayName: 'Track Name (A-Z)', icon: Icons.sort_by_alpha
   );
+
+  @override
+  String get screenTitle => 'Search Tracks';
+
+  @override
+  List<Widget> get actions => _buildAppBarActions();
+
+  @override
+  Widget? get floatingActionButton => _buildFloatingActionButton();
 
   @override
   void initState() {
@@ -69,29 +71,16 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: _buildAppBar(),
-      body: Consumer<MusicProvider>(
-        builder: (context, music, _) => Column(
-          children: [
-            _buildSearchHeader(music),
-            if (_isAddingToPlaylist && _isMultiSelectMode) _buildQuickActions(),
-            if (_isAddingTracks || _isAutoAddingToBackend) _buildProgressIndicator(),
-            Expanded(child: _buildResults(music.searchResults)),
-          ],
-        ),
+  Widget buildContent() {
+    return Consumer<MusicProvider>(
+      builder: (context, music, _) => Column(
+        children: [
+          _buildSearchHeader(music),
+          if (_isAddingToPlaylist && _isMultiSelectMode) _buildQuickActions(),
+          if (_isAddingTracks) _buildProgressIndicator(),
+          Expanded(child: _buildResults(music.searchResults)),
+        ],
       ),
-      floatingActionButton: _buildFloatingActionButton(),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppTheme.background,
-      title: Text(_isAddingToPlaylist ? 'Add Music to Playlist' : 'Search Deezer Tracks'),
-      actions: _buildAppBarActions(),
     );
   }
 
@@ -125,52 +114,13 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        boxShadow: [
-          BoxShadow(color: AppTheme.primary.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
-        ],
+        boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_isAddingToPlaylist) _buildPlaylistBanner(),
           _buildSearchRow(musicProvider),
-          if (_hasSearchResults) _buildAutoAddBanner(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAutoAddBanner() {
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.auto_awesome, color: Colors.green, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _isAutoAddingToBackend 
-                ? 'Adding tracks to backend database...'
-                : 'Deezer tracks are automatically added to the database',
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          if (_isAutoAddingToBackend)
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.green),
-            ),
         ],
       ),
     );
@@ -248,6 +198,165 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
           isLoading: musicProvider.isLoading || _isAutoSearching,
           icon: Icons.search,
           fullWidth: false,
+        ),
+      ],
+    );
+  }
+
+  void _onSearchTextChanged(String value) {
+    setState(() {}); 
+    
+    _searchTimer?.cancel();
+    
+    if (value.trim().length < _minSearchLength) {
+      getProvider<MusicProvider>().clearSearchResults();
+      return;
+    }
+    
+    _searchTimer = Timer(_searchDelay, () {
+      if (mounted && _searchController.text.trim().length >= _minSearchLength) {
+        _performAutoSearch();
+      }
+    });
+  }
+
+  Future<void> _performAutoSearch() async {
+    if (!mounted || _searchController.text.trim().length < _minSearchLength) {
+      return;
+    }
+    
+    setState(() => _isAutoSearching = true);
+    
+    try {
+      await _executeWithErrorHandling(() async {
+        await getProvider<MusicProvider>().searchDeezerTracks(_searchController.text);
+      }, errorMessage: 'Auto-search failed');
+    } finally {
+      if (mounted) {
+        setState(() => _isAutoSearching = false);
+      }
+    }
+  }
+
+  Widget _buildQuickActions() {
+    if (!_isAddingToPlaylist || getProvider<MusicProvider>().searchResults.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    final actions = [
+      ('Select All', Icons.select_all, _selectAllTracks),
+      ('Clear', Icons.clear_all, _clearSelection),
+      (_isMultiSelectMode ? 'Done' : 'Select', _isMultiSelectMode ? Icons.check_box : Icons.check_box_outline_blank, _toggleMultiSelectMode),
+    ];
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: actions.map((action) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ElevatedButton.icon(
+              onPressed: action.$3,
+              icon: Icon(action.$2, size: 16),
+              label: Text(action.$1),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: action.$1.contains('Done') && _isMultiSelectMode ? AppTheme.primary : AppTheme.surface,
+                foregroundColor: action.$1.contains('Done') && _isMultiSelectMode ? Colors.black : Colors.white,
+                side: BorderSide(color: action.$1.contains('Done') && _isMultiSelectMode ? AppTheme.primary : Colors.white54),
+              ),
+            ),
+          ),
+        )).toList(),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Adding ${_selectedTracks.length} tracks...',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResults(List<Track> tracks) {
+    if (tracks.isEmpty && _searchController.text.isEmpty) {
+      return AppWidgets.emptyState(
+        icon: Icons.search, 
+        title: 'Ready to find music?', 
+        subtitle: 'Start typing to search Deezer tracks automatically!'
+      );
+    }
+    
+    if (tracks.isEmpty && _searchController.text.isNotEmpty) {
+      if (_searchController.text.length < _minSearchLength) {
+        return AppWidgets.emptyState(
+          icon: Icons.edit,
+          title: 'Keep typing...',
+          subtitle: 'Type at least $_minSearchLength characters to start searching',
+        );
+      } else {
+        return AppWidgets.emptyState(
+          icon: Icons.search_off,
+          title: 'No tracks found',
+          subtitle: 'Try different keywords',
+          buttonText: 'Clear Search',
+          onButtonPressed: _clearSearch,
+        );
+      }
+    }
+
+    final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
+
+    return Column(
+      children: [
+        if (tracks.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${tracks.length} results',
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                SortButton(
+                  currentSort: _searchSortOption,
+                  onPressed: _showSearchSortOptions,
+                  showLabel: true,
+                ),
+              ],
+            ),
+          ),
+        
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 16), 
+            itemCount: sortedTracks.length, 
+            itemBuilder: (ctx, i) => _buildTrackItem(sortedTracks[i])
+          ),
         ),
       ],
     );
@@ -333,168 +442,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     );
   }
 
-  void _onSearchTextChanged(String value) {
-    setState(() {}); 
-    
-    _searchTimer?.cancel();
-    
-    if (value.trim().length < _minSearchLength) {
-      _musicProvider.clearSearchResults();
-      return;
-    }
-    
-    _searchTimer = Timer(_searchDelay, () {
-      if (mounted && _searchController.text.trim().length >= _minSearchLength) {
-        _performAutoSearch();
-      }
-    });
-  }
-
-  Future<void> _performAutoSearch() async {
-    if (!mounted || _searchController.text.trim().length < _minSearchLength) {
-      return;
-    }
-    
-    setState(() => _isAutoSearching = true);
-    
-    try {
-      await _executeWithErrorHandling(() async {
-        await _musicProvider.searchDeezerTracks(_searchController.text);
-        await _autoAddDeezerTracksToBackend(); 
-      }, errorMessage: 'Auto-search failed');
-    } finally {
-      if (mounted) {
-        setState(() => _isAutoSearching = false);
-      }
-    }
-  }
-
-  Widget _buildQuickActions() {
-    if (!_isAddingToPlaylist || _musicProvider.searchResults.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    
-    final actions = [
-      ('Select All', Icons.select_all, _selectAllTracks),
-      ('Clear', Icons.clear_all, _clearSelection),
-      (_isMultiSelectMode ? 'Done' : 'Select', _isMultiSelectMode ? Icons.check_box : Icons.check_box_outline_blank, _toggleMultiSelectMode),
-    ];
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: actions.map((action) => Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: action.$3,
-              icon: Icon(action.$2, size: 16),
-              label: Text(action.$1),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: action.$1.contains('Done') && _isMultiSelectMode ? AppTheme.primary : AppTheme.surface,
-                foregroundColor: action.$1.contains('Done') && _isMultiSelectMode ? Colors.black : Colors.white,
-                side: BorderSide(color: action.$1.contains('Done') && _isMultiSelectMode ? AppTheme.primary : Colors.white54),
-              ),
-            ),
-          ),
-        )).toList(),
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              _isAutoAddingToBackend 
-                ? 'Adding ${_musicProvider.searchResults.length} tracks to backend database...'
-                : 'Adding ${_selectedTracks.length} tracks...',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResults(List<Track> tracks) {
-    if (tracks.isEmpty && _searchController.text.isEmpty) {
-      return AppWidgets.emptyState(
-        icon: Icons.search, 
-        title: 'Ready to find music?', 
-        subtitle: 'Start typing to search Deezer tracks automatically!'
-      );
-    }
-    
-    if (tracks.isEmpty && _searchController.text.isNotEmpty) {
-      if (_searchController.text.length < _minSearchLength) {
-        return AppWidgets.emptyState(
-          icon: Icons.edit,
-          title: 'Keep typing...',
-          subtitle: 'Type at least $_minSearchLength characters to start searching',
-        );
-      } else {
-        return AppWidgets.emptyState(
-          icon: Icons.search_off,
-          title: 'No tracks found',
-          subtitle: 'Try different keywords',
-          buttonText: 'Clear Search',
-          onButtonPressed: _clearSearch,
-        );
-      }
-    }
-
-    final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
-
-    return Column(
-      children: [
-        if (tracks.isNotEmpty)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${tracks.length} results',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                SortButton(
-                  currentSort: _searchSortOption,
-                  onPressed: _showSearchSortOptions,
-                  showLabel: true,
-                ),
-              ],
-            ),
-          ),
-        
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 16), 
-            itemCount: sortedTracks.length, 
-            itemBuilder: (ctx, i) => _buildTrackItem(sortedTracks[i])
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTrackItem(Track track) {
     final isInPlaylist = _isTrackInPlaylist(track.id);
     
@@ -548,8 +495,8 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   Future<void> _loadUserPlaylists() async {
     await _executeWithErrorHandling(() async {
-      await _musicProvider.fetchUserPlaylists(_authProvider.token!);
-      _userPlaylists = _musicProvider.playlists;
+      await getProvider<MusicProvider>().fetchUserPlaylists(auth.token!);
+      _userPlaylists = getProvider<MusicProvider>().playlists;
     });
   }
 
@@ -562,7 +509,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   void _selectAllTracks() {
     setState(() {
-      _selectedTracks = _musicProvider.searchResults
+      _selectedTracks = getProvider<MusicProvider>().searchResults
           .where((track) => !_isTrackInPlaylist(track.id))
           .map((track) => track.id)
           .toSet();
@@ -588,7 +535,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   }
 
   bool _isTrackInPlaylist(String trackId) {
-    return _musicProvider.isTrackInPlaylist(trackId);
+    return getProvider<MusicProvider>().isTrackInPlaylist(trackId);
   }
 
   void _handleTrackTap(Track track) {
@@ -608,91 +555,17 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       await _showPlaylistSelectionDialog(track);
     }
   }
-
+  
   Future<void> _performSearch() async {
     if (_searchController.text.trim().isEmpty) return;
     
-    await _executeWithErrorHandling(() async {
-      await _musicProvider.searchDeezerTracks(_searchController.text);
-      await _autoAddDeezerTracksToBackend(); 
-    }, errorMessage: 'Search failed. Please try again.');
-  }
-
-  Future<void> _autoAddDeezerTracksToBackend() async {
-    if (!_musicProvider.hasValidDeezerTracks) return;
-
-    final deezerTracks = _musicProvider.deezerTracksFromSearch;
-    if (deezerTracks.isEmpty) return;
-
-    setState(() => _isAutoAddingToBackend = true);
-    
-    try {
-      int successCount = 0;
-      int failureCount = 0;
-      final errors = <String>[];
-
-      print('Starting enhanced backend addition for ${deezerTracks.length} Deezer tracks...');
-
-      const batchSize = 5;
-      for (int i = 0; i < deezerTracks.length; i += batchSize) {
-        final batch = deezerTracks.skip(i).take(batchSize).toList();
-        
-        final futures = batch.map((track) async {
-          if (track.deezerTrackId?.isNotEmpty == true) {
-            try {
-              print('Adding track ${track.name} (ID: ${track.deezerTrackId}) to backend...');
-              await _musicProvider.addSingleTrackFromDeezerToTracks(
-                track.deezerTrackId!, 
-                _authProvider.token!
-              );
-              print('✓ Successfully added ${track.name} to backend database');
-              return true;
-            } catch (e) {
-              final errorMsg = 'Failed to add "${track.name}" to backend: $e';
-              errors.add(errorMsg);
-              print('✗ Error adding ${track.name} to backend: $e');
-              return false;
-            }
-          } else {
-            errors.add('Track "${track.name}" has no Deezer ID');
-            print('✗ Skipping ${track.name} - no Deezer ID');
-            return false;
-          }
-        });
-
-        final results = await Future.wait(futures);
-        successCount += results.where((success) => success).length;
-        failureCount += results.where((success) => !success).length;
-
-        if (i + batchSize < deezerTracks.length) {
-          await Future.delayed(const Duration(milliseconds: 300));
-        }
-      }
-
-      if (successCount == deezerTracks.length) {
-        _showMessage('✓ All $successCount tracks ready for playlist addition!', isError: false);
-        print('All tracks successfully prepared in backend database');
-      } else if (successCount > 0) {
-        _showMessage('✓ $successCount/${deezerTracks.length} tracks ready for playlist addition', isError: false);
-        print('Partial success: $successCount/${deezerTracks.length} tracks prepared');
-      } else {
-        _showMessage('⚠ Failed to prepare tracks in backend database');
-        print('Failed to prepare any tracks in backend database');
-      }
-
-      if (errors.isNotEmpty) {
-        print('Errors occurred while preparing tracks:');
-        for (final error in errors.take(3)) { 
-          print('  - $error');
-        }
-      }
-
-    } catch (e) {
-      _showMessage('Error preparing tracks: $e');
-      print('Critical error while preparing tracks: $e');
-    } finally {
-      setState(() => _isAutoAddingToBackend = false);
-    }
+    await runAsyncAction(
+      () async {
+        final musicProvider = getProvider<MusicProvider>();
+        await musicProvider.searchDeezerTracks(_searchController.text);
+      },
+      errorMessage: 'Search failed. Please try again.',
+    );
   }
 
   Future<void> _playTrack(Track track) async {
@@ -704,7 +577,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
-        previewUrl = await _musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
+        previewUrl = await getProvider<MusicProvider>().getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
       }
       
       if (previewUrl?.isNotEmpty == true) {
@@ -716,26 +589,15 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
   }
 
   Future<void> _addTrackToPlaylist(String playlistId, Track track) async {
-    setState(() => _isAddingTracks = true);
-    
-    try {
-      print('Starting enhanced track addition for: ${track.name}');
-      
-      final result = await _musicProvider.addTrackToPlaylist(playlistId, track.id, _authProvider.token!);
-      if (result.success) {
-        _showMessage('Added "${track.name}" to playlist!', isError: false);
-        _selectedTracks.remove(track.id);
-        print('Successfully added ${track.name} to playlist');
-      } else {
-        _showMessage('${result.message}');
-        print('Failed to add ${track.name}: ${result.message}');
-      }
-    } catch (e) {
-      _showMessage('Failed to add track: $e');
-      print('Exception while adding ${track.name}: $e');
-    } finally {
-      setState(() => _isAddingTracks = false);
-    }
+    await runAsyncAction(
+      () async {
+        final musicProvider = getProvider<MusicProvider>();
+        final result = await musicProvider.addTrackToPlaylist(playlistId, track.id, auth.token!);
+        if (!result.success) throw Exception(result.message);
+      },
+      successMessage: 'Added "${track.name}" to playlist!',
+      errorMessage: 'Failed to add track to playlist',
+    );
   }
 
   Future<void> _addSelectedTracks() async {
@@ -746,25 +608,19 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     try {
       print('Starting batch addition of ${_selectedTracks.length} tracks...');
       
-      final result = await _musicProvider.addMultipleTracksToPlaylist(
+      final result = await getProvider<MusicProvider>().addMultipleTracksToPlaylist(
         playlistId: widget.playlistId!,
         trackIds: _selectedTracks.toList(),
-        token: _authProvider.token!,
+        token: auth.token!,
         deviceUuid: _deviceProvider.deviceUuid,
-        onProgress: (current, total) {
-          print('Progress: $current/$total tracks processed');
-        },
+        onProgress: (current, total) => print('Progress: $current/$total tracks processed'),
       );
       
       _showMessage('✓ Added ${result.successCount} tracks to playlist!', isError: false);
       
-      if (result.duplicateCount > 0) {
-        _showMessage('ℹ ${result.duplicateCount} tracks were already in playlist', isError: false);
-      }
+      if (result.duplicateCount > 0) _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
       
-      if (result.failureCount > 0) {
-        _showMessage('⚠ ${result.failureCount} tracks failed to add');
-      }
+      if (result.failureCount > 0) _showMessage('${result.failureCount} tracks failed to add');
       
       _clearSelection();
       print('Batch addition completed: ${result.successCount} success, ${result.failureCount} failed');
@@ -804,16 +660,16 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       setState(() => _isAddingTracks = true);
       
       await _executeWithErrorHandling(() async {
-        final playlistId = await _musicProvider.createPlaylist(
+        final playlistId = await getProvider<MusicProvider>().createPlaylist(
           playlistName!,
           'Created while adding "${track.name}"',
           false, 
-          _authProvider.token!,
+          auth.token!,
           _deviceProvider.deviceUuid,
         );
         
         if (playlistId?.isNotEmpty == true) {
-          final result = await _musicProvider.addTrackToPlaylist(playlistId!, track.id, _authProvider.token!);
+          final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);
           
           if (result.success) {
             _showMessage('Created playlist "$playlistName" and added "${track.name}"!', isError: false);
@@ -833,7 +689,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
     _searchController.clear();
     _searchTimer?.cancel(); 
     _clearSelection();
-    _musicProvider.clearSearchResults();
+    getProvider<MusicProvider>().clearSearchResults();
     setState(() => _isAutoSearching = false);
   }
 
@@ -853,28 +709,6 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
 
   void _showMessage(String message, {bool isError = true}) {
     AppWidgets.showSnackBar(context, message, backgroundColor: isError ? AppTheme.error : Colors.green);
-  }
-
-  Future<bool> _showConfirmDialog(String title, String message) async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    ) ?? false;
   }
 
   Future<int?> _showSelectionDialog({

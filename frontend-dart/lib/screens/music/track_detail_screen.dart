@@ -27,7 +27,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   Track? _track;
   bool _isInPlaylist = false;
   List<Playlist> _userPlaylists = [];
-  bool _isAddingToBackend = false;
 
   @override
   String get screenTitle => _track?.name ?? 'Track Details';
@@ -50,12 +49,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 children: [Icon(Icons.library_add, size: 16), SizedBox(width: 8), Text('Add to Library')],
               ),
             ),
-          const PopupMenuItem(
-            value: 'add_to_backend',
-            child: Row(
-              children: [Icon(Icons.cloud_upload, size: 16), SizedBox(width: 8), Text('Add to Backend Database')],
-            ),
-          ),
         ],
       ),
     ],
@@ -79,7 +72,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                if (_isAddingToBackend) _buildBackendAddingIndicator(),
                 _buildTrackHeader(themeProvider),
                 const SizedBox(height: 24),
                 _buildTrackActions(),
@@ -92,37 +84,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildBackendAddingIndicator() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Adding track to backend database...',
-              style: const TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -210,11 +171,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                       onPressed: _playPauseTrack,
                       isPrimary: true,
                     ),
-                    _buildActionButton(
-                      icon: Icons.playlist_add,
-                      label: 'Add to Playlist',
-                      onPressed: _showAddToPlaylistDialog,
-                    ),
+                    _buildActionButton(icon: Icons.playlist_add, label: 'Add to Playlist', onPressed: _showAddToPlaylistDialog),
                     if (_track!.deezerTrackId != null)
                       _buildActionButton(
                         icon: Icons.library_add,
@@ -223,28 +180,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                if (_track!.deezerTrackId != null) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _isAddingToBackend ? null : _addToBackendDatabase,
-                      icon: _isAddingToBackend 
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
-                          )
-                        : const Icon(Icons.cloud_upload),
-                      label: Text(_isAddingToBackend ? 'Adding to Database...' : 'Add to Backend Database'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                ],
                 if (isCurrentTrack && playerService.duration.inSeconds > 0) ...[
                   const SizedBox(height: 20),
                   _buildProgressBar(playerService),
@@ -481,7 +416,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         } else if (widget.trackId != null) {
           final musicProvider = getProvider<MusicProvider>();
           if (widget.trackId!.startsWith('deezer_')) {
-            _track = await musicProvider.getDeezerTrack(widget.trackId!);
+            _track = await musicProvider.getDeezerTrack(widget.trackId!, auth.token!);
           } else {
             _track = musicProvider.getTrackById(widget.trackId!);
           }
@@ -520,7 +455,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       String? previewUrl = _track!.previewUrl;
       if (previewUrl == null && _track!.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(_track!.deezerTrackId!);
+        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(_track!.deezerTrackId!, auth.token!);
       }
 
       if (previewUrl != null && previewUrl.isNotEmpty) {
@@ -531,30 +466,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       }
     } catch (e) {
       showError('Failed to play track: $e');
-    }
-  }
-
-  Future<void> _addToBackendDatabase() async {
-    if (_track?.deezerTrackId == null) {
-      showError('Cannot add non-Deezer track to backend database');
-      return;
-    }
-
-    setState(() => _isAddingToBackend = true);
-
-    try {
-      print('Adding track ${_track!.name} (ID: ${_track!.deezerTrackId}) to backend database...');
-      
-      final musicProvider = getProvider<MusicProvider>();
-      await musicProvider.addSingleTrackFromDeezerToTracks(_track!.deezerTrackId!, auth.token!);
-      
-      showSuccess('✓ Added "${_track!.name}" to backend database!');
-      print('Successfully added ${_track!.name} to backend database');
-    } catch (e) {
-      showError('Failed to add track to backend database: $e');
-      print('Error adding ${_track!.name} to backend database: $e');
-    } finally {
-      setState(() => _isAddingToBackend = false);
     }
   }
 
@@ -688,9 +599,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         break;
       case 'add_to_library':
         _addToLibrary();
-        break;
-      case 'add_to_backend':
-        _addToBackendDatabase();
         break;
     }
   }

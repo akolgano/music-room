@@ -1,18 +1,9 @@
 // lib/models/sort_models.dart
 import 'package:flutter/material.dart';
 
-enum TrackSortField {
-  name,
-  artist, 
-  album,
-  position,
-  dateAdded,
-}
+enum TrackSortField { name, artist, album, position, dateAdded }
 
-enum SortOrder {
-  ascending,
-  descending,
-}
+enum SortOrder { ascending, descending }
 
 class TrackSortOption {
   final TrackSortField field;

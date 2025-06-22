@@ -42,15 +42,13 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   @override
   void initState() {
     super.initState();
-    if (_isEditMode) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
-    }
+    if (_isEditMode) WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
   }
 
   @override
   Widget buildContent() {
-    if (_isLoading && _isEditMode) {
-      return buildLoadingState(message: 'Loading playlist...');
+    if (_isLoading) {
+      return buildLoadingState(message: _isEditMode ? 'Loading playlist...' : 'Creating playlist...');
     }
 
     return SingleChildScrollView(
@@ -67,7 +65,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Widget _buildPlaylistInfo() {
     if (_playlist == null) return const SizedBox.shrink();
-    
     return AppWidgets.infoBanner(
       title: 'Editing: ${_playlist!.name}',
       message: 'Make changes to your playlist information below',
@@ -106,84 +103,12 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             icon: _isPublic ? Icons.public : Icons.lock,
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (_isEditMode) ...[
-                Expanded(
-                  child: AppWidgets.secondaryButton(
-                    text: 'Cancel',
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icons.cancel,
-                  ),
-                ),
-                const SizedBox(width: 16),
-              ],
-              Expanded(
-                child: AppWidgets.primaryButton(
-                  text: _isEditMode ? 'Save Changes' : 'Create Playlist',
-                  icon: _isEditMode ? Icons.save : Icons.add,
-                  onPressed: _isEditMode ? _saveChanges : _createPlaylist,
-                  isLoading: _isLoading,
-                ),
-              ),
-            ],
+          AppWidgets.primaryButton(
+            text: _isEditMode ? 'Save Changes' : 'Create Playlist',
+            icon: _isEditMode ? Icons.save : Icons.add,
+            onPressed: _isLoading ? null : (_isEditMode ? _saveChanges : _createPlaylist),
+            isLoading: _isLoading,
           ),
-          if (_isEditMode) ...[
-            const SizedBox(height: 24),
-            const Divider(color: Colors.grey),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Playlist Tracks',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text('${_tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _tracks.isEmpty 
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Icon(Icons.music_note, size: 48, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text('No tracks yet', style: TextStyle(color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                )
-              : ReorderableListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _tracks.length,
-                  onReorder: _reorderTracks,
-                  itemBuilder: (context, index) {
-                    final track = _tracks[index].track;
-                    return track == null 
-                      ? ListTile(
-                          key: ValueKey(_tracks[index].trackId),
-                          title: Text(_tracks[index].name, style: const TextStyle(color: Colors.white)),
-                          subtitle: const Text('Track unavailable', style: TextStyle(color: Colors.grey)),
-                        )
-                      : AppWidgets.trackCard(
-                          key: ValueKey(track.id),
-                          track: track,
-                          onTap: () => _playTrack(track),
-                          onRemove: () => _removeTrack(track.id),
-                          showAddButton: false,
-                        );
-                  },
-                ),
-          ],
         ],
       ),
     );
@@ -191,24 +116,27 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _loadPlaylistData() async {
     if (!_isEditMode) return;
-    setState(() => _isLoading = true);
     
-    try {
-      final musicProvider = getProvider<MusicProvider>();
-      _playlist = await musicProvider.getPlaylistDetails(widget.playlistId!, auth.token!);
-      
-      if (_playlist != null) {
-        _nameController.text = _playlist!.name;
-        _descriptionController.text = _playlist!.description;
-        _isPublic = _playlist!.isPublic;
-        await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
-        _tracks = musicProvider.playlistTracks;
-      }
-    } catch (e) {
-      showError('Failed to load playlist: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    await runAsyncAction(
+      () async {
+        final musicProvider = getProvider<MusicProvider>();
+        _playlist = await musicProvider.getPlaylistDetails(widget.playlistId!, auth.token!);
+        
+        if (_playlist != null) {
+          setState(() {
+            _nameController.text = _playlist!.name;
+            _descriptionController.text = _playlist!.description;
+            _isPublic = _playlist!.isPublic;
+          });
+          
+          await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
+          setState(() {
+            _tracks = musicProvider.playlistTracks;
+          });
+        }
+      },
+      errorMessage: 'Failed to load playlist',
+    );
   }
 
   Future<void> _createPlaylist() async {
@@ -218,6 +146,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     }
 
     setState(() => _isLoading = true);
+
     try {
       final musicProvider = getProvider<MusicProvider>();
       final deviceProvider = getProvider<DeviceProvider>();
@@ -230,18 +159,14 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         deviceProvider.deviceUuid,
       );
       
-      if (playlistId != null && playlistId.isNotEmpty) {
-        showSuccess('Playlist created successfully!');
-        Navigator.pushReplacementNamed(
-          context, 
-          AppRoutes.playlistDetail, 
-          arguments: playlistId
-        );
-      } else {
-        showError('Failed to create playlist: Invalid playlist ID received');
+      if (playlistId?.isEmpty ?? true) {
+        throw Exception('Invalid playlist ID received');
       }
+      
+      showSuccess('Playlist created successfully!');
+      navigateTo(AppRoutes.playlistDetail, arguments: playlistId);
     } catch (e) {
-      showError('Failed to create playlist: ${e.toString()}');
+      showError('Failed to create playlist: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -253,6 +178,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       showError('Please enter a playlist name');
       return;
     }
+    
     setState(() => _isLoading = true);
     
     try {
@@ -313,7 +239,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
+        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
       }
       
       if (previewUrl != null && previewUrl.isNotEmpty) {
@@ -341,7 +267,9 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           final musicProvider = getProvider<MusicProvider>();
           await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId!, trackId: trackId, token: auth.token!);
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
-          _tracks = musicProvider.playlistTracks;
+          setState(() {
+            _tracks = musicProvider.playlistTracks;
+          });
         },
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',

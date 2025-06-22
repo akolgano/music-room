@@ -15,24 +15,71 @@ void main() async {
   try {
     print('Starting app initialization...');
     
-    await dotenv.load();
-    print('Environment variables loaded');
+    try {
+      await dotenv.load(fileName: ".env");
+      print('Environment variables loaded successfully');
+      
+      print('Environment check:');
+      final apiBaseUrl = dotenv.env['API_BASE_URL'];
+      if (apiBaseUrl != null && apiBaseUrl.isNotEmpty) {
+        print('   API_BASE_URL found: $apiBaseUrl');
+      } else {
+        print('   API_BASE_URL not found in .env file, will use defaults');
+      }
+    } catch (e) {
+      print('Warning: Failed to load .env file: $e');
+      print('   Will use default configuration');
+    }
     
+    print('Setting up service locator...');
     await setupServiceLocator();
     print('Service locator setup complete');
     
     try {
+      print('Initializing social login services...');
       await SocialLoginUtils.initialize();
       print('Social login services initialized successfully');
     } catch (e) {
       print('Warning: Social login initialization failed: $e');
+      print('   Social login features may not work properly');
     }
     
     print('Starting MyApp...');
     runApp(const MyApp());
-  } catch (e) {
+    
+  } catch (e, stackTrace) {
     print('Critical error during app initialization: $e');
-    runApp(const ErrorApp());
+    print('Stack trace: $stackTrace');
+    
+    try {
+      runApp(ErrorApp(error: e.toString()));
+    } catch (errorAppError) {
+      print('Failed to show error app: $errorAppError');
+      runApp(MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  'App Initialization Failed',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  e.toString(),
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ));
+    }
   }
 }
 
@@ -48,7 +95,10 @@ class MyApp extends StatelessWidget {
       useInheritedMediaQuery: true,
       builder: (context, child) {
         return MultiProvider(
-          providers: [...AppBuilder.buildProviders(), ...AppBuilder.buildAdditionalProviders()],
+          providers: [
+            ...AppBuilder.buildProviders(), 
+            ...AppBuilder.buildAdditionalProviders()
+          ],
           child: MaterialApp(
             title: AppConstants.appName,
             theme: AppTheme.getResponsiveDarkTheme(),
@@ -63,7 +113,9 @@ class MyApp extends StatelessWidget {
 }
 
 class ErrorApp extends StatelessWidget {
-  const ErrorApp({Key? key}) : super(key: key);
+  final String? error;
+  
+  const ErrorApp({Key? key, this.error}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -72,22 +124,70 @@ class ErrorApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       home: Scaffold(
         backgroundColor: AppTheme.background,
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error, size: 64, color: AppTheme.error),
-              SizedBox(height: 16),
-              Text(
-                'Failed to initialize app',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline, 
+                    size: 80, 
+                    color: AppTheme.error
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Failed to Initialize App',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  if (error != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        error!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  const Text(
+                    'Please check your configuration and restart the application',
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () => main(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 8),
-              Text(
-                'Please restart the application',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ],
+            ),
           ),
         ),
       ),
