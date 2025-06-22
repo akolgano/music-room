@@ -373,8 +373,6 @@ class AppRoutes {
   static const String deviceManagement = '/device_management';
   static const String playlistSharing = '/playlist_sharing';
   static const String player = '/player';
-  static const String controlDelegation = '/control_delegation';
-  static const String musicFeatures = '/music_features';
   static const String deezerTrackDetail = '/deezer_track_detail';
   static const String userPasswordChange = '/user_password_change';
   static const String socialNetworkLink = '/social_network_link';

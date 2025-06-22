@@ -149,49 +149,31 @@ class UpdatePlaylistRequest {
   final String? name;
   final String? description;
   final bool? public;
-
-  const UpdatePlaylistRequest({
-    this.name,
-    this.description,
-    this.public,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'description': description,
-    'public': public,
-  };
+  const UpdatePlaylistRequest({this.name, this.description, this.public});
+  Map<String, dynamic> toJson() => {'name': name, 'description': description, 'public': public};
 }
 
 class VisibilityRequest {
   final bool public;
-
   const VisibilityRequest({required this.public});
-
   Map<String, dynamic> toJson() => {'public': public};
 }
 
 class AddDeezerTrackRequest {
   final String deezerTrackId;
-
   const AddDeezerTrackRequest({required this.deezerTrackId});
-
   Map<String, dynamic> toJson() => {'deezer_track_id': deezerTrackId};
 }
 
 class AddTrackRequest {
   final String trackId;
   final String? deviceUuid;
-
-  const AddTrackRequest({
-    required this.trackId,
-    this.deviceUuid,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'track_id': trackId,
-    'device_uuid': deviceUuid,
-  };
+  const AddTrackRequest({required this.trackId, this.deviceUuid});
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic> { 'track_id': trackId };
+    if (deviceUuid != null) json['device_uuid'] = deviceUuid;
+    return json;
+  }
 }
 
 class MoveTrackRequest {
@@ -199,32 +181,20 @@ class MoveTrackRequest {
   final int insertBefore;
   final int? rangeLength;
 
-  const MoveTrackRequest({
-    required this.rangeStart,
-    required this.insertBefore,
-    this.rangeLength,
-  });
+  const MoveTrackRequest({required this.rangeStart, required this.insertBefore, this.rangeLength});
 
-  Map<String, dynamic> toJson() => {
-    'range_start': rangeStart,
-    'insert_before': insertBefore,
-    'range_length': rangeLength,
-  };
+  Map<String, dynamic> toJson() => { 'range_start': rangeStart, 'insert_before': insertBefore, 'range_length': rangeLength };
 }
 
 class InviteUserRequest {
   final int userId;
-
   const InviteUserRequest({required this.userId});
-
   Map<String, dynamic> toJson() => {'user_id': userId};
 }
 
 class FriendRequestRequest {
   final int userId;
-
   const FriendRequestRequest({required this.userId});
-
   Map<String, dynamic> toJson() => {'user_id': userId};
 }
 
