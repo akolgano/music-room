@@ -583,7 +583,7 @@ class _TrackSearchScreenState extends State<TrackSearchScreen> {
       
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
-        previewUrl = await _musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
+        previewUrl = await _musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!, _authProvider.token!);
       }
       
       if (previewUrl?.isNotEmpty == true) {

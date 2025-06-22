@@ -38,17 +38,12 @@ class MusicPlayerService with ChangeNotifier {
   Future<void> playTrack(Track track, String url) async {
     try {
       await _audioPlayer.stop();
-      
       _position = Duration.zero;
       _duration = Duration.zero;
-      
       _currentTrack = track;
-      
       await _audioPlayer.setUrl(url);
       await _audioPlayer.play();
-      
       if (track.imageUrl != null) themeProvider.extractAndApplyDominantColor(track.imageUrl);
-      
       print('Successfully started playing: ${track.name}');
       notifyListeners();
     } catch (e) {

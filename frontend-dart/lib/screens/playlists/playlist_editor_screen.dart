@@ -293,7 +293,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!);
+        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
       }
       
       if (previewUrl != null && previewUrl.isNotEmpty) {

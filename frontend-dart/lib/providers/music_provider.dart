@@ -17,7 +17,7 @@ class MusicProvider extends BaseProvider {
 
   List<Playlist> get playlists => List.unmodifiable(_playlists);
   List<Track> get searchResults => List.unmodifiable(_searchResults);
-  List<PlaylistTrack> get playlistTracks => List.unmodifiable(_playlistTracks);
+  List<PlaylistTrack> get playlistTracks => _playlistTracks; 
   bool get hasConnectionError => _hasConnectionError;
   TrackSortOption _currentSortOption = TrackSortOption.defaultOptions.first;
   List<PlaylistTrack> _originalPlaylistTracks = [];
@@ -36,6 +36,19 @@ class MusicProvider extends BaseProvider {
     notifyListeners();
   }
 
+  void updateTrackDetails(String trackId, Track updatedTrack) {
+    final index = _playlistTracks.indexWhere((pt) => pt.trackId == trackId);
+    if (index != -1) {
+      _playlistTracks[index] = PlaylistTrack(
+        trackId: _playlistTracks[index].trackId,
+        name: _playlistTracks[index].name,
+        position: _playlistTracks[index].position,
+        track: updatedTrack,
+      );
+      notifyListeners();
+    }
+  }
+
   Future<void> fetchUserPlaylists(String token) async => _fetchPlaylists(token, false);
   Future<void> fetchPublicPlaylists(String token) async => _fetchPlaylists(token, true);
 
@@ -51,6 +64,34 @@ class MusicProvider extends BaseProvider {
       _hasConnectionError = false;
     }
     else _hasConnectionError = true;
+  }
+
+  Future<void> fetchMissingTrackDetails(String token) async {
+    final tracksNeedingDetails = _playlistTracks
+        .where((pt) => pt.track == null && pt.track?.deezerTrackId != null)
+        .toList();
+
+    if (tracksNeedingDetails.isEmpty) return;
+
+    print('Fetching details for ${tracksNeedingDetails.length} tracks...');
+
+    for (final playlistTrack in tracksNeedingDetails) {
+      try {
+        final deezerTrackId = playlistTrack.track?.deezerTrackId;
+        if (deezerTrackId != null) {
+          final trackDetails = await getDeezerTrack(deezerTrackId, token);
+          if (trackDetails != null) {
+            updateTrackDetails(playlistTrack.trackId, trackDetails);
+          }
+        }
+      } catch (e) {
+        print('Failed to fetch details for track ${playlistTrack.name}: $e');
+      }
+      
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+    
+    print('Finished fetching track details');
   }
 
   Future<Playlist?> getPlaylistDetails(String id, String token) async {
@@ -87,23 +128,24 @@ class MusicProvider extends BaseProvider {
     if (result != null) _searchResults = result;
   }
 
-  Future<Track?> getDeezerTrack(String trackId) async {
+  Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
-      return await _musicService.getDeezerTrack(trackId);
+      return await _musicService.getDeezerTrack(trackId, token);
     } catch (e) {
       setError(e.toString());
       return null;
     }
   }
 
-  Future<String?> getDeezerTrackPreviewUrl(String trackId) async {
-    final track = await getDeezerTrack(trackId);
+  Future<String?> getDeezerTrackPreviewUrl(String trackId, String token) async {
+    final track = await getDeezerTrack(trackId, token);
     return track?.previewUrl;
   }
 
   Future<void> fetchPlaylistTracks(String playlistId, String token) async {
     final result = await executeAsync(() async {
-      print('Fetching playlist tracks with full details...');
+      print('Fetching playlist tracks for playlist $playlistId');
+      
       final tracks = await _musicService.getPlaylistTracksWithDetails(playlistId, token);
       print('Received ${tracks.length} tracks from API');
       
@@ -112,7 +154,7 @@ class MusicProvider extends BaseProvider {
         if (track.track != null) {
           print('  ✓ Track object created: id=${track.track!.id}, deezerTrackId=${track.track!.deezerTrackId}, artist=${track.track!.artist}');
         } else {
-          print('  ✗ Track object is null');
+          print('  ✗ Track object is null - will try to fetch details later');
         }
       }
       return tracks;
@@ -148,7 +190,7 @@ class MusicProvider extends BaseProvider {
     
     if (track?.deezerTrackId != null) {
       try {
-        return await getDeezerTrackPreviewUrl(track!.deezerTrackId!);
+        return await getDeezerTrackPreviewUrl(track!.deezerTrackId!, token);
       } catch (e) {
         print('Failed to get Deezer preview URL: $e');
       }

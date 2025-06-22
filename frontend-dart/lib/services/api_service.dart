@@ -1,4 +1,4 @@
-// lib/services/api_service.dart
+// lib/services/api_service.dart - Enhanced version
 import 'package:dio/dio.dart';
 import '../models/models.dart';
 import '../models/api_models.dart';
@@ -26,6 +26,14 @@ class ApiService {
     return fromJson(response.data);
   }
 
+  Future<T> _patch<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
+    final response = await _dio.patch(endpoint,
+      data: data?.toJson?.call() ?? data,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
+    );
+    return fromJson(response.data);
+  }
+
   Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async {
     await _dio.post(endpoint,
       data: data?.toJson?.call() ?? data,
@@ -33,8 +41,11 @@ class ApiService {
     );
   }
 
-  Future<void> _delete(String endpoint, {String? token}) async {
-    await _dio.delete(endpoint, options: token != null ? Options(headers: {'Authorization': token}) : null);
+  Future<void> _delete(String endpoint, {String? token, dynamic data}) async {
+    await _dio.delete(endpoint, 
+      data: data?.toJson?.call() ?? data,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
+    );
   }
 
   Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
@@ -50,7 +61,6 @@ class ApiService {
   Future<PlaylistsResponse> getSavedPlaylists(String token) => _get('/playlists/saved_playlists/', PlaylistsResponse.fromJson, token: token);
   Future<PlaylistsResponse> getPublicPlaylists(String token) => _get('/playlists/public_playlists/', PlaylistsResponse.fromJson, token: token);
   Future<PlaylistDetailResponse> getPlaylist(String id, String token) => _get('/playlists/playlists/$id', PlaylistDetailResponse.fromJson, token: token);
-  
   Future<CreatePlaylistResponse> createPlaylist(String token, CreatePlaylistRequest request) async {
     try {
       final response = await _dio.post('/playlists/playlists', data: request.toJson(), options: Options(headers: {'Authorization': token}));
@@ -61,9 +71,8 @@ class ApiService {
     }
   }
 
-  Future<void> updatePlaylist(String id, String token, UpdatePlaylistRequest request) async {
-    throw UnimplementedError('Update playlist endpoint not implemented in backend');
-  }
+  Future<void> updatePlaylist(String playlistId, String token, UpdatePlaylistRequest request) => 
+      _patch('/playlists/$playlistId/', request, (data) => data, token: token);
 
   Future<void> changePlaylistVisibility(String playlistId, String token, VisibilityRequest request) => 
       _postVoid('/playlists/$playlistId/change-visibility/', request, token: token);
@@ -71,18 +80,40 @@ class ApiService {
   Future<void> inviteUserToPlaylist(String playlistId, String token, InviteUserRequest request) => 
       _postVoid('/playlists/$playlistId/invite-user/', request, token: token);
 
+  Future<PlaylistLicenseResponse> getPlaylistLicense(String playlistId, String token) => 
+      _get('/playlists/$playlistId/license/', PlaylistLicenseResponse.fromJson, token: token);
+
+  Future<PlaylistLicenseResponse> updatePlaylistLicense(String playlistId, String token, PlaylistLicenseRequest request) => 
+      _patch('/playlists/$playlistId/license/', request, PlaylistLicenseResponse.fromJson, token: token);
+
+  Future<VoteResponse> voteForTrack(String playlistId, String token, VoteRequest request) => 
+      _post('/playlists/$playlistId/tracks/vote/', request, VoteResponse.fromJson, token: token);
+
   Future<DeezerSearchResponse> searchDeezerTracks(String query) => _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
 
-  Future<Track?> getDeezerTrack(String trackId) async {
+  Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
-      return await _get('/deezer/track/$trackId/', Track.fromJson);
+      print('API: Fetching Deezer track with ID: $trackId');
+      
+      String cleanTrackId = trackId;
+      if (trackId.startsWith('deezer_')) {
+        cleanTrackId = trackId.substring(7);
+      }
+      
+      final endpoint = '/deezer/track/$cleanTrackId/';
+      print('API: Making request to $endpoint');
+      
+      final track = await _get(endpoint, Track.fromJson, token: token);
+      print('API: Successfully parsed track: ${track.name} by ${track.artist}');
+      return track;
+      
     } catch (e) {
       print('API error getting Deezer track $trackId: $e');
       return null;
     }
   }
 
-  Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/deezer/add_from_deezer/', request, token: token);
+  Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/tracks/add_from_deezer/', request, token: token);
 
   Future<PlaylistTracksResponse> getPlaylistTracks(String playlistId, String token) => 
       _get('/playlists/playlist/$playlistId/tracks/', PlaylistTracksResponse.fromJson, token: token);
@@ -91,10 +122,10 @@ class ApiService {
       _postVoid('/playlists/$playlistId/add/', request, token: token);
 
   Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) => 
-      _delete('/playlists/$playlistId/remove_tracks', token: token);
+      _delete('/playlists/$playlistId/remove_tracks', data: {'track_id': trackId}, token: token);
 
   Future<void> moveTrackInPlaylist(String playlistId, String token, MoveTrackRequest request) => 
-      _postVoid('/playlists/move-track/', request, token: token);
+      _postVoid('/playlists/$playlistId/move-track/', request, token: token);
 
   Future<FriendsResponse> getFriends(String token) => _get('/users/get_friends/', FriendsResponse.fromJson, token: token);
   Future<PendingRequestsResponse> getPendingFriendRequests(String token) => _get('/users/pending_friend_requests/', PendingRequestsResponse.fromJson, token: token);
@@ -118,28 +149,40 @@ class ApiService {
   Future<ProfileMusicResponse> getProfileMusic(String token) => _get('/profile/music/', ProfileMusicResponse.fromJson, token: token);
   Future<Map<String, dynamic>> getProfileMusicData(String? token) => _get('/profile/music/', (data) => data, token: token);
 
-  Future<void> updateAvatar(String token, AvatarUpdateRequest request) => _postVoid('/profile/avatar/', request, token: token);
+  Future<ProfilePublicResponse> updatePublicInfo(String token, PublicInfoUpdateRequest request) => 
+      _post('/profile/public/update/', request, ProfilePublicResponse.fromJson, token: token);
+  
+  Future<ProfilePrivateResponse> updatePrivateInfo(String token, PrivateInfoUpdateRequest request) => 
+      _post('/profile/private/update/', request, ProfilePrivateResponse.fromJson, token: token);
+  
+  Future<ProfileFriendResponse> updateFriendInfo(String token, FriendInfoUpdateRequest request) => 
+      _post('/profile/friend/update/', request, ProfileFriendResponse.fromJson, token: token);
+  
+  Future<ProfileMusicResponse> updateMusicPreferences(String token, MusicPreferencesUpdateRequest request) => 
+      _post('/profile/music/update/', request, ProfileMusicResponse.fromJson, token: token);
+
+  Future<void> updateAvatar(String token, AvatarUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
   Future<void> updateAvatarData(String? token, String? avatarBase64, String? mimeType) => 
       updateAvatar(token!, AvatarUpdateRequest(avatar: avatarBase64, mimeType: mimeType));
 
-  Future<void> updatePublicBasic(String token, PublicBasicUpdateRequest request) => _postVoid('/profile/public/basic/', request, token: token);
+  Future<void> updatePublicBasic(String token, PublicBasicUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
   Future<void> updatePublicBasicData(String? token, String? gender, String? location) => 
       updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
 
-  Future<void> updatePublicBio(String token, BioUpdateRequest request) => _postVoid('/profile/public/bio/', request, token: token);
+  Future<void> updatePublicBio(String token, BioUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
   Future<void> updatePublicBioData(String? token, String? bio) => updatePublicBio(token!, BioUpdateRequest(bio: bio));
 
-  Future<void> updatePrivateInfo(String token, PrivateInfoUpdateRequest request) => _postVoid('/profile/private/', request, token: token);
+  Future<void> updatePrivateInfoLegacy(String token, PrivateInfoUpdateRequest request) => _postVoid('/profile/private/update/', request, token: token);
   Future<void> updatePrivateInfoData(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) => 
-      updatePrivateInfo(token!, PrivateInfoUpdateRequest(firstName: firstName, lastName: lastName, phone: phone, street: street, country: country, postalCode: postalCode));
+      updatePrivateInfoLegacy(token!, PrivateInfoUpdateRequest(firstName: firstName, lastName: lastName, phone: phone, street: street, country: country, postalCode: postalCode));
 
-  Future<void> updateFriendInfo(String token, FriendInfoUpdateRequest request) => _postVoid('/profile/friend/', request, token: token);
+  Future<void> updateFriendInfoLegacy(String token, FriendInfoUpdateRequest request) => _postVoid('/profile/friend/update/', request, token: token);
   Future<void> updateFriendInfoData(String? token, String? dob, List<String>? hobbies, String? friendInfo) => 
-      updateFriendInfo(token!, FriendInfoUpdateRequest(dob: dob, hobbies: hobbies, friendInfo: friendInfo));
+      updateFriendInfoLegacy(token!, FriendInfoUpdateRequest(dob: dob, hobbies: hobbies, friendInfo: friendInfo));
 
-  Future<void> updateMusicPreferences(String token, MusicPreferencesUpdateRequest request) => _postVoid('/profile/music/', request, token: token);
+  Future<void> updateMusicPreferencesLegacy(String token, MusicPreferencesUpdateRequest request) => _postVoid('/profile/music/update/', request, token: token);
   Future<void> updateMusicPreferencesData(String? token, List<String>? musicPreferences) => 
-      updateMusicPreferences(token!, MusicPreferencesUpdateRequest(musicPreferences: musicPreferences));
+      updateMusicPreferencesLegacy(token!, MusicPreferencesUpdateRequest(musicPreferences: musicPreferences));
 
   Future<void> facebookLink(String token, SocialLinkRequest request) => _postVoid('/users/facebook_link/', request, token: token);
   Future<void> facebookLinkData(String? token, String accessToken) => facebookLink(token!, SocialLinkRequest(accessToken: accessToken));

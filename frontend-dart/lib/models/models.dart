@@ -124,9 +124,7 @@ class Playlist {
     description: json['description'] as String,
     isPublic: json['public'] ?? false,
     creator: json['creator'] as String,
-    tracks: (json['tracks'] as List<dynamic>?)
-        ?.map((t) => Track.fromJson(t as Map<String, dynamic>))
-        .toList() ?? [],
+    tracks: (json['tracks'] as List<dynamic>?) ?.map((t) => Track.fromJson(t as Map<String, dynamic>)).toList() ?? [],
     imageUrl: json['image_url'] as String?,
   );
 
@@ -152,15 +150,36 @@ class PlaylistTrack {
   factory PlaylistTrack.fromJson(Map<String, dynamic> json) {
     Track? track;
     
-    if (json['track'] != null) {
-      track = Track.fromJson(json['track'] as Map<String, dynamic>);
-    } else if (json['deezer_track_id'] != null) {
+    if (json['track'] != null) track = Track.fromJson(json['track'] as Map<String, dynamic>);
+    else if (json['deezer_track_id'] != null) {
       final deezerTrackId = json['deezer_track_id'].toString();
+      
+      String? artist;
+      String? album;
+      String? previewUrl;
+      String? imageUrl;
+      
+      if (json['artist'] != null) {
+        if (json['artist'] is String) {
+          artist = json['artist'] as String;
+        } else if (json['artist'] is Map && json['artist']['name'] != null) {
+          artist = json['artist']['name'] as String;
+        }
+      }
+      
+      if (json['album'] != null) {
+        if (json['album'] is String) {
+          album = json['album'] as String;
+        } else if (json['album'] is Map && json['album']['title'] != null) {
+          album = json['album']['title'] as String;
+        }
+      }
+      
       track = Track(
         id: 'deezer_$deezerTrackId',
         name: json['name'] as String,
-        artist: json['artist'] as String? ?? 'Unknown Artist',
-        album: json['album'] as String? ?? 'Unknown Album',
+        artist: artist ?? '',
+        album: album ?? '',
         url: json['url'] as String? ?? '',
         deezerTrackId: deezerTrackId,
         previewUrl: json['preview_url'] as String?,
@@ -169,10 +188,10 @@ class PlaylistTrack {
     }
     
     return PlaylistTrack(
-      trackId: json['track_id'].toString(),
-      name: json['name'] as String,
-      position: json['position'] as int,
-      track: track,
+      trackId: json['track_id'].toString(), 
+      name: json['name'] as String, 
+      position: json['position'] as int, 
+      track: track
     );
   }
 
@@ -182,6 +201,9 @@ class PlaylistTrack {
     'position': position,
     'track': track?.toJson(),
   };
+
+  bool get needsTrackDetails => track?.deezerTrackId != null && 
+      (track?.artist.isEmpty == true || track?.album.isEmpty == true);
 }
 
 class Device {

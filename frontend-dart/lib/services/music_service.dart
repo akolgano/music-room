@@ -27,7 +27,7 @@ class MusicService {
     try {
       if (trackId.startsWith('deezer_')) {
         final deezerTrackId = trackId.substring(7);
-        return await getDeezerTrack(deezerTrackId);
+        return await getDeezerTrack(deezerTrackId, token);
       }
       
       print('Track ID $trackId not found in current context');
@@ -73,9 +73,9 @@ class MusicService {
     return response.data;
   }
 
-  Future<Track?> getDeezerTrack(String trackId) async {
+  Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
-      return await _api.getDeezerTrack(trackId);
+      return await _api.getDeezerTrack(trackId, token);
     } catch (e) {
       print('Failed to get Deezer track $trackId: $e');
       return null;

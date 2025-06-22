@@ -416,7 +416,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         } else if (widget.trackId != null) {
           final musicProvider = getProvider<MusicProvider>();
           if (widget.trackId!.startsWith('deezer_')) {
-            _track = await musicProvider.getDeezerTrack(widget.trackId!);
+            _track = await musicProvider.getDeezerTrack(widget.trackId!, auth.token!);
           } else {
             _track = musicProvider.getTrackById(widget.trackId!);
           }
@@ -455,7 +455,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       String? previewUrl = _track!.previewUrl;
       if (previewUrl == null && _track!.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(_track!.deezerTrackId!);
+        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(_track!.deezerTrackId!, auth.token!);
       }
 
       if (previewUrl != null && previewUrl.isNotEmpty) {
