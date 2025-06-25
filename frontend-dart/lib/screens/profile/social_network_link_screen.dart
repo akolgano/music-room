@@ -19,17 +19,13 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with 
   void initState() {     
     super.initState();
     SocialLoginUtils.initialize();
-    SocialLoginUtils.setupGoogleWebCallback(_handleGoogleWebLink);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Link Social Network'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Link Social Network')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -42,15 +38,8 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with 
                 builder: (context, profileProvider, child) {
                   return Column(
                     children: [
-                      if (hasError)
-                        AppWidgets.errorBanner(
-                          message: errorMessage!,
-                          onDismiss: clearMessages,
-                        ),
-
-                      if (hasSuccess)
-                        AppWidgets.successBanner(message: successMessage!),
-
+                      if (hasError) AppWidgets.errorBanner(message: errorMessage!, onDismiss: clearMessages),
+                      if (hasSuccess) AppWidgets.successBanner(message: successMessage!),
                       if (profileProvider.socialType != null) ...[
                         AppWidgets.infoBanner(
                           title: 'Connected',
@@ -65,13 +54,7 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with 
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Expanded(
-                            child: SocialLoginUtils.renderGoogleWebButton().runtimeType == SizedBox 
-                              ? SocialLoginButton(
-                                  provider: 'Google',
-                                  onPressed: () => _linkWithSocial('Google'),
-                                  isLoading: isLoading,
-                                )
-                              : SocialLoginUtils.renderGoogleWebButton(),
+                            child: SocialLoginButton(provider: 'Google', onPressed: () => _linkWithSocial('Google'), isLoading: isLoading)
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -83,14 +66,10 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with 
                           ),
                         ],
                       ),
-                      
                       const SizedBox(height: 24),
-
                       if (isLoading)
                         const CircularProgressIndicator(color: AppTheme.primary),
-
                       const SizedBox(height: 24),
-                      
                       TextButton(
                         onPressed: _goBack,
                         style: TextButton.styleFrom(foregroundColor: Colors.white),
@@ -152,26 +131,9 @@ class _SocialNetworkLinkScreenState extends State<SocialNetworkLinkScreen> with 
     }
   }
 
-  Future<void> _handleGoogleWebLink(account) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    
-    if (authProvider.token == null) return;
-
-    await executeBool(
-      operation: () => profileProvider.googleLinkWeb(authProvider.token, account),
-      successMessage: 'Google account linked successfully!',
-      errorMessage: 'Failed to link Google account',
-      onSuccess: () async {
-        await profileProvider.loadProfile(authProvider.token);
-      },
-    );
-  }
-
   Future<void> _goBack() async {
     final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
     await profileProvider.loadProfile(authProvider.token);
     Navigator.pop(context);
   }

@@ -9,6 +9,8 @@ import '../core/core.dart';
 import '../models/models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
+import '../widgets/voting_widgets.dart';
+import '../models/voting_models.dart';
 
 class R {
   static double s(double size) {
@@ -295,7 +297,9 @@ class AppWidgets {
     bool showAddButton = true,
     bool showPlayButton = true,
     bool showExplicitAddButton = false,
+    bool showVotingControls = false,
     String? playlistContext,
+    String? playlistId,
     VoidCallback? onTap,
     VoidCallback? onAdd,
     VoidCallback? onPlay,
@@ -334,7 +338,20 @@ class AppWidgets {
                         ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
                         : _buildImage(track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
                     title: Text(track.name, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        if (showVotingControls && playlistId != null) ...[
+                          const SizedBox(height: 4),
+                          TrackVotingControls(
+                            playlistId: playlistId!,
+                            trackId: track.id,
+                            isCompact: true,
+                          ),
+                        ],
+                      ],
+                    ),
                     trailing: onSelectionChanged == null ? _buildTrackActions(showAddButton, showPlayButton, onAdd, onPlay, onRemove, trackIsPlaying, themeProvider, isInPlaylist) : null,
                     onTap: onTap,
                   ),
@@ -352,6 +369,8 @@ class AppWidgets {
     Key? key,
     required PlaylistTrack playlistTrack,
     bool isSelected = false,
+    bool showVotingControls = false,
+    String? playlistId,
     VoidCallback? onTap,
     VoidCallback? onPlay,
     VoidCallback? onRemove,
@@ -384,36 +403,88 @@ class AppWidgets {
                 borderRadius: BorderRadius.circular(R.r(12)),
                 border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
               ),
-              child: ListTile(
-                leading: onSelectionChanged != null
-                    ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
-                    : _buildImage(imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
-                title: Text(displayName, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (onPlay != null)
-                      IconButton(
-                        icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, 
-                                  color: themeProvider.primaryColor, size: R.s(24)), 
-                        onPressed: onPlay,
-                      ),
-                    if (onRemove != null)
-                      IconButton(
-                        icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)), 
-                        onPressed: onRemove
-                      ),
-                    Icon(Icons.drag_handle, color: Colors.grey, size: R.s(20)),
-                  ],
-                ),
-                onTap: onTap,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: onSelectionChanged != null
+                        ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
+                        : _buildImage(imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
+                    title: Text(displayName, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        if (showVotingControls && playlistId != null) ...[
+                          const SizedBox(height: 4),
+                          TrackVotingControls(
+                            playlistId: playlistId!,
+                            trackId: playlistTrack.trackId,
+                            isCompact: true,
+                          ),
+                        ],
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (onPlay != null)
+                          IconButton(
+                            icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, 
+                                      color: themeProvider.primaryColor, size: R.s(24)), 
+                            onPressed: onPlay,
+                          ),
+                        if (onRemove != null)
+                          IconButton(
+                            icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)), 
+                            onPressed: onRemove
+                          ),
+                        Icon(Icons.drag_handle, color: Colors.grey, size: R.s(20)),
+                      ],
+                    ),
+                    onTap: onTap,
+                  ),
+                ],
               ),
             ),
           ),
         ),
       );
     },
+  );
+
+  static Widget votingInfoBanner({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color color = AppTheme.primary,
+    VoidCallback? onAction,
+    String? actionText,
+  }) => Container(
+    padding: R.p(16),
+    margin: R.sym(h: 16, v: 8),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(R.r(8)),
+      border: Border.all(color: color.withOpacity(0.3)),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: color, size: R.s(24)),
+        SizedBox(width: R.w(12)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: R.s(16))),
+              SizedBox(height: R.h(4)),
+              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: R.s(14))),
+            ],
+          ),
+        ),
+        if (actionText != null && onAction != null)
+          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color, fontSize: R.s(14)))),
+      ],
+    ),
   );
 
   static Widget _buildImage(String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) => Container(

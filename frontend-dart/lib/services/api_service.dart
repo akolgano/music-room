@@ -141,7 +141,7 @@ class ApiService {
       _patch('/playlists/$playlistId/license/', request, PlaylistLicenseResponse.fromJson, token: token);
 
   Future<VoteResponse> voteForTrack(String playlistId, String token, VoteRequest request) => 
-      _post('/playlists/$playlistId/tracks/vote/', request, VoteResponse.fromJson, token: token);
+    _post('/playlists/$playlistId/tracks/vote/', request, VoteResponse.fromJson, token: token);
 
   Future<DeezerSearchResponse> searchDeezerTracks(String query) => _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
 
@@ -150,10 +150,7 @@ class ApiService {
       print('ApiService: Fetching Deezer track with ID: $trackId');
       
       String cleanTrackId = trackId;
-      if (trackId.startsWith('deezer_')) {
-        cleanTrackId = trackId.substring(7);
-      }
-      
+      if (trackId.startsWith('deezer_')) cleanTrackId = trackId.substring(7);
       final endpoint = '/deezer/track/$cleanTrackId/';
       print('Endpoint: $endpoint');
       
@@ -165,6 +162,17 @@ class ApiService {
       print('API error getting Deezer track $trackId: $e');
       return null;
     }
+  }
+
+  Future<PlaylistVotingInfo> getPlaylistVotingInfo(String playlistId, String token) => 
+      _get('/playlists/$playlistId/voting/', PlaylistVotingInfo.fromJson, token: token);
+
+  Future<VotingRestrictions> getVotingRestrictions(String playlistId, String token) => 
+      _get('/playlists/$playlistId/voting/restrictions/', VotingRestrictions.fromJson, token: token);
+
+  Future<Map<String, VoteStats>> getTrackVotes(String playlistId, String token) async {
+    final response = await _get('/playlists/$playlistId/votes/', (data) => data, token: token);
+    return (response['track_votes'] as Map<String, dynamic>).map((key, value) => MapEntry(key, VoteStats.fromJson(value as Map<String, dynamic>)));
   }
 
   Future<void> addTrackFromDeezer(String token, AddDeezerTrackRequest request) => _postVoid('/tracks/add_from_deezer/', request, token: token);

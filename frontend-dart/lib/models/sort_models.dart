@@ -11,25 +11,10 @@ class TrackSortOption {
   final String displayName;
   final IconData icon;
 
-  const TrackSortOption({
-    required this.field,
-    required this.order,
-    required this.displayName,
-    required this.icon,
-  });
+  const TrackSortOption({ required this.field, required this.order, required this.displayName, required this.icon });
 
-  TrackSortOption copyWith({
-    TrackSortField? field,
-    SortOrder? order,
-    String? displayName,
-    IconData? icon,
-  }) {
-    return TrackSortOption(
-      field: field ?? this.field,
-      order: order ?? this.order,
-      displayName: displayName ?? this.displayName,
-      icon: icon ?? this.icon,
-    );
+  TrackSortOption copyWith({ TrackSortField? field, SortOrder? order, String? displayName, IconData? icon }) {
+    return TrackSortOption(field: field ?? this.field, order: order ?? this.order, displayName: displayName ?? this.displayName, icon: icon ?? this.icon);
   }
 
   @override

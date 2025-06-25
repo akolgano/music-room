@@ -14,6 +14,8 @@ import '../../models/models.dart';
 import '../../models/sort_models.dart';
 import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
+import '../../providers/voting_provider.dart';
+import '../../widgets/voting_widgets.dart';
 
 class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;
@@ -350,7 +352,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
               ],
             ),
           ),
-        
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.only(bottom: 16), 
@@ -450,7 +451,9 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       isSelected: _selectedTracks.contains(track.id),
       isInPlaylist: isInPlaylist,
       showExplicitAddButton: true, 
+      showVotingControls: _isAddingToPlaylist,
       playlistContext: _isAddingToPlaylist ? 'Playlist' : null,
+      playlistId: _isAddingToPlaylist ? widget.playlistId : null,
       onTap: () => _handleTrackTap(track),
       onSelectionChanged: _isMultiSelectMode ? (value) => _toggleSelection(track.id) : null,
       onAdd: !_isMultiSelectMode && !isInPlaylist ? () => _handleAddTrack(track) : null, 
@@ -474,9 +477,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
             )
           : const Icon(Icons.playlist_add),
-        label: Text(_isAddingTracks 
-          ? 'Adding...' 
-          : 'Add ${_selectedTracks.length} tracks'),
+        label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
       );
     }
     

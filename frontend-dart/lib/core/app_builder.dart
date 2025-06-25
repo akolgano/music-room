@@ -10,6 +10,7 @@ import '../providers/friend_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/device_provider.dart';
 import '../providers/dynamic_theme_provider.dart';
+import '../providers/voting_provider.dart';
 import '../services/music_player_service.dart';
 import '../services/websocket_service.dart';
 import '../models/models.dart';
@@ -24,6 +25,7 @@ class AppBuilder {
       ChangeNotifierProvider<FriendProvider>(create: (_) => FriendProvider()),
       ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
       ChangeNotifierProvider<DeviceProvider>(create: (_) => DeviceProvider()),
+      ChangeNotifierProvider<VotingProvider>(create: (_) => VotingProvider()),
     ];
   }
 

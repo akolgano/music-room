@@ -11,6 +11,9 @@ import '../../models/models.dart';
 import '../../core/core.dart';
 import '../../widgets/widgets.dart';
 import '../base_screen.dart';
+import '../../providers/voting_provider.dart';
+import '../../widgets/voting_widgets.dart';
+import '../../models/voting_models.dart';
 
 class TrackDetailScreen extends StatefulWidget {
   final String? trackId;
@@ -151,8 +154,8 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   }
 
   Widget _buildTrackActions() {
-    return Consumer<MusicPlayerService>(
-      builder: (context, playerService, _) {
+    return Consumer2<MusicPlayerService, VotingProvider>(
+      builder: (context, playerService, votingProvider, _) {
         final isCurrentTrack = playerService.currentTrack?.id == _track!.id;
         final isPlaying = isCurrentTrack && playerService.isPlaying;
         
@@ -184,6 +187,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   const SizedBox(height: 20),
                   _buildProgressBar(playerService),
                 ],
+                if (widget.playlistId != null) ...[const SizedBox(height: 20), _buildVotingSection(votingProvider)],
               ],
             ),
           ),
@@ -192,12 +196,58 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    bool isPrimary = false,
-  }) {
+  Widget _buildVotingSection(VotingProvider votingProvider) {
+    return Column(
+      children: [
+        const Divider(color: Colors.white24),
+        const SizedBox(height: 16),
+        const Row(
+          children: [
+            Icon(Icons.how_to_vote, color: AppTheme.primary, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Rate This Track',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (votingProvider.canVote)
+          TrackVotingControls(
+            playlistId: widget.playlistId!,
+            trackId: _track!.id,
+            isCompact: false,
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info, color: Colors.orange, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    votingProvider.getVotingStatusMessage(),
+                    style: const TextStyle(color: Colors.orange, fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onPressed, bool isPrimary = false}) {
     return Column(
       children: [
         Container(
@@ -207,21 +257,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             color: isPrimary ? AppTheme.primary : AppTheme.surfaceVariant,
             shape: BoxShape.circle,
             boxShadow: [
-              if (isPrimary)
-                BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
+              if (isPrimary) BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
             ],
           ),
           child: IconButton(
             onPressed: onPressed,
-            icon: Icon(
-              icon,
-              color: isPrimary ? Colors.black : Colors.white,
-              size: 28,
-            ),
+            icon: Icon(icon, color: isPrimary ? Colors.black : Colors.white, size: 28),
           ),
         ),
         const SizedBox(height: 8),
@@ -382,10 +423,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   onPressed: _removeFromPlaylist,
                   icon: const Icon(Icons.remove_circle_outline),
                   label: const Text('Remove from Playlist'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
                 ),
               ),
             ] else ...[
@@ -395,10 +433,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   onPressed: _addToCurrentPlaylist,
                   icon: const Icon(Icons.add_circle_outline),
                   label: const Text('Add to Current Playlist'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.black,
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
                 ),
               ),
             ],
@@ -424,7 +459,15 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
         if (_track != null && widget.playlistId != null) {
           final musicProvider = getProvider<MusicProvider>();
-          await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
+          final votingProvider = getProvider<VotingProvider>();
+          
+          await Future.wait([
+            musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!),
+            votingProvider.loadPlaylistVotingInfo(widget.playlistId!, auth.token!).catchError((e) {
+              print('Failed to load voting info: $e');
+            }),
+          ]);
+          
           _isInPlaylist = musicProvider.isTrackInPlaylist(_track!.id);
         }
 
@@ -433,9 +476,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         _userPlaylists = musicProvider.playlists;
 
         final themeProvider = getProvider<DynamicThemeProvider>();
-        if (_track?.imageUrl != null) {
-          themeProvider.extractAndApplyDominantColor(_track!.imageUrl);
-        }
+        if (_track?.imageUrl != null) themeProvider.extractAndApplyDominantColor(_track!.imageUrl);
       },
       errorMessage: 'Failed to load track details',
     );

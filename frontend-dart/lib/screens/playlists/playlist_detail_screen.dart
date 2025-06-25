@@ -16,6 +16,9 @@ import '../../widgets/track_sort_bottom_sheet.dart';
 import '../../widgets/sort_button.dart';
 import '../../services/websocket_service.dart';
 import '../base_screen.dart';
+import '../../providers/voting_provider.dart';
+import '../../widgets/voting_widgets.dart';
+import '../../models/voting_models.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
@@ -33,12 +36,29 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   List<PlaylistTrack> _tracks = [];
   List<String> _notifications = [];
   bool _isOwner = false;
+  bool _showVotingMode = false; 
 
   @override
   String get screenTitle => _playlist?.name ?? 'Playlist Details';
 
   @override
   List<Widget> get actions => [
+    Consumer<VotingProvider>(
+      builder: (context, votingProvider, _) {
+        if (votingProvider.votingRestrictions?.licenseType == 'open' || 
+            votingProvider.canVote) {
+          return IconButton(
+            icon: Icon(
+              _showVotingMode ? Icons.music_note : Icons.how_to_vote,
+              color: _showVotingMode ? AppTheme.primary : Colors.white,
+            ),
+            onPressed: _toggleVotingMode,
+            tooltip: _showVotingMode ? 'Hide Voting' : 'Show Voting',
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    ),
     if (_isOwner) 
       IconButton(
         icon: const Icon(Icons.edit),
@@ -48,17 +68,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
     IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData, tooltip: 'Refresh'),
   ];
-
-  @override
-  Widget? get floatingActionButton => _isOwner 
-    ? FloatingActionButton.extended(
-        onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.black,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Songs'),
-      )
-    : null;
 
   @override
   void initState() {
@@ -84,12 +93,237 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             const SizedBox(height: 16),
             _buildPlaylistActions(),
             const SizedBox(height: 16),
+            _buildVotingSection(),
+            const SizedBox(height: 16),
             _buildTracksSection(),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildVotingSection() {
+    return Consumer<VotingProvider>(
+      builder: (context, votingProvider, _) {
+        final restrictions = votingProvider.votingRestrictions;
+        final trackVotes = votingProvider.trackVotes;
+
+        if (restrictions == null) return const SizedBox.shrink();
+
+        return Column(
+          children: [
+            PlaylistVotingBanner(playlistId: widget.playlistId),
+            
+            if (_showVotingMode && trackVotes.isNotEmpty)
+              VotingStatsCard(trackVotes: trackVotes),
+            
+            if (votingProvider.canVote && !_showVotingMode)
+              AppWidgets.votingInfoBanner(
+                title: 'Voting Available',
+                message: 'Tap the voting icon to rate tracks in this playlist',
+                icon: Icons.how_to_vote,
+                color: Colors.blue,
+                actionText: 'Show Voting',
+                onAction: _toggleVotingMode,
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
+    final canReorder = currentSort.field == TrackSortField.position && _isOwner && !_showVotingMode;
+    
+    if (canReorder) {
+      return ReorderableListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: tracks.length,
+        onReorder: _onReorderTracks,
+        itemBuilder: (context, index) {
+          final playlistTrack = tracks[index];
+          return _buildTrackItem(playlistTrack, index, key: ValueKey(playlistTrack.trackId));
+        },
+      );
+    } else {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: tracks.length,
+        itemBuilder: (context, index) {
+          final playlistTrack = tracks[index];
+          return _buildTrackItem(playlistTrack, index);
+        },
+      );
+    }
+  }
+
+  Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
+    final track = playlistTrack.track;
+    
+    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails) {
+      _fetchTrackDetailsIfNeeded(playlistTrack);
+    }
+
+    if (track?.deezerTrackId != null && 
+        _fetchingTrackDetails.contains(track!.deezerTrackId) && 
+        (track.artist.isEmpty || track.album.isEmpty)) {
+      
+      return Container(
+        key: key,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ListTile(
+          leading: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.3), 
+              borderRadius: BorderRadius.circular(8)
+            ),
+            child: const Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(Icons.music_note, color: Colors.white),
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          title: Text(
+            track?.name ?? playlistTrack.name,
+            style: const TextStyle(color: Colors.white),
+          ),
+          subtitle: const Text(
+            'Loading track details...',
+            style: TextStyle(color: Colors.grey),
+          ),
+          trailing: _buildTrackActions(index, playlistTrack),
+        ),
+      );
+    }
+
+    if (track != null) {
+      return AppWidgets.playlistTrackCard(
+        key: key,
+        playlistTrack: playlistTrack,
+        onTap: () => _playTrackAt(index),
+        onPlay: () => _playTrackAt(index),
+        onRemove: _isOwner ? () => _removeTrack(track.id) : null,
+        showVotingControls: _showVotingMode,
+        playlistId: widget.playlistId,
+      );
+    }
+
+    return Container(
+      key: key,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.music_off, color: Colors.white),
+        ),
+        title: Text(playlistTrack.name, style: const TextStyle(color: Colors.white)),
+        subtitle: const Text(
+          'Track details unavailable',
+          style: TextStyle(color: Colors.grey),
+        ),
+        trailing: _buildTrackActions(index, playlistTrack),
+      ),
+    );
+  }
+
+  void _toggleVotingMode() {
+    setState(() {
+      _showVotingMode = !_showVotingMode;
+    });
+    
+    if (_showVotingMode) {
+      showInfo('Voting mode enabled - rate tracks with thumbs up/down');
+    } else {
+      showInfo('Voting mode disabled');
+    }
+  }
+
+  Future<void> _loadData() async {
+    print('Loading playlist data for ID: ${widget.playlistId}');
+    
+    try {
+      final musicProvider = getProvider<MusicProvider>();
+      final votingProvider = getProvider<VotingProvider>();
+      
+      final playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
+      
+      if (playlist != null) {
+        setState(() {
+          _playlist = playlist;
+          _isOwner = _playlist!.creator == auth.username;
+        });
+        
+        await Future.wait([
+          musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!),
+          votingProvider.loadPlaylistVotingInfo(widget.playlistId, auth.token!).catchError((e) {
+            print('Failed to load voting info: $e');
+          }),
+        ]);
+        
+        setState(() {
+          _tracks = musicProvider.playlistTracks;
+        });
+        
+        print('Loaded ${_tracks.length} tracks');
+        
+        _startBatchTrackDetailsFetch();
+        
+        if (_webSocketService.currentPlaylistId != widget.playlistId) {
+          await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
+        }
+      } else {
+        showError('Failed to load playlist data');
+      }
+    } catch (e) {
+      print('Error loading data: $e');
+      showError('Failed to load playlist details: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _webSocketService.disconnect();
+    final votingProvider = getProvider<VotingProvider>(listen: false);
+    votingProvider.clearVotingData();
+    super.dispose();
+  }
+
+  @override
+  Widget? get floatingActionButton => _isOwner 
+    ? FloatingActionButton.extended(
+        onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Songs'),
+      )
+    : null;
 
   Widget _buildNotificationBar() {
     return Container(
@@ -458,124 +692,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
-  Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
-    final canReorder = currentSort.field == TrackSortField.position && _isOwner;
-    
-    if (canReorder) {
-      return ReorderableListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: tracks.length,
-        onReorder: _onReorderTracks,
-        itemBuilder: (context, index) {
-          final playlistTrack = tracks[index];
-          return _buildTrackItem(playlistTrack, index, key: ValueKey(playlistTrack.trackId));
-        },
-      );
-    } else {
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: tracks.length,
-        itemBuilder: (context, index) {
-          final playlistTrack = tracks[index];
-          return _buildTrackItem(playlistTrack, index);
-        },
-      );
-    }
-  }
-
-  Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
-    final track = playlistTrack.track;
-    
-    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails) {
-      _fetchTrackDetailsIfNeeded(playlistTrack);
-    }
-
-    if (track?.deezerTrackId != null && 
-        _fetchingTrackDetails.contains(track!.deezerTrackId) && 
-        (track.artist.isEmpty || track.album.isEmpty)) {
-      
-      return Container(
-        key: key,
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ListTile(
-          leading: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3), 
-              borderRadius: BorderRadius.circular(8)
-            ),
-            child: const Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(Icons.music_note, color: Colors.white),
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          title: Text(
-            track?.name ?? playlistTrack.name,
-            style: const TextStyle(color: Colors.white),
-          ),
-          subtitle: const Text(
-            'Loading track details...',
-            style: TextStyle(color: Colors.grey),
-          ),
-          trailing: _buildTrackActions(index, playlistTrack),
-        ),
-      );
-    }
-
-    if (track != null) {
-      return AppWidgets.playlistTrackCard(
-        key: key,
-        playlistTrack: playlistTrack,
-        onTap: () => _playTrackAt(index),
-        onPlay: () => _playTrackAt(index),
-        onRemove: _isOwner ? () => _removeTrack(track.id) : null,
-      );
-    }
-
-    return Container(
-      key: key,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.music_off, color: Colors.white),
-        ),
-        title: Text(playlistTrack.name, style: const TextStyle(color: Colors.white)),
-        subtitle: const Text(
-          'Track details unavailable',
-          style: TextStyle(color: Colors.grey),
-        ),
-        trailing: _buildTrackActions(index, playlistTrack),
-      ),
-    );
-  }
-
   Widget _buildTrackActions(int index, PlaylistTrack playlistTrack) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -654,12 +770,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       tracks.insert(newIndex, item);
       
       for (int i = 0; i < tracks.length; i++) {
-        tracks[i] = PlaylistTrack(
-          trackId: tracks[i].trackId,
-          name: tracks[i].name,
-          position: i,
-          track: tracks[i].track,
-        );
+        tracks[i] = PlaylistTrack(trackId: tracks[i].trackId, name: tracks[i].name, position: i, track: tracks[i].track);
       }
     });
     
@@ -703,42 +814,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     });
   }
 
-  Future<void> _loadData() async {
-    print('Loading playlist data for ID: ${widget.playlistId}');
-    
-    try {
-      final musicProvider = getProvider<MusicProvider>();
-      
-      final playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
-      
-      if (playlist != null) {
-        setState(() {
-          _playlist = playlist;
-          _isOwner = _playlist!.creator == auth.username;
-        });
-        
-        await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
-        
-        setState(() {
-          _tracks = musicProvider.playlistTracks;
-        });
-        
-        print('Loaded ${_tracks.length} tracks');
-        
-        _startBatchTrackDetailsFetch();
-        
-        if (_webSocketService.currentPlaylistId != widget.playlistId) {
-          await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
-        }
-      } else {
-        showError('Failed to load playlist data');
-      }
-    } catch (e) {
-      print('Error loading data: $e');
-      showError('Failed to load playlist details: $e');
-    }
-  }
-
   Future<void> _startBatchTrackDetailsFetch() async {
     final tracksNeedingDetails = _tracks.where((pt) => pt.needsTrackDetails).toList();
     
@@ -751,12 +826,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     
     for (int i = 0; i < tracksNeedingDetails.length; i++) {
       final playlistTrack = tracksNeedingDetails[i];
-      
       _fetchTrackDetailsIfNeeded(playlistTrack);
-      
-      if (i < tracksNeedingDetails.length - 1) {
-        await Future.delayed(const Duration(milliseconds: 200));
-      }
+      if (i < tracksNeedingDetails.length - 1) await Future.delayed(const Duration(milliseconds: 200));
     }
   }
 
@@ -832,9 +903,4 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     if (_playlist != null) navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
   }
 
-  @override
-  void dispose() {
-    _webSocketService.disconnect();
-    super.dispose();
-  }
 }

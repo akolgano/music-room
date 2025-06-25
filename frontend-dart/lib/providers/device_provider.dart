@@ -1,11 +1,11 @@
 // lib/providers/device_provider.dart
 import 'package:flutter/material.dart';
 import '../core/service_locator.dart';
+import '../core/base_provider.dart';  
 import '../services/device_service.dart';
 import '../models/models.dart';
-import '../core/core.dart';
 
-class DeviceProvider with ChangeNotifier, StateManagement {
+class DeviceProvider extends BaseProvider {  
   final DeviceService _deviceService = getIt<DeviceService>();
   
   Device? _currentDevice;
