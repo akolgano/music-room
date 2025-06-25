@@ -170,40 +170,27 @@ class PlaylistLicenseResponse {
 
 class VoteRequest {
   final String trackId;
-  final int voteValue; 
+  final int voteValue;
 
-  const VoteRequest({
-    required this.trackId,
-    required this.voteValue,
-  });
+  const VoteRequest({ required this.trackId, required this.voteValue });
 
-  Map<String, dynamic> toJson() => {
-    'track_id': trackId,
-    'vote_value': voteValue,
-  };
+  Map<String, dynamic> toJson() => { 'track_id': trackId, 'vote_value': voteValue };
 }
 
 class VoteResponse {
   final String message;
-  final int totalVotes;
-  final bool userHasVoted;
-  final int? userVoteValue;
+  final VoteStats stats;
 
   const VoteResponse({
     required this.message,
-    required this.totalVotes,
-    required this.userHasVoted,
-    this.userVoteValue,
+    required this.stats,
   });
 
   factory VoteResponse.fromJson(Map<String, dynamic> json) => VoteResponse(
     message: json['message'] as String,
-    totalVotes: json['total_votes'] as int,
-    userHasVoted: json['user_has_voted'] as bool,
-    userVoteValue: json['user_vote_value'] as int?,
+    stats: VoteStats.fromJson(json['stats'] as Map<String, dynamic>),
   );
 }
-
 
 class LogoutRequest {
   final String username;
@@ -222,17 +209,9 @@ class ChangePasswordRequest {
   final int otp;
   final String password;
 
-  const ChangePasswordRequest({
-    required this.email,
-    required this.otp,
-    required this.password,
-  });
+  const ChangePasswordRequest({ required this.email, required this.otp, required this.password });
 
-  Map<String, dynamic> toJson() => {
-    'email': email,
-    'otp': otp,
-    'password': password,
-  };
+  Map<String, dynamic> toJson() => { 'email': email, 'otp': otp, 'password': password };
 }
 
 class SocialLoginRequest {
@@ -240,32 +219,19 @@ class SocialLoginRequest {
   final String? idToken;
   final String? type;
 
-  const SocialLoginRequest({
-    this.accessToken,
-    this.idToken,
-    this.type,
-  });
+  const SocialLoginRequest({ this.accessToken, this.idToken, this.type });
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     
-    if (type != null) {
-      json['type'] = type;
-    }
+    if (type != null) json['type'] = type;
     
-    if (accessToken != null) {
-      json['access_token'] = accessToken;
-    }
+    if (accessToken != null) json['access_token'] = accessToken;
     
-    if (idToken != null) {
-      json['id_token'] = idToken;
-    }
+    if (idToken != null) json['id_token'] = idToken;
     
-    if (idToken != null) {
-      json['token'] = idToken;
-    } else if (accessToken != null) {
-      json['token'] = accessToken;
-    }
+    if (idToken != null) json['token'] = idToken;
+    else if (accessToken != null) json['token'] = accessToken;
     
     return json;
   }
@@ -677,16 +643,12 @@ class DeviceResponse {
   final Device device;
   const DeviceResponse({required this.device});
 
-  factory DeviceResponse.fromJson(Map<String, dynamic> json) => DeviceResponse(
-    device: Device.fromJson(json['device'] as Map<String, dynamic>),
-  );
+  factory DeviceResponse.fromJson(Map<String, dynamic> json) => DeviceResponse(device: Device.fromJson(json['device'] as Map<String, dynamic>));
 }
 
 class PermissionResponse {
   final bool canControl;
   const PermissionResponse({required this.canControl});
 
-  factory PermissionResponse.fromJson(Map<String, dynamic> json) => PermissionResponse(
-    canControl: json['can_control'] as bool,
-  );
+  factory PermissionResponse.fromJson(Map<String, dynamic> json) => PermissionResponse(canControl: json['can_control'] as bool);
 }

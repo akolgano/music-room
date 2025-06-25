@@ -90,16 +90,6 @@ class WebSocketService with ChangeNotifier {
     }
   }
 
-  void sendPresenceUpdate() {
-    if (_isConnected && _channel != null) {
-      _sendMessage({
-        'type': 'presence_update',
-        'user_id': _currentUserId,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
-    }
-  }
-
   void _sendMessage(Map<String, dynamic> message) {
     if (_channel != null) {
       _channel!.sink.add(json.encode(message));
@@ -123,11 +113,7 @@ class WebSocketService with ChangeNotifier {
     try {
       if (_channel != null) {
         if (_isConnected && _currentUserId != null) {
-          _sendMessage({
-            'type': 'user_left', 
-            'user_id': _currentUserId, 
-            'timestamp': DateTime.now().toIso8601String()
-          });
+          _sendMessage({ 'type': 'user_left', 'user_id': _currentUserId, 'timestamp': DateTime.now().toIso8601String() });
         }
         
         await _channel!.sink.close();

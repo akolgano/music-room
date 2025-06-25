@@ -12,6 +12,7 @@ import '../services/device_service.dart';
 import '../services/profile_service.dart';
 import '../services/storage_service.dart';
 import '../services/music_player_service.dart';
+import '../services/voting_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 
 final getIt = GetIt.instance;
@@ -86,9 +87,7 @@ Future<void> setupServiceLocator() async {
         }
         
         final token = getIt.isRegistered<AuthService>() ? getIt<AuthService>().currentToken : null;
-        if (token != null) {
-          options.headers['Authorization'] = 'Token $token';
-        }
+        if (token != null) options.headers['Authorization'] = 'Token $token';
         
         handler.next(options);
       },
@@ -110,9 +109,7 @@ Future<void> setupServiceLocator() async {
         
         if (error.response?.statusCode == 401) {
           print('Unauthorized - clearing auth token');
-          if (getIt.isRegistered<AuthService>()) {
-            getIt<AuthService>().logout();
-          }
+          if (getIt.isRegistered<AuthService>()) getIt<AuthService>().logout();
         }
         
         handler.next(error);
@@ -135,12 +132,10 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<FriendService>(() => FriendService(getIt<ApiService>()));
   getIt.registerLazySingleton<DeviceService>(() => DeviceService(getIt<ApiService>()));
   getIt.registerLazySingleton<ProfileService>(() => ProfileService(getIt<ApiService>()));
-
+  getIt.registerLazySingleton<VotingService>(() => VotingService(getIt<ApiService>()));
   getIt.registerLazySingleton<DynamicThemeProvider>(() => DynamicThemeProvider());
-  getIt.registerLazySingleton<MusicPlayerService>(() => MusicPlayerService(
-    themeProvider: getIt<DynamicThemeProvider>(),
-  ));
-  
+  getIt.registerLazySingleton<MusicPlayerService>(() => MusicPlayerService(themeProvider: getIt<DynamicThemeProvider>()));
+
   print('Service Locator: All services registered');
   
   final testDio = getIt<Dio>();

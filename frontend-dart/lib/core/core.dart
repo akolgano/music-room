@@ -53,78 +53,6 @@ class DateTimeUtils {
   }
 }
 
-class AsyncUtils {
-  static Future<bool> executeSimple<T>({
-    required Future<T> Function() operation,
-    Function(String)? onError,
-    Function(T)? onSuccess,
-  }) async {
-    try {
-      final result = await operation();
-      onSuccess?.call(result);
-      return true;
-    } catch (e) {
-      onError?.call(e.toString());
-      return false;
-    }
-  }
-}
-
-mixin StateManagement on ChangeNotifier {
-  bool _isLoading = false;
-  String? _errorMessage;
-  String? _successMessage;
-
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  String? get successMessage => _successMessage;
-  bool get hasError => _errorMessage != null;
-  bool get hasSuccess => _successMessage != null;
-  bool get isReady => !_isLoading && !hasError;
-
-  void clearMessages() {
-    _errorMessage = null;
-    _successMessage = null;
-    notifyListeners();
-  }
-
-  void setLoading(bool loading) {
-    _isLoading = loading;
-    if (loading) clearMessages();
-    notifyListeners();
-  }
-
-  void setError(String error) {
-    _errorMessage = error;
-    _successMessage = null;
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  void setSuccess(String message) {
-    _successMessage = message;
-    _errorMessage = null;
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<T?> executeAsync<T>(Future<T> Function() operation, {String? successMessage, String? errorMessage}) async {
-    setLoading(true);
-    try {
-      final result = await operation();
-      if (successMessage != null) setSuccess(successMessage);
-      return result;
-    } catch (e) {
-      setError(errorMessage ?? e.toString());
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }
-}
-
-abstract class BaseProvider extends ChangeNotifier with StateManagement {}
-
 mixin AsyncOperationStateMixin<T extends StatefulWidget> on State<T> {
   bool _isLoading = false;
   String? _errorMessage;
@@ -504,10 +432,7 @@ class SocialLoginUtils {
           rethrow;
         }
       },
-      (result) => {
-        'idToken': result?.idToken,
-        'accessToken': result?.accessToken,
-      },
+      (result) => {'idToken': result?.idToken, 'accessToken': result?.accessToken},
       'Google',
     );
   }
@@ -523,12 +448,6 @@ class SocialLoginUtils {
       print('Social sign out error: $e');
     }
   }
-
-  static void setupGoogleWebCallback(Function(dynamic) callback) {
-    print('Google web callback setup (web-specific implementation needed)');
-  }
-  
-  static Widget renderGoogleWebButton() => const SizedBox.shrink();
 }
 
 class SocialLoginResult {
@@ -546,12 +465,7 @@ class SocialLoginButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  const SocialLoginButton({
-    Key? key, 
-    required this.provider, 
-    this.onPressed, 
-    this.isLoading = false
-  }) : super(key: key);
+  const SocialLoginButton({Key? key, required this.provider, this.onPressed, this.isLoading = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -578,10 +492,7 @@ class SocialLoginButton extends StatelessWidget {
         ? SizedBox(
             width: 16, 
             height: 16, 
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(color)),
           ) 
         : Icon(icon, color: color, size: 20),
       label: Text(
