@@ -16,3 +16,5 @@ pytest-asyncio
 #uvicorn[standard]
 google-auth
 geopy
+drf_yasg
+pillow

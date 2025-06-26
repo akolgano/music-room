@@ -2,6 +2,7 @@ import secrets
 from .models import OneTimePasscode
 from .models import SignupOneTimePasscode
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 
 User = get_user_model()
 
@@ -14,11 +15,12 @@ def create_otp_for_user(user):
 
         otp = OneTimePasscode.objects.create(
             user=user,
-            code=otp_code
+            code=make_password(str(otp_code))
         )
-        return otp
-    except Exception:
+        return otp_code
+    except Exception as e:
         return None
+
 
 def create_otp_signup(email):
     try:
@@ -28,8 +30,8 @@ def create_otp_signup(email):
 
         otp = SignupOneTimePasscode.objects.create(
             email=email,
-            code=otp_code
+            code=make_password(str(otp_code))
         )
-        return otp
-    except Exception:
+        return otp_code
+    except Exception as e:
         return None
