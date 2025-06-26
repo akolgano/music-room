@@ -15,7 +15,6 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.forms.models import model_to_dict
 from .decorators import check_access_to_playlist, check_license
-from apps.devices.decorators import require_device_control
 from .serializers import PlaylistLicenseSerializer
 from apps.deezer.deezer_client import DeezerClient
 from .serializers import PlaylistLicenseSerializer
@@ -24,7 +23,6 @@ from .serializers import PlaylistLicenseSerializer
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@require_device_control
 def create_new_playlist(request):
     user = request.user
     name = request.data.get('name')
@@ -50,7 +48,6 @@ def create_new_playlist(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@require_device_control
 def get_user_saved_playlists(request):
     user = request.user
 
@@ -76,7 +73,6 @@ def get_user_saved_playlists(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@require_device_control
 def get_all_shared_playlists(request):
 
     playlists = Playlist.objects.filter(public=True)
@@ -101,7 +97,6 @@ def get_all_shared_playlists(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@require_device_control
 def save_shared_playlist(request):
     if not request.user.is_authenticated:
         return JsonResponse({"error": "Authentication required."}, status=401)
@@ -141,7 +136,6 @@ def save_shared_playlist(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@require_device_control
 def get_playlist_info(request, playlist_id):
     try:
         user = request.user
@@ -169,7 +163,6 @@ def get_playlist_info(request, playlist_id):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@require_device_control
 def playlist_tracks(request, playlist_id):
     playlist = get_object_or_404(Playlist, id=playlist_id)
     tracks = PlaylistTrack.objects.filter(playlist=playlist).select_related('track')
@@ -187,7 +180,6 @@ def playlist_tracks(request, playlist_id):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @check_access_to_playlist
-#@require_device_control
 def add_track(request, playlist_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -242,7 +234,6 @@ def add_track(request, playlist_id):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @check_access_to_playlist
-#@require_device_control
 def move_track_in_playlist(request, playlist_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -300,7 +291,6 @@ def move_track_in_playlist(request, playlist_id):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @check_access_to_playlist
-#@require_device_control
 def delete_track_from_playlist(request, playlist_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)

@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.tracks',
     'apps.playlists',
-    'apps.devices',
     'corsheaders',
     'channels',
     'apps.remote_auth',
