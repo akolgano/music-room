@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'channels',
     'apps.remote_auth',
     'apps.profile',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -192,5 +193,16 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 
-MEDIA_URL = '/apps/avatars/'
-MEDIA_ROOT = BASE_DIR / 'apps/avatars'
+MEDIA_URL = '/apps/profile/avatars/'
+MEDIA_ROOT = BASE_DIR / 'apps/profile/avatars'
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Token': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'Format: Token <your-token>'
+        }
+    }
+}

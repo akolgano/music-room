@@ -30,7 +30,7 @@ def get_expiry_time():
 
 class OneTimePasscode(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    code = models.IntegerField()
+    code = models.CharField(max_length=200)
     expired_at = models.DateTimeField(default=get_expiry_time)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -39,7 +39,7 @@ class OneTimePasscode(models.Model):
 
 class SignupOneTimePasscode(models.Model):
     email = models.EmailField(unique=True)
-    code = models.IntegerField()
+    code = models.CharField(max_length=200)
     expired_at = models.DateTimeField(default=get_expiry_time)
     created_at = models.DateTimeField(auto_now_add=True)
 

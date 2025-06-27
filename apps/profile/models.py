@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 
 
-class ProfilePublic(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile_public')
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
 
     gender = models.CharField(
         max_length=6,
@@ -33,23 +33,6 @@ class ProfilePublic(models.Model):
         blank=True,
         default=''
         )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "User Public Info"
-        verbose_name_plural = "User Public Infos"
-        
-    def __str__(self):
-        return (
-            f"user id: {self.user.id}, gender: {self.gender}, avatar: {self.avatar},"
-            f"location: {self.location}, bio: {self.bio}"
-            )
-
-
-class ProfilePrivate(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile_private')
 
     first_name = models.CharField(
         max_length=50,
@@ -93,23 +76,6 @@ class ProfilePrivate(models.Model):
         default=''
         )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "User Private Info"
-        verbose_name_plural = "User Private Infos"
-        
-    def __str__(self):
-        return (
-            f"user id: {self.user.id}, first_name: {self.first_name}, last_name: {self.last_name},"
-            f"phone: {self.phone}, street: {self.street}, country: {self.country}, postal_code: {self.postal_code}"
-            )
-
-
-class ProfileFriend(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile_friend')
-
     dob = models.DateField(
         null=True, 
         blank=True
@@ -117,6 +83,7 @@ class ProfileFriend(models.Model):
     
     hobbies = ArrayField(
         models.CharField(max_length=50),
+        null=True,
         blank=True,
         default=list
     )
@@ -128,24 +95,9 @@ class ProfileFriend(models.Model):
         default=''
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "User Friend Info"
-        verbose_name_plural = "User Friend Infos"
-        
-    def __str__(self):
-        return (
-            f"user id: {self.user.id}, dob: {self.dob}, hobbies: {self.hobbies}, friend_info: {self.friend_info}"
-        )
-
-
-class ProfileMusic(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile_music')
-    
     music_preferences = ArrayField(
         models.CharField(max_length=50),
+        null=True,
         blank=True,
         default=list
     )
@@ -154,10 +106,15 @@ class ProfileMusic(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "User Music Preference"
-        verbose_name_plural = "User Music Preferences"
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
         
     def __str__(self):
         return (
-            f"user id: {self.user.id}, music_preferences: {self.music_preferences}"
+            f"user id: {self.user.id}, gender: {self.gender}, avatar: {self.avatar},"
+            f"location: {self.location}, bio: {self.bio},"
+            f"first_name: {self.first_name}, last_name: {self.last_name},"
+            f"phone: {self.phone}, street: {self.street}, country: {self.country}, postal_code: {self.postal_code},"    
+            f"dob: {self.dob}, hobbies: {self.hobbies}, friend_info: {self.friend_info},"
+            f"music_preferences: {self.music_preferences}"
         )
