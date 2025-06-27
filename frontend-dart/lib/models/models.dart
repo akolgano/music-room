@@ -7,13 +7,9 @@ class User {
   final String id;
   final String username;
   final String? email;
-
   const User({required this.id, required this.username, this.email});
-
   factory User.fromJson(Map<String, dynamic> json) => User(id: json['id'].toString(), username: json['username'] as String, email: json['email'] as String?);
-
-  Map<String, dynamic> toJson() => {'id': id, 'username': username, 'email': email,
-  };
+  Map<String, dynamic> toJson() => { 'id': id, 'username': username, 'email': email };
 }
 
 class Track {
@@ -42,8 +38,9 @@ class Track {
     String? deezerTrackId;
     
     if (json.containsKey('preview') || json.containsKey('link')) {
-      trackId = 'deezer_${json['id']}';
-      deezerTrackId = json['id'].toString();
+      final deezerIdString = json['id'].toString();
+      trackId = 'deezer_$deezerIdString';
+      deezerTrackId = deezerIdString;
     } else {
       trackId = json['id'].toString();
       deezerTrackId = json['deezer_track_id']?.toString();
@@ -63,9 +60,7 @@ class Track {
 
   static String _extractArtist(Map<String, dynamic> json) {
     if (json['artist'] is String) return json['artist'];
-    if (json['artist'] is Map && json['artist']['name'] != null) {
-      return json['artist']['name'];
-    }
+    if (json['artist'] is Map && json['artist']['name'] != null) return json['artist']['name'];
     return '';
   }
 
@@ -77,15 +72,16 @@ class Track {
 
   static String? _extractImageUrl(Map<String, dynamic> json) {
     if (json['image_url'] != null) return json['image_url'];
-    if (json['album'] is Map) {
-      return json['album']['cover_medium'] ?? json['album']['cover'];
-    }
+    if (json['album'] is Map) return json['album']['cover_medium'] ?? json['album']['cover'];
     return null;
   }
 
   String get backendId {
-    return deezerTrackId ?? id;
+    if (deezerTrackId != null) return deezerTrackId!;
+    return id;
   }
+
+  String get frontendId => id;
 
   bool get isDeezerTrack {
     return deezerTrackId != null || id.startsWith('deezer_');

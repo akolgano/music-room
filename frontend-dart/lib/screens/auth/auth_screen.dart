@@ -19,9 +19,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
   bool _isLogin = true;
-  bool _isLoading = false;
   late AnimationController _rotationController;
 
   @override
@@ -57,10 +55,8 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
             children: [
-              _buildHeader(),
-              const SizedBox(height: 32),
-              _buildForm(),
-              const SizedBox(height: 24),
+              _buildHeader(), const SizedBox(height: 32),
+              _buildForm(), const SizedBox(height: 24),
               _buildSocialButtons(),
               const SizedBox(height: 16),
               _buildModeToggle(),
@@ -73,23 +69,43 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: SafeArea(child: buildContent()),
-    );
+    return Scaffold(backgroundColor: AppTheme.background, body: SafeArea(child: buildContent()));
   }
 
   Widget _buildHeader() => AppTheme.buildFormCard(
     title: _isLogin ? 'Welcome Back' : 'Join Music Room',
     titleIcon: Icons.music_note,
     child: Column(
+      mainAxisAlignment: MainAxisAlignment.center, 
+      crossAxisAlignment: CrossAxisAlignment.center, 
       children: [
-        const Icon(Icons.music_note, size: 40, color: AppTheme.primary),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              Icons.music_note, 
+              size: 40, 
+              color: AppTheme.primary
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
-        Text(
-          _isLogin ? 'Sign in to continue your musical journey' : 'Create an account to start sharing music',
-          style: const TextStyle(color: Colors.white70),
-          textAlign: TextAlign.center,
+        Container(
+          width: double.infinity, 
+          child: Text(
+            _isLogin 
+              ? 'Sign in to continue your musical journey' 
+              : 'Create an account to start sharing music',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center, 
+          ),
         ),
       ],
     ),
@@ -125,11 +141,13 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             validator: AppValidators.password,
           ),
           const SizedBox(height: 24),
-          AppWidgets.primaryButton(
-            text: _isLogin ? 'Sign In' : 'Sign Up',
-            onPressed: _isLoading ? null : _submit,
-            isLoading: _isLoading,
-            icon: _isLogin ? Icons.login : Icons.person_add,
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, _) => AppWidgets.primaryButton(
+              text: _isLogin ? 'Sign In' : 'Sign Up',
+              onPressed: authProvider.isLoading ? null : _submit,
+              isLoading: authProvider.isLoading,
+              icon: _isLogin ? Icons.login : Icons.person_add,
+            ),
           ),
         ],
       ),
@@ -148,10 +166,12 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   );
 
   Widget _buildSocialButton(String provider, IconData icon) => 
-      AppWidgets.secondaryButton(
-        text: provider,
-        icon: icon,
-        onPressed: () => _socialLogin(provider),
+      Consumer<AuthProvider>(
+        builder: (context, authProvider, _) => AppWidgets.secondaryButton(
+          text: provider,
+          icon: icon,
+          onPressed: authProvider.isLoading ? null : () => _socialLogin(provider),
+        ),
       );
 
   Widget _buildModeToggle() => TextButton(
@@ -187,81 +207,64 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
     _emailController.clear();
     _passwordController.clear();
   }
-  
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    setState(() => _isLoading = true);
-    
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      bool success;
-      
-      if (_isLogin) {
-        success = await authProvider.login(_usernameController.text, _passwordController.text);
-      } else {
-        success = await authProvider.signup(
-          _usernameController.text, 
-          _emailController.text, 
-          _passwordController.text
-        );
-      }
-      
-      if (success) {
-        showSuccess(_isLogin ? 'Login successful!' : 'Account created successfully!');
-        navigateToHome();
-      } else {
-        showError(authProvider.errorMessage ?? (_isLogin ? 'Login failed' : 'Signup failed'));
-      }
-    } catch (e) {
-      showError('An error occurred: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    await runAsyncAction(
+      () async {
+        final authProvider = getProvider<AuthProvider>();
+        bool success;
+        
+        if (_isLogin) {
+          success = await authProvider.login(_usernameController.text, _passwordController.text);
+        } else {
+          success = await authProvider.signup(
+            _usernameController.text, 
+            _emailController.text, 
+            _passwordController.text
+          );
+        }
+        
+        if (success) {
+          navigateToHome();
+        } else {
+          throw Exception(authProvider.errorMessage ?? (_isLogin ? 'Login failed' : 'Signup failed'));
+        }
+      },
+      successMessage: _isLogin ? 'Login successful!' : 'Account created successfully!',
+      errorMessage: 'Authentication failed',
+    );
   }
 
   Future<void> _socialLogin(String provider) async {
-    setState(() => _isLoading = true);
-    
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    try {
-      print('Starting $provider login process...');
-      
-      if (provider == 'Google') {
-        print('Checking Google Sign-In initialization...');
-        if (!SocialLoginUtils.isInitialized) {
-          print('Re-initializing SocialLoginUtils...');
-          await SocialLoginUtils.initialize();
-          await Future.delayed(const Duration(milliseconds: 1000)); 
-        }
+    await runAsyncAction(
+      () async {
+        print('Starting $provider login process...');
+        final authProvider = getProvider<AuthProvider>();
         
-        if (SocialLoginUtils.googleSignInInstance == null) {
-          throw Exception('Google Sign-In is not available. Please check your configuration.');
+        if (provider == 'Google') {
+          print('Checking Google Sign-In initialization...');
+          if (!SocialLoginUtils.isInitialized) {
+            print('Re-initializing SocialLoginUtils...');
+            await SocialLoginUtils.initialize();
+            await Future.delayed(const Duration(milliseconds: 1000)); 
+          }
+          if (SocialLoginUtils.googleSignInInstance == null) {
+            throw Exception('Google Sign-In is not available. Please check your configuration.');
+          }
+          print('Google Sign-In instance is available, proceeding...');
         }
-        print('Google Sign-In instance is available, proceeding...');
-      }
-      
-      bool success;
-      if (provider == 'Google') {
-        success = await authProvider.googleLoginApp();
-      } else {
-        success = await authProvider.facebookLogin();
-      }
-      
-      if (success) {
-        print('$provider login successful, navigating to home...');
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-      } else {
-        final errorMessage = authProvider.errorMessage ?? '$provider authentication failed';
-        print('$provider login failed: $errorMessage');
-        showError(errorMessage);
-      }
-    } catch (e) {
-      print('$provider login exception: $e');
-      showError('$provider authentication error: $e');
-    }
-    
-    setState(() => _isLoading = false);
+
+        bool success;
+        if (provider == 'Google') success = await authProvider.googleLoginApp();
+        else success = await authProvider.facebookLogin();
+        if (success) {
+          print('$provider login successful, navigating to home...');
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        } else throw Exception(authProvider.errorMessage ?? '$provider authentication failed');
+      },
+      errorMessage: '$provider authentication failed',
+    );
   }
 }

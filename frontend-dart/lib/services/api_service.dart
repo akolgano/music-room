@@ -228,9 +228,6 @@ class ApiService {
       updateAvatar(token!, AvatarUpdateRequest(avatar: avatarBase64, mimeType: mimeType));
 
   Future<void> updatePublicBasic(String token, PublicBasicUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
-  Future<void> updatePublicBasicData(String? token, String? gender, String? location) => 
-      updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
-
   Future<void> updatePublicBio(String token, BioUpdateRequest request) => _postVoid('/profile/public/update/', request, token: token);
   Future<void> updatePublicBioData(String? token, String? bio) => updatePublicBio(token!, BioUpdateRequest(bio: bio));
 

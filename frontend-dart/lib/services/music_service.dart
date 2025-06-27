@@ -93,7 +93,10 @@ class MusicService {
   }
 
   Future<void> addTrackToPlaylist(String playlistId, String trackId, String token) async {
-    final request = AddTrackRequest(trackId: trackId);
+    String backendTrackId = trackId;
+    if (trackId.startsWith('deezer_')) backendTrackId = trackId.substring(7);
+    print('Adding track to playlist: originalId=$trackId, backendId=$backendTrackId');
+    final request = AddTrackRequest(trackId: backendTrackId);
     await _api.addTrackToPlaylist(playlistId, 'Token $token', request);
   }
 
@@ -102,19 +105,13 @@ class MusicService {
   }
 
   Future<void> moveTrackInPlaylist({
-    required String playlistId,
-    required int rangeStart,
+    required String playlistId, required int rangeStart,
     required int insertBefore,
     int rangeLength = 1,
     required String token,
   }) async {
     final request = MoveTrackRequest(rangeStart: rangeStart, insertBefore: insertBefore, rangeLength: rangeLength);
     await _api.moveTrackInPlaylist(playlistId, 'Token $token', request);
-  }
-
-  Future<void> changePlaylistVisibility(String playlistId, bool isPublic, String token) async {
-    final request = VisibilityRequest(public: isPublic);
-    await _api.changePlaylistVisibility(playlistId, 'Token $token', request);
   }
 
   Future<void> inviteUserToPlaylist(String playlistId, int userId, String token) async {
