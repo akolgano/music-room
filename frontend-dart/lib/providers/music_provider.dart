@@ -9,7 +9,7 @@ import '../services/track_sorting_service.dart';
 
 class MusicProvider extends BaseProvider {
   final MusicService _musicService = getIt<MusicService>();
-  
+
   List<Playlist> _playlists = [];
   List<Track> _searchResults = [];
   List<PlaylistTrack> _playlistTracks = [];
@@ -22,6 +22,7 @@ class MusicProvider extends BaseProvider {
 
   TrackSortOption _currentSortOption = TrackSortOption.defaultOptions.first;
   TrackSortOption get currentSortOption => _currentSortOption;
+
   List<PlaylistTrack> get sortedPlaylistTracks => 
       TrackSortingService.sortTracks(_playlistTracks, _currentSortOption);
 
@@ -40,13 +41,10 @@ class MusicProvider extends BaseProvider {
       () => _musicService.getUserPlaylists(token),
       errorMessage: 'Failed to load playlists',
     );
-    
     if (result != null) {
       _playlists = result;
       _hasConnectionError = false;
-    } else {
-      _hasConnectionError = true;
-    }
+    } else _hasConnectionError = true;
   }
 
   Future<void> fetchPublicPlaylists(String token) async {
@@ -54,7 +52,6 @@ class MusicProvider extends BaseProvider {
       () => _musicService.getPublicPlaylists(token),
       errorMessage: 'Failed to load public playlists',
     );
-    
     if (result != null) {
       _playlists = result;
       _hasConnectionError = false;
@@ -68,7 +65,6 @@ class MusicProvider extends BaseProvider {
       setError('Invalid playlist ID');
       return null;
     }
-    
     return await executeAsync(
       () => _musicService.getPlaylistDetails(id, token),
       errorMessage: 'Failed to load playlist details',
@@ -101,7 +97,6 @@ class MusicProvider extends BaseProvider {
       () => _musicService.searchDeezerTracks(query),
       errorMessage: 'Search failed',
     );
-    
     if (result != null) {
       _searchResults = result;
     }
@@ -136,12 +131,10 @@ class MusicProvider extends BaseProvider {
     for (final track in _searchResults) {
       if (track.id == trackId) return track;
     }
-    
     for (final playlistTrack in _playlistTracks) {
       if (playlistTrack.track?.id == trackId) return playlistTrack.track;
       if (playlistTrack.trackId == trackId) return playlistTrack.track;
     }
-    
     return null;
   }
 
@@ -150,7 +143,6 @@ class MusicProvider extends BaseProvider {
       () => _musicService.getPlaylistTracksWithDetails(playlistId, token),
       errorMessage: 'Failed to load playlist tracks',
     );
-    
     if (result != null) {
       _playlistTracks = result;
     }
@@ -167,7 +159,20 @@ class MusicProvider extends BaseProvider {
 
   Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     try {
-      await _musicService.addTrackToPlaylist(playlistId, trackId, token);
+      String backendTrackId = trackId;
+      if (trackId.startsWith('deezer_')) backendTrackId = trackId.substring(7);
+      print('Adding track to playlist: frontendId=$trackId, backendId=$backendTrackId');
+      await _musicService.addTrackToPlaylist(playlistId, backendTrackId, token);
+      return AddTrackResult(success: true, message: 'Track added successfully');
+    } catch (e) {
+      print('Error adding track to playlist: $e');
+      return AddTrackResult(success: false, message: e.toString());
+    }
+  }
+
+  Future<AddTrackResult> addTrackObjectToPlaylist(String playlistId, Track track, String token) async {
+    try {
+      await _musicService.addTrackToPlaylist(playlistId, track.backendId, token);
       return AddTrackResult(success: true, message: 'Track added successfully');
     } catch (e) {
       return AddTrackResult(success: false, message: e.toString());

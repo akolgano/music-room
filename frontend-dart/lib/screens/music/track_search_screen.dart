@@ -21,6 +21,7 @@ class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;
   final Track? initialTrack;
   const TrackSearchScreen({Key? key, this.playlistId, this.initialTrack}) : super(key: key);
+
   @override
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
@@ -31,7 +32,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   bool _isMultiSelectMode = false;
   bool _isAddingTracks = false;
   List<Playlist> _userPlaylists = [];
-  
   Timer? _searchTimer;
   static const Duration _searchDelay = Duration(milliseconds: 800); 
   static const int _minSearchLength = 2; 
@@ -41,7 +41,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   bool get _hasSelection => _selectedTracks.isNotEmpty;
   bool get _canAddTracks => _hasSelection && !_isAddingTracks;
   bool get _hasSearchResults => getProvider<MusicProvider>().searchResults.isNotEmpty;
-  
+
   DeviceProvider get _deviceProvider => getProvider<DeviceProvider>();
   MusicPlayerService get _playerService => getProvider<MusicPlayerService>();
 
@@ -88,7 +88,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   List<Widget> _buildAppBarActions() {
     final actions = <Widget>[];
-    
     if (_isAddingToPlaylist && _isMultiSelectMode && _hasSelection) {
       actions.add(IconButton(
         icon: const Icon(Icons.add_circle, color: AppTheme.primary),
@@ -96,7 +95,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         tooltip: 'Add Selected (${_selectedTracks.length})',
       ));
     }
-    
     if (_isAddingToPlaylist) {
       actions.add(TextButton(
         onPressed: _isAddingTracks ? null : _toggleMultiSelectMode,
@@ -106,7 +104,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         ),
       ));
     }
-    
     actions.add(IconButton(icon: const Icon(Icons.clear), onPressed: _clearSearch, tooltip: 'Clear Search')); 
     return actions;
   }
@@ -207,14 +204,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   void _onSearchTextChanged(String value) {
     setState(() {}); 
-    
     _searchTimer?.cancel();
-    
     if (value.trim().length < _minSearchLength) {
       getProvider<MusicProvider>().clearSearchResults();
       return;
     }
-    
     _searchTimer = Timer(_searchDelay, () {
       if (mounted && _searchController.text.trim().length >= _minSearchLength) {
         _performAutoSearch();
@@ -226,9 +220,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     if (!mounted || _searchController.text.trim().length < _minSearchLength) {
       return;
     }
-    
     setState(() => _isAutoSearching = true);
-    
     try {
       await _executeWithErrorHandling(() async {
         await getProvider<MusicProvider>().searchDeezerTracks(_searchController.text);
@@ -244,13 +236,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     if (!_isAddingToPlaylist || getProvider<MusicProvider>().searchResults.isEmpty) {
       return const SizedBox.shrink();
     }
-    
     final actions = [
       ('Select All', Icons.select_all, _selectAllTracks),
       ('Clear', Icons.clear_all, _clearSelection),
       (_isMultiSelectMode ? 'Done' : 'Select', _isMultiSelectMode ? Icons.check_box : Icons.check_box_outline_blank, _toggleMultiSelectMode),
     ];
-    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -311,7 +301,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         subtitle: 'Start typing to search Deezer tracks automatically!'
       );
     }
-    
     if (tracks.isEmpty && _searchController.text.isNotEmpty) {
       if (_searchController.text.length < _minSearchLength) {
         return AppWidgets.emptyState(
@@ -331,7 +320,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     }
 
     final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
-
     return Column(
       children: [
         if (tracks.isNotEmpty)
@@ -367,7 +355,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     final searchSortOptions = TrackSortOption.defaultOptions
         .where((option) => option.field != TrackSortField.position && option.field != TrackSortField.dateAdded)
         .toList();
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -445,7 +432,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget _buildTrackItem(Track track) {
     final isInPlaylist = _isTrackInPlaylist(track.id);
-    
     return AppWidgets.trackCard(
       track: track,
       isSelected: _selectedTracks.contains(track.id),
@@ -464,7 +450,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget? _buildFloatingActionButton() {
     if (!_isAddingToPlaylist) return null;
-    
     if (_isMultiSelectMode && _hasSelection) {
       return FloatingActionButton.extended(
         onPressed: _canAddTracks ? _addSelectedTracks : null,
@@ -480,7 +465,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
       );
     }
-    
     if (!_isMultiSelectMode) {
       return FloatingActionButton(
         onPressed: _toggleMultiSelectMode,
@@ -490,7 +474,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         tooltip: 'Select multiple tracks',
       );
     }
-    
     return null;
   }
 
@@ -556,10 +539,9 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       await _showPlaylistSelectionDialog(track);
     }
   }
-  
+
   Future<void> _performSearch() async {
     if (_searchController.text.trim().isEmpty) return;
-    
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
@@ -575,12 +557,10 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         await _playerService.togglePlay();
         return;
       }
-      
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
         previewUrl = await getProvider<MusicProvider>().getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
       }
-      
       if (previewUrl?.isNotEmpty == true) {
         await _playerService.playTrack(track, previewUrl!);
         _showMessage('Playing preview of "${track.name}"', isError: false);
@@ -593,7 +573,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        final result = await musicProvider.addTrackToPlaylist(playlistId, track.id, auth.token!);
+        final result = await musicProvider.addTrackObjectToPlaylist(playlistId, track, auth.token!);
         if (!result.success) throw Exception(result.message);
       },
       successMessage: 'Added "${track.name}" to playlist!',
@@ -603,12 +583,9 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _addSelectedTracks() async {
     if (!_isAddingToPlaylist || !_hasSelection) return;
-    
     setState(() => _isAddingTracks = true);
-    
     try {
       print('Starting batch addition of ${_selectedTracks.length} tracks...');
-      
       final result = await getProvider<MusicProvider>().addMultipleTracksToPlaylist(
         playlistId: widget.playlistId!,
         trackIds: _selectedTracks.toList(),
@@ -616,13 +593,9 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         deviceUuid: _deviceProvider.deviceUuid,
         onProgress: (current, total) => print('Progress: $current/$total tracks processed'),
       );
-      
       _showMessage('✓ Added ${result.successCount} tracks to playlist!', isError: false);
-      
       if (result.duplicateCount > 0) _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
-      
       if (result.failureCount > 0) _showMessage('${result.failureCount} tracks failed to add');
-      
       _clearSelection();
       print('Batch addition completed: ${result.successCount} success, ${result.failureCount} failed');
     } catch (e) {
@@ -638,13 +611,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       _showMessage('No playlists available. Create a playlist first.');
       return;
     }
-
     final selectedIndex = await _showSelectionDialog(
       title: 'Add to Playlist',
       items: [..._userPlaylists.map((p) => p.name), 'Create New Playlist'],
       icons: [..._userPlaylists.map((_) => Icons.library_music), Icons.add],
     );
-
     if (selectedIndex != null) {
       if (selectedIndex == _userPlaylists.length) await _createNewPlaylistAndAddTrack(track);
       else await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
@@ -656,10 +627,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       'Create New Playlist',
       hintText: 'Enter playlist name',
     );
-
     if (playlistName?.isNotEmpty == true) {
       setState(() => _isAddingTracks = true);
-      
       await _executeWithErrorHandling(() async {
         final playlistId = await getProvider<MusicProvider>().createPlaylist(
           playlistName!,
@@ -668,10 +637,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
           auth.token!,
           _deviceProvider.deviceUuid,
         );
-        
         if (playlistId?.isNotEmpty == true) {
           final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);
-          
           if (result.success) {
             _showMessage('Created playlist "$playlistName" and added "${track.name}"!', isError: false);
             await _loadUserPlaylists();
@@ -729,8 +696,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
             itemCount: items.length,
             itemBuilder: (context, index) => ListTile(
               leading: Container(
-                width: 40,
-                height: 40,
+                width: 40, height: 40,
                 decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
                 child: Icon(icons?[index] ?? Icons.music_note, color: AppTheme.primary),
               ),
@@ -751,9 +717,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<String?> _showTextInputDialog(String title, {String? hintText}) async {
     return DialogUtils.showTextInputDialog(
-      context,
-      title: title,
-      hintText: hintText,
+      context, title: title, hintText: hintText,
       validator: (value) => value?.isEmpty ?? true ? 'Please enter a value' : null,
     );
   }

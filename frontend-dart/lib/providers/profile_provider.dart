@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import '../core/core.dart';
+import '../models/api_models.dart';
 
 class ProfileProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -284,7 +285,7 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
-      await _apiService.updatePublicBasicData(token, gender, location);
+      await _apiService.updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
       _isLoading = false;
       notifyListeners();
       return true;

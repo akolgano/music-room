@@ -21,17 +21,19 @@ class AuthService {
   ApiService get api => _api;
 
   Future<void> _loadStoredAuth() async {
-    _currentToken = _storage.get<String>('auth_token');
-    final userJson = _storage.get<Map<String, dynamic>>('current_user');
-    if (userJson != null) {
-      _currentUser = User.fromJson(userJson);
+    try {
+      _currentToken = _storage.get<String>('auth_token');
+      final userData = _storage.getMap('current_user');
+      if (userData != null) _currentUser = User.fromJson(userData);
+    } catch (e) {
+      print('Error loading stored auth: $e');
+      await _clearAuth();
     }
   }
 
   Future<AuthResult> login(String username, String password) async {
     final request = LoginRequest(username: username, password: password);
     final result = await _api.login(request);
-    
     await _storeAuth(result.token, result.user);
     return result;
   }
@@ -39,7 +41,6 @@ class AuthService {
   Future<AuthResult> signup(String username, String email, String password) async {
     final request = SignupRequest(username: username, email: email, password: password);
     final result = await _api.signup(request);
-    
     await _storeAuth(result.token, result.user);
     return result;
   }
@@ -49,7 +50,9 @@ class AuthService {
       try {
         final request = LogoutRequest(username: _currentUser!.username);
         await _api.logout('Token $_currentToken', request);
-      } catch (e) {}
+      } catch (e) {
+        print('Error during logout API call: $e');
+      }
     }
     await _clearAuth();
   }
@@ -62,11 +65,7 @@ class AuthService {
   }
 
   Future<AuthResult> googleLogin(String type, String token) async {
-    final request = SocialLoginRequest(
-      type: type, 
-      idToken: token,
-      accessToken: token,
-    );
+    final request = SocialLoginRequest(type: type, idToken: token, accessToken: token);
     final result = await _api.googleLogin(request);
     await _storeAuth(result.token, result.user);
     return result;
@@ -94,7 +93,6 @@ class AuthService {
   Future<AuthResult> signupWithOtp(String username, String email, String password, int otp) async {
     final request = SignupWithOtpRequest(username: username, email: email, password: password, otp: otp);
     final result = await _api.signupWithOtp(request);
-    
     await _storeAuth(result.token, result.user);
     return result;
   }
