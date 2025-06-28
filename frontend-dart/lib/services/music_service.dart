@@ -5,67 +5,32 @@ import '../models/api_models.dart';
 
 class MusicService {
   final ApiService _api;
-
   MusicService(this._api);
 
-  Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async {
-    try {
-      print('Fetching playlist tracks for playlist $playlistId');
-      
-      final response = await _api.getPlaylistTracks(playlistId, 'Token $token');
-      
-      print('Loaded ${response.tracks.length} tracks with full details');
-      return response.tracks;
-      
-    } catch (e) {
-      print('Error fetching playlist tracks: $e');
-      rethrow;
-    }
-  }
-
-  Future<Track?> getTrackWithDetails(String trackId, String token) async {
-    try {
-      if (trackId.startsWith('deezer_')) {
-        final deezerTrackId = trackId.substring(7);
-        return await getDeezerTrack(deezerTrackId, token);
-      }
-      
-      print('Track ID $trackId not found in current context');
-      return null;
-    } catch (e) {
-      print('Failed to get track details for $trackId: $e');
-      return null;
-    }
-  }
-
   Future<List<Playlist>> getUserPlaylists(String token) async {
-    final response = await _api.getSavedPlaylists('Token $token');
+    final response = await _api.getSavedPlaylists(token); 
     return response.playlists;
   }
 
   Future<List<Playlist>> getPublicPlaylists(String token) async {
-    final response = await _api.getPublicPlaylists('Token $token');
+    final response = await _api.getPublicPlaylists(token); 
     return response.playlists;
   }
 
   Future<Playlist> getPlaylistDetails(String id, String token) async {
-    final response = await _api.getPlaylist(id, 'Token $token');
+    final response = await _api.getPlaylist(id, token); 
     return response.playlist;
   }
 
   Future<String> createPlaylist(String name, String description, bool isPublic, String token, [String? deviceUuid]) async {
     final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, deviceUuid: deviceUuid);
-    final response = await _api.createPlaylist('Token $token', request);
+    final response = await _api.createPlaylist(token, request); 
     return response.playlistId;
   }
 
   Future<void> updatePlaylist(String id, String token, {String? name, String? description, bool? isPublic}) async {
-    final request = UpdatePlaylistRequest(
-      name: name,
-      description: description,
-      public: isPublic,
-    );
-    await _api.updatePlaylist(id, 'Token $token', request);
+    final request = UpdatePlaylistRequest(name: name, description: description, public: isPublic);
+    await _api.updatePlaylist(id, token, request); 
   }
 
   Future<List<Track>> searchDeezerTracks(String query) async {
@@ -75,7 +40,7 @@ class MusicService {
 
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
-      return await _api.getDeezerTrack(trackId, token);
+      return await _api.getDeezerTrack(trackId, token); 
     } catch (e) {
       print('Failed to get Deezer track $trackId: $e');
       return null;
@@ -84,12 +49,24 @@ class MusicService {
 
   Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
     final request = AddDeezerTrackRequest(deezerTrackId: deezerTrackId);
-    await _api.addTrackFromDeezer('Token $token', request);
+    await _api.addTrackFromDeezer(token, request); 
   }
 
   Future<List<PlaylistTrack>> getPlaylistTracks(String playlistId, String token) async {
-    final response = await _api.getPlaylistTracks(playlistId, 'Token $token');
+    final response = await _api.getPlaylistTracks(playlistId, token); 
     return response.tracks;
+  }
+
+  Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async {
+    try {
+      print('Fetching playlist tracks for playlist $playlistId');
+      final response = await _api.getPlaylistTracks(playlistId, token); 
+      print('Loaded ${response.tracks.length} tracks with full details');
+      return response.tracks;
+    } catch (e) {
+      print('Error fetching playlist tracks: $e');
+      rethrow;
+    }
   }
 
   Future<void> addTrackToPlaylist(String playlistId, String trackId, String token) async {
@@ -97,11 +74,11 @@ class MusicService {
     if (trackId.startsWith('deezer_')) backendTrackId = trackId.substring(7);
     print('Adding track to playlist: originalId=$trackId, backendId=$backendTrackId');
     final request = AddTrackRequest(trackId: backendTrackId);
-    await _api.addTrackToPlaylist(playlistId, 'Token $token', request);
+    await _api.addTrackToPlaylist(playlistId, token, request); 
   }
 
   Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) async {
-    await _api.removeTrackFromPlaylist(playlistId, trackId, 'Token $token');
+    await _api.removeTrackFromPlaylist(playlistId, trackId, token); 
   }
 
   Future<void> moveTrackInPlaylist({
@@ -111,11 +88,11 @@ class MusicService {
     required String token,
   }) async {
     final request = MoveTrackRequest(rangeStart: rangeStart, insertBefore: insertBefore, rangeLength: rangeLength);
-    await _api.moveTrackInPlaylist(playlistId, 'Token $token', request);
+    await _api.moveTrackInPlaylist(playlistId, token, request); 
   }
 
   Future<void> inviteUserToPlaylist(String playlistId, int userId, String token) async {
     final request = InviteUserRequest(userId: userId);
-    await _api.inviteUserToPlaylist(playlistId, 'Token $token', request);
+    await _api.inviteUserToPlaylist(playlistId, token, request); 
   }
 }

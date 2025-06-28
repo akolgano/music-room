@@ -7,7 +7,6 @@ import '../models/models.dart';
 
 class DeviceProvider extends BaseProvider {  
   final DeviceService _deviceService = getIt<DeviceService>();
-  
   Device? _currentDevice;
   List<Device> _userDevices = [];
 
@@ -16,17 +15,17 @@ class DeviceProvider extends BaseProvider {
   String? get deviceUuid => _currentDevice?.uuid;
 
   Future<void> initializeDevice(String token) async {
-    await executeAsync(() async {
-      await fetchUserDevices(token);
-      if (_userDevices.isEmpty) {
-        await _registerCurrentDevice(token);
-      } else {
-        _currentDevice = _userDevices.firstWhere(
-          (device) => device.isActive,
-          orElse: () => _userDevices.first,
-        );
-      }
-    });
+    await executeAsync(
+      () async {
+        await fetchUserDevices(token);
+        if (_userDevices.isEmpty) {
+          await _registerCurrentDevice(token);
+        } else {
+          _currentDevice = _userDevices.firstWhere((device) => device.isActive, orElse: () => _userDevices.first);
+        }
+      },
+      errorMessage: 'Failed to initialize device setup',
+    );
   }
 
   Future<void> _registerCurrentDevice(String token) async {
@@ -34,31 +33,47 @@ class DeviceProvider extends BaseProvider {
     final uuid = 'mobile-${DateTime.now().millisecondsSinceEpoch}';
     final licenseKey = _generateLicenseKey();
 
-    final device = await _deviceService.registerDevice(uuid, licenseKey, deviceName, token);
-    _currentDevice = device;
-    _userDevices.add(device);
-    notifyListeners();
+    final device = await executeAsync(
+      () => _deviceService.registerDevice(uuid, licenseKey, deviceName, token),
+      errorMessage: 'Failed to register default device',
+    );
+
+    if (device != null) {
+      _currentDevice = device;
+      _userDevices.add(device);
+      notifyListeners();
+    }
   }
 
   Future<void> fetchUserDevices(String token) async {
-    final result = await executeAsync(() => _deviceService.getUserDevices(token));
+    final result = await executeAsync(
+      () => _deviceService.getUserDevices(token),
+      errorMessage: 'Failed to load your devices',
+    );
     if (result != null) _userDevices = result;
   }
 
   Future<Device?> registerDevice(String uuid, String licenseKey, String deviceName, String token) async {
-    return executeAsync(() async {
-      final device = await _deviceService.registerDevice(uuid, licenseKey, deviceName, token);
-      _userDevices.add(device);
-      if (_currentDevice == null) {
-        _currentDevice = device;
-      }
-      notifyListeners();
-      return device;
-    });
+    return executeAsync(
+      () async {
+        final device = await _deviceService.registerDevice(uuid, licenseKey, deviceName, token);
+        _userDevices.add(device);
+        if (_currentDevice == null) {
+          _currentDevice = device;
+        }
+        notifyListeners();
+        return device;
+      },
+      successMessage: 'Device "$deviceName" registered successfully',
+      errorMessage: 'Failed to register device "$deviceName"',
+    );
   }
 
   Future<bool> checkControlPermission(String deviceUuid, String token) async {
-    final result = await executeAsync(() => _deviceService.checkControlPermission(deviceUuid, token));
+    final result = await executeAsync(
+      () => _deviceService.checkControlPermission(deviceUuid, token),
+      errorMessage: 'Failed to check device permissions',
+    );
     return result ?? false;
   }
 

@@ -8,7 +8,7 @@ import '../../providers/profile_provider.dart';
 
 class UserPasswordChangeScreen extends StatefulWidget {
   const UserPasswordChangeScreen({Key? key}) : super(key: key);
-
+  
   @override 
   State<UserPasswordChangeScreen> createState() => _UserPasswordChangeScreenState();
 }
@@ -22,17 +22,14 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
   void initState() {
     super.initState();
     final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    profileProvider.clearError();
+    profileProvider.clearMessages(); 
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Change Password'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Change Password')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -53,11 +50,16 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)
                           ),
                           const SizedBox(height: 24),
-                          
                           if (profileProvider.hasError) ...[
                             AppWidgets.errorBanner(
                               message: profileProvider.errorMessage ?? 'An error occurred',
-                              onDismiss: () => profileProvider.clearError(),
+                              onDismiss: () => profileProvider.clearMessages(), 
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          if (profileProvider.hasSuccess) ...[
+                            AppWidgets.successBanner(
+                              message: profileProvider.successMessage ?? 'Success',
                             ),
                             const SizedBox(height: 16),
                           ],
@@ -104,7 +106,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
     
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-
+    
     if (authProvider.token == null) return;
 
     bool success = await profileProvider.userPasswordChange(
@@ -112,7 +114,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
       _currentPasswordController.text, 
       _newPasswordController.text
     );
-
+    
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password changed successfully'), backgroundColor: Colors.green),

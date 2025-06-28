@@ -54,11 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Tab(icon: Icon(Icons.library_music), text: 'Library'),
                 Tab(icon: Icon(Icons.person), text: 'Profile'),
               ],
-              tabViews: [
-                _buildDashboard(auth),
-                _buildPlaylists(),
-                const ProfileScreen(isEmbedded: true),
-              ],
+              tabViews: [_buildDashboard(auth), _buildPlaylists(), const ProfileScreen(isEmbedded: true)],
               controller: _tabController,
             ),
           ),
@@ -152,11 +148,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 onTap: () {
                   print('Navigating to playlist with ID: ${playlist.id}'); 
                   if (playlist.id.isNotEmpty && playlist.id != 'null') {
-                    Navigator.pushNamed(
-                      context, 
-                      AppRoutes.playlistDetail, 
-                      arguments: playlist.id,
-                    );
+                    Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
                   } else {
                     _showError('Invalid playlist ID');
                   }
