@@ -432,7 +432,7 @@ def vote_for_track(request, playlist_id):
         )
         playlist_data = []
         tracks = playlist.tracks.all()
-        track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
+        track_list = [{'name': pt.track.name, 'artist': pt.track.artist, 'points': pt.points} for pt in tracks]
 
         playlist_data.append({
             'id': playlist.id,
