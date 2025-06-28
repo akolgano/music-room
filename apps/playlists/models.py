@@ -18,6 +18,7 @@ class Playlist(models.Model):
     description = models.TextField()
     public = models.BooleanField(default=True)
     users_saved = models.ManyToManyField(User, related_name='saved_playlists', blank=True)
+    users_already_voted = models.ManyToManyField(User, related_name='already_voted', blank=True)
 
     # License controls
     license_type = models.CharField(max_length=20, choices=LICENSE_CHOICES, default='open')
@@ -39,6 +40,7 @@ class PlaylistTrack(models.Model):
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, related_name='tracks')
     track = models.ForeignKey(Track, on_delete=models.CASCADE)
     position = models.PositiveIntegerField()
+    points = models.IntegerField(blank=True, null=True, default=0)
 
     class Meta:
         unique_together = ('playlist', 'position')

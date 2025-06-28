@@ -9,7 +9,7 @@ class PlaylistTrackInline(admin.TabularInline):
     ordering = ['position']
     readonly_fields = ['position']
     autocomplete_fields = ['track']
-    fields = ['playlist', 'track', 'position']
+    fields = ['playlist', 'track', 'position', 'points']
     show_change_link = True
 
     def track_display(self, obj):
@@ -17,11 +17,15 @@ class PlaylistTrackInline(admin.TabularInline):
     track_display.short_description = "Track"
 
 class PlaylistAdmin(admin.ModelAdmin):
-    list_display = ['name', 'id']
+    list_display = ['name', 'id', 'voted_users_display']
     inlines = [PlaylistTrackInline]
 
+    def voted_users_display(self, obj):
+        return ", ".join([user.username for user in obj.users_already_voted.all()])
+    voted_users_display.short_description = "Users Voted"
+
 class PlaylistTrackAdmin(admin.ModelAdmin):
-    list_display = ['playlist', 'position', 'track_name', 'track_artist']
+    list_display = ['playlist', 'position', 'track_name', 'track_artist', 'points']
     ordering = ['playlist', 'position']
     list_filter = ['playlist']
     search_fields = ['track__name', 'track__artist']
@@ -32,5 +36,8 @@ class PlaylistTrackAdmin(admin.ModelAdmin):
     def track_artist(self, obj):
         return obj.track.artist
 
+    def track_points(self, obj):
+        return obj.track.points
+    
 admin.site.register(Playlist, PlaylistAdmin)
 admin.site.register(PlaylistTrack, PlaylistTrackAdmin)

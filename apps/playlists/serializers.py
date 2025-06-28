@@ -18,3 +18,7 @@ class PlaylistLicenseSerializer(serializers.ModelSerializer):
             'longitude',
             'allowed_radius_meters',
         ]
+
+
+class VoteSerializer(serializers.Serializer):
+    range_start = serializers.IntegerField()
