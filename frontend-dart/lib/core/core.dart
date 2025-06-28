@@ -45,6 +45,7 @@ class AppValidators {
 
 class DateTimeUtils {
   static String formatDate(DateTime? date) => date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+
   static String formatDuration(Duration duration) {
     final hours = duration.inHours.toString().padLeft(2, '0');
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -99,13 +100,12 @@ mixin AsyncOperationStateMixin<T extends StatefulWidget> on State<T> {
     try {
       await operation();
       if (successMessage != null) setSuccess(successMessage);
+      else setLoading(false); 
       onSuccess?.call();
       return true;
     } catch (e) {
       setError(errorMessage ?? e.toString());
       return false;
-    } finally {
-      setLoading(false);
     }
   }
 }
@@ -313,7 +313,7 @@ class SocialLoginUtils {
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
-    
+
     try {
       print('Initializing social login services...');
       
@@ -327,11 +327,11 @@ class SocialLoginUtils {
         );
         print('Facebook initialized for web');
       }
-      
+
       final googleClientId = kIsWeb 
           ? dotenv.env['GOOGLE_CLIENT_ID_WEB']
           : dotenv.env['GOOGLE_CLIENT_ID_APP'];
-          
+
       if (googleClientId != null) {
         _googleSignIn = GoogleSignIn(
           scopes: ['email', 'profile', 'openid'],
@@ -341,7 +341,7 @@ class SocialLoginUtils {
       } else {
         print('Warning: Google Client ID not found in environment variables');
       }
-      
+
       _isInitialized = true;
       print('Social login initialization completed successfully');
     } catch (e) {
@@ -361,12 +361,10 @@ class SocialLoginUtils {
       print('Attempting $provider login...');
       final result = await loginFunction();
       final tokens = tokenExtractor(result);
-      
       final idToken = tokens['idToken'];
       final accessToken = tokens['accessToken'];
-      
       final token = idToken ?? accessToken;
-      
+
       if (token != null && token.isNotEmpty) {
         print('$provider login successful with token type: ${idToken != null ? 'idToken' : 'accessToken'}');
         return SocialLoginResult.success(token, provider.toLowerCase());
@@ -382,19 +380,13 @@ class SocialLoginUtils {
   }
 
   static Future<SocialLoginResult> loginWithFacebook() async {
-    if (!_isInitialized) {
-      await initialize();
-    }
-    
+    if (!_isInitialized) await initialize();
     return _performSocialLogin(
       () async {
         final result = await FacebookAuth.instance.login();
         return result.status == LoginStatus.success ? result.accessToken : null;
       },
-      (result) => {
-        'accessToken': result?.tokenString,
-        'idToken': null,
-      },
+      (result) => { 'accessToken': result?.tokenString, 'idToken': null },
       'Facebook',
     );
   }
@@ -404,19 +396,17 @@ class SocialLoginUtils {
       print('Google Sign-In not initialized, initializing now...');
       await initialize();
     }
-    
+
     if (_googleSignIn == null) {
       print('Google Sign-In instance is null after initialization');
       return SocialLoginResult.error('Google Sign-In not properly initialized. Please check your configuration.');
     }
-    
+
     return _performSocialLogin(
       () async {
         try {
           print('Attempting Google Sign-In...');
-          
           await _googleSignIn!.signOut();
-          
           final user = await _googleSignIn!.signIn();
           if (user != null) {
             print('Google user signed in: ${user.email}');
@@ -471,10 +461,9 @@ class SocialLoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isGoogle = provider.toLowerCase() == 'google';
     final isFacebook = provider.toLowerCase() == 'facebook';
-    
+
     IconData icon;
     Color color;
-    
     if (isGoogle) {
       icon = Icons.g_mobiledata;
       color = Colors.red;
@@ -495,10 +484,7 @@ class SocialLoginButton extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(color)),
           ) 
         : Icon(icon, color: color, size: 20),
-      label: Text(
-        isLoading ? 'Signing in...' : 'Continue with $provider',
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
+      label: Text(isLoading ? 'Signing in...' : 'Continue with $provider', style: const TextStyle(fontWeight: FontWeight.w600)),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.surface,
         foregroundColor: Colors.white,

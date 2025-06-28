@@ -61,12 +61,7 @@ class VotingProvider extends BaseProvider {
     );
   }
 
-  Future<bool> voteForTrack({
-    required String playlistId,
-    required String trackId,
-    required int voteValue,
-    required String token,
-  }) async {
+  Future<bool> voteForTrack({required String playlistId, required String trackId, required int voteValue, required String token}) async {
     if (!canVote) {
       setError(_votingRestrictions?.restrictionMessage ?? 'Voting not allowed');
       return false;
@@ -74,20 +69,11 @@ class VotingProvider extends BaseProvider {
 
     return await executeBool(
       () async {
-        final response = await _votingService.voteForTrack(
-          playlistId: playlistId,
-          trackId: trackId,
-          voteValue: voteValue,
-          token: token,
-        );
+        final response = await _votingService.voteForTrack(playlistId: playlistId, trackId: trackId, voteValue: voteValue, token: token);
         
         _trackVotes[trackId] = response.stats;
       },
-      successMessage: voteValue == 0 
-          ? 'Vote removed' 
-          : voteValue > 0 
-              ? 'Upvoted!' 
-              : 'Downvoted!',
+      successMessage: voteValue == 0 ? 'Vote removed' : voteValue > 0 ? 'Upvoted!' : 'Downvoted!',
       errorMessage: 'Failed to submit vote',
     );
   }
@@ -96,12 +82,7 @@ class VotingProvider extends BaseProvider {
     final currentVote = getUserVote(trackId);
     final newVote = currentVote == 1 ? 0 : 1; 
     
-    return await voteForTrack(
-      playlistId: playlistId,
-      trackId: trackId,
-      voteValue: newVote,
-      token: token,
-    );
+    return await voteForTrack(playlistId: playlistId, trackId: trackId, voteValue: newVote, token: token);
   }
 
   Future<bool> downvoteTrack(String playlistId, String trackId, String token) async {

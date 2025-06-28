@@ -12,9 +12,7 @@ class AddFriendScreen extends StatefulWidget {
   State<AddFriendScreen> createState() => _AddFriendScreenState();
 }
 
-class _AddFriendScreenState extends BaseScreen<AddFriendScreen> 
-    with AsyncOperationStateMixin<AddFriendScreen> {
-  
+class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   final _userIdController = TextEditingController();
   final _formKey = GlobalKey<FormState>(); 
 
@@ -47,8 +45,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen>
               child: Column(
                 children: [
                   AppWidgets.textField(
-                    controller: _userIdController,
-                    labelText: 'Friend\'s User ID',
+                    controller: _userIdController, labelText: 'Friend\'s User ID',
                     hintText: 'e.g., 12345',
                     prefixIcon: Icons.person_search,
                     validator: (value) {
@@ -63,9 +60,8 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen>
                   SizedBox(
                     width: double.infinity,
                     child: AppWidgets.primaryButton(
-                      text: isLoading ? 'Sending...' : 'Send Friend Request',
-                      onPressed: _userIdController.text.isNotEmpty && !isLoading ? _sendFriendRequest : null,
-                      isLoading: isLoading,
+                      text: 'Send Friend Request',
+                      onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null,
                       icon: Icons.send,
                     ),
                   ),
@@ -74,7 +70,6 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
           AppWidgets.infoBanner(
             title: 'How It Works',
             message: '1. Get their user ID\n2. Enter it above\n3. They accept your request\n4. Start sharing music!',
@@ -92,7 +87,6 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen>
     }
 
     final userInput = _userIdController.text.trim();
-    
     if (userInput.isEmpty) {
       showError('Please enter a user ID');
       return;
@@ -110,8 +104,8 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen>
       return;
     }
 
-    final success = await executeBool(
-      operation: () async {
+    await runAsyncAction(
+      () async {
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.sendFriendRequest(auth.token!, userId!);
         _userIdController.clear();

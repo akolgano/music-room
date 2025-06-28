@@ -361,21 +361,14 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             width: 80,
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ),
           if (trailing != null) trailing,
@@ -400,11 +393,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Playlist Actions',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ],
             ),
@@ -585,14 +574,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: _userPlaylists.length,
+            shrinkWrap: true, itemCount: _userPlaylists.length,
             itemBuilder: (context, index) {
               final playlist = _userPlaylists[index];
               return ListTile(
                 leading: Container(
-                  width: 40,
-                  height: 40,
+                  width: 40, height: 40,
                   decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.library_music, color: AppTheme.primary),
                 ),
@@ -607,10 +594,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
         ],
       ),
     );

@@ -30,10 +30,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Create Account'),
-      ),
+      appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Create Account')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -151,12 +148,9 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
           _canResendOtp = false;
           _resendCountdown = 60;
         });
-        
         _startResendCountdown();
         _showSuccess('Verification code sent to ${_emailController.text}');
-      } else {
-        _showError('Failed to send verification code');
-      }
+      } else _showError('Failed to send verification code');
     } catch (e) {
       _showError('Error: $e');
     } finally {

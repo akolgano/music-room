@@ -58,8 +58,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
               _buildHeader(), const SizedBox(height: 32),
               _buildForm(), const SizedBox(height: 24),
               _buildSocialButtons(),
-              const SizedBox(height: 16),
-              _buildModeToggle(),
+              const SizedBox(height: 16), _buildModeToggle(),
             ],
           ),
         ),
@@ -72,42 +71,60 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
     return Scaffold(backgroundColor: AppTheme.background, body: SafeArea(child: buildContent()));
   }
 
-  Widget _buildHeader() => AppTheme.buildFormCard(
-    title: _isLogin ? 'Welcome Back' : 'Join Music Room',
-    titleIcon: Icons.music_note,
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center, 
-      crossAxisAlignment: CrossAxisAlignment.center, 
-      children: [
-        Center(
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.music_note, 
-              size: 40, 
-              color: AppTheme.primary
+  Widget _buildHeader() => Card(
+    color: AppTheme.surface,
+    elevation: 4,
+    margin: const EdgeInsets.all(16),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.music_note,
+                color: AppTheme.primary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _isLogin ? 'Welcome Back' : 'Join Music Room',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.music_note,
+                size: 40,
+                color: AppTheme.primary,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: double.infinity, 
-          child: Text(
-            _isLogin 
-              ? 'Sign in to continue your musical journey' 
-              : 'Create an account to start sharing music',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
-            textAlign: TextAlign.center, 
+          const SizedBox(height: 16),
+          Text(
+            _isLogin ? 'Sign in to continue your musical journey' : 'Create an account to start sharing music',
+            style: const TextStyle(color: Colors.white70, fontSize: 16),
+            textAlign: TextAlign.center,
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 
@@ -216,21 +233,10 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         final authProvider = getProvider<AuthProvider>();
         bool success;
         
-        if (_isLogin) {
-          success = await authProvider.login(_usernameController.text, _passwordController.text);
-        } else {
-          success = await authProvider.signup(
-            _usernameController.text, 
-            _emailController.text, 
-            _passwordController.text
-          );
-        }
-        
-        if (success) {
-          navigateToHome();
-        } else {
-          throw Exception(authProvider.errorMessage ?? (_isLogin ? 'Login failed' : 'Signup failed'));
-        }
+        if (_isLogin) success = await authProvider.login(_usernameController.text, _passwordController.text);
+        else success = await authProvider.signup(_usernameController.text, _emailController.text, _passwordController.text);
+        if (success) navigateToHome();
+        else throw Exception(authProvider.errorMessage ?? (_isLogin ? 'Login failed' : 'Signup failed'));
       },
       successMessage: _isLogin ? 'Login successful!' : 'Account created successfully!',
       errorMessage: 'Authentication failed',

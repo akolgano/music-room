@@ -1,16 +1,18 @@
 // lib/providers/profile_provider.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../core/service_locator.dart';  
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import '../core/core.dart';
+import '../core/base_provider.dart'; 
 import '../models/api_models.dart';
 
-class ProfileProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+class ProfileProvider extends BaseProvider { 
+  final ApiService _apiService;  
   
   String? _userId;
   String? _username;
@@ -20,8 +22,6 @@ class ProfileProvider with ChangeNotifier {
   String? _socialType;
   String? _socialId;
   bool _isPasswordUsable = false;
-  bool _isLoading = false;
-  String? _errorMessage;
   String? _avatar;
   String? _gender;
   String? _location;
@@ -36,6 +36,7 @@ class ProfileProvider with ChangeNotifier {
   List<String>? _hobbies;
   String? _friendInfo;
   List<String>? _musicPreferences;
+  
   String? get userId => _userId;
   String? get username => _username;
   String? get userEmail => _userEmail;
@@ -43,9 +44,6 @@ class ProfileProvider with ChangeNotifier {
   String? get socialName => _socialName;
   String? get socialType => _socialType;
   String? get socialId => _socialId;
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  bool get hasError => _errorMessage != null;
   bool get isPasswordUsable => _isPasswordUsable;
   String? get avatar => _avatar;
   String? get gender => _gender;
@@ -61,17 +59,12 @@ class ProfileProvider with ChangeNotifier {
   List<String>? get hobbies => _hobbies;
   String? get friendInfo => _friendInfo;
   List<String>? get musicPreferences => _musicPreferences;
-  
+
   GoogleSignIn? googleSignIn;
 
-  ProfileProvider() {}
+  ProfileProvider() : _apiService = getIt<ApiService>();
 
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
-
-  void resetValues(){
+  void resetValues() {
     _userId = null;
     _username = null;
     _userEmail = null;
@@ -96,272 +89,173 @@ class ProfileProvider with ChangeNotifier {
     _musicPreferences = null;
   }
 
-  Future<bool> loadProfile(String? token) async{
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      resetValues();
-      notifyListeners();
+  Future<bool> loadProfile(String? token) async {
+    return await executeBool(
+      () async {
+        resetValues();
+        final data = await _apiService.getUserData(token);
+        _userId = data['id'];
+        _username = data['username'];
+        _userEmail = data['email'];
+        _isPasswordUsable = data['is_password_usable'] as bool;
+        
+        final hasSocialAccount = data['has_social_account'] as bool;
+        if (hasSocialAccount) {
+          final social = data['social'] as Map<String, dynamic>;
+          _socialType = social['type'];
+          _socialEmail = social['social_email'];
+          _socialName = social['social_name'];
+          _socialId = social['social_id'];
+        }
 
-      final data = await _apiService.getUserData(token);
+        final profilePublic = await _apiService.getProfilePublicData(token);
+        _avatar = profilePublic['avatar'];
+        _gender = profilePublic['gender'];
+        _location = profilePublic['location'];
+        _bio = profilePublic['bio'];
 
-      _userId = data['id'];
-      _username = data['username'];
-      _userEmail = data['email'];
-      _isPasswordUsable = data['is_password_usable'] as bool;
-      
-      final hasSocialAccount = data['has_social_account'] as bool;
-      if (hasSocialAccount){
-        final social = data['social'] as Map<String, dynamic>;
-        _socialType = social['type'];
-        _socialEmail = social['social_email'];
-        _socialName = social['social_name'];
-        _socialId = social['social_id'];
-      }
+        final profilePrivate = await _apiService.getProfilePrivateData(token);
+        _firstName = profilePrivate['first_name'];
+        _lastName = profilePrivate['last_name'];
+        _phone = profilePrivate['phone'];
+        _street = profilePrivate['street'];
+        _country = profilePrivate['country'];
+        _postalCode = profilePrivate['postal_code'];
 
-      final profilePublic = await _apiService.getProfilePublicData(token);
-      _avatar = profilePublic['avatar'];
-      _gender = profilePublic['gender'];
-      _location = profilePublic['location'];
-      _bio = profilePublic['bio'];
+        final profileFriend = await _apiService.getProfileFriendData(token);
+        _hobbies = profileFriend['hobbies'];
+        _friendInfo = profileFriend['friend_info'];
+        final dobDb = profileFriend['dob'];
+        if (dobDb != null) {
+          _dob = DateTime.parse(dobDb);
+        }
 
-      final profilePrivate = await _apiService.getProfilePrivateData(token);
-      _firstName = profilePrivate['first_name'];
-      _lastName = profilePrivate['last_name'];
-      _phone = profilePrivate['phone'];
-      _street = profilePrivate['street'];
-      _country = profilePrivate['country'];
-      _postalCode = profilePrivate['postal_code'];
-
-      final profileFriend = await _apiService.getProfileFriendData(token);
-      _hobbies = profileFriend ['hobbies'];
-      _friendInfo = profileFriend ['friend_info'];
-      final dobDb = profileFriend ['dob'];
-      if (dobDb != null){
-        _dob = DateTime.parse(dobDb);
-      }
-
-      final profileMusic = await _apiService.getProfileMusicData(token);
-      _musicPreferences = profileMusic['music_preferences'];
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    }
-    catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+        final profileMusic = await _apiService.getProfileMusicData(token);
+        _musicPreferences = profileMusic['music_preferences'];
+      },
+      successMessage: 'Profile loaded successfully',
+      errorMessage: 'Failed to load profile',
+    );
   }
 
   Future<bool> userPasswordChange(String? token, String currentPassword, String newPassword) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      await _apiService.userPasswordChangeData(token, currentPassword, newPassword);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    }
-    catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    return await executeBool(
+      () async {
+        await _apiService.userPasswordChangeData(token, currentPassword, newPassword);
+      },
+      successMessage: 'Password changed successfully',
+      errorMessage: 'Failed to change password',
+    );
   }
 
   Future<bool> facebookLink(String? token) async {
-    try{
-        _isLoading = true;
-        _errorMessage = null;
-        notifyListeners();
+    return await executeBool(
+      () async {
         final LoginResult result = await FacebookAuth.instance.login();
         if (result.status == LoginStatus.success) {
           final fbAccessToken = result.accessToken!.tokenString;
           await _apiService.facebookLinkData(token, fbAccessToken);
-          _isLoading = false;
-          notifyListeners();
-          return true;
+        } else {
+          throw Exception("Facebook login failed!");
         }
-        else {
-          _errorMessage = "Facebook login failed !";
-          _isLoading = false;
-          notifyListeners();
-          return false;
-        }
-      } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+      },
+      successMessage: 'Facebook account linked successfully',
+      errorMessage: 'Failed to link Facebook account',
+    );
   }
 
   Future<bool> googleLinkWeb(String? token, GoogleSignInUserData? account) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      var idToken = account?.idToken;
-      if (idToken == null) {
-        _errorMessage = "Google login failed !";
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-      await _apiService.googleLinkData('web', token, idToken);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    return await executeBool(
+      () async {
+        var idToken = account?.idToken;
+        if (idToken == null) {
+          throw Exception("Google login failed!");
+        }
+        await _apiService.googleLinkData('web', token, idToken);
+      },
+      successMessage: 'Google account linked successfully',
+      errorMessage: 'Failed to link Google account',
+    );
   }
 
   Future<bool> googleLinkApp(String? token) async {
-    try {
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      final googleSignIn = SocialLoginUtils.googleSignInInstance;
-      if (googleSignIn == null) {
-        _errorMessage = "Google Sign-In not initialized";
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-      final user = await googleSignIn.signIn();
-      if (user == null) {
-        _errorMessage = "Google login failed!";
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-      final auth = await user.authentication;
-      final idToken = auth.idToken;
-      if (idToken == null) {
-        _errorMessage = "Google login failed!";
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-      await _apiService.googleLinkData('app', token, idToken);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    return await executeBool(
+      () async {
+        final googleSignIn = SocialLoginUtils.googleSignInInstance;
+        if (googleSignIn == null) {
+          throw Exception("Google Sign-In not initialized");
+        }
+        final user = await googleSignIn.signIn();
+        if (user == null) {
+          throw Exception("Google login failed!");
+        }
+        final auth = await user.authentication;
+        final idToken = auth.idToken;
+        if (idToken == null) throw Exception("Google login failed!");
+        await _apiService.googleLinkData('app', token, idToken);
+      },
+      successMessage: 'Google account linked successfully',
+      errorMessage: 'Failed to link Google account',
+    );
   }
 
   Future<bool> updateAvatar(String? token, String? avatarBase64, String? mimeType) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      await _apiService.updateAvatarData(token, avatarBase64, mimeType);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-    }
+    return await executeBool(
+      () async {
+        await _apiService.updateAvatarData(token, avatarBase64, mimeType);
+      },
+      successMessage: 'Avatar updated successfully',
+      errorMessage: 'Failed to update avatar',
+    );
   }
 
   Future<bool> updatePublicBasic(String? token, String? gender, String? location) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      await _apiService.updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-    }
+    return await executeBool(
+      () async {
+        await _apiService.updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
+      },
+      successMessage: 'Public info updated successfully',
+      errorMessage: 'Failed to update public info',
+    );
   }
 
   Future<bool> updatePublicBio(String? token, String? bio) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      await _apiService.updatePublicBioData(token, bio);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-    }
+    return await executeBool(
+      () async {
+        await _apiService.updatePublicBioData(token, bio);
+      },
+      successMessage: 'Bio updated successfully',
+      errorMessage: 'Failed to update bio',
+    );
   }
 
   Future<bool> updatePrivateInfo(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      await _apiService.updatePrivateInfoData(token, firstName, lastName, phone, street, country, postalCode);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-    }
+    return await executeBool(
+      () async {
+        await _apiService.updatePrivateInfoData(token, firstName, lastName, phone, street, country, postalCode);
+      },
+      successMessage: 'Private info updated successfully',
+      errorMessage: 'Failed to update private info',
+    );
   }
 
   Future<bool> updateFriendInfo(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      await _apiService.updateFriendInfoData(token, dob, hobbies, friendInfo);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-    }
+    return await executeBool(
+      () async {
+        await _apiService.updateFriendInfoData(token, dob, hobbies, friendInfo);
+      },
+      successMessage: 'Friend info updated successfully',
+      errorMessage: 'Failed to update friend info',
+    );
   }
 
   Future<bool> updateMusicPreferences(String? token, List<String>? musicPreferences) async {
-    try{
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-      await _apiService.updateMusicPreferencesData(token, musicPreferences);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        notifyListeners();
-        return false;
-    }
+    return await executeBool(
+      () async {
+        await _apiService.updateMusicPreferencesData(token, musicPreferences);
+      },
+      successMessage: 'Music preferences updated successfully',
+      errorMessage: 'Failed to update music preferences',
+    );
   }
 }
