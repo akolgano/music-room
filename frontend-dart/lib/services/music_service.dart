@@ -69,10 +69,8 @@ class MusicService {
   }
 
   Future<void> addTrackToPlaylist(String playlistId, String trackId, String token) async {
-    String backendTrackId = trackId;
-    if (trackId.startsWith('deezer_')) backendTrackId = trackId.substring(7);
-    print('Adding track to playlist: originalId=$trackId, backendId=$backendTrackId');
-    final request = AddTrackRequest(trackId: backendTrackId);
+    print('Adding track to playlist: backendId=$trackId');
+    final request = AddTrackRequest(trackId: trackId);
     await _api.addTrackToPlaylist(playlistId, token, request); 
   }
 

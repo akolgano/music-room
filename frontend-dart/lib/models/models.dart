@@ -33,6 +33,27 @@ class Track {
     this.imageUrl,
   });
 
+  String get backendId {
+    if (deezerTrackId != null) return deezerTrackId!;
+    return id;
+  }
+
+  String get frontendId => id;
+
+  bool get isDeezerTrack {
+    return deezerTrackId != null || id.startsWith('deezer_');
+  }
+
+  static String toBackendId(String trackId) {
+    if (trackId.startsWith('deezer_')) return trackId.substring(7);
+    return trackId;
+  }
+
+  static String toFrontendId(String trackId, {bool isDeezer = false}) {
+    if (isDeezer && !trackId.startsWith('deezer_')) return 'deezer_$trackId';
+    return trackId;
+  }
+
   factory Track.fromJson(Map<String, dynamic> json) {
     String trackId;
     String? deezerTrackId;
@@ -76,20 +97,8 @@ class Track {
     return null;
   }
 
-  String get backendId {
-    if (deezerTrackId != null) return deezerTrackId!;
-    return id;
-  }
-
-  String get frontendId => id;
-
-  bool get isDeezerTrack {
-    return deezerTrackId != null || id.startsWith('deezer_');
-  }
-
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
+    'id': id, 'name': name,
     'artist': artist,
     'album': album,
     'url': url,

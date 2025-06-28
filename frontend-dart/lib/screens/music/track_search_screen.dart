@@ -380,7 +380,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       }
     }
 
-    final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
+    final sortedTracks = TrackSortingService.sortTracksByField(tracks, _searchSortOption);
     return Column(
       children: [
         if (tracks.isNotEmpty)
@@ -389,10 +389,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${tracks.length} results',
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                Text('${tracks.length} results', style: const TextStyle(color: Colors.grey)),
                 SortButton(
                   currentSort: _searchSortOption,
                   onPressed: _showSearchSortOptions,
@@ -550,21 +547,26 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   void _handleTrackTap(Track track) {
-    if (_isMultiSelectMode) {
-      _toggleSelection(track.id);
-    } else if (_isAddingToPlaylist && !_isTrackInPlaylist(track.id)) {
-      _addTrackToPlaylist(widget.playlistId!, track);
-    } else {
-      _playTrack(track);
-    }
+    if (_isMultiSelectMode) _toggleSelection(track.id);
+    else if (_isAddingToPlaylist && !_isTrackInPlaylist(track.id)) _addTrackToPlaylist(widget.playlistId!, track);
+    else _playTrack(track);
   }
 
   Future<void> _handleAddTrack(Track track) async {
-    if (_isAddingToPlaylist) {
-      await _addTrackToPlaylist(widget.playlistId!, track);
-    } else {
-      await _showPlaylistSelectionDialog(track);
-    }
+    if (_isAddingToPlaylist) await _addTrackObjectToPlaylist(widget.playlistId!, track);
+    else await _showPlaylistSelectionDialog(track);
+  }
+
+  Future<void> _addTrackObjectToPlaylist(String playlistId, Track track) async {
+    await runAsyncAction(
+      () async {
+        final musicProvider = getProvider<MusicProvider>();
+        final result = await musicProvider.addTrackObjectToPlaylist(playlistId, track, auth.token!);
+        if (!result.success) throw Exception(result.message);
+      },
+      successMessage: 'Added "${track.name}" to playlist!',
+      errorMessage: 'Failed to add track to playlist',
+    );
   }
 
   Future<void> _loadUserPlaylists() async {
@@ -582,7 +584,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       }
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
-        previewUrl = await getProvider<MusicProvider>().getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
+        final fullTrackDetails = await getProvider<MusicProvider>().getDeezerTrack(track.deezerTrackId!, auth.token!);
+        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
       }
       if (previewUrl?.isNotEmpty == true) {
         await _playerService.playTrack(track, previewUrl!);
@@ -626,8 +629,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       _setLoadingState(LoadingState.addingTracks);
       await _executeWithErrorHandling(() async {
         final playlistId = await getProvider<MusicProvider>().createPlaylist(
-          playlistName!,
-          'Created while adding "${track.name}"',
+          playlistName!, 'Created while adding "${track.name}"',
           false, 
           auth.token!,
           _deviceProvider.deviceUuid,

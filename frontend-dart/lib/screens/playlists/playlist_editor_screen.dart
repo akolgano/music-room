@@ -235,19 +235,16 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   Future<void> _playTrack(Track track) async {
     try {
       final playerService = getProvider<MusicPlayerService>();
-      
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
+        final fullTrackDetails = await musicProvider.getDeezerTrack(track.deezerTrackId!, auth.token!);
+        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
       }
-      
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(track, previewUrl);
         showSuccess('Playing "${track.name}"');
-      } else {
-        showInfo('No preview available for "${track.name}"');
-      }
+      } else showInfo('No preview available for "${track.name}"');
     } catch (e) {
       showError('Failed to play track: $e');
     }
@@ -255,12 +252,10 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _removeTrack(String trackId) async {
     if (!_isEditMode) return;
-    
     final confirmed = await showConfirmDialog(
       'Remove Track',
       'Remove this track from the playlist?',
     );
-    
     if (confirmed) {
       await runAsyncAction(
         () async {

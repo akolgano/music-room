@@ -473,27 +473,22 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _playPauseTrack() async {
     if (_track == null) return;
-
     try {
       final playerService = getProvider<MusicPlayerService>();
-      
       if (playerService.currentTrack?.id == _track!.id) {
         await playerService.togglePlay();
         return;
       }
-
       String? previewUrl = _track!.previewUrl;
       if (previewUrl == null && _track!.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(_track!.deezerTrackId!, auth.token!);
+        final fullTrackDetails = await musicProvider.getDeezerTrack(_track!.deezerTrackId!, auth.token!);
+        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
       }
-
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(_track!, previewUrl);
         showSuccess('Playing "${_track!.name}"');
-      } else {
-        showError('No preview available for this track');
-      }
+      } else showError('No preview available for this track');
     } catch (e) {
       showError('Failed to play track: $e');
     }
@@ -517,22 +512,16 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _addToCurrentPlaylist() async {
     if (widget.playlistId == null || _track == null) return;
-
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
         final deviceProvider = getProvider<DeviceProvider>();
-        
         print('Adding track ${_track!.name} to current playlist...');
-        
         final result = await musicProvider.addTrackToPlaylist(widget.playlistId!, _track!.id, auth.token!);
-
         if (result.success) {
           _isInPlaylist = true;
           print('Successfully added ${_track!.name} to playlist');
-        } else {
-          throw Exception(result.message);
-        }
+        } else throw Exception(result.message);
       },
       successMessage: 'Added "${_track!.name}" to playlist!',
       errorMessage: 'Failed to add track to playlist',

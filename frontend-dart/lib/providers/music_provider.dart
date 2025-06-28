@@ -152,15 +152,9 @@ class MusicProvider extends BaseProvider {
     return _playlistTracks.any((pt) => pt.trackId == trackId || pt.track?.id == trackId);
   }
 
-  Future<String?> getDeezerTrackPreviewUrl(String deezerTrackId, String token) async {
-    final track = await getDeezerTrack(deezerTrackId, token);
-    return track?.previewUrl;
-  }
-
   Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     try {
-      String backendTrackId = trackId;
-      if (trackId.startsWith('deezer_')) backendTrackId = trackId.substring(7);
+      final backendTrackId = Track.toBackendId(trackId);
       print('Adding track to playlist: frontendId=$trackId, backendId=$backendTrackId');
       await _musicService.addTrackToPlaylist(playlistId, backendTrackId, token);
       return AddTrackResult(success: true, message: 'Track added successfully');
@@ -265,13 +259,7 @@ class MusicProvider extends BaseProvider {
     required String token,
   }) async {
     await executeAsync(
-      () => _musicService.updatePlaylist(
-        playlistId,
-        token,
-        name: name,
-        description: description,
-        isPublic: isPublic,
-      ),
+      () => _musicService.updatePlaylist(playlistId, token, name: name, description: description, isPublic: isPublic),
       successMessage: 'Playlist updated successfully',
       errorMessage: 'Failed to update playlist',
     );
