@@ -14,8 +14,7 @@ class VoteButton extends StatelessWidget {
   final double size;
 
   const VoteButton({
-    Key? key,
-    required this.voteType,
+    Key? key, required this.voteType,
     required this.isSelected,
     this.onPressed,
     this.isEnabled = true,
@@ -150,18 +149,23 @@ class TrackVotingControls extends StatelessWidget {
         final userVote = votingProvider.getUserVote(trackId);
         final trackStats = stats ?? votingProvider.getTrackVotes(trackId);
 
-        if (trackStats == null) {
-          return const SizedBox.shrink();
-        }
+        final effectiveStats = trackStats ?? VoteStats(
+          totalVotes: 0,
+          upvotes: 0,
+          downvotes: 0,
+          userHasVoted: false,
+          userVoteValue: null,
+          voteScore: 0.0,
+        );
 
         if (isCompact) {
           return _buildCompactControls(
-            context, votingProvider, authProvider, canVote, userVote, trackStats
+            context, votingProvider, authProvider, canVote, userVote, effectiveStats
           );
         }
 
         return _buildFullControls(
-          context, votingProvider, authProvider, canVote, userVote, trackStats
+          context, votingProvider, authProvider, canVote, userVote, effectiveStats
         );
       },
     );
@@ -402,13 +406,31 @@ class PlaylistVotingBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
-        final restrictions = votingProvider.votingRestrictions;
-        
-        if (restrictions == null) {
-          return const SizedBox.shrink();
-        }
-
-        return VotingRestrictionsCard(restrictions: restrictions);
+        return Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.how_to_vote, color: Colors.blue, size: 20),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Voting Available',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
@@ -453,11 +475,7 @@ class VotingStatsCard extends StatelessWidget {
               SizedBox(width: 8),
               Text(
                 'Voting Statistics',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -481,21 +499,8 @@ class VotingStatsCard extends StatelessWidget {
       children: [
         Icon(icon, color: AppTheme.primary, size: 20),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-          ),
-        ),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );
   }

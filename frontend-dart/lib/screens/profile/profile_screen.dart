@@ -12,7 +12,6 @@ import 'social_network_link_screen.dart';
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
   const ProfileScreen({Key? key, this.isEmbedded = false}) : super(key: key);
-
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -20,7 +19,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   @override
   String get screenTitle => 'Profile';
-
   @override
   bool get showBackButton => !widget.isEmbedded;
 
@@ -412,10 +410,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (selectedIndex != null) {
-      final success = await profileProvider.updatePublicBasic(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        genders[selectedIndex],
-        profileProvider.location,
+        gender: genders[selectedIndex],
+        location: profileProvider.location,
       );
       if (success) {
         showSuccess('Gender updated successfully');
@@ -433,10 +431,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (location != null) {
-      final success = await profileProvider.updatePublicBasic(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.gender,
-        location.trim(),
+        gender: profileProvider.gender,
+        location: location.trim(),
       );
       if (success) {
         showSuccess('Location updated successfully');
@@ -455,7 +453,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (bio != null) {
-      final success = await profileProvider.updatePublicBio(auth.token, bio.trim());
+      final success = await profileProvider.updateProfile(
+        auth.token, 
+        bio: bio.trim()
+      );
       if (success) {
         showSuccess('Bio updated successfully');
         profileProvider.loadProfile(auth.token);
@@ -472,14 +473,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (firstName != null) {
-      final success = await profileProvider.updatePrivateInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        firstName.trim(),
-        profileProvider.lastName,
-        profileProvider.phone,
-        profileProvider.street,
-        profileProvider.country,
-        profileProvider.postalCode,
+        firstName: firstName.trim(),
       );
       if (success) {
         showSuccess('First name updated successfully');
@@ -497,14 +493,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (lastName != null) {
-      final success = await profileProvider.updatePrivateInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.firstName,
-        lastName.trim(),
-        profileProvider.phone,
-        profileProvider.street,
-        profileProvider.country,
-        profileProvider.postalCode,
+        lastName: lastName.trim(),
       );
       if (success) {
         showSuccess('Last name updated successfully');
@@ -523,14 +514,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (phone != null) {
-      final success = await profileProvider.updatePrivateInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.firstName,
-        profileProvider.lastName,
-        phone.trim(),
-        profileProvider.street,
-        profileProvider.country,
-        profileProvider.postalCode,
+        phone: phone.trim(),
       );
       if (success) {
         showSuccess('Phone number updated successfully');
@@ -548,14 +534,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (street != null) {
-      final success = await profileProvider.updatePrivateInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.firstName,
-        profileProvider.lastName,
-        profileProvider.phone,
-        street.trim(),
-        profileProvider.country,
-        profileProvider.postalCode,
+        street: street.trim(),
       );
       if (success) {
         showSuccess('Street address updated successfully');
@@ -575,7 +556,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       'United Kingdom',
       'Australia'
     ];
-    
+
     final selectedIndex = await DialogUtils.showSelectionDialog<String>(
       context: context,
       title: 'Select Country',
@@ -584,14 +565,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (selectedIndex != null) {
-      final success = await profileProvider.updatePrivateInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.firstName,
-        profileProvider.lastName,
-        profileProvider.phone,
-        profileProvider.street,
-        countries[selectedIndex],
-        profileProvider.postalCode,
+        country: countries[selectedIndex],
       );
       if (success) {
         showSuccess('Country updated successfully');
@@ -609,14 +585,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (postalCode != null) {
-      final success = await profileProvider.updatePrivateInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.firstName,
-        profileProvider.lastName,
-        profileProvider.phone,
-        profileProvider.street,
-        profileProvider.country,
-        postalCode.trim(),
+        postalCode: postalCode.trim(),
       );
       if (success) {
         showSuccess('Postal code updated successfully');
@@ -627,7 +598,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Future<void> _editDateOfBirth(ProfileProvider profileProvider) async {
     final currentDate = profileProvider.dob ?? DateTime.now().subtract(const Duration(days: 6570)); 
-    
     final selectedDate = await showDatePicker(
       context: context,
       initialDate: currentDate,
@@ -647,11 +617,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (selectedDate != null) {
-      final success = await profileProvider.updateFriendInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        DateTimeUtils.formatDate(selectedDate),
-        profileProvider.hobbies,
-        profileProvider.friendInfo,
+        dob: DateTimeUtils.formatDate(selectedDate),
       );
       if (success) {
         showSuccess('Date of birth updated successfully');
@@ -663,7 +631,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   Future<void> _editHobbies(ProfileProvider profileProvider) async {
     final availableHobbies = ['Sport', 'Movie', 'Music', 'Travel'];
     final currentHobbies = profileProvider.hobbies ?? [];
-    
+
     final selectedHobbies = await showDialog<List<String>>(
       context: context,
       builder: (context) => _HobbySelectionDialog(
@@ -673,11 +641,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (selectedHobbies != null) {
-      final success = await profileProvider.updateFriendInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.dob != null ? DateTimeUtils.formatDate(profileProvider.dob!) : null,
-        selectedHobbies,
-        profileProvider.friendInfo,
+        hobbies: selectedHobbies,
       );
       if (success) {
         showSuccess('Hobbies updated successfully');
@@ -696,11 +662,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (friendInfo != null) {
-      final success = await profileProvider.updateFriendInfo(
+      final success = await profileProvider.updateProfile(
         auth.token,
-        profileProvider.dob != null ? DateTimeUtils.formatDate(profileProvider.dob!) : null,
-        profileProvider.hobbies,
-        friendInfo.trim(),
+        friendInfo: friendInfo.trim(),
       );
       if (success) {
         showSuccess('Friend info updated successfully');
@@ -712,7 +676,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   Future<void> _editMusicPreferences(ProfileProvider profileProvider) async {
     final availableGenres = ['Classical', 'Jazz', 'Pop', 'Rock', 'Rap', 'R&B', 'Techno'];
     final currentPreferences = profileProvider.musicPreferences ?? [];
-    
+
     final selectedPreferences = await showDialog<List<String>>(
       context: context,
       builder: (context) => _MusicPreferenceDialog(
@@ -722,7 +686,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (selectedPreferences != null) {
-      final success = await profileProvider.updateMusicPreferences(auth.token, selectedPreferences);
+      final success = await profileProvider.updateProfile(
+        auth.token, 
+        musicPreferences: selectedPreferences
+      );
       if (success) {
         showSuccess('Music preferences updated successfully');
         profileProvider.loadProfile(auth.token);
@@ -777,7 +744,6 @@ class _HobbySelectionDialogState extends State<_HobbySelectionDialog> {
           itemBuilder: (context, index) {
             final hobby = widget.availableHobbies[index];
             final isSelected = _selectedHobbies.contains(hobby);
-            
             return CheckboxListTile(
               value: isSelected,
               onChanged: (value) {

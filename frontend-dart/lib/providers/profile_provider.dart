@@ -22,6 +22,7 @@ class ProfileProvider extends BaseProvider {
   String? _socialType;
   String? _socialId;
   bool _isPasswordUsable = false;
+  
   String? _avatar;
   String? _gender;
   String? _location;
@@ -36,7 +37,7 @@ class ProfileProvider extends BaseProvider {
   List<String>? _hobbies;
   String? _friendInfo;
   List<String>? _musicPreferences;
-  
+
   String? get userId => _userId;
   String? get username => _username;
   String? get userEmail => _userEmail;
@@ -93,43 +94,40 @@ class ProfileProvider extends BaseProvider {
     return await executeBool(
       () async {
         resetValues();
-        final data = await _apiService.getUserData(token);
-        _userId = data['id'];
-        _username = data['username'];
-        _userEmail = data['email'];
-        _isPasswordUsable = data['is_password_usable'] as bool;
         
-        final hasSocialAccount = data['has_social_account'] as bool;
+        final userData = await _apiService.getUserData(token);
+        _userId = userData['id'];
+        _username = userData['username'];
+        _userEmail = userData['email'];
+        _isPasswordUsable = userData['is_password_usable'] as bool;
+        
+        final hasSocialAccount = userData['has_social_account'] as bool;
         if (hasSocialAccount) {
-          final social = data['social'] as Map<String, dynamic>;
+          final social = userData['social'] as Map<String, dynamic>;
           _socialType = social['type'];
           _socialEmail = social['social_email'];
           _socialName = social['social_name'];
           _socialId = social['social_id'];
         }
 
-        final profilePublic = await _apiService.getProfilePublicData(token);
-        _avatar = profilePublic['avatar'];
-        _gender = profilePublic['gender'];
-        _location = profilePublic['location'];
-        _bio = profilePublic['bio'];
-
-        final profilePrivate = await _apiService.getProfilePrivateData(token);
-        _firstName = profilePrivate['first_name'];
-        _lastName = profilePrivate['last_name'];
-        _phone = profilePrivate['phone'];
-        _street = profilePrivate['street'];
-        _country = profilePrivate['country'];
-        _postalCode = profilePrivate['postal_code'];
-
-        final profileFriend = await _apiService.getProfileFriendData(token);
-        _hobbies = profileFriend['hobbies'];
-        _friendInfo = profileFriend['friend_info'];
-        final dobDb = profileFriend['dob'];
-        if (dobDb != null) _dob = DateTime.parse(dobDb);
-
-        final profileMusic = await _apiService.getProfileMusicData(token);
-        _musicPreferences = profileMusic['music_preferences'];
+        final profileData = await _apiService.getProfileData(token!);
+        _avatar = profileData['avatar'];
+        _gender = profileData['gender'];
+        _location = profileData['location'];
+        _bio = profileData['bio'];
+        _firstName = profileData['first_name'];
+        _lastName = profileData['last_name'];
+        _phone = profileData['phone'];
+        _street = profileData['street'];
+        _country = profileData['country'];
+        _postalCode = profileData['postal_code'];
+        
+        final dobString = profileData['dob'];
+        if (dobString != null) _dob = DateTime.parse(dobString);
+        
+        _hobbies = (profileData['hobbies'] as List<dynamic>?)?.cast<String>();
+        _friendInfo = profileData['friend_info'];
+        _musicPreferences = (profileData['music_preferences'] as List<dynamic>?)?.cast<String>();
       },
       successMessage: 'Profile loaded successfully',
       errorMessage: 'Failed to load profile',
@@ -139,7 +137,10 @@ class ProfileProvider extends BaseProvider {
   Future<bool> userPasswordChange(String? token, String currentPassword, String newPassword) async {
     return await executeBool(
       () async {
-        await _apiService.userPasswordChangeData(token, currentPassword, newPassword);
+        await _apiService.userPasswordChange(token!, PasswordChangeRequest(
+          currentPassword: currentPassword, 
+          newPassword: newPassword
+        ));
       },
       successMessage: 'Password changed successfully',
       errorMessage: 'Failed to change password',
@@ -165,7 +166,7 @@ class ProfileProvider extends BaseProvider {
       () async {
         var idToken = account?.idToken;
         if (idToken == null) throw Exception("Google login failed!");
-        await _apiService.googleLinkData('web', token, idToken);
+        await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken, type: 'web'));
       },
       successMessage: 'Google account linked successfully',
       errorMessage: 'Failed to link Google account',
@@ -182,73 +183,93 @@ class ProfileProvider extends BaseProvider {
         final auth = await user.authentication;
         final idToken = auth.idToken;
         if (idToken == null) throw Exception("Google login failed!");
-        await _apiService.googleLinkData('app', token, idToken);
+        await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken, type: 'app'));
       },
       successMessage: 'Google account linked successfully',
       errorMessage: 'Failed to link Google account',
     );
   }
 
+  Future<bool> updateProfile(String? token, {
+    String? avatarBase64,
+    String? mimeType,
+    String? gender,
+    String? location,
+    String? bio,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? street,
+    String? country,
+    String? postalCode,
+    String? dob,
+    List<String>? hobbies,
+    String? friendInfo,
+    List<String>? musicPreferences,
+  }) async {
+    return await executeBool(
+      () async {
+        final updateData = <String, dynamic>{};
+        
+        if (avatarBase64 != null) updateData['avatar_base64'] = avatarBase64;
+        if (mimeType != null) updateData['mime_type'] = mimeType;
+        if (gender != null) updateData['gender'] = gender;
+        if (location != null) updateData['location'] = location;
+        if (bio != null) updateData['bio'] = bio;
+        if (firstName != null) updateData['first_name'] = firstName;
+        if (lastName != null) updateData['last_name'] = lastName;
+        if (phone != null) updateData['phone'] = phone;
+        if (street != null) updateData['street'] = street;
+        if (country != null) updateData['country'] = country;
+        if (postalCode != null) updateData['postal_code'] = postalCode;
+        if (dob != null) updateData['dob'] = dob;
+        if (hobbies != null) updateData['hobbies'] = hobbies;
+        if (friendInfo != null) updateData['friend_info'] = friendInfo;
+        if (musicPreferences != null) updateData['music_preferences'] = musicPreferences;
+        
+        await _apiService.updateProfile(token!, updateData);
+        
+        if (avatarBase64 != null) _avatar = avatarBase64;
+        if (gender != null) _gender = gender;
+        if (location != null) _location = location;
+        if (bio != null) _bio = bio;
+        if (firstName != null) _firstName = firstName;
+        if (lastName != null) _lastName = lastName;
+        if (phone != null) _phone = phone;
+        if (street != null) _street = street;
+        if (country != null) _country = country;
+        if (postalCode != null) _postalCode = postalCode;
+        if (dob != null) _dob = DateTime.parse(dob);
+        if (hobbies != null) _hobbies = hobbies;
+        if (friendInfo != null) _friendInfo = friendInfo;
+        if (musicPreferences != null) _musicPreferences = musicPreferences;
+      },
+      successMessage: 'Profile updated successfully',
+      errorMessage: 'Failed to update profile',
+    );
+  }
+
   Future<bool> updateAvatar(String? token, String? avatarBase64, String? mimeType) async {
-    return await executeBool(
-      () async {
-        await _apiService.updateProfile(token!, {
-          if (avatarBase64 != null) 'avatar_base64': avatarBase64,
-          if (mimeType != null) 'mime_type': mimeType,
-        });
-      },
-      successMessage: 'Avatar updated successfully',
-      errorMessage: 'Failed to update avatar',
-    );
+    return updateProfile(token, avatarBase64: avatarBase64, mimeType: mimeType);
   }
 
-  Future<bool> updatePublicBasic(String? token, String? gender, String? location) async {
-    return await executeBool(
-      () async {
-        await _apiService.updatePublicBasic(token!, PublicBasicUpdateRequest(gender: gender, location: location));
-      },
-      successMessage: 'Public info updated successfully',
-      errorMessage: 'Failed to update public info',
-    );
+  Future<bool> updateBasicInfo(String? token, String? gender, String? location) async {
+    return updateProfile(token, gender: gender, location: location);
   }
 
-  Future<bool> updatePublicBio(String? token, String? bio) async {
-    return await executeBool(
-      () async {
-        await _apiService.updatePublicBioData(token, bio);
-      },
-      successMessage: 'Bio updated successfully',
-      errorMessage: 'Failed to update bio',
-    );
+  Future<bool> updateBio(String? token, String? bio) async {
+    return updateProfile(token, bio: bio);
   }
 
-  Future<bool> updatePrivateInfo(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) async {
-    return await executeBool(
-      () async {
-        await _apiService.updatePrivateInfoData(token, firstName, lastName, phone, street, country, postalCode);
-      },
-      successMessage: 'Private info updated successfully',
-      errorMessage: 'Failed to update private info',
-    );
+  Future<bool> updatePersonalInfo(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) async {
+    return updateProfile(token, firstName: firstName, lastName: lastName, phone: phone, street: street, country: country, postalCode: postalCode);
   }
 
   Future<bool> updateFriendInfo(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {
-    return await executeBool(
-      () async {
-        await _apiService.updateFriendInfoData(token, dob, hobbies, friendInfo);
-      },
-      successMessage: 'Friend info updated successfully',
-      errorMessage: 'Failed to update friend info',
-    );
+    return updateProfile(token, dob: dob, hobbies: hobbies, friendInfo: friendInfo);
   }
 
   Future<bool> updateMusicPreferences(String? token, List<String>? musicPreferences) async {
-    return await executeBool(
-      () async {
-        await _apiService.updateMusicPreferencesData(token, musicPreferences);
-      },
-      successMessage: 'Music preferences updated successfully',
-      errorMessage: 'Failed to update music preferences',
-    );
+    return updateProfile(token, musicPreferences: musicPreferences);
   }
 }

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
-import '../../providers/device_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../models/models.dart';
@@ -19,9 +18,7 @@ class TrackDetailScreen extends StatefulWidget {
   final String? trackId;
   final Track? track;
   final String? playlistId; 
-  
   const TrackDetailScreen({Key? key, this.trackId, this.track, this.playlistId}) : super(key: key);
-  
   @override
   State<TrackDetailScreen> createState() => _TrackDetailScreenState();
 }
@@ -158,7 +155,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       builder: (context, playerService, votingProvider, _) {
         final isCurrentTrack = playerService.currentTrack?.id == _track!.id;
         final isPlaying = isCurrentTrack && playerService.isPlaying;
-        
+
         return Card(
           color: AppTheme.surface,
           child: Padding(
@@ -379,7 +376,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Widget _buildPlaylistActions() {
     if (widget.playlistId == null) return const SizedBox.shrink();
-    
+
     return Card(
       color: AppTheme.surface,
       child: Padding(
@@ -448,15 +445,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
         if (_track != null && widget.playlistId != null) {
           final musicProvider = getProvider<MusicProvider>();
-          final votingProvider = getProvider<VotingProvider>();
-          
-          await Future.wait([
-            musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!),
-            votingProvider.loadPlaylistVotingInfo(widget.playlistId!, auth.token!).catchError((e) {
-              print('Failed to load voting info: $e');
-            }),
-          ]);
-          
+          await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
           _isInPlaylist = musicProvider.isTrackInPlaylist(_track!.id);
         }
 
@@ -473,18 +462,21 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _playPauseTrack() async {
     if (_track == null) return;
+
     try {
       final playerService = getProvider<MusicPlayerService>();
       if (playerService.currentTrack?.id == _track!.id) {
         await playerService.togglePlay();
         return;
       }
+
       String? previewUrl = _track!.previewUrl;
       if (previewUrl == null && _track!.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
         final fullTrackDetails = await musicProvider.getDeezerTrack(_track!.deezerTrackId!, auth.token!);
         if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
       }
+
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(_track!, previewUrl);
         showSuccess('Playing "${_track!.name}"');
@@ -512,10 +504,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _addToCurrentPlaylist() async {
     if (widget.playlistId == null || _track == null) return;
+
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        final deviceProvider = getProvider<DeviceProvider>();
         print('Adding track ${_track!.name} to current playlist...');
         final result = await musicProvider.addTrackToPlaylist(widget.playlistId!, _track!.id, auth.token!);
         if (result.success) {
@@ -535,7 +527,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       'Remove Track',
       'Remove "${_track!.name}" from this playlist?',
     );
-
     if (confirmed) {
       await runAsyncAction(
         () async {
@@ -595,7 +586,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        final deviceProvider = getProvider<DeviceProvider>();
         print('Adding track ${_track!.name} to playlist $playlistId...');
         final result = await musicProvider.addTrackToPlaylist(playlistId, _track!.id, auth.token!);
         if (!result.success) throw Exception(result.message);

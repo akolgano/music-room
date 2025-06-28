@@ -39,6 +39,8 @@ paths:
                 username:
                   type: string
                   description: User username
+                  maxLength: 20
+                  minLength: 1
                 email:
                   type: string
                   format: email
@@ -65,13 +67,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationError'
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                example:
+                  username: ["Username is already taken."]
+                  email: ["Email is already taken."]
+                  password: ["Ensure this field has at least 8 characters."]
         '404':
-          description: Signup failed due to error
+          description: Signup failed due to OTP error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: "Signup OTP not found or expired"
 
   /users/login/:
     post:
@@ -112,7 +127,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  detail:
+                    type: string
+                example:
+                  detail: "User not found."
 
   /users/logout/:
     post:
@@ -144,13 +164,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  detail:
+                    type: string
         '500':
           description: Logout failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  detail:
+                    type: string
 
   /users/signup_email_otp/:
     post:
@@ -187,7 +213,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /users/forgot_password/:
     post:
@@ -226,13 +255,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '404':
           description: User not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /users/forgot_change_password/:
     post:
@@ -280,7 +315,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /users/user_password_change/:
     post:
@@ -323,7 +361,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /users/get_user/:
     get:
@@ -367,14 +408,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /users/get_friends/:
     get:
       tags:
         - Users
       summary: Get friends list
-      description: Get list of user's friends
+      description: Get list of user's friends (returns friend IDs)
       responses:
         '200':
           description: Friends list retrieved successfully
@@ -393,7 +437,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /users/send_friend_request/{user_id}/:
     post:
@@ -427,7 +474,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  message:
+                    type: string
 
   /users/accept_friend_request/{friendship_id}/:
     post:
@@ -505,7 +555,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  message:
+                    type: string
+
   /profile/profile/:
     get:
       tags:
@@ -524,7 +578,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /profile/profile/update/:
     post:
@@ -603,7 +660,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationError'
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+
   /auth/facebook/login/:
     post:
       tags:
@@ -634,13 +696,21 @@ paths:
                   token:
                     type: string
                   user:
-                    $ref: '#/components/schemas/User'
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      id:
+                        type: integer
         '400':
           description: Login failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /auth/google/login/:
     post:
@@ -677,13 +747,21 @@ paths:
                   token:
                     type: string
                   user:
-                    $ref: '#/components/schemas/User'
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      id:
+                        type: integer
         '400':
           description: Login failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /auth/facebook/link/:
     post:
@@ -718,7 +796,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /auth/google/link/:
     post:
@@ -758,7 +839,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /deezer/track/{track_id}/:
     get:
       tags:
@@ -785,7 +870,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /deezer/search/:
     get:
@@ -818,13 +906,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '502':
           description: Failed to fetch data from Deezer
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /tracks/search/:
     get:
       tags:
@@ -890,7 +985,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /playlists/playlists:
     post:
       tags:
@@ -933,7 +1032,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /playlists/playlists/{playlist_id}:
     get:
@@ -965,7 +1067,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /playlists/saved_playlists/:
     get:
@@ -1075,19 +1180,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '403':
           description: Permission denied
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '404':
           description: Playlist or track not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /playlists/{playlist_id}/move-track/:
     post:
@@ -1137,7 +1251,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /playlists/playlists/{playlist_id}/remove_tracks:
     post:
@@ -1179,13 +1296,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '404':
           description: Playlist or track not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /playlists/{playlist_id}/change-visibility/:
     post:
@@ -1225,7 +1348,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /playlists/{playlist_id}/invite-user/:
     post:
@@ -1276,7 +1402,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /playlists/{playlist_id}/license/:
     patch:
@@ -1309,36 +1438,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationError'
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
         '403':
           description: Permission denied
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Playlist not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /playlists/{playlist_id}/tracks/vote/:
-    post:
-      tags:
-        - Playlists
-      summary: Vote for track
-      description: Vote for a track in a playlist (not yet implemented)
-      parameters:
-        - name: playlist_id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: Playlist ID
-      responses:
-        '501':
-          description: Vote API not implemented yet
           content:
             application/json:
               schema:
@@ -1346,7 +1452,82 @@ paths:
                 properties:
                   detail:
                     type: string
-                    example: "Vote API not implemented yet."
+        '404':
+          description: Playlist not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+  /playlists/{playlist_id}/tracks/vote/:
+    post:
+      tags:
+        - Playlists
+      summary: Vote for track
+      description: Vote for a track in a playlist
+      parameters:
+        - name: playlist_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Playlist ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - range_start
+              properties:
+                range_start:
+                  type: integer
+                  description: Index of track to vote for
+      responses:
+        '200':
+          description: Vote recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  playlist:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PlaylistInfoWithVotes'
+        '400':
+          description: Invalid track index
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Voting not allowed or already voted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  detail:
+                    type: string
+        '404':
+          description: Playlist not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
 
 components:
   securitySchemes:
@@ -1493,6 +1674,31 @@ components:
               artist:
                 type: string
 
+    PlaylistInfoWithVotes:
+      type: object
+      properties:
+        id:
+          type: integer
+        playlist_name:
+          type: string
+        description:
+          type: string
+        public:
+          type: boolean
+        creator:
+          type: string
+        tracks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              artist:
+                type: string
+              points:
+                type: integer
+
     PlaylistTrack:
       type: object
       properties:
@@ -1541,19 +1747,6 @@ components:
           type: integer
           nullable: true
           description: Allowed radius in meters for location-based access
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-        detail:
-          type: string
-    ValidationError:
-      type: object
-      additionalProperties:
-        type: array
-        items:
-          type: string
 tags:
   - name: Users
     description: User management and authentication

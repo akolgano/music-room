@@ -382,3 +382,40 @@ class BatchAddResult {
     return parts.join(', ');
   }
 }
+
+class PlaylistInfoWithVotes {
+  final int id;
+  final String playlistName;
+  final String description;
+  final bool public;
+  final String creator;
+  final List<Map<String, dynamic>> tracks;
+
+  const PlaylistInfoWithVotes({
+    required this.id,
+    required this.playlistName,
+    required this.description,
+    required this.public,
+    required this.creator,
+    required this.tracks,
+  });
+
+  factory PlaylistInfoWithVotes.fromJson(Map<String, dynamic> json) => 
+      PlaylistInfoWithVotes(
+        id: json['id'] as int,
+        playlistName: json['playlist_name'] as String,
+        description: json['description'] as String,
+        public: json['public'] as bool,
+        creator: json['creator'] as String,
+        tracks: (json['tracks'] as List<dynamic>?) ?.map((track) => track as Map<String, dynamic>).toList() ?? [],
+      );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'playlist_name': playlistName,
+    'description': description,
+    'public': public,
+    'creator': creator,
+    'tracks': tracks,
+  };
+}

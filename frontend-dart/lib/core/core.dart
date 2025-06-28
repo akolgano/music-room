@@ -298,7 +298,6 @@ class AppRoutes {
   static const String friends = '/friends';
   static const String addFriend = '/add_friend';
   static const String friendRequests = '/friend_requests';
-  static const String deviceManagement = '/device_management';
   static const String playlistSharing = '/playlist_sharing';
   static const String player = '/player';
   static const String deezerTrackDetail = '/deezer_track_detail';
