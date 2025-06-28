@@ -12,8 +12,7 @@ class FriendService {
   }
 
   Future<String> sendFriendRequest(int userId, String token) async {
-    final request = FriendRequestRequest(userId: userId);
-    final response = await _api.sendFriendRequest(token, request); 
+    final response = await _api.sendFriendRequest(userId, token); 
     return response.message;
   }
 
@@ -23,19 +22,16 @@ class FriendService {
   }
 
   Future<String> acceptFriendRequest(int friendshipId, String token) async {
-    final request = FriendRequestActionRequest(friendshipId: friendshipId);
-    final response = await _api.acceptFriendRequest(token, request); 
+    final response = await _api.acceptFriendRequest(friendshipId, token); 
     return response.message;
   }
 
   Future<String> rejectFriendRequest(int friendshipId, String token) async {
-    final request = FriendRequestActionRequest(friendshipId: friendshipId);
-    final response = await _api.rejectFriendRequest(token, request); 
+    final response = await _api.rejectFriendRequest(friendshipId, token); 
     return response.message;
   }
 
   Future<void> removeFriend(int friendId, String token) async {
-    final request = RemoveFriendRequest(friendId: friendId);
-    await _api.removeFriend(token, request); 
+    await _api.removeFriend(friendId, token); 
   }
 }

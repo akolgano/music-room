@@ -126,9 +126,7 @@ class ProfileProvider extends BaseProvider {
         _hobbies = profileFriend['hobbies'];
         _friendInfo = profileFriend['friend_info'];
         final dobDb = profileFriend['dob'];
-        if (dobDb != null) {
-          _dob = DateTime.parse(dobDb);
-        }
+        if (dobDb != null) _dob = DateTime.parse(dobDb);
 
         final profileMusic = await _apiService.getProfileMusicData(token);
         _musicPreferences = profileMusic['music_preferences'];
@@ -149,15 +147,13 @@ class ProfileProvider extends BaseProvider {
   }
 
   Future<bool> facebookLink(String? token) async {
-    return await executeBool(
-      () async {
+    return await executeBool(() async {
         final LoginResult result = await FacebookAuth.instance.login();
         if (result.status == LoginStatus.success) {
           final fbAccessToken = result.accessToken!.tokenString;
-          await _apiService.facebookLinkData(token, fbAccessToken);
-        } else {
-          throw Exception("Facebook login failed!");
-        }
+          final request = SocialLinkRequest(fbAccessToken: fbAccessToken);
+          await _apiService.facebookLink(token!, request);
+        } else throw Exception("Facebook login failed!");
       },
       successMessage: 'Facebook account linked successfully',
       errorMessage: 'Failed to link Facebook account',
@@ -168,9 +164,7 @@ class ProfileProvider extends BaseProvider {
     return await executeBool(
       () async {
         var idToken = account?.idToken;
-        if (idToken == null) {
-          throw Exception("Google login failed!");
-        }
+        if (idToken == null) throw Exception("Google login failed!");
         await _apiService.googleLinkData('web', token, idToken);
       },
       successMessage: 'Google account linked successfully',
@@ -182,13 +176,9 @@ class ProfileProvider extends BaseProvider {
     return await executeBool(
       () async {
         final googleSignIn = SocialLoginUtils.googleSignInInstance;
-        if (googleSignIn == null) {
-          throw Exception("Google Sign-In not initialized");
-        }
+        if (googleSignIn == null) throw Exception("Google Sign-In not initialized");
         final user = await googleSignIn.signIn();
-        if (user == null) {
-          throw Exception("Google login failed!");
-        }
+        if (user == null) throw Exception("Google login failed!");
         final auth = await user.authentication;
         final idToken = auth.idToken;
         if (idToken == null) throw Exception("Google login failed!");
@@ -202,7 +192,10 @@ class ProfileProvider extends BaseProvider {
   Future<bool> updateAvatar(String? token, String? avatarBase64, String? mimeType) async {
     return await executeBool(
       () async {
-        await _apiService.updateAvatarData(token, avatarBase64, mimeType);
+        await _apiService.updateProfile(token!, {
+          if (avatarBase64 != null) 'avatar_base64': avatarBase64,
+          if (mimeType != null) 'mime_type': mimeType,
+        });
       },
       successMessage: 'Avatar updated successfully',
       errorMessage: 'Failed to update avatar',
