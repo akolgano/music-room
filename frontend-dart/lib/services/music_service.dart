@@ -5,6 +5,7 @@ import '../models/api_models.dart';
 
 class MusicService {
   final ApiService _api;
+  
   MusicService(this._api);
 
   Future<List<Playlist>> getUserPlaylists(String token) async {
@@ -26,11 +27,6 @@ class MusicService {
     final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, deviceUuid: deviceUuid);
     final response = await _api.createPlaylist(token, request); 
     return response.playlistId;
-  }
-
-  Future<void> updatePlaylist(String id, String token, {String? name, String? description, bool? isPublic}) async {
-    final request = UpdatePlaylistRequest(name: name, description: description, public: isPublic);
-    await _api.updatePlaylist(id, token, request); 
   }
 
   Future<List<Track>> searchDeezerTracks(String query) async {
@@ -69,10 +65,8 @@ class MusicService {
   }
 
   Future<void> addTrackToPlaylist(String playlistId, String trackId, String token) async {
-    String backendTrackId = trackId;
-    if (trackId.startsWith('deezer_')) backendTrackId = trackId.substring(7);
-    print('Adding track to playlist: originalId=$trackId, backendId=$backendTrackId');
-    final request = AddTrackRequest(trackId: backendTrackId);
+    print('Adding track to playlist: backendId=$trackId');
+    final request = AddTrackRequest(trackId: trackId);
     await _api.addTrackToPlaylist(playlistId, token, request); 
   }
 
@@ -81,7 +75,8 @@ class MusicService {
   }
 
   Future<void> moveTrackInPlaylist({
-    required String playlistId, required int rangeStart,
+    required String playlistId, 
+    required int rangeStart,
     required int insertBefore,
     int rangeLength = 1,
     required String token,

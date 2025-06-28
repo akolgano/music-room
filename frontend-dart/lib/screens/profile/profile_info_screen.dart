@@ -39,12 +39,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> with TickerProvid
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          const _PublicInfoTab(),
-          const _PrivateInfoTab(),
-          const _FriendInfoTab(),
-          const _MusicPreferenceTab(),
-        ],
+        children: [const _PublicInfoTab(), const _PrivateInfoTab(), const _FriendInfoTab(), const _MusicPreferenceTab()],
       ),
     );
   }

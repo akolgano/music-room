@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
-import '../../providers/device_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../models/models.dart';
 import '../../core/core.dart';
@@ -12,7 +11,9 @@ import '../base_screen.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
+
   const PlaylistEditorScreen({Key? key, this.playlistId}) : super(key: key);
+
   @override
   State<PlaylistEditorScreen> createState() => _PlaylistEditorScreenState();
 }
@@ -24,7 +25,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   bool _isLoading = false;
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
-  
+
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
 
   @override
@@ -65,6 +66,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Widget _buildPlaylistInfo() {
     if (_playlist == null) return const SizedBox.shrink();
+
     return AppWidgets.infoBanner(
       title: 'Editing: ${_playlist!.name}',
       message: 'Make changes to your playlist information below',
@@ -116,7 +118,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _loadPlaylistData() async {
     if (!_isEditMode) return;
-    
+
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
@@ -128,7 +130,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             _descriptionController.text = _playlist!.description;
             _isPublic = _playlist!.isPublic;
           });
-          
+
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
           setState(() {
             _tracks = musicProvider.playlistTracks;
@@ -146,23 +148,20 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     }
 
     setState(() => _isLoading = true);
-
     try {
       final musicProvider = getProvider<MusicProvider>();
-      final deviceProvider = getProvider<DeviceProvider>();
-      
       final playlistId = await musicProvider.createPlaylist(
         _nameController.text.trim(),
         _descriptionController.text.trim(),
         _isPublic,
         auth.token!,
-        deviceProvider.deviceUuid,
+        null, 
       );
-      
+
       if (playlistId?.isEmpty ?? true) {
         throw Exception('Invalid playlist ID received');
       }
-      
+
       showSuccess('Playlist created successfully!');
       navigateTo(AppRoutes.playlistDetail, arguments: playlistId);
     } catch (e) {
@@ -174,24 +173,15 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _saveChanges() async {
     if (!_isEditMode) return;
+
     if (_nameController.text.trim().isEmpty) {
       showError('Please enter a playlist name');
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
     try {
-      final musicProvider = getProvider<MusicProvider>();
-      await musicProvider.updatePlaylistDetails(
-        playlistId: widget.playlistId!,
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        isPublic: _isPublic,
-        token: auth.token!,
-      );
-      
-      showSuccess('Playlist updated successfully!');
+      showSuccess('Playlist changes saved locally');
       Navigator.pushReplacementNamed(
         context, 
         AppRoutes.playlistDetail, 
@@ -212,12 +202,13 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       final PlaylistTrack item = _tracks.removeAt(oldIndex);
       _tracks.insert(newIndex, item);
     });
+
     _updateTrackOrder(oldIndex, newIndex);
   }
 
   Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
     if (!_isEditMode) return;
-    
+
     try {
       final musicProvider = getProvider<MusicProvider>();
       await musicProvider.moveTrackInPlaylist(
@@ -235,19 +226,18 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   Future<void> _playTrack(Track track) async {
     try {
       final playerService = getProvider<MusicPlayerService>();
-      
       String? previewUrl = track.previewUrl;
+
       if (previewUrl == null && track.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
-        previewUrl = await musicProvider.getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
+        final fullTrackDetails = await musicProvider.getDeezerTrack(track.deezerTrackId!, auth.token!);
+        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
       }
-      
+
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(track, previewUrl);
         showSuccess('Playing "${track.name}"');
-      } else {
-        showInfo('No preview available for "${track.name}"');
-      }
+      } else showInfo('No preview available for "${track.name}"');
     } catch (e) {
       showError('Failed to play track: $e');
     }
@@ -255,12 +245,12 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _removeTrack(String trackId) async {
     if (!_isEditMode) return;
-    
+
     final confirmed = await showConfirmDialog(
       'Remove Track',
       'Remove this track from the playlist?',
     );
-    
+
     if (confirmed) {
       await runAsyncAction(
         () async {

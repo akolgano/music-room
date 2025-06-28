@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_provider.dart';
-import '../../providers/device_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../services/track_sorting_service.dart';
@@ -46,7 +45,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   bool get _isSearching => _loadingState == LoadingState.searching; 
   bool get _isAddingTracks => _loadingState == LoadingState.addingTracks;
 
-  DeviceProvider get _deviceProvider => getProvider<DeviceProvider>();
   MusicPlayerService get _playerService => getProvider<MusicPlayerService>();
 
   TrackSortOption _searchSortOption = const TrackSortOption(
@@ -318,7 +316,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _performSearch({bool isAutoSearch = false}) async {
     if (!mounted || _searchController.text.trim().length < _minSearchLength) return;
-    
     await runAsyncAction(
       () async {
         _setLoadingState(LoadingState.searching);
@@ -338,7 +335,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         playlistId: widget.playlistId!,
         trackIds: _selectedTracks.toList(),
         token: auth.token!,
-        deviceUuid: _deviceProvider.deviceUuid,
         onProgress: (current, total) => print('Progress: $current/$total tracks processed'),
       );
       _showMessage('✓ Added ${result.successCount} tracks to playlist!', isError: false);
@@ -380,7 +376,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       }
     }
 
-    final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
+    final sortedTracks = TrackSortingService.sortTracksByField(tracks, _searchSortOption);
     return Column(
       children: [
         if (tracks.isNotEmpty)
@@ -389,10 +385,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${tracks.length} results',
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                Text('${tracks.length} results', style: const TextStyle(color: Colors.grey)),
                 SortButton(
                   currentSort: _searchSortOption,
                   onPressed: _showSearchSortOptions,
@@ -418,7 +411,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       track: track,
       isSelected: _selectedTracks.contains(track.id),
       isInPlaylist: isInPlaylist,
-      showExplicitAddButton: true, 
+      showExplicitAddButton: false, 
       showVotingControls: _isAddingToPlaylist,
       playlistContext: _isAddingToPlaylist ? 'Playlist' : null,
       playlistId: _isAddingToPlaylist ? widget.playlistId : null,
@@ -426,7 +419,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       onSelectionChanged: _isMultiSelectMode ? (value) => _toggleSelection(track.id) : null,
       onAdd: !_isMultiSelectMode && !isInPlaylist ? () => _handleAddTrack(track) : null, 
       onPlay: () => _playTrack(track),
-      showAddButton: false,
+      showAddButton: true,
     );
   }
 
@@ -438,10 +431,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+        decoration: const BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -550,21 +540,26 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   void _handleTrackTap(Track track) {
-    if (_isMultiSelectMode) {
-      _toggleSelection(track.id);
-    } else if (_isAddingToPlaylist && !_isTrackInPlaylist(track.id)) {
-      _addTrackToPlaylist(widget.playlistId!, track);
-    } else {
-      _playTrack(track);
-    }
+    if (_isMultiSelectMode) _toggleSelection(track.id);
+    else if (_isAddingToPlaylist && !_isTrackInPlaylist(track.id)) _addTrackToPlaylist(widget.playlistId!, track);
+    else _playTrack(track);
   }
 
   Future<void> _handleAddTrack(Track track) async {
-    if (_isAddingToPlaylist) {
-      await _addTrackToPlaylist(widget.playlistId!, track);
-    } else {
-      await _showPlaylistSelectionDialog(track);
-    }
+    if (_isAddingToPlaylist) await _addTrackObjectToPlaylist(widget.playlistId!, track);
+    else await _showPlaylistSelectionDialog(track);
+  }
+
+  Future<void> _addTrackObjectToPlaylist(String playlistId, Track track) async {
+    await runAsyncAction(
+      () async {
+        final musicProvider = getProvider<MusicProvider>();
+        final result = await musicProvider.addTrackObjectToPlaylist(playlistId, track, auth.token!);
+        if (!result.success) throw Exception(result.message);
+      },
+      successMessage: 'Added "${track.name}" to playlist!',
+      errorMessage: 'Failed to add track to playlist',
+    );
   }
 
   Future<void> _loadUserPlaylists() async {
@@ -582,7 +577,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       }
       String? previewUrl = track.previewUrl;
       if (previewUrl == null && track.deezerTrackId != null) {
-        previewUrl = await getProvider<MusicProvider>().getDeezerTrackPreviewUrl(track.deezerTrackId!, auth.token!);
+        final fullTrackDetails = await getProvider<MusicProvider>().getDeezerTrack(track.deezerTrackId!, auth.token!);
+        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
       }
       if (previewUrl?.isNotEmpty == true) {
         await _playerService.playTrack(track, previewUrl!);
@@ -626,11 +622,9 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       _setLoadingState(LoadingState.addingTracks);
       await _executeWithErrorHandling(() async {
         final playlistId = await getProvider<MusicProvider>().createPlaylist(
-          playlistName!,
-          'Created while adding "${track.name}"',
+          playlistName!, 'Created while adding "${track.name}"',
           false, 
           auth.token!,
-          _deviceProvider.deviceUuid,
         );
         if (playlistId?.isNotEmpty == true) {
           final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);

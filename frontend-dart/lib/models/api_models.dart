@@ -460,32 +460,20 @@ class PlaylistLicenseResponse {
 }
 
 class VoteRequest {
-  final String trackId;
-  final int voteValue;
-
-  const VoteRequest({ 
-    required this.trackId, 
-    required this.voteValue 
-  });
-
-  Map<String, dynamic> toJson() => { 
-    'track_id': trackId, 
-    'vote_value': voteValue 
-  };
+  final int rangeStart;
+  const VoteRequest({ required this.rangeStart });
+  Map<String, dynamic> toJson() => { 'range_start': rangeStart };
 }
 
 class VoteResponse {
   final String message;
-  final VoteStats stats;
-
-  const VoteResponse({
-    required this.message,
-    required this.stats,
-  });
-
+  final List<PlaylistInfoWithVotes> playlist;
+  const VoteResponse({ required this.message, required this.playlist });
   factory VoteResponse.fromJson(Map<String, dynamic> json) => VoteResponse(
-    message: json['message'] as String,
-    stats: VoteStats.fromJson(json['stats'] as Map<String, dynamic>),
+    message: json['message'] as String? ?? 'Vote recorded',
+    playlist: (json['playlist'] as List<dynamic>?)
+        ?.map((item) => PlaylistInfoWithVotes.fromJson(item as Map<String, dynamic>))
+        .toList() ?? [],
   );
 }
 

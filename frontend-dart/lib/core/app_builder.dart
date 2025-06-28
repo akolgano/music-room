@@ -8,7 +8,6 @@ import '../providers/auth_provider.dart';
 import '../providers/music_provider.dart';
 import '../providers/friend_provider.dart';
 import '../providers/profile_provider.dart';
-import '../providers/device_provider.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../providers/voting_provider.dart';
 import '../services/music_player_service.dart';
@@ -24,7 +23,6 @@ class AppBuilder {
       ChangeNotifierProvider<MusicProvider>(create: (_) => MusicProvider()),
       ChangeNotifierProvider<FriendProvider>(create: (_) => FriendProvider()),
       ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
-      ChangeNotifierProvider<DeviceProvider>(create: (_) => DeviceProvider()),
       ChangeNotifierProvider<VotingProvider>(create: (_) => VotingProvider()),
     ];
   }
@@ -52,7 +50,6 @@ class AppBuilder {
       AppRoutes.friends: (context) => const FriendsListScreen(),
       AppRoutes.addFriend: (context) => const AddFriendScreen(),
       AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
-      AppRoutes.deviceManagement: (context) => const DeviceManagementScreen(),
       AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
       AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
       '/profile_info': (context) => const ProfileInfoScreen(),
@@ -71,7 +68,6 @@ class AppBuilder {
     AppRoutes.friends,
     AppRoutes.addFriend,
     AppRoutes.friendRequests,
-    AppRoutes.deviceManagement,
     AppRoutes.playlistSharing,
     AppRoutes.player,
     AppRoutes.deezerTrackDetail,
@@ -82,7 +78,7 @@ class AppBuilder {
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     print('Generating route for: ${settings.name} with arguments: ${settings.arguments}'); 
-    
+
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
         settings: settings,
@@ -189,21 +185,20 @@ class AppBuilder {
       print('No arguments provided for playlist detail'); 
       return _buildErrorScreen('No playlist ID provided');
     }
-    
+
     String? playlistId;
-    
     if (args is String) playlistId = args;
     else if (args is Map<String, dynamic> && args.containsKey('id')) playlistId = args['id'].toString();
     else {
       print('Invalid arguments type for playlist detail: ${args.runtimeType}'); 
       return _buildErrorScreen('Invalid playlist ID format');
     }
-    
+
     if (playlistId == null || playlistId.isEmpty || playlistId == 'null') {
       print('Invalid playlist ID: $playlistId'); 
       return _buildErrorScreen('Invalid playlist ID');
     }
-    
+
     print('Building PlaylistDetailScreen with ID: $playlistId'); 
     return PlaylistDetailScreen(playlistId: playlistId);
   }

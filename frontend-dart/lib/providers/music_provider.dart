@@ -9,7 +9,7 @@ import '../services/track_sorting_service.dart';
 
 class MusicProvider extends BaseProvider {
   final MusicService _musicService = getIt<MusicService>();
-
+  
   List<Playlist> _playlists = [];
   List<Track> _searchResults = [];
   List<PlaylistTrack> _playlistTracks = [];
@@ -22,7 +22,6 @@ class MusicProvider extends BaseProvider {
 
   TrackSortOption _currentSortOption = TrackSortOption.defaultOptions.first;
   TrackSortOption get currentSortOption => _currentSortOption;
-
   List<PlaylistTrack> get sortedPlaylistTracks => 
       TrackSortingService.sortTracks(_playlistTracks, _currentSortOption);
 
@@ -152,15 +151,9 @@ class MusicProvider extends BaseProvider {
     return _playlistTracks.any((pt) => pt.trackId == trackId || pt.track?.id == trackId);
   }
 
-  Future<String?> getDeezerTrackPreviewUrl(String deezerTrackId, String token) async {
-    final track = await getDeezerTrack(deezerTrackId, token);
-    return track?.previewUrl;
-  }
-
   Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     try {
-      String backendTrackId = trackId;
-      if (trackId.startsWith('deezer_')) backendTrackId = trackId.substring(7);
+      final backendTrackId = Track.toBackendId(trackId);
       print('Adding track to playlist: frontendId=$trackId, backendId=$backendTrackId');
       await _musicService.addTrackToPlaylist(playlistId, backendTrackId, token);
       return AddTrackResult(success: true, message: 'Track added successfully');
@@ -195,27 +188,23 @@ class MusicProvider extends BaseProvider {
       if (onProgress != null) {
         onProgress(i + 1, trackIds.length);
       }
-
       try {
         if (isTrackInPlaylist(trackIds[i])) {
           duplicateCount++;
           continue;
         }
-
         await _musicService.addTrackToPlaylist(playlistId, trackIds[i], token);
         successCount++;
       } catch (e) {
         failureCount++;
         errors.add(e.toString());
       }
-
       if (i < trackIds.length - 1) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
     }
 
     await fetchPlaylistTracks(playlistId, token);
-
     return BatchAddResult(
       totalTracks: trackIds.length,
       successCount: successCount,
@@ -254,26 +243,6 @@ class MusicProvider extends BaseProvider {
       ),
       successMessage: 'Track order updated',
       errorMessage: 'Failed to update track order',
-    );
-  }
-
-  Future<void> updatePlaylistDetails({
-    required String playlistId,
-    String? name,
-    String? description,
-    bool? isPublic,
-    required String token,
-  }) async {
-    await executeAsync(
-      () => _musicService.updatePlaylist(
-        playlistId,
-        token,
-        name: name,
-        description: description,
-        isPublic: isPublic,
-      ),
-      successMessage: 'Playlist updated successfully',
-      errorMessage: 'Failed to update playlist',
     );
   }
 }

@@ -298,7 +298,6 @@ class AppRoutes {
   static const String friends = '/friends';
   static const String addFriend = '/add_friend';
   static const String friendRequests = '/friend_requests';
-  static const String deviceManagement = '/device_management';
   static const String playlistSharing = '/playlist_sharing';
   static const String player = '/player';
   static const String deezerTrackDetail = '/deezer_track_detail';
@@ -310,13 +309,11 @@ class AppRoutes {
 class SocialLoginUtils {
   static GoogleSignIn? _googleSignIn;
   static bool _isInitialized = false;
-
+  
   static Future<void> initialize() async {
     if (_isInitialized) return;
-
     try {
       print('Initializing social login services...');
-      
       final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
       if (kIsWeb && fbAppId != null) {
         await FacebookAuth.instance.webAndDesktopInitialize(
@@ -327,11 +324,9 @@ class SocialLoginUtils {
         );
         print('Facebook initialized for web');
       }
-
       final googleClientId = kIsWeb 
           ? dotenv.env['GOOGLE_CLIENT_ID_WEB']
           : dotenv.env['GOOGLE_CLIENT_ID_APP'];
-
       if (googleClientId != null) {
         _googleSignIn = GoogleSignIn(
           scopes: ['email', 'profile', 'openid'],
@@ -341,7 +336,6 @@ class SocialLoginUtils {
       } else {
         print('Warning: Google Client ID not found in environment variables');
       }
-
       _isInitialized = true;
       print('Social login initialization completed successfully');
     } catch (e) {
@@ -364,7 +358,6 @@ class SocialLoginUtils {
       final idToken = tokens['idToken'];
       final accessToken = tokens['accessToken'];
       final token = idToken ?? accessToken;
-
       if (token != null && token.isNotEmpty) {
         print('$provider login successful with token type: ${idToken != null ? 'idToken' : 'accessToken'}');
         return SocialLoginResult.success(token, provider.toLowerCase());
@@ -386,8 +379,7 @@ class SocialLoginUtils {
         final result = await FacebookAuth.instance.login();
         return result.status == LoginStatus.success ? result.accessToken : null;
       },
-      (result) => { 'accessToken': result?.tokenString, 'idToken': null },
-      'Facebook',
+      (result) => { 'accessToken': result?.tokenString, 'idToken': null }, 'Facebook',
     );
   }
 
@@ -396,12 +388,10 @@ class SocialLoginUtils {
       print('Google Sign-In not initialized, initializing now...');
       await initialize();
     }
-
     if (_googleSignIn == null) {
       print('Google Sign-In instance is null after initialization');
       return SocialLoginResult.error('Google Sign-In not properly initialized. Please check your configuration.');
     }
-
     return _performSocialLogin(
       () async {
         try {
@@ -425,18 +415,6 @@ class SocialLoginUtils {
       (result) => {'idToken': result?.idToken, 'accessToken': result?.accessToken},
       'Google',
     );
-  }
-
-  static Future<void> signOut() async {
-    try {
-      await FacebookAuth.instance.logOut();
-      if (_googleSignIn != null) {
-        await _googleSignIn!.signOut();
-      }
-      print('Social sign out completed');
-    } catch (e) {
-      print('Social sign out error: $e');
-    }
   }
 }
 

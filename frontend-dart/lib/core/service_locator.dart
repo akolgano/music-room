@@ -8,7 +8,6 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/music_service.dart';
 import '../services/friend_service.dart';
-import '../services/device_service.dart';
 import '../services/storage_service.dart';
 import '../services/music_player_service.dart';
 import '../services/voting_service.dart';
@@ -18,7 +17,7 @@ final getIt = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
   print('Service Locator: Starting setup...');
-
+  
   final storageService = await StorageService.init();
   getIt.registerSingleton<StorageService>(storageService);
   print('Service Locator: StorageService registered');
@@ -29,7 +28,6 @@ Future<void> setupServiceLocator() async {
     
     String baseUrl;
     final envBaseUrl = dotenv.env['API_BASE_URL'];
-    
     if (envBaseUrl != null && envBaseUrl.isNotEmpty) {
       baseUrl = envBaseUrl;
       print('Service Locator: Using base URL from environment: $baseUrl');
@@ -49,7 +47,6 @@ Future<void> setupServiceLocator() async {
     
     print('Service Locator: Final base URL: $baseUrl');
     dio.options.baseUrl = baseUrl;
-    
     print('Service Locator: Dio base URL after setting: "${dio.options.baseUrl}"');
     
     dio.options.headers = {
@@ -60,7 +57,7 @@ Future<void> setupServiceLocator() async {
     dio.options.connectTimeout = const Duration(seconds: 10);
     dio.options.receiveTimeout = const Duration(seconds: 10);
     dio.options.sendTimeout = const Duration(seconds: 10);
-    
+
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,
       requestBody: true,
@@ -70,7 +67,7 @@ Future<void> setupServiceLocator() async {
       compact: true,
       maxWidth: 120,
     ));
-    
+
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         final fullUrl = options.uri.toString();
@@ -87,30 +84,25 @@ Future<void> setupServiceLocator() async {
         
         final token = getIt.isRegistered<AuthService>() ? getIt<AuthService>().currentToken : null;
         if (token != null) options.headers['Authorization'] = 'Token $token';
-        
         handler.next(options);
       },
       onResponse: (response, handler) {
         print('API Response: ${response.statusCode} for ${response.requestOptions.uri}');
-        
         if (response.data is String && response.data.toString().contains('<!DOCTYPE html>')) {
           print('WARNING: Received HTML instead of JSON!');
           print('   This usually means the request is not reaching the Django backend.');
           print('   Request was sent to: ${response.requestOptions.uri}');
           print('   Check if your backend server is running on the correct port.');
         }
-        
         handler.next(response);
       },
       onError: (error, handler) {
         print('API Error: ${error.response?.statusCode} ${error.message}');
         print('   Request URL: ${error.requestOptions.uri}');
-        
         if (error.response?.statusCode == 401) {
           print('Unauthorized - clearing auth token');
           if (getIt.isRegistered<AuthService>()) getIt<AuthService>().logout();
         }
-        
         handler.next(error);
       },
     ));
@@ -129,7 +121,6 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<AuthService>(() => AuthService(getIt<ApiService>(), getIt<StorageService>()));
   getIt.registerLazySingleton<MusicService>(() => MusicService(getIt<ApiService>()));
   getIt.registerLazySingleton<FriendService>(() => FriendService(getIt<ApiService>()));
-  getIt.registerLazySingleton<DeviceService>(() => DeviceService(getIt<ApiService>()));
   getIt.registerLazySingleton<VotingService>(() => VotingService(getIt<ApiService>()));
   getIt.registerLazySingleton<DynamicThemeProvider>(() => DynamicThemeProvider());
   getIt.registerLazySingleton<MusicPlayerService>(() => MusicPlayerService(themeProvider: getIt<DynamicThemeProvider>()));
@@ -138,7 +129,6 @@ Future<void> setupServiceLocator() async {
   
   final testDio = getIt<Dio>();
   print('Final verification - Dio base URL: "${testDio.options.baseUrl}"');
-  
   if (testDio.options.baseUrl.isEmpty) {
     print('CRITICAL ERROR: Base URL is empty after setup!');
     throw Exception('Failed to configure API base URL');

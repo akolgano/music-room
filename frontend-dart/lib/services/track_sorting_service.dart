@@ -55,13 +55,13 @@ class TrackSortingService {
     return sortedTracks;
   }
 
-  static List<Track> sortTrackList(
-    List<Track> tracks,
-    TrackSortOption sortOption,
-  ) {
+  static List<Track> sortTracksByField(List<Track> tracks, TrackSortOption sortOption) {
     final sortedTracks = List<Track>.from(tracks);
     
     switch (sortOption.field) {
+      case TrackSortField.position:
+        break;
+        
       case TrackSortField.name:
         sortedTracks.sort((a, b) {
           final comparison = a.name.toLowerCase().compareTo(b.name.toLowerCase());
@@ -83,7 +83,7 @@ class TrackSortingService {
         });
         break;
         
-      default:
+      case TrackSortField.dateAdded:
         break;
     }
     
