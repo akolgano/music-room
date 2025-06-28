@@ -17,7 +17,7 @@ from django.forms.models import model_to_dict
 from .decorators import check_access_to_playlist, check_license
 from .serializers import PlaylistLicenseSerializer
 from apps.deezer.deezer_client import DeezerClient
-from .serializers import PlaylistLicenseSerializer
+from .serializers import PlaylistLicenseSerializer, VoteSerializer
 
 
 @api_view(['POST'])
@@ -396,9 +396,52 @@ def patch_playlist_license(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@check_license
+#@check_license
 def vote_for_track(request, playlist_id):
-    return JsonResponse(
-        {"detail": "Vote API not implemented yet."},
-        status=status.HTTP_501_NOT_IMPLEMENTED
-    )
+    try:
+        playlist = Playlist.objects.get(id=playlist_id)
+    except Playlist.DoesNotExist:
+        return JsonResponse({'detail': 'Playlist not found'}, status=404)
+    serializer = VoteSerializer(data=request.data)
+    if serializer.is_valid():
+        range_start = serializer.validated_data["range_start"]
+        tracks = list(PlaylistTrack.objects.filter(playlist=playlist).order_by('position'))
+        if range_start >= len(tracks) or range_start < 0:
+            return JsonResponse({'error': 'Invalid track index'}, status=400)
+        print(tracks[range_start])
+        pt = tracks[range_start]
+        user = request.user
+        print("Users who already voted:", list(playlist.users_already_voted.all()))
+        if not playlist.users_already_voted.filter(id=user.id).exists():
+            with transaction.atomic():
+                pt.points += 1
+                pt.save()
+                playlist.users_already_voted.add(request.user)
+                playlist.save()
+        else:
+            return JsonResponse({'error': 'You have already voted for this playlist'}, status=403)
+        data = [{"id": t.id, "track": model_to_dict(t.track),"position": t.position, "points": t.points} for t in tracks]
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'playlist_{playlist_id}',
+            {
+                'type': 'playlist.update',
+                'playlist_id': playlist_id,
+                'data': data,
+            }
+        )
+        playlist_data = []
+        tracks = playlist.tracks.all()
+        track_list = [{'name': pt.track.name, 'artist': pt.track.artist, 'points': pt.points} for pt in tracks]
+
+        playlist_data.append({
+            'id': playlist.id,
+            'playlist_name': playlist.name,
+            'description': playlist.description,
+            'public': playlist.public,
+            'creator': playlist.creator.username,
+            'tracks': track_list,
+        })
+
+        return JsonResponse({'playlist': playlist_data})
+    return JsonResponse(serializer.errors, status=400)
