@@ -9,7 +9,6 @@ import '../services/auth_service.dart';
 import '../services/music_service.dart';
 import '../services/friend_service.dart';
 import '../services/device_service.dart';
-import '../services/profile_service.dart';
 import '../services/storage_service.dart';
 import '../services/music_player_service.dart';
 import '../services/voting_service.dart';
@@ -131,7 +130,6 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<MusicService>(() => MusicService(getIt<ApiService>()));
   getIt.registerLazySingleton<FriendService>(() => FriendService(getIt<ApiService>()));
   getIt.registerLazySingleton<DeviceService>(() => DeviceService(getIt<ApiService>()));
-  getIt.registerLazySingleton<ProfileService>(() => ProfileService(getIt<ApiService>()));
   getIt.registerLazySingleton<VotingService>(() => VotingService(getIt<ApiService>()));
   getIt.registerLazySingleton<DynamicThemeProvider>(() => DynamicThemeProvider());
   getIt.registerLazySingleton<MusicPlayerService>(() => MusicPlayerService(themeProvider: getIt<DynamicThemeProvider>()));

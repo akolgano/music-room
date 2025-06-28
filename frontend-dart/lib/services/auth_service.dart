@@ -58,14 +58,14 @@ class AuthService {
   }
 
   Future<AuthResult> facebookLogin(String accessToken) async {
-    final request = SocialLoginRequest(accessToken: accessToken);
+    final request = SocialLoginRequest(fbAccessToken: accessToken);
     final result = await _api.facebookLogin(request);
     await _storeAuth(result.token, result.user);
     return result;
   }
 
   Future<AuthResult> googleLogin(String type, String token) async {
-    final request = SocialLoginRequest(type: type, idToken: token, accessToken: token);
+    final request = SocialLoginRequest(type: type, idToken: token);
     final result = await _api.googleLogin(request);
     await _storeAuth(result.token, result.user);
     return result;

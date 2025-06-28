@@ -48,8 +48,7 @@ class MusicService {
   }
 
   Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
-    final request = AddDeezerTrackRequest(deezerTrackId: deezerTrackId);
-    await _api.addTrackFromDeezer(token, request); 
+    await _api.addTrackFromDeezer(int.parse(deezerTrackId), token);
   }
 
   Future<List<PlaylistTrack>> getPlaylistTracks(String playlistId, String token) async {

@@ -311,11 +311,9 @@ class AppWidgets {
     builder: (context, playerService, themeProvider, _) {
       final isCurrentTrack = playerService.currentTrack?.id == track.id;
       final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-
       String displayArtist = track.artist;
       if (displayArtist.isEmpty && track.deezerTrackId != null) displayArtist = 'Loading artist info...';
       else if (displayArtist.isEmpty) displayArtist = 'Unknown Artist';
-
       return AnimationConfiguration.staggeredList(
         position: 0,
         duration: const Duration(milliseconds: 375),
@@ -333,27 +331,64 @@ class AppWidgets {
               ),
               child: Column(
                 children: [
-                  ListTile(
-                    leading: onSelectionChanged != null
-                        ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
-                        : _buildImage(track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
-                    title: Text(track.name, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Padding(
+                    padding: R.p(12),
+                    child: Row(
                       children: [
-                        Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        if (onSelectionChanged != null)
+                          Checkbox(
+                            value: isSelected, 
+                            onChanged: onSelectionChanged, 
+                            activeColor: themeProvider.primaryColor
+                          )
+                        else
+                          _buildImage(track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
+                        
+                        SizedBox(width: R.w(12)),
+                        
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                track.name, 
+                                style: _primaryStyle, 
+                                maxLines: 1, 
+                                overflow: TextOverflow.ellipsis
+                              ),
+                              Text(
+                                displayArtist, 
+                                style: _secondaryStyle, 
+                                maxLines: 1, 
+                                overflow: TextOverflow.ellipsis
+                              ),
+                            ],
+                          ),
+                        ),
+                        
                         if (showVotingControls && playlistId != null) ...[
-                          const SizedBox(height: 4),
                           TrackVotingControls(
                             playlistId: playlistId!,
                             trackId: track.id,
                             isCompact: true,
                           ),
+                          SizedBox(width: R.w(8)),
                         ],
+                        
+                        if (onSelectionChanged == null) 
+                          _buildTrackActions(
+                            showAddButton, 
+                            showPlayButton, 
+                            onAdd, 
+                            onPlay, 
+                            onRemove, 
+                            trackIsPlaying, 
+                            themeProvider, 
+                            isInPlaylist
+                          ),
                       ],
                     ),
-                    trailing: onSelectionChanged == null ? _buildTrackActions(showAddButton, showPlayButton, onAdd, onPlay, onRemove, trackIsPlaying, themeProvider, isInPlaylist) : null,
-                    onTap: onTap,
                   ),
                   if (showExplicitAddButton) _buildExplicitButton(onAdd, isInPlaylist, playlistContext, themeProvider),
                 ],
@@ -754,8 +789,7 @@ class MiniPlayerWidget extends StatelessWidget {
                     children: [
                       Text(
                         track.name, 
-                        style: TextStyle(
-                          color: Colors.white, 
+                        style: TextStyle(color: Colors.white, 
                           fontWeight: FontWeight.w600, 
                           fontSize: R.s(14)
                         ), 

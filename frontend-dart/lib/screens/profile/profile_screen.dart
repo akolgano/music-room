@@ -68,11 +68,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                     colors: [AppTheme.primary, AppTheme.primary.withOpacity(0.7)],
                   ),
                   boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
+                    BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
                   ],
                 ),
                 child: const Icon(Icons.person, size: 50, color: Colors.black),
