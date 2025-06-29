@@ -52,14 +52,12 @@ class AppBuilder {
       AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
       AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
       AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
-      '/profile_info': (context) => const ProfileInfoScreen(),
       '/signup_otp': (context) => const SignupWithOtpScreen(),
     };
   }
 
   static final Set<String> _protectedRoutes = {
-    AppRoutes.home,
-    AppRoutes.profile,
+    AppRoutes.home, AppRoutes.profile,
     AppRoutes.playlistEditor,
     AppRoutes.playlistDetail,
     AppRoutes.trackDetail,
@@ -73,7 +71,6 @@ class AppBuilder {
     AppRoutes.deezerTrackDetail,
     AppRoutes.userPasswordChange,
     AppRoutes.socialNetworkLink,
-    '/profile_info',
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -180,7 +177,7 @@ class AppBuilder {
   static Widget _buildPlaylistDetail(RouteSettings settings) {
     final args = settings.arguments;
     print('Playlist detail args: $args, type: ${args.runtimeType}'); 
-    
+
     if (args == null) {
       print('No arguments provided for playlist detail'); 
       return _buildErrorScreen('No playlist ID provided');

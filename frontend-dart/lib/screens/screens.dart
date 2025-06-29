@@ -10,7 +10,6 @@ export 'playlists/playlist_detail_screen.dart';
 export 'playlists/playlist_sharing_screen.dart';
 export 'playlists/playlists_screen.dart';
 export 'profile/profile_screen.dart';
-export 'profile/profile_info_screen.dart';
 export 'profile/social_network_link_screen.dart';
 export 'profile/user_password_change_screen.dart';
 export 'friends/add_friend_screen.dart';

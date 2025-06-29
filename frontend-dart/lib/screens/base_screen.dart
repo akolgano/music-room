@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../core/core.dart';
 import '../widgets/app_widgets.dart';
-import '../utils/dialog_utils.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   String get screenTitle;
@@ -45,12 +44,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   Future<bool> showConfirmDialog(String title, String message, {bool isDangerous = false}) async {
     if (!mounted) return false;
-    return await DialogUtils.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous);
+    return await AppWidgets.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous);
   }
 
   Future<String?> showTextInputDialog(String title, {String? initialValue, String? hintText}) async {
     if (!mounted) return null;
-    return await DialogUtils.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText);
+    return await AppWidgets.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText);
   }
 
   T getProvider<T>({bool listen = false}) => Provider.of<T>(context, listen: listen);
@@ -143,9 +142,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
         actions: actions,
         automaticallyImplyLeading: showBackButton,
       ),
-      body: Column(
-        children: [Expanded(child: buildContent()), if (showMiniPlayer) const MiniPlayerWidget()],
-      ),
+      body: Column(children: [Expanded(child: buildContent()), if (showMiniPlayer) const MiniPlayerWidget()]),
       floatingActionButton: floatingActionButton,
     );
   }

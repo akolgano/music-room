@@ -6,12 +6,11 @@ import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
 import '../../models/models.dart';
 import '../../widgets/app_widgets.dart';
-import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 
 class PlaylistSharingScreen extends StatefulWidget {
   final Playlist playlist;
-  
+
   const PlaylistSharingScreen({Key? key, required this.playlist}) : super(key: key);
 
   @override
@@ -215,10 +214,8 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
     if (_selectedFriends.isEmpty) return;
 
     setState(() => _isSharing = true);
-
     try {
       await Future.delayed(const Duration(seconds: 2));
-      
       showSuccess('Playlist shared with ${_selectedFriends.length} friends!');
       Navigator.pop(context);
     } catch (e) {
@@ -233,7 +230,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
   }
 
   void _shareToSocial() {
-    DialogUtils.showInfoDialog(
+    AppWidgets.showInfoDialog(
       context: context,
       title: 'Share to Social Media',
       message: 'Social media sharing coming soon!',

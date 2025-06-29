@@ -7,18 +7,13 @@ import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../models/api_models.dart';
 import '../../services/api_service.dart';
-import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 
 class PlaylistLicensingScreen extends StatefulWidget {
   final String playlistId;
   final String playlistName;
 
-  const PlaylistLicensingScreen({
-    Key? key,
-    required this.playlistId,
-    required this.playlistName,
-  }) : super(key: key);
+  const PlaylistLicensingScreen({Key? key, required this.playlistId, required this.playlistName}) : super(key: key);
 
   @override
   State<PlaylistLicensingScreen> createState() => _PlaylistLicensingScreenState();
