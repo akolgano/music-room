@@ -172,6 +172,7 @@ def playlist_tracks(request, playlist_id):
         'deezer_track_id': pt.track.deezer_track_id,
         'name': pt.track.name,
         'position': pt.position,
+        'points': pt.points,
     } for pt in tracks]
 
     return JsonResponse({'playlist': playlist.name, 'tracks': data})
