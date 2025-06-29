@@ -383,10 +383,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         leading: Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          decoration: BoxDecoration(color: Colors.red.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
           child: const Icon(Icons.music_off, color: Colors.white),
         ),
         title: Text(playlistTrack.name, style: const TextStyle(color: Colors.white)),
@@ -402,11 +399,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   void _toggleVotingMode() {
     setState(() => _showVotingMode = !_showVotingMode);
     print('Voting mode toggled to: $_showVotingMode');
-    if (_showVotingMode) {
-      showInfo('Voting mode enabled - rate tracks with thumbs up/down');
-    } else {
-      showInfo('Voting mode disabled');
-    }
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        if (_showVotingMode) showInfo('Voting mode enabled');
+        else showInfo('Voting mode disabled');
+      }
+    });
   }
 
   @override
@@ -418,13 +416,13 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   @override
-  Widget? get floatingActionButton => Column(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      Consumer<VotingProvider>(
-        builder: (context, votingProvider, _) {
-          if (votingProvider.canVote) {
-            return FloatingActionButton(
+  Widget? get floatingActionButton {
+    return Consumer<VotingProvider>(
+      builder: (context, votingProvider, _) {
+        final List<Widget> actions = [];
+        if (votingProvider.canVote) {
+          actions.add(
+            FloatingActionButton(
               heroTag: "voting_toggle",
               onPressed: _toggleVotingMode,
               backgroundColor: _showVotingMode ? AppTheme.primary : AppTheme.surface,
@@ -432,23 +430,37 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               child: Icon(_showVotingMode ? Icons.how_to_vote : Icons.how_to_vote_outlined),
               tooltip: _showVotingMode ? 'Hide Voting' : 'Show Voting',
               mini: true,
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
-      const SizedBox(height: 8),
-      if (_isOwner)
-        FloatingActionButton.extended(
-          heroTag: "add_songs",
-          onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.black,
-          icon: const Icon(Icons.add),
-          label: const Text('Add Songs'),
-        ),
-    ],
-  );
+            ),
+          );
+        }
+        if (_isOwner) {
+          if (actions.isNotEmpty) actions.add(const SizedBox(height: 8));
+          actions.add(
+            FloatingActionButton.extended(
+              heroTag: "add_songs",
+              onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.black,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Songs'),
+            ),
+          );
+        }
+        if (actions.isEmpty) return const SizedBox.shrink();
+        if (actions.length == 1) {
+          return actions.first;
+        }
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 140),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: actions,
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildNotificationBar() {
     return Container(

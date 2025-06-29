@@ -204,8 +204,7 @@ class ProfileProvider extends BaseProvider {
     String? postalCode,
     String? dob,
     List<String>? hobbies,
-    String? friendInfo,
-    List<String>? musicPreferences,
+    String? friendInfo, List<String>? musicPreferences,
   }) async {
     return await executeBool(
       () async {
@@ -251,14 +250,6 @@ class ProfileProvider extends BaseProvider {
 
   Future<bool> updateAvatar(String? token, String? avatarBase64, String? mimeType) async {
     return updateProfile(token, avatarBase64: avatarBase64, mimeType: mimeType);
-  }
-
-  Future<bool> updateBasicInfo(String? token, String? gender, String? location) async {
-    return updateProfile(token, gender: gender, location: location);
-  }
-
-  Future<bool> updateBio(String? token, String? bio) async {
-    return updateProfile(token, bio: bio);
   }
 
   Future<bool> updatePersonalInfo(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) async {

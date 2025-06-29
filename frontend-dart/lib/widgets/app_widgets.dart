@@ -690,8 +690,7 @@ class AppWidgets {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: TextStyle(fontSize: R.s(16), fontWeight: FontWeight.bold, color: AppTheme.primary)),
-          SizedBox(height: R.h(8)),
-          ...items,
+          SizedBox(height: R.h(8)), ...items,
         ],
       ),
     ),
@@ -706,11 +705,20 @@ class AppWidgets {
   );
 
   static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
+    final scaffold = Scaffold.maybeOf(context);
+    final mediaQuery = MediaQuery.of(context);
+    final bottomPadding = mediaQuery.viewInsets.bottom + mediaQuery.padding.bottom;
+    
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message, style: TextStyle(fontSize: R.s(14))),
       backgroundColor: backgroundColor ?? AppTheme.primary,
-      behavior: SnackBarBehavior.floating,
-      duration: const Duration(seconds: 3),
+      behavior: SnackBarBehavior.fixed,
+      duration: const Duration(seconds: 2),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        textColor: Colors.white,
+        onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+      ),
     ));
   }
 

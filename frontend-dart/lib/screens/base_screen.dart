@@ -16,6 +16,30 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: Text(screenTitle),
+        actions: actions,
+        automaticallyImplyLeading: showBackButton,
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Expanded(child: buildContent()),
+            if (showMiniPlayer) const MiniPlayerWidget()
+          ],
+        ),
+      ),
+      floatingActionButton: floatingActionButton,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
   void navigateTo(String route, {Object? arguments}) {
     if (!mounted) return;
     Navigator.pushNamed(context, route, arguments: arguments);
@@ -30,17 +54,23 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   void showSuccess(String message) {
     if (!mounted) return;
-    AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
+    });
   }
 
   void showError(String message) {
     if (!mounted) return;
-    AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
+    });
   }
 
   void showInfo(String message) {
     if (!mounted) return;
-    AppWidgets.showSnackBar(context, message);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AppWidgets.showSnackBar(context, message);
+    });
   }
 
   Future<bool> showConfirmDialog(String title, String message, {bool isDangerous = false}) async {
@@ -82,8 +112,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     required List<E> items,
     required Widget Function(E, int) itemBuilder,
     required Future<void> Function() onRefresh,
-    Widget? emptyState,
-    EdgeInsets? padding,
+    Widget? emptyState, EdgeInsets? padding,
   }) {
     return AppWidgets.refreshableList<E>(items: items, itemBuilder: itemBuilder, onRefresh: onRefresh, emptyState: emptyState, padding: padding);
   }
@@ -122,31 +151,11 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     required List<Widget> tabViews,
     TabController? controller,
   }) {
-    return buildTabContent(
-      tabs: tabs,
-      tabViews: tabViews,
-      controller: controller,
-    );
+    return buildTabContent(tabs: tabs, tabViews: tabViews, controller: controller);
   }
 
   Future<void> runAsync(Future<void> Function() operation) async {
     await operation();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: Text(screenTitle),
-        actions: actions,
-        automaticallyImplyLeading: showBackButton,
-      ),
-      body: Column(
-        children: [Expanded(child: buildContent()), if (showMiniPlayer) const MiniPlayerWidget()],
-      ),
-      floatingActionButton: floatingActionButton,
-    );
-  }
 }

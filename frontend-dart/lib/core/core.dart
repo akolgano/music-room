@@ -346,41 +346,27 @@ class SocialLoginUtils {
   static GoogleSignIn? get googleSignInInstance => _googleSignIn;
   static bool get isInitialized => _isInitialized;
 
-  static Future<SocialLoginResult> _performSocialLogin(
-    Future<dynamic> Function() loginFunction,
-    Map<String, String?> Function(dynamic) tokenExtractor,
-    String provider,
-  ) async {
-    try {
-      print('Attempting $provider login...');
-      final result = await loginFunction();
-      final tokens = tokenExtractor(result);
-      final idToken = tokens['idToken'];
-      final accessToken = tokens['accessToken'];
-      final token = idToken ?? accessToken;
-      if (token != null && token.isNotEmpty) {
-        print('$provider login successful with token type: ${idToken != null ? 'idToken' : 'accessToken'}');
-        return SocialLoginResult.success(token, provider.toLowerCase());
-      } else {
-        print('$provider login failed - no valid token received');
-        print('Available tokens: idToken=${idToken != null}, accessToken=${accessToken != null}');
-        return SocialLoginResult.error('$provider login failed - no valid token received');
-      }
-    } catch (e) {
-      print('$provider login error: $e');
-      return SocialLoginResult.error('$provider login error: $e');
-    }
-  }
-
   static Future<SocialLoginResult> loginWithFacebook() async {
     if (!_isInitialized) await initialize();
-    return _performSocialLogin(
-      () async {
-        final result = await FacebookAuth.instance.login();
-        return result.status == LoginStatus.success ? result.accessToken : null;
-      },
-      (result) => { 'accessToken': result?.tokenString, 'idToken': null }, 'Facebook',
-    );
+    
+    try {
+      print('Attempting Facebook login...');
+      final result = await FacebookAuth.instance.login();
+      
+      if (result.status == LoginStatus.success) {
+        final accessToken = result.accessToken?.tokenString;
+        if (accessToken != null && accessToken.isNotEmpty) {
+          print('Facebook login successful with accessToken');
+          return SocialLoginResult.success(accessToken, 'facebook');
+        }
+      }
+      
+      print('Facebook login failed - no valid token received');
+      return SocialLoginResult.error('Facebook login failed - no valid token received');
+    } catch (e) {
+      print('Facebook login error: $e');
+      return SocialLoginResult.error('Facebook login error: $e');
+    }
   }
 
   static Future<SocialLoginResult> loginWithGoogle() async {
@@ -388,33 +374,38 @@ class SocialLoginUtils {
       print('Google Sign-In not initialized, initializing now...');
       await initialize();
     }
+    
     if (_googleSignIn == null) {
       print('Google Sign-In instance is null after initialization');
       return SocialLoginResult.error('Google Sign-In not properly initialized. Please check your configuration.');
     }
-    return _performSocialLogin(
-      () async {
-        try {
-          print('Attempting Google Sign-In...');
-          await _googleSignIn!.signOut();
-          final user = await _googleSignIn!.signIn();
-          if (user != null) {
-            print('Google user signed in: ${user.email}');
-            final auth = await user.authentication;
-            print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
-            return auth;
-          } else {
-            print('Google sign-in was cancelled by user');
-            return null;
-          }
-        } catch (e) {
-          print('Google Sign-In attempt failed: $e');
-          rethrow;
+
+    try {
+      print('Attempting Google login...');
+      await _googleSignIn!.signOut();
+      final user = await _googleSignIn!.signIn();
+      
+      if (user != null) {
+        print('Google user signed in: ${user.email}');
+        final auth = await user.authentication;
+        print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
+        
+        final idToken = auth.idToken;
+        if (idToken != null && idToken.isNotEmpty) {
+          print('Google login successful with idToken');
+          return SocialLoginResult.success(idToken, 'google');
         }
-      },
-      (result) => {'idToken': result?.idToken, 'accessToken': result?.accessToken},
-      'Google',
-    );
+      } else {
+        print('Google sign-in was cancelled by user');
+        return SocialLoginResult.error('Google sign-in was cancelled');
+      }
+      
+      print('Google login failed - no valid token received');
+      return SocialLoginResult.error('Google login failed - no valid token received');
+    } catch (e) {
+      print('Google login error: $e');
+      return SocialLoginResult.error('Google login error: $e');
+    }
   }
 }
 
@@ -457,8 +448,7 @@ class SocialLoginButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       icon: isLoading 
         ? SizedBox(
-            width: 16, 
-            height: 16, 
+            width: 16, height: 16, 
             child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(color)),
           ) 
         : Icon(icon, color: color, size: 20),

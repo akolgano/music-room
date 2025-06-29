@@ -410,11 +410,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
 
     if (selectedIndex != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        gender: genders[selectedIndex],
-        location: profileProvider.location,
-      );
+      final success = await profileProvider.updateProfile(auth.token, gender: genders[selectedIndex], location: profileProvider.location);
       if (success) {
         showSuccess('Gender updated successfully');
         profileProvider.loadProfile(auth.token);
