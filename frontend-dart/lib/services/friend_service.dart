@@ -4,7 +4,6 @@ import '../models/api_models.dart';
 
 class FriendService {
   final ApiService _api;
-  
   FriendService(this._api);
 
   Future<List<int>> getFriends(String token) async {

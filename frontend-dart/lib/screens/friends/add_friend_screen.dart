@@ -32,20 +32,21 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
       child: Column(
         children: [
           AppWidgets.infoBanner(
-            title: 'Find Music Friends',
-            message: 'Connect to share playlists and discover music together. Ask your friends for their Music Room user ID to add them!',
+            title: 'Send Friend Request',
+            message: 'Enter the user ID of the person you want to add as a friend. They will need to accept your request.',
             icon: Icons.people,
           ),
           const SizedBox(height: 16),
           AppTheme.buildFormCard(
-            title: 'Send Friend Request',
+            title: 'Add Friend by User ID',
             titleIcon: Icons.person_add,
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
                   AppWidgets.textField(
-                    controller: _userIdController, labelText: 'Friend\'s User ID',
+                    controller: _userIdController, 
+                    labelText: 'Friend\'s User ID',
                     hintText: 'e.g., 12345',
                     prefixIcon: Icons.person_search,
                     validator: (value) {
@@ -61,8 +62,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                     width: double.infinity,
                     child: AppWidgets.primaryButton(
                       text: 'Send Friend Request',
-                      onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null,
-                      icon: Icons.send,
+                      onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null, icon: Icons.send,
                     ),
                   ),
                 ],
@@ -71,8 +71,15 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           ),
           const SizedBox(height: 16),
           AppWidgets.infoBanner(
+            title: 'Important Note',
+            message: 'Friend requests are sent directly to the user. Since the API doesn\'t support retrieving pending requests, the recipient will need to manage requests through their own interface.',
+            icon: Icons.info_outline,
+            color: Colors.orange,
+          ),
+          const SizedBox(height: 16),
+          AppWidgets.infoBanner(
             title: 'How It Works',
-            message: '1. Get their user ID\n2. Enter it above\n3. They accept your request\n4. Start sharing music!',
+            message: '1. Get their user ID\n2. Enter it above\n3. Send the request\n4. They accept your request\n5. Start sharing music!',
             icon: Icons.help_outline,
             color: Colors.blue,
           ),
@@ -101,6 +108,11 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
       }
     } catch (e) {
       showError('User ID must be a number');
+      return;
+    }
+
+    if (userId.toString() == auth.userId) {
+      showError('You cannot add yourself as a friend');
       return;
     }
 

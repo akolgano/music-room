@@ -38,13 +38,6 @@ class AuthService {
     return result;
   }
 
-  Future<AuthResult> signup(String username, String email, String password) async {
-    final request = SignupRequest(username: username, email: email, password: password);
-    final result = await _api.signup(request);
-    await _storeAuth(result.token, result.user);
-    return result;
-  }
-
   Future<void> logout() async {
     if (_currentUser != null && _currentToken != null) {
       try {

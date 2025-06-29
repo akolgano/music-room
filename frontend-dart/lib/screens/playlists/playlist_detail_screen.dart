@@ -92,19 +92,21 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           _playlist = playlist;
           _isOwner = _playlist!.creator == auth.username;
         });
-
-        await Future.wait([musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!)]);
-        votingProvider.setVotingPermission(true);
         
+        await Future.wait([musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!)]);
+        
+        votingProvider.setVotingPermission(true);
         setState(() => _tracks = musicProvider.playlistTracks);
+        
+        votingProvider.initializeTrackPoints(_tracks);
+        
         print('Loaded ${_tracks.length} tracks');
         _initializeVotingData(votingProvider); 
         _startBatchTrackDetailsFetch();
-        if (_webSocketService.currentPlaylistId != widget.playlistId) 
+        
+        if (_webSocketService.currentPlaylistId != widget.playlistId)
           await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
-      } else {
-        showError('Failed to load playlist data');
-      }
+      } else showError('Failed to load playlist data');
     } catch (e) {
       print('Error loading data: $e');
       showError('Failed to load playlist details: $e');
@@ -119,11 +121,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Future<void> _enableOpenVoting() async {
     await runAsyncAction(
       () async {
-        final request = PlaylistLicenseRequest(
-          licenseType: 'open', invitedUsers: null,
-          voteStartTime: null,
-          voteEndTime: null,
-          latitude: null, longitude: null, allowedRadiusMeters: null,
+        final request = PlaylistLicenseRequest(licenseType: 'open', invitedUsers: null, voteStartTime: null,
+          voteEndTime: null, latitude: null, longitude: null, allowedRadiusMeters: null,
         );
         await _apiService.updatePlaylistLicense(widget.playlistId, 'Token ${auth.token!}', request);
         await _loadData();
@@ -138,6 +137,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       builder: (context, votingProvider, _) {
         print('Voting section - canVote: ${votingProvider.canVote}, showVotingMode: $_showVotingMode');
         final trackVotes = votingProvider.trackVotes;
+        
         if (!votingProvider.canVote && _isOwner) {
           return Card(
             color: AppTheme.surface,
@@ -198,9 +198,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           children: [
             if (votingProvider.canVote) 
               PlaylistVotingBanner(playlistId: widget.playlistId),
-            if (_showVotingMode && trackVotes.isNotEmpty)
-              VotingStatsCard(trackVotes: trackVotes),
-            if (_showVotingMode)
+            if (_tracks.isNotEmpty) ...[
               Card(
                 color: AppTheme.surface,
                 child: Padding(
@@ -208,46 +206,35 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Voting Status',
-                        style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Can Vote: ${votingProvider.canVote}',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Text(
-                        'Show Voting Mode: $_showVotingMode',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Text(
-                        'Track Votes Count: ${trackVotes.length}',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
+                      const Row(
                         children: [
-                          ElevatedButton(
-                            onPressed: _toggleVotingMode,
-                            child: Text(_showVotingMode ? 'Hide Voting' : 'Show Voting'),
-                          ),
+                          Icon(Icons.poll, color: AppTheme.primary, size: 20),
                           SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_tracks.isNotEmpty) {
-                                votingProvider.setUserVote(0, 1);
-                                showInfo('Test vote added for first track');
-                              }
-                            },
-                            child: Text('Test Vote'),
+                          Text(
+                            'Track Ratings',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildPointsStat('Total Points', _getTotalPoints()),
+                          _buildPointsStat('Top Track', _getTopTrackPoints()),
+                          _buildPointsStat('Tracks Voted', _getVotedTracksCount()),
                         ],
                       ),
                     ],
                   ),
                 ),
               ),
+            ],
+            if (_showVotingMode && trackVotes.isNotEmpty) VotingStatsCard(trackVotes: trackVotes),
             if (votingProvider.canVote && !_showVotingMode)
               AppWidgets.votingInfoBanner(
                 title: 'Voting Available',
@@ -263,6 +250,38 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
+  Widget _buildPointsStat(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      ],
+    );
+  }
+
+  String _getTotalPoints() {
+    final total = _tracks.fold<int>(0, (sum, track) => sum + track.points);
+    return total.toString();
+  }
+
+  String _getTopTrackPoints() {
+    if (_tracks.isEmpty) return '0';
+    final maxPoints = _tracks.map((t) => t.points).reduce((a, b) => a > b ? a : b);
+    return maxPoints.toString();
+  }
+
+  String _getVotedTracksCount() {
+    final votedCount = _tracks.where((track) => track.points != 0).length;
+    return votedCount.toString();
+  }
+
   @override
   Widget buildContent() {
     if (_playlist == null) return buildLoadingState(message: 'Loading playlist...');
@@ -273,8 +292,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         child: Column(
           children: [
             if (_notifications.isNotEmpty) _buildNotificationBar(), _buildPlaylistHeader(),
-            const SizedBox(height: 16),
-            _buildPlaylistStats(),
+            const SizedBox(height: 16), _buildPlaylistStats(),
             const SizedBox(height: 16),
             _buildPlaylistActions(),
             const SizedBox(height: 16),
@@ -313,21 +331,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
     final track = playlistTrack.track;
-    
-    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails) {
-      _fetchTrackDetailsIfNeeded(playlistTrack);
-    }
-
+    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails) _fetchTrackDetailsIfNeeded(playlistTrack);
     if (track?.deezerTrackId != null && 
         _fetchingTrackDetails.contains(track!.deezerTrackId) && 
         (track.artist.isEmpty || track.album.isEmpty)) {
       return Container(
         key: key,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(12)),
         child: ListTile(
           leading: Container(
             width: 56,
@@ -369,6 +380,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         onPlay: () => _playTrackAt(index),
         onRemove: _isOwner ? () => _removeTrack(track.id) : null,
         showVotingControls: _showVotingMode,
+        showPoints: true, 
         playlistId: widget.playlistId,
         trackIndex: index, 
       );
@@ -396,6 +408,25 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         trailing: _buildTrackActions(index, playlistTrack),
       ),
     );
+  }
+
+  Future<void> _refreshAfterVoting() async {
+    try {
+      final musicProvider = getProvider<MusicProvider>();
+      final votingProvider = getProvider<VotingProvider>();
+      
+      await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
+      
+      setState(() {
+        _tracks = musicProvider.playlistTracks;
+      });
+      
+      votingProvider.initializeTrackPoints(_tracks);
+      
+      print('Refreshed ${_tracks.length} tracks with updated points');
+    } catch (e) {
+      print('Error refreshing after voting: $e');
+    }
   }
 
   void _toggleVotingMode() {
@@ -760,21 +791,15 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                             musicProvider.resetToCustomOrder();
                             showInfo('Restored to custom order');
                           },
-                          child: const Icon(
-                            Icons.close,
-                            size: 14,
-                            color: AppTheme.primary,
-                          ),
+                          child: const Icon(Icons.close, size: 14, color: AppTheme.primary),
                         ),
                       ],
                     ),
                   ),
                 ],
                 const SizedBox(height: 16),
-                if (sortedTracks.isEmpty)
-                  _buildEmptyTracksState()
-                else
-                  _buildTracksList(sortedTracks, currentSort),
+                if (sortedTracks.isEmpty) _buildEmptyTracksState()
+                else _buildTracksList(sortedTracks, currentSort),
               ],
             ),
           ),
@@ -793,17 +818,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             const SizedBox(height: 16),
             const Text(
               'No tracks yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 8),
             Text(
-              _isOwner 
-                ? 'Add some tracks to get started!'
-                : 'This playlist is empty',
+              _isOwner ? 'Add some tracks to get started!' : 'This playlist is empty',
               style: const TextStyle(color: Colors.grey),
               textAlign: TextAlign.center,
             ),

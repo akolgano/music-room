@@ -8,9 +8,9 @@ class FriendProvider extends BaseProvider {
   final FriendService _friendService = getIt<FriendService>();
   
   List<int> _friends = [];
-  
+
   List<int> get friends => List.unmodifiable(_friends);
-  
+
   Future<void> fetchFriends(String token) async {
     final result = await executeAsync(
       () => _friendService.getFriends(token),
@@ -33,6 +33,7 @@ class FriendProvider extends BaseProvider {
     return await executeBool(
       () async {
         await _friendService.acceptFriendRequest(friendshipId, token);
+        await fetchFriends(token);
       },
       successMessage: 'Friend request accepted!',
       errorMessage: 'Failed to accept request',
@@ -58,5 +59,10 @@ class FriendProvider extends BaseProvider {
       successMessage: 'Friend removed',
       errorMessage: 'Failed to remove friend',
     );
+  }
+
+  void clearFriends() {
+    _friends.clear();
+    notifyListeners();
   }
 }

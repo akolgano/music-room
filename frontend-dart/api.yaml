@@ -87,7 +87,6 @@ paths:
                     type: string
                 example:
                   error: "Signup OTP not found or expired"
-
   /users/login/:
     post:
       tags:
@@ -133,7 +132,6 @@ paths:
                     type: string
                 example:
                   detail: "User not found."
-
   /users/logout/:
     post:
       tags:
@@ -177,7 +175,6 @@ paths:
                 properties:
                   detail:
                     type: string
-
   /users/signup_email_otp/:
     post:
       tags:
@@ -217,7 +214,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /users/forgot_password/:
     post:
       tags:
@@ -268,7 +264,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /users/forgot_change_password/:
     post:
       tags:
@@ -319,7 +314,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /users/user_password_change/:
     post:
       tags:
@@ -365,7 +359,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /users/get_user/:
     get:
       tags:
@@ -412,7 +405,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /users/get_friends/:
     get:
       tags:
@@ -441,7 +433,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /users/send_friend_request/{user_id}/:
     post:
       tags:
@@ -478,7 +469,6 @@ paths:
                 properties:
                   message:
                     type: string
-
   /users/accept_friend_request/{friendship_id}/:
     post:
       tags:
@@ -502,7 +492,6 @@ paths:
                 properties:
                   message:
                     type: string
-
   /users/reject_friend_request/{friendship_id}/:
     post:
       tags:
@@ -526,7 +515,6 @@ paths:
                 properties:
                   message:
                     type: string
-
   /users/remove_friend/{user_id}/:
     post:
       tags:
@@ -559,7 +547,6 @@ paths:
                 properties:
                   message:
                     type: string
-
   /profile/profile/:
     get:
       tags:
@@ -582,7 +569,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /profile/profile/update/:
     post:
       tags:
@@ -665,7 +651,6 @@ paths:
                   type: array
                   items:
                     type: string
-
   /auth/facebook/login/:
     post:
       tags:
@@ -711,7 +696,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /auth/google/login/:
     post:
       tags:
@@ -762,7 +746,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /auth/facebook/link/:
     post:
       tags:
@@ -800,7 +783,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /auth/google/link/:
     post:
       tags:
@@ -843,7 +825,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /deezer/track/{track_id}/:
     get:
       tags:
@@ -874,7 +855,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /deezer/search/:
     get:
       tags:
@@ -919,7 +899,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /tracks/search/:
     get:
       tags:
@@ -946,7 +925,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Track'
-
   /tracks/add_from_deezer/{track_id}/:
     post:
       tags:
@@ -989,7 +967,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/playlists:
     post:
       tags:
@@ -1036,7 +1013,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/playlists/{playlist_id}:
     get:
       tags:
@@ -1071,7 +1047,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/saved_playlists/:
     get:
       tags:
@@ -1090,7 +1065,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/PlaylistInfo'
-
   /playlists/public_playlists/:
     get:
       tags:
@@ -1109,7 +1083,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/PlaylistInfo'
-
   /playlists/playlist/{playlist_id}/tracks/:
     get:
       tags:
@@ -1137,7 +1110,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/PlaylistTrack'
-
   /playlists/{playlist_id}/add/:
     post:
       tags:
@@ -1202,7 +1174,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/{playlist_id}/move-track/:
     post:
       tags:
@@ -1255,7 +1226,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/playlists/{playlist_id}/remove_tracks:
     post:
       tags:
@@ -1309,7 +1279,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/{playlist_id}/change-visibility/:
     post:
       tags:
@@ -1352,7 +1321,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/{playlist_id}/invite-user/:
     post:
       tags:
@@ -1406,7 +1374,6 @@ paths:
                 properties:
                   error:
                     type: string
-
   /playlists/{playlist_id}/license/:
     patch:
       tags:
@@ -1461,7 +1428,6 @@ paths:
                 properties:
                   detail:
                     type: string
-
   /playlists/{playlist_id}/tracks/vote/:
     post:
       tags:
@@ -1528,7 +1494,6 @@ paths:
                 properties:
                   detail:
                     type: string
-
 components:
   securitySchemes:
     TokenAuth:
@@ -1536,7 +1501,6 @@ components:
       in: header
       name: Authorization
       description: 'Format: Token <your-token>'
-
   schemas:
     User:
       type: object
@@ -1548,7 +1512,6 @@ components:
         email:
           type: string
           format: email
-
     Profile:
       type: object
       properties:
@@ -1604,7 +1567,6 @@ components:
           items:
             type: string
           nullable: true
-
     Track:
       type: object
       properties:
@@ -1620,7 +1582,6 @@ components:
           type: string
         url:
           type: string
-
     DeezerTrack:
       type: object
       properties:
@@ -1648,7 +1609,6 @@ components:
               type: string
             cover:
               type: string
-
     PlaylistInfo:
       type: object
       properties:
@@ -1673,7 +1633,6 @@ components:
                 type: string
               artist:
                 type: string
-
     PlaylistInfoWithVotes:
       type: object
       properties:
@@ -1698,7 +1657,6 @@ components:
                 type: string
               points:
                 type: integer
-
     PlaylistTrack:
       type: object
       properties:
@@ -1710,7 +1668,8 @@ components:
           type: string
         position:
           type: integer
-
+        points:
+          type: integer
     PlaylistLicense:
       type: object
       properties:

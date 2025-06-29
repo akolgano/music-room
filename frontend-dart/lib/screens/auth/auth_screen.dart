@@ -57,8 +57,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             children: [
               _buildHeader(), const SizedBox(height: 32),
               _buildForm(), const SizedBox(height: 24),
-              _buildSocialButtons(),
-              const SizedBox(height: 16), _buildModeToggle(),
+              _buildSocialButtons(), const SizedBox(height: 16), _buildModeToggle(),
             ],
           ),
         ),
@@ -227,18 +226,14 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
     await runAsyncAction(
       () async {
         final authProvider = getProvider<AuthProvider>();
-        bool success;
-        
-        if (_isLogin) success = await authProvider.login(_usernameController.text, _passwordController.text);
-        else success = await authProvider.signup(_usernameController.text, _emailController.text, _passwordController.text);
+        bool success = await authProvider.login(_usernameController.text, _passwordController.text);
         if (success) navigateToHome();
-        else throw Exception(authProvider.errorMessage ?? (_isLogin ? 'Login failed' : 'Signup failed'));
+        else throw Exception(authProvider.errorMessage ?? 'Login failed');
       },
-      successMessage: _isLogin ? 'Login successful!' : 'Account created successfully!',
+      successMessage: 'Login successful!',
       errorMessage: 'Authentication failed',
     );
   }
@@ -256,9 +251,8 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             await SocialLoginUtils.initialize();
             await Future.delayed(const Duration(milliseconds: 1000)); 
           }
-          if (SocialLoginUtils.googleSignInInstance == null) {
+          if (SocialLoginUtils.googleSignInInstance == null)
             throw Exception('Google Sign-In is not available. Please check your configuration.');
-          }
           print('Google Sign-In instance is available, proceeding...');
         }
 
