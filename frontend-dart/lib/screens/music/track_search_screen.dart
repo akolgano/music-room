@@ -22,7 +22,6 @@ class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;
   final Track? initialTrack;
   const TrackSearchScreen({Key? key, this.playlistId, this.initialTrack}) : super(key: key);
-
   @override
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
@@ -100,10 +99,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     if (_isAddingToPlaylist) {
       actions.add(TextButton(
         onPressed: _isLoading ? null : _toggleMultiSelectMode,
-        child: Text(
-          _isMultiSelectMode ? 'Cancel' : 'Multi-Select', 
-          style: const TextStyle(color: AppTheme.primary)
-        ),
+        child: Text(_isMultiSelectMode ? 'Cancel' : 'Multi-Select', style: const TextStyle(color: AppTheme.primary)),
       ));
     }
     actions.add(IconButton(icon: const Icon(Icons.clear), onPressed: _clearSearch, tooltip: 'Clear Search')); 
@@ -119,10 +115,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_isAddingToPlaylist) _buildPlaylistBanner(),
-          _buildSearchRow(musicProvider),
-        ],
+        children: [if (_isAddingToPlaylist) _buildPlaylistBanner(), _buildSearchRow(musicProvider)],
       ),
     );
   }
@@ -208,11 +201,13 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     if (!_isAddingToPlaylist || getProvider<MusicProvider>().searchResults.isEmpty) {
       return const SizedBox.shrink();
     }
+
     final actions = [
       ('Select All', Icons.select_all, _selectAllTracks),
       ('Clear', Icons.clear_all, _clearSelection),
       (_isMultiSelectMode ? 'Done' : 'Select', _isMultiSelectMode ? Icons.check_box : Icons.check_box_outline_blank, _toggleMultiSelectMode),
     ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -267,6 +262,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget? _buildFloatingActionButton() {
     if (!_isAddingToPlaylist) return null;
+
     if (_isMultiSelectMode && _hasSelection) {
       return FloatingActionButton.extended(
         onPressed: _canAddTracks ? _addSelectedTracks : null,
@@ -282,6 +278,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
       );
     }
+
     if (!_isMultiSelectMode) {
       return FloatingActionButton(
         onPressed: _toggleMultiSelectMode,
@@ -316,6 +313,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _performSearch({bool isAutoSearch = false}) async {
     if (!mounted || _searchController.text.trim().length < _minSearchLength) return;
+
     await runAsyncAction(
       () async {
         _setLoadingState(LoadingState.searching);
@@ -328,6 +326,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _addSelectedTracks() async {
     if (!_isAddingToPlaylist || !_hasSelection) return;
+
     _setLoadingState(LoadingState.addingTracks);
     try {
       print('Starting batch addition of ${_selectedTracks.length} tracks...');
@@ -337,9 +336,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         token: auth.token!,
         onProgress: (current, total) => print('Progress: $current/$total tracks processed'),
       );
+
       _showMessage('✓ Added ${result.successCount} tracks to playlist!', isError: false);
       if (result.duplicateCount > 0) _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
       if (result.failureCount > 0) _showMessage('${result.failureCount} tracks failed to add');
+
       _clearSelection();
       print('Batch addition completed: ${result.successCount} success, ${result.failureCount} failed');
     } catch (e) {
@@ -358,6 +359,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         subtitle: 'Start typing to search Deezer tracks automatically!'
       );
     }
+
     if (tracks.isEmpty && _searchController.text.isNotEmpty) {
       if (_searchController.text.length < _minSearchLength) {
         return AppWidgets.emptyState(
@@ -377,6 +379,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     }
 
     final sortedTracks = TrackSortingService.sortTracksByField(tracks, _searchSortOption);
+
     return Column(
       children: [
         if (tracks.isNotEmpty)
@@ -427,6 +430,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     final searchSortOptions = TrackSortOption.defaultOptions
         .where((option) => option.field != TrackSortField.position && option.field != TrackSortField.dateAdded)
         .toList();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -563,29 +567,37 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Future<void> _loadUserPlaylists() async {
-    await _executeWithErrorHandling(() async {
-      await getProvider<MusicProvider>().fetchUserPlaylists(auth.token!);
-      _userPlaylists = getProvider<MusicProvider>().playlists;
-    });
+    await runAsyncAction(
+      () async {
+        await getProvider<MusicProvider>().fetchUserPlaylists(auth.token!);
+        _userPlaylists = getProvider<MusicProvider>().playlists;
+      },
+      errorMessage: 'Failed to load playlists',
+    );
   }
 
   Future<void> _playTrack(Track track) async {
-    await _executeWithErrorHandling(() async {
-      if (_playerService.currentTrack?.id == track.id) {
-        await _playerService.togglePlay();
-        return;
-      }
-      String? previewUrl = track.previewUrl;
-      if (previewUrl == null && track.deezerTrackId != null) {
-        final fullTrackDetails = await getProvider<MusicProvider>().getDeezerTrack(track.deezerTrackId!, auth.token!);
-        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
-      }
-      if (previewUrl?.isNotEmpty == true) {
-        await _playerService.playTrack(track, previewUrl!);
-        _showMessage('Playing preview of "${track.name}"', isError: false);
-      }
-      else _showMessage('No preview available for this track');
-    }, errorMessage: 'Failed to play preview');
+    await runAsyncAction(
+      () async {
+        if (_playerService.currentTrack?.id == track.id) {
+          await _playerService.togglePlay();
+          return;
+        }
+
+        String? previewUrl = track.previewUrl;
+        if (previewUrl == null && track.deezerTrackId != null) {
+          final fullTrackDetails = await getProvider<MusicProvider>().getDeezerTrack(track.deezerTrackId!, auth.token!);
+          if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
+        }
+
+        if (previewUrl?.isNotEmpty == true) {
+          await _playerService.playTrack(track, previewUrl!);
+          _showMessage('Playing preview of "${track.name}"', isError: false);
+        }
+        else _showMessage('No preview available for this track');
+      },
+      errorMessage: 'Failed to play preview',
+    );
   }
 
   Future<void> _addTrackToPlaylist(String playlistId, Track track) async {
@@ -605,11 +617,13 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       _showMessage('No playlists available. Create a playlist first.');
       return;
     }
+
     final selectedIndex = await _showSelectionDialog(
       title: 'Add to Playlist',
       items: [..._userPlaylists.map((p) => p.name), 'Create New Playlist'],
       icons: [..._userPlaylists.map((_) => Icons.library_music), Icons.add],
     );
+
     if (selectedIndex != null) {
       if (selectedIndex == _userPlaylists.length) await _createNewPlaylistAndAddTrack(track);
       else await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
@@ -617,15 +631,21 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Future<void> _createNewPlaylistAndAddTrack(Track track) async {
-    final playlistName = await _showTextInputDialog('Create New Playlist', hintText: 'Enter playlist name');
+    final playlistName = await DialogUtils.showTextInputDialog(
+      context,
+      title: 'Create New Playlist',
+      hintText: 'Enter playlist name',
+      validator: (value) => value?.isEmpty ?? true ? 'Please enter a playlist name' : null,
+    );
+
     if (playlistName?.isNotEmpty == true) {
-      _setLoadingState(LoadingState.addingTracks);
-      await _executeWithErrorHandling(() async {
-        final playlistId = await getProvider<MusicProvider>().createPlaylist(
-          playlistName!, 'Created while adding "${track.name}"',
-          false, 
-          auth.token!,
-        );
+      await runAsyncAction(
+        () async {
+          _setLoadingState(LoadingState.addingTracks);
+          final playlistId = await getProvider<MusicProvider>().createPlaylist(
+            playlistName!, 'Created while adding "${track.name}"',
+            false, auth.token!,
+          );
         if (playlistId?.isNotEmpty == true) {
           final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);
           if (result.success) {
@@ -633,24 +653,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
             await _loadUserPlaylists();
           } else throw Exception(result.message);
         }
-      }, 
+        _setLoadingState(LoadingState.idle);
+      },
+      successMessage: 'Playlist created and track added!',
       errorMessage: 'Failed to create playlist',
-      onComplete: () => _setLoadingState(LoadingState.idle)
       );
-    }
-  }
-
-  Future<void> _executeWithErrorHandling(
-    Future<void> Function() operation, {
-    String? errorMessage,
-    VoidCallback? onComplete,
-  }) async {
-    try {
-      await operation();
-    } catch (e) {
-      _showMessage(errorMessage ?? e.toString());
-    } finally {
-      onComplete?.call();
     }
   }
 
@@ -659,11 +666,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     else showSuccess(message);
   }
 
-  Future<int?> _showSelectionDialog({
-    required String title,
-    required List<String> items,
-    List<IconData>? icons,
-  }) async {
+  Future<int?> _showSelectionDialog({required String title, required List<String> items, List<IconData>? icons}) async {
     return showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
@@ -691,13 +694,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Future<String?> _showTextInputDialog(String title, {String? hintText}) async {
-    return DialogUtils.showTextInputDialog(
-      context, title: title, hintText: hintText,
-      validator: (value) => value?.isEmpty ?? true ? 'Please enter a value' : null,
     );
   }
 

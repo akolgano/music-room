@@ -10,11 +10,12 @@ class VotingProvider extends BaseProvider {
   final VotingService _votingService = getIt<VotingService>();
   
   Map<String, VoteStats> _trackVotes = {};
-  
   Map<String, VoteStats> get trackVotes => Map.unmodifiable(_trackVotes);
   
   bool _canVote = true;
   bool get canVote => _canVote;
+  
+  Map<int, int> _userVotesByIndex = {};
   
   VoteStats? getTrackVotes(String trackId) => _trackVotes[trackId];
   
@@ -29,8 +30,7 @@ class VotingProvider extends BaseProvider {
   }
   
   bool hasUserVotedByIndex(int index) {
-    final stats = getTrackVotesByIndex(index);
-    return stats?.userHasVoted ?? false;
+    return _userVotesByIndex.containsKey(index);
   }
   
   int? getUserVote(String trackId) {
@@ -39,15 +39,14 @@ class VotingProvider extends BaseProvider {
   }
   
   int? getUserVoteByIndex(int index) {
-    final stats = getTrackVotesByIndex(index);
-    return stats?.userVoteValue;
+    return _userVotesByIndex[index];
   }
-
+  
   void setVotingPermission(bool canVote) {
     _canVote = canVote;
     notifyListeners();
   }
-
+  
   Future<bool> voteForTrackByIndex({
     required String playlistId, 
     required int trackIndex, 
@@ -55,6 +54,11 @@ class VotingProvider extends BaseProvider {
   }) async {
     if (!canVote) {
       setError('Voting not allowed');
+      return false;
+    }
+    
+    if (_userVotesByIndex.containsKey(trackIndex)) {
+      setError('You have already voted for this track');
       return false;
     }
     
@@ -66,6 +70,8 @@ class VotingProvider extends BaseProvider {
           token: token
         );
         
+        _userVotesByIndex[trackIndex] = 1; 
+        
         if (response.playlist.isNotEmpty) {
           _updateVotingDataFromPlaylist(response.playlist);
         }
@@ -74,7 +80,7 @@ class VotingProvider extends BaseProvider {
       errorMessage: 'Failed to submit vote',
     );
   }
-
+  
   Future<bool> upvoteTrackByIndex(String playlistId, int trackIndex, String token) async {
     return await voteForTrackByIndex(
       playlistId: playlistId, 
@@ -82,7 +88,7 @@ class VotingProvider extends BaseProvider {
       token: token
     );
   }
-
+  
   Future<bool> downvoteTrackByIndex(String playlistId, int trackIndex, String token) async {
     return await voteForTrackByIndex(
       playlistId: playlistId, 
@@ -90,7 +96,7 @@ class VotingProvider extends BaseProvider {
       token: token
     );
   }
-
+  
   Future<bool> voteForTrack({
     required String playlistId, 
     required String trackId, 
@@ -103,7 +109,7 @@ class VotingProvider extends BaseProvider {
       token: token
     );
   }
-
+  
   Future<bool> upvoteTrack(String playlistId, String trackId, String token) async {
     return await voteForTrack(
       playlistId: playlistId, 
@@ -112,7 +118,7 @@ class VotingProvider extends BaseProvider {
       token: token
     );
   }
-
+  
   Future<bool> downvoteTrack(String playlistId, String trackId, String token) async {
     return await voteForTrack(
       playlistId: playlistId, 
@@ -121,7 +127,7 @@ class VotingProvider extends BaseProvider {
       token: token
     );
   }
-
+  
   Future<bool> removeVote(String playlistId, String trackId, String token) async {
     return await voteForTrack(
       playlistId: playlistId, 
@@ -130,36 +136,67 @@ class VotingProvider extends BaseProvider {
       token: token
     );
   }
-
+  
   void _updateVotingDataFromPlaylist(List<PlaylistInfoWithVotes> playlistData) {
     _trackVotes.clear();
+    
     for (int i = 0; i < playlistData.length; i++) {
       final playlistInfo = playlistData[i];
       for (int j = 0; j < playlistInfo.tracks.length; j++) {
         final track = playlistInfo.tracks[j];
         final trackKey = 'track_$j';
+        
         if (track.containsKey('points')) {
           final points = track['points'] as int? ?? 0;
+          final userHasVoted = _userVotesByIndex.containsKey(j);
+          final userVoteValue = _userVotesByIndex[j];
+          
           _trackVotes[trackKey] = VoteStats(
             totalVotes: points.abs(),
             upvotes: points > 0 ? points : 0,
             downvotes: points < 0 ? points.abs() : 0,
-            userHasVoted: false, 
-            userVoteValue: null, 
+            userHasVoted: userHasVoted,
+            userVoteValue: userVoteValue,
             voteScore: points.toDouble(),
+          );
+        } else {
+          _trackVotes[trackKey] = VoteStats(
+            totalVotes: 0,
+            upvotes: 0,
+            downvotes: 0,
+            userHasVoted: _userVotesByIndex.containsKey(j),
+            userVoteValue: _userVotesByIndex[j],
+            voteScore: 0.0,
           );
         }
       }
     }
     notifyListeners();
   }
-
+  
   void clearVotingData() {
     _trackVotes.clear();
+    _userVotesByIndex.clear();
     notifyListeners();
   }
-
+  
   String getVotingStatusMessage() {
     return _canVote ? 'You can vote on this playlist' : 'Voting is not allowed';
+  }
+  
+  void setUserVote(int trackIndex, int voteValue) {
+    _userVotesByIndex[trackIndex] = voteValue;
+    final trackKey = 'track_$trackIndex';
+    final currentStats = _trackVotes[trackKey];
+    if (currentStats != null) {
+      _trackVotes[trackKey] = VoteStats(
+        totalVotes: currentStats.totalVotes + 1,
+        upvotes: voteValue > 0 ? currentStats.upvotes + 1 : currentStats.upvotes,
+        downvotes: voteValue < 0 ? currentStats.downvotes + 1 : currentStats.downvotes,
+        userHasVoted: true,
+        userVoteValue: voteValue, voteScore: currentStats.voteScore + voteValue,
+      );
+    }
+    notifyListeners();
   }
 }

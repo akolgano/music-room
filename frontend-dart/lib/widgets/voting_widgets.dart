@@ -130,13 +130,15 @@ class VoteCounter extends StatelessWidget {
 class TrackVotingControls extends StatelessWidget {
   final String playlistId;
   final String trackId;
+  final int? trackIndex;  
   final VoteStats? stats;
   final bool isCompact;
-
+  
   const TrackVotingControls({
     Key? key,
     required this.playlistId,
     required this.trackId,
+    this.trackIndex,
     this.stats,
     this.isCompact = false,
   }) : super(key: key);
@@ -146,26 +148,37 @@ class TrackVotingControls extends StatelessWidget {
     return Consumer2<VotingProvider, AuthProvider>(
       builder: (context, votingProvider, authProvider, _) {
         final canVote = votingProvider.canVote;
-        final userVote = votingProvider.getUserVote(trackId);
-        final trackStats = stats ?? votingProvider.getTrackVotes(trackId);
-
+        
+        int? effectiveIndex = trackIndex;
+        if (effectiveIndex == null && trackId.startsWith('track_')) {
+          effectiveIndex = int.tryParse(trackId.split('_').last);
+        }
+        
+        final userVote = effectiveIndex != null 
+            ? votingProvider.getUserVoteByIndex(effectiveIndex)
+            : votingProvider.getUserVote(trackId);
+        
+        final trackStats = stats ?? (effectiveIndex != null 
+            ? votingProvider.getTrackVotesByIndex(effectiveIndex)
+            : votingProvider.getTrackVotes(trackId));
+        
         final effectiveStats = trackStats ?? VoteStats(
           totalVotes: 0,
           upvotes: 0,
           downvotes: 0,
-          userHasVoted: false,
-          userVoteValue: null,
+          userHasVoted: userVote != null,
+          userVoteValue: userVote,
           voteScore: 0.0,
         );
 
         if (isCompact) {
           return _buildCompactControls(
-            context, votingProvider, authProvider, canVote, userVote, effectiveStats
+            context, votingProvider, authProvider, canVote, userVote, effectiveStats, effectiveIndex
           );
         }
 
         return _buildFullControls(
-          context, votingProvider, authProvider, canVote, userVote, effectiveStats
+          context, votingProvider, authProvider, canVote, userVote, effectiveStats, effectiveIndex
         );
       },
     );
@@ -178,6 +191,7 @@ class TrackVotingControls extends StatelessWidget {
     bool canVote,
     int? userVote,
     VoteStats trackStats,
+    int? trackIndex,
   ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -185,15 +199,17 @@ class TrackVotingControls extends StatelessWidget {
         VoteButton(
           voteType: VoteType.upvote,
           isSelected: userVote == 1,
-          isEnabled: canVote,
+          isEnabled: canVote && userVote == null, 
           size: 16,
-          onPressed: canVote ? () => _handleUpvote(votingProvider, authProvider) : null,
+          onPressed: canVote && userVote == null 
+              ? () => _handleUpvote(votingProvider, authProvider, trackIndex) 
+              : null,
         ),
         const SizedBox(width: 4),
         Text(
           '${trackStats.netVotes}',
           style: TextStyle(
-            color: trackStats.scoreColor,
+            color: _getVoteColor(userVote, trackStats.scoreColor),
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -202,9 +218,11 @@ class TrackVotingControls extends StatelessWidget {
         VoteButton(
           voteType: VoteType.downvote,
           isSelected: userVote == -1,
-          isEnabled: canVote,
+          isEnabled: canVote && userVote == null, 
           size: 16,
-          onPressed: canVote ? () => _handleDownvote(votingProvider, authProvider) : null,
+          onPressed: canVote && userVote == null 
+              ? () => _handleDownvote(votingProvider, authProvider, trackIndex) 
+              : null,
         ),
       ],
     );
@@ -217,6 +235,7 @@ class TrackVotingControls extends StatelessWidget {
     bool canVote,
     int? userVote,
     VoteStats trackStats,
+    int? trackIndex,
   ) {
     return Container(
       padding: const EdgeInsets.all(8),
@@ -234,24 +253,30 @@ class TrackVotingControls extends StatelessWidget {
               VoteButton(
                 voteType: VoteType.upvote,
                 isSelected: userVote == 1,
-                isEnabled: canVote,
-                onPressed: canVote ? () => _handleUpvote(votingProvider, authProvider) : null,
+                isEnabled: canVote && userVote == null, 
+                onPressed: canVote && userVote == null 
+                    ? () => _handleUpvote(votingProvider, authProvider, trackIndex) 
+                    : null,
               ),
               VoteCounter(stats: trackStats),
               VoteButton(
                 voteType: VoteType.downvote,
                 isSelected: userVote == -1,
-                isEnabled: canVote,
-                onPressed: canVote ? () => _handleDownvote(votingProvider, authProvider) : null,
+                isEnabled: canVote && userVote == null, 
+                onPressed: canVote && userVote == null 
+                    ? () => _handleDownvote(votingProvider, authProvider, trackIndex) 
+                    : null,
               ),
             ],
           ),
-          if (!canVote) ...[
+          if (!canVote || userVote != null) ...[
             const SizedBox(height: 8),
             Text(
-              votingProvider.getVotingStatusMessage(),
-              style: const TextStyle(
-                color: Colors.orange,
+              userVote != null 
+                  ? 'You have voted' 
+                  : votingProvider.getVotingStatusMessage(),
+              style: TextStyle(
+                color: userVote != null ? Colors.green : Colors.orange,
                 fontSize: 10,
               ),
               textAlign: TextAlign.center,
@@ -262,22 +287,33 @@ class TrackVotingControls extends StatelessWidget {
     );
   }
 
-  void _handleUpvote(VotingProvider votingProvider, AuthProvider authProvider) {
-    votingProvider.upvoteTrack(playlistId, trackId, authProvider.token!);
+  Color _getVoteColor(int? userVote, Color defaultColor) {
+    if (userVote == 1) return Colors.green;
+    if (userVote == -1) return Colors.red;
+    return defaultColor;
   }
 
-  void _handleDownvote(VotingProvider votingProvider, AuthProvider authProvider) {
-    votingProvider.downvoteTrack(playlistId, trackId, authProvider.token!);
+  void _handleUpvote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex) {
+    if (trackIndex != null) {
+      votingProvider.setUserVote(trackIndex, 1);
+      
+      votingProvider.upvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
+    }
+  }
+
+  void _handleDownvote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex) {
+    if (trackIndex != null) {
+      votingProvider.setUserVote(trackIndex, -1);
+      
+      votingProvider.downvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
+    }
   }
 }
 
 class VotingRestrictionsCard extends StatelessWidget {
   final VotingRestrictions restrictions;
 
-  const VotingRestrictionsCard({
-    Key? key,
-    required this.restrictions,
-  }) : super(key: key);
+  const VotingRestrictionsCard({Key? key, required this.restrictions}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -485,8 +521,7 @@ class VotingStatsCard extends StatelessWidget {
             children: [
               _buildStatItem('Total Votes', totalVotes.toString(), Icons.how_to_vote),
               _buildStatItem('Tracks', trackVotes.length.toString(), Icons.music_note),
-              if (topTrack != null)
-                _buildStatItem('Top Score', topTrack.value.voteScore.toStringAsFixed(1), Icons.star),
+              if (topTrack != null) _buildStatItem('Top Score', topTrack.value.voteScore.toStringAsFixed(1), Icons.star),
             ],
           ),
         ],

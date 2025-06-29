@@ -57,8 +57,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               _showVotingMode ? Icons.music_note : Icons.how_to_vote,
               color: _showVotingMode ? AppTheme.primary : Colors.white,
             ),
-            onPressed: _toggleVotingMode,
-            tooltip: 'Show Voting',
+            onPressed: _toggleVotingMode, tooltip: 'Show Voting',
           );
         }
         return const SizedBox.shrink();
@@ -93,24 +92,28 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           _playlist = playlist;
           _isOwner = _playlist!.creator == auth.username;
         });
-        
-        await Future.wait([
-          musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!),
-        ]);
+
+        await Future.wait([musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!)]);
         votingProvider.setVotingPermission(true);
         
         setState(() => _tracks = musicProvider.playlistTracks);
-        
         print('Loaded ${_tracks.length} tracks');
+        _initializeVotingData(votingProvider); 
         _startBatchTrackDetailsFetch();
-        
         if (_webSocketService.currentPlaylistId != widget.playlistId) 
           await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
-      } else showError('Failed to load playlist data');
+      } else {
+        showError('Failed to load playlist data');
+      }
     } catch (e) {
       print('Error loading data: $e');
       showError('Failed to load playlist details: $e');
     }
+  }
+
+  void _initializeVotingData(VotingProvider votingProvider) {
+    votingProvider.clearVotingData();
+    print('Initializing voting data for ${_tracks.length} tracks');
   }
 
   Future<void> _enableOpenVoting() async {
@@ -120,15 +123,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           licenseType: 'open', invitedUsers: null,
           voteStartTime: null,
           voteEndTime: null,
-          latitude: null,
-          longitude: null,
-          allowedRadiusMeters: null,
+          latitude: null, longitude: null, allowedRadiusMeters: null,
         );
-        await _apiService.updatePlaylistLicense(
-          widget.playlistId, 
-          'Token ${auth.token!}', 
-          request
-        );
+        await _apiService.updatePlaylistLicense(widget.playlistId, 'Token ${auth.token!}', request);
         await _loadData();
       },
       successMessage: 'Voting enabled for all users!',
@@ -140,9 +137,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
         print('Voting section - canVote: ${votingProvider.canVote}, showVotingMode: $_showVotingMode');
-        
         final trackVotes = votingProvider.trackVotes;
-        
         if (!votingProvider.canVote && _isOwner) {
           return Card(
             color: AppTheme.surface,
@@ -155,13 +150,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     children: [
                       Icon(Icons.how_to_vote, color: Colors.orange, size: 20),
                       SizedBox(width: 8),
-                      Text(
-                        'Voting Not Enabled',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      Text('Voting Not Enabled',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ],
                   ),
@@ -203,45 +193,61 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             ),
           );
         }
-        
+
         return Column(
           children: [
-            PlaylistVotingBanner(playlistId: widget.playlistId),
+            if (votingProvider.canVote) 
+              PlaylistVotingBanner(playlistId: widget.playlistId),
             if (_showVotingMode && trackVotes.isNotEmpty)
               VotingStatsCard(trackVotes: trackVotes),
-            Card(
-              color: AppTheme.surface,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Debug: Voting Status',
-                      style: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Can Vote: ${votingProvider.canVote}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Show Voting Mode: $_showVotingMode',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Track Votes Count: ${trackVotes.length}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _toggleVotingMode,
-                      child: Text(_showVotingMode ? 'Hide Voting' : 'Show Voting'),
-                    ),
-                  ],
+            if (_showVotingMode)
+              Card(
+                color: AppTheme.surface,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Voting Status',
+                        style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Can Vote: ${votingProvider.canVote}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        'Show Voting Mode: $_showVotingMode',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        'Track Votes Count: ${trackVotes.length}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: _toggleVotingMode,
+                            child: Text(_showVotingMode ? 'Hide Voting' : 'Show Voting'),
+                          ),
+                          SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_tracks.isNotEmpty) {
+                                votingProvider.setUserVote(0, 1);
+                                showInfo('Test vote added for first track');
+                              }
+                            },
+                            child: Text('Test Vote'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
             if (votingProvider.canVote && !_showVotingMode)
               AppWidgets.votingInfoBanner(
                 title: 'Voting Available',
@@ -266,8 +272,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            if (_notifications.isNotEmpty) _buildNotificationBar(),
-            _buildPlaylistHeader(),
+            if (_notifications.isNotEmpty) _buildNotificationBar(), _buildPlaylistHeader(),
             const SizedBox(height: 16),
             _buildPlaylistStats(),
             const SizedBox(height: 16),
@@ -286,9 +291,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     final canReorder = currentSort.field == TrackSortField.position && _isOwner && !_showVotingMode;
     if (canReorder) {
       return ReorderableListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: tracks.length,
+        shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: tracks.length,
         onReorder: _onReorderTracks,
         itemBuilder: (context, index) {
           final playlistTrack = tracks[index];
@@ -310,6 +313,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
     final track = playlistTrack.track;
+    
     if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails) {
       _fetchTrackDetailsIfNeeded(playlistTrack);
     }
@@ -339,10 +343,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.primary,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
                 ),
               ],
             ),
@@ -369,6 +370,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         onRemove: _isOwner ? () => _removeTrack(track.id) : null,
         showVotingControls: _showVotingMode,
         playlistId: widget.playlistId,
+        trackIndex: index, 
       );
     }
 
@@ -811,10 +813,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
                 icon: const Icon(Icons.add),
                 label: const Text('Add Tracks'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.black,
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
               ),
             ],
           ],
@@ -843,10 +842,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Future<void> _fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack) async {
     final deezerTrackId = playlistTrack.track?.deezerTrackId;
-    if (deezerTrackId == null || _fetchingTrackDetails.contains(deezerTrackId)) {
-      return;
-    }
-
+    if (deezerTrackId == null || _fetchingTrackDetails.contains(deezerTrackId)) return;
     print('Fetching details for Deezer track ID: $deezerTrackId');
     _fetchingTrackDetails.add(deezerTrackId);
 
@@ -858,14 +854,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           final trackIndex = _tracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
           if (trackIndex != -1) {
             _tracks[trackIndex] = PlaylistTrack(
-              trackId: playlistTrack.trackId,
-              name: playlistTrack.name,
-              position: playlistTrack.position,
-              track: trackDetails,
-            );
+              trackId: playlistTrack.trackId, name: playlistTrack.name, position: playlistTrack.position, track: trackDetails);
           }
         });
-
         final musicProvider = getProvider<MusicProvider>();
         final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
         final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
@@ -877,9 +868,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           musicProvider.playlistTracks.addAll(providerTracks);
           musicProvider.notifyListeners();
         }
-      } else {
-        print('Failed to fetch track details for Deezer ID: $deezerTrackId');
-      }
+      } else print('Failed to fetch track details for Deezer ID: $deezerTrackId');
     } catch (e) {
       print('Error fetching track details for $deezerTrackId: $e');
     } finally {

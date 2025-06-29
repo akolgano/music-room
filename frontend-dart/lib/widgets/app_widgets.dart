@@ -377,8 +377,7 @@ class AppWidgets {
                         ],
                         
                         if (onSelectionChanged == null) 
-                          _buildTrackActions(
-                            showAddButton, 
+                          _buildTrackActions(showAddButton, 
                             showPlayButton, 
                             onAdd, 
                             onPlay, 
@@ -406,6 +405,7 @@ class AppWidgets {
     bool isSelected = false,
     bool showVotingControls = false,
     String? playlistId,
+    int? trackIndex,
     VoidCallback? onTap,
     VoidCallback? onPlay,
     VoidCallback? onRemove,
@@ -451,11 +451,7 @@ class AppWidgets {
                         Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
                         if (showVotingControls && playlistId != null) ...[
                           const SizedBox(height: 4),
-                          TrackVotingControls(
-                            playlistId: playlistId!,
-                            trackId: playlistTrack.trackId,
-                            isCompact: true,
-                          ),
+                          TrackVotingControls(playlistId: playlistId!, trackId: playlistTrack.trackId, isCompact: true),
                         ],
                       ],
                     ),
