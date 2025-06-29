@@ -609,8 +609,7 @@ class AppWidgets {
                           SizedBox(width: R.w(8)),
                         ],
                         if (onSelectionChanged == null) 
-                          _buildTrackActions(
-                            showAddButton, 
+                          _buildTrackActions(showAddButton, 
                             showPlayButton, 
                             onAdd, 
                             onPlay, 
@@ -638,6 +637,7 @@ class AppWidgets {
     bool isSelected = false,
     bool showVotingControls = false,
     String? playlistId,
+    int? trackIndex,
     VoidCallback? onTap,
     VoidCallback? onPlay,
     VoidCallback? onRemove,
@@ -680,11 +680,7 @@ class AppWidgets {
                         Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
                         if (showVotingControls && playlistId != null) ...[
                           const SizedBox(height: 4),
-                          TrackVotingControls(
-                            playlistId: playlistId!,
-                            trackId: playlistTrack.trackId,
-                            isCompact: true,
-                          ),
+                          TrackVotingControls(playlistId: playlistId!, trackId: playlistTrack.trackId, isCompact: true),
                         ],
                       ],
                     ),
@@ -876,11 +872,20 @@ class AppWidgets {
   );
 
   static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
+    final scaffold = Scaffold.maybeOf(context);
+    final mediaQuery = MediaQuery.of(context);
+    final bottomPadding = mediaQuery.viewInsets.bottom + mediaQuery.padding.bottom;
+    
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message, style: TextStyle(fontSize: R.s(14))),
       backgroundColor: backgroundColor ?? AppTheme.primary,
-      behavior: SnackBarBehavior.floating,
-      duration: const Duration(seconds: 3),
+      behavior: SnackBarBehavior.fixed,
+      duration: const Duration(seconds: 2),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        textColor: Colors.white,
+        onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+      ),
     ));
   }
 

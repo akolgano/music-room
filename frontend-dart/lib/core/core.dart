@@ -352,15 +352,16 @@ class SocialLoginUtils {
     try {
       print('Attempting Facebook login...');
       final result = await FacebookAuth.instance.login();
-      
-      if (result.status == LoginStatus.success && result.accessToken != null) {
-        final token = result.accessToken!.tokenString;
-        print('Facebook login successful with accessToken');
-        return SocialLoginResult.success(token, 'facebook');
-      } else {
-        print('Facebook login failed - no valid token received');
-        return SocialLoginResult.error('Facebook login failed - no valid token received');
+      if (result.status == LoginStatus.success) {
+        final accessToken = result.accessToken?.tokenString;
+        if (accessToken != null && accessToken.isNotEmpty) {
+          print('Facebook login successful with accessToken');
+          return SocialLoginResult.success(accessToken, 'facebook');
+        }
       }
+      
+      print('Facebook login failed - no valid token received');
+      return SocialLoginResult.error('Facebook login failed - no valid token received');
     } catch (e) {
       print('Facebook login error: $e');
       return SocialLoginResult.error('Facebook login error: $e');
@@ -379,7 +380,6 @@ class SocialLoginUtils {
     }
 
     try {
-      print('Attempting Google Sign-In...');
       await _googleSignIn!.signOut();
       final user = await _googleSignIn!.signIn();
       
@@ -387,22 +387,21 @@ class SocialLoginUtils {
         print('Google user signed in: ${user.email}');
         final auth = await user.authentication;
         print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
-        
-        final token = auth.idToken ?? auth.accessToken;
-        if (token != null && token.isNotEmpty) {
-          print('Google login successful with token type: ${auth.idToken != null ? 'idToken' : 'accessToken'}');
-          return SocialLoginResult.success(token, 'google');
-        } else {
-          print('Google login failed - no valid token received');
-          return SocialLoginResult.error('Google login failed - no valid token received');
+        final idToken = auth.idToken;
+        if (idToken != null && idToken.isNotEmpty) {
+          print('Google login successful with idToken');
+          return SocialLoginResult.success(idToken, 'google');
         }
       } else {
         print('Google sign-in was cancelled by user');
-        return SocialLoginResult.error('Google sign-in was cancelled by user');
+        return SocialLoginResult.error('Google sign-in was cancelled');
       }
+      
+      print('Google login failed - no valid token received');
+      return SocialLoginResult.error('Google login failed - no valid token received');
     } catch (e) {
-      print('Google Sign-In attempt failed: $e');
-      return SocialLoginResult.error('Google Sign-In error: $e');
+      print('Google login error: $e');
+      return SocialLoginResult.error('Google login error: $e');
     }
   }
 }

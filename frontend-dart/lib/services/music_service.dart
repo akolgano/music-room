@@ -47,14 +47,8 @@ class MusicService {
     await _api.addTrackFromDeezer(int.parse(deezerTrackId), token);
   }
 
-  Future<List<PlaylistTrack>> getPlaylistTracks(String playlistId, String token) async {
-    final response = await _api.getPlaylistTracks(playlistId, token); 
-    return response.tracks;
-  }
-
   Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async {
     try {
-      print('Fetching playlist tracks for playlist $playlistId');
       final response = await _api.getPlaylistTracks(playlistId, token); 
       print('Loaded ${response.tracks.length} tracks with full details');
       return response.tracks;

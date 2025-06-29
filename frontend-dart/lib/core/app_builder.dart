@@ -40,22 +40,6 @@ class AppBuilder {
     ];
   }
 
-  static Map<String, WidgetBuilder> buildRoutes() {
-    return {
-      AppRoutes.home: (context) => const HomeScreen(),
-      AppRoutes.auth: (context) => const AuthScreen(),
-      AppRoutes.profile: (context) => const ProfileScreen(),
-      AppRoutes.trackSearch: (context) => const TrackSearchScreen(),
-      AppRoutes.publicPlaylists: (context) => const PublicPlaylistsScreen(),
-      AppRoutes.friends: (context) => const FriendsListScreen(),
-      AppRoutes.addFriend: (context) => const AddFriendScreen(),
-      AppRoutes.friendRequests: (context) => const FriendRequestScreen(),
-      AppRoutes.userPasswordChange: (context) => const UserPasswordChangeScreen(),
-      AppRoutes.socialNetworkLink: (context) => const SocialNetworkLinkScreen(),
-      '/signup_otp': (context) => const SignupWithOtpScreen(),
-    };
-  }
-
   static final Set<String> _protectedRoutes = {
     AppRoutes.home, AppRoutes.profile,
     AppRoutes.playlistEditor,
@@ -74,7 +58,7 @@ class AppBuilder {
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
-    print('Generating route for: ${settings.name} with arguments: ${settings.arguments}'); 
+    print('Generating route for: ${settings.name} with arguments: ${settings.arguments}');
 
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
@@ -85,6 +69,20 @@ class AppBuilder {
             return const HomeScreen();
           },
         ),
+      );
+    }
+
+    if (settings.name == AppRoutes.auth) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (context) => const AuthScreen(),
+      );
+    }
+
+    if (settings.name == '/signup_otp') {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (context) => const SignupWithOtpScreen(),
       );
     }
 
@@ -147,8 +145,28 @@ class AppBuilder {
 
   static Widget _buildProtectedRoute(RouteSettings settings) {
     print('Building protected route: ${settings.name} with arguments: ${settings.arguments}');
-    
+
     switch (settings.name) {
+      case AppRoutes.home:
+        return const HomeScreen();
+      case AppRoutes.profile:
+        return const ProfileScreen();
+      case AppRoutes.trackSearch:
+        return const TrackSearchScreen();
+      case AppRoutes.publicPlaylists:
+        return const PublicPlaylistsScreen();
+      case AppRoutes.friends:
+        return const FriendsListScreen();
+      case AppRoutes.addFriend:
+        return const AddFriendScreen();
+      case AppRoutes.friendRequests:
+        return const FriendRequestScreen();
+      case AppRoutes.userPasswordChange:
+        return const UserPasswordChangeScreen();
+      case AppRoutes.socialNetworkLink:
+        return const SocialNetworkLinkScreen();
+      case '/profile_info':
+        return const ProfileInfoScreen();
       case AppRoutes.playlistEditor:
         return _buildPlaylistEditor(settings);
       case AppRoutes.playlistDetail:
@@ -160,11 +178,6 @@ class AppBuilder {
       case AppRoutes.deezerTrackDetail:
         return _buildDeezerTrackDetail(settings);
       default:
-        final routes = buildRoutes();
-        final builder = routes[settings.name];
-        if (builder != null) {
-          return Builder(builder: builder);
-        }
         return _buildErrorScreen('Page not found');
     }
   }
@@ -176,10 +189,9 @@ class AppBuilder {
 
   static Widget _buildPlaylistDetail(RouteSettings settings) {
     final args = settings.arguments;
-    print('Playlist detail args: $args, type: ${args.runtimeType}'); 
-
+    print('Playlist detail args: $args, type: ${args.runtimeType}');
     if (args == null) {
-      print('No arguments provided for playlist detail'); 
+      print('No arguments provided for playlist detail');
       return _buildErrorScreen('No playlist ID provided');
     }
 
@@ -187,16 +199,16 @@ class AppBuilder {
     if (args is String) playlistId = args;
     else if (args is Map<String, dynamic> && args.containsKey('id')) playlistId = args['id'].toString();
     else {
-      print('Invalid arguments type for playlist detail: ${args.runtimeType}'); 
+      print('Invalid arguments type for playlist detail: ${args.runtimeType}');
       return _buildErrorScreen('Invalid playlist ID format');
     }
 
     if (playlistId == null || playlistId.isEmpty || playlistId == 'null') {
-      print('Invalid playlist ID: $playlistId'); 
+      print('Invalid playlist ID: $playlistId');
       return _buildErrorScreen('Invalid playlist ID');
     }
 
-    print('Building PlaylistDetailScreen with ID: $playlistId'); 
+    print('Building PlaylistDetailScreen with ID: $playlistId');
     return PlaylistDetailScreen(playlistId: playlistId);
   }
 
@@ -237,8 +249,7 @@ class AppBuilder {
             children: [
               const Icon(Icons.error, size: 64, color: AppTheme.error),
               const SizedBox(height: 16),
-              Text(
-                message, 
+              Text(message,
                 style: const TextStyle(color: Colors.white, fontSize: 18),
                 textAlign: TextAlign.center,
               ),
