@@ -166,7 +166,7 @@ class AppBuilder {
       case AppRoutes.socialNetworkLink:
         return const SocialNetworkLinkScreen();
       case '/profile_info':
-        return const ProfileInfoScreen();
+        return const ProfileScreen();
       case AppRoutes.playlistEditor:
         return _buildPlaylistEditor(settings);
       case AppRoutes.playlistDetail:
@@ -249,10 +249,7 @@ class AppBuilder {
             children: [
               const Icon(Icons.error, size: 64, color: AppTheme.error),
               const SizedBox(height: 16),
-              Text(message,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
+              Text(message, style: const TextStyle(color: Colors.white, fontSize: 18), textAlign: TextAlign.center),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),

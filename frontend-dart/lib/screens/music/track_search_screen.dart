@@ -639,9 +639,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Future<void> _createNewPlaylistAndAddTrack(Track track) async {
-    final playlistName = await DialogUtils.showTextInputDialog(
-      context,
-      title: 'Create New Playlist',
+    final playlistName = await AppWidgets.showTextInputDialog(
+      context, title: 'Create New Playlist',
       hintText: 'Enter playlist name',
       validator: (value) => value?.isEmpty ?? true ? 'Please enter a playlist name' : null,
     );
@@ -651,8 +650,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         () async {
           _setLoadingState(LoadingState.addingTracks);
           final playlistId = await getProvider<MusicProvider>().createPlaylist(
-            playlistName!, 'Created while adding "${track.name}"',
-            false, auth.token!,
+            playlistName!, 'Created while adding "${track.name}"', false, auth.token!,
           );
         if (playlistId?.isNotEmpty == true) {
           final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);
