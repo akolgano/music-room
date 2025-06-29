@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../core/core.dart';
 import '../widgets/app_widgets.dart';
-import '../utils/dialog_utils.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   String get screenTitle;
@@ -75,12 +74,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   Future<bool> showConfirmDialog(String title, String message, {bool isDangerous = false}) async {
     if (!mounted) return false;
-    return await DialogUtils.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous);
+    return await AppWidgets.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous);
   }
 
   Future<String?> showTextInputDialog(String title, {String? initialValue, String? hintText}) async {
     if (!mounted) return null;
-    return await DialogUtils.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText);
+    return await AppWidgets.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText);
   }
 
   T getProvider<T>({bool listen = false}) => Provider.of<T>(context, listen: listen);
@@ -139,8 +138,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   PreferredSizeWidget buildStandardAppBar({List<Widget>? actions}) {
     return AppBar(
-      backgroundColor: AppTheme.background,
-      title: Text(screenTitle),
+      backgroundColor: AppTheme.background, title: Text(screenTitle),
       actions: actions ?? this.actions,
       automaticallyImplyLeading: showBackButton,
     );
@@ -157,5 +155,4 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   Future<void> runAsync(Future<void> Function() operation) async {
     await operation();
   }
-
 }

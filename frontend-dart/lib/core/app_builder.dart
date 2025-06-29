@@ -41,8 +41,7 @@ class AppBuilder {
   }
 
   static final Set<String> _protectedRoutes = {
-    AppRoutes.home,
-    AppRoutes.profile,
+    AppRoutes.home, AppRoutes.profile,
     AppRoutes.playlistEditor,
     AppRoutes.playlistDetail,
     AppRoutes.trackDetail,
@@ -56,7 +55,6 @@ class AppBuilder {
     AppRoutes.deezerTrackDetail,
     AppRoutes.userPasswordChange,
     AppRoutes.socialNetworkLink,
-    '/profile_info',
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -74,7 +72,6 @@ class AppBuilder {
       );
     }
 
-    // Handle non-protected routes first
     if (settings.name == AppRoutes.auth) {
       return MaterialPageRoute(
         settings: settings,
@@ -193,7 +190,6 @@ class AppBuilder {
   static Widget _buildPlaylistDetail(RouteSettings settings) {
     final args = settings.arguments;
     print('Playlist detail args: $args, type: ${args.runtimeType}');
-
     if (args == null) {
       print('No arguments provided for playlist detail');
       return _buildErrorScreen('No playlist ID provided');

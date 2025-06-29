@@ -23,7 +23,6 @@ class R {
       return size;
     }
   }
-  
   static double w(double size) {
     if (kIsWeb) return size;
     try {
@@ -34,7 +33,6 @@ class R {
       return size;
     }
   }
-  
   static double h(double size) {
     if (kIsWeb) return size;
     try {
@@ -45,7 +43,6 @@ class R {
       return size;
     }
   }
-  
   static double r(double size) {
     if (kIsWeb) return size;
     try {
@@ -56,7 +53,6 @@ class R {
       return size;
     }
   }
-  
   static EdgeInsets p(double size) {
     if (kIsWeb) return EdgeInsets.all(size);
     try {
@@ -67,7 +63,6 @@ class R {
       return EdgeInsets.all(size);
     }
   }
-  
   static EdgeInsets sym({double? h, double? v}) {
     if (kIsWeb) return EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0);
     try {
@@ -82,11 +77,219 @@ class R {
   }
 }
 
-
 class AppWidgets {
   static final _primaryStyle = TextStyle(color: Colors.white, fontSize: R.s(16), fontWeight: FontWeight.w600);
   static final _secondaryStyle = TextStyle(color: Colors.white70, fontSize: R.s(14));
   static final _greyStyle = TextStyle(color: Colors.grey, fontSize: R.s(12));
+
+  static Future<bool> showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    bool isDangerous = false,
+    String confirmText = 'Confirm',
+    String cancelText = 'Cancel',
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(cancelText, style: const TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: isDangerous ? Colors.red : AppTheme.primary, foregroundColor: Colors.white),
+            child: Text(confirmText),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  static Future<String?> showTextInputDialog(
+    BuildContext context, {
+    required String title,
+    String? hintText,
+    String? initialValue,
+    String? Function(String?)? validator,
+    int maxLines = 1,
+  }) async {
+    final controller = TextEditingController(text: initialValue);
+    final formKey = GlobalKey<FormState>();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            maxLines: maxLines,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: const TextStyle(color: Colors.grey),
+              filled: true,
+              fillColor: AppTheme.surfaceVariant,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+            ),
+            validator: validator,
+            autofocus: true,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.of(context).pop(controller.text);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<void> showInfoDialog({
+    required BuildContext context,
+    required String title,
+    required String message,
+    IconData? icon,
+    List<String>? points,
+    String? tip,
+  }) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: AppTheme.primary),
+              const SizedBox(width: 8),
+            ],
+            Expanded(
+              child: Text(title, style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(message, style: const TextStyle(color: Colors.white70)),
+            if (points != null && points.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              ...points.map((point) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(color: AppTheme.primary)),
+                    Expanded(
+                      child: Text(point, style: const TextStyle(color: Colors.white70)),
+                    ),
+                  ],
+                ),
+              )),
+            ],
+            if (tip != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.tips_and_updates, color: Colors.blue, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(tip, style: const TextStyle(color: Colors.blue, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<int?> showSelectionDialog<T>({
+    required BuildContext context,
+    required String title,
+    required List<T> items,
+    required String Function(T) itemTitle,
+    String Function(T)? itemSubtitle,
+    Widget Function(T)? itemLeading,
+  }) async {
+    return showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return ListTile(
+                leading: itemLeading?.call(item),
+                title: Text(
+                  itemTitle(item),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                subtitle: itemSubtitle != null
+                    ? Text(
+                        itemSubtitle(item),
+                        style: const TextStyle(color: Colors.grey),
+                      )
+                    : null,
+                onTap: () => Navigator.of(context).pop(index),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+        ],
+      ),
+    );
+  }
 
   static Widget textField({
     required TextEditingController controller,
@@ -128,7 +331,6 @@ class AppWidgets {
             Text(text, style: TextStyle(fontSize: R.s(14))),
           ],
         );
-
     final button = isOutlined 
       ? OutlinedButton(
           onPressed: onPressed,
@@ -149,7 +351,6 @@ class AppWidgets {
           ),
           child: content,
         );
-    
     return fullWidth ? SizedBox(width: double.infinity, height: R.h(50), child: button) : button;
   }
 
@@ -281,6 +482,41 @@ class AppWidgets {
   static Widget successBanner({required String message}) => 
     _banner(title: 'Success', message: message, icon: Icons.check_circle, color: Colors.green);
 
+  static Widget votingInfoBanner({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color color = AppTheme.primary,
+    VoidCallback? onAction,
+    String? actionText,
+  }) => Container(
+    padding: R.p(16),
+    margin: R.sym(h: 16, v: 8),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(R.r(8)),
+      border: Border.all(color: color.withOpacity(0.3)),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: color, size: R.s(24)),
+        SizedBox(width: R.w(12)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: R.s(16))),
+              SizedBox(height: R.h(4)),
+              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: R.s(14))),
+            ],
+          ),
+        ),
+        if (actionText != null && onAction != null)
+          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color, fontSize: R.s(14)))),
+      ],
+    ),
+  );
+
   static Widget formCard({required String title, IconData? titleIcon, required Widget child}) => 
     AppTheme.buildFormCard(title: title, titleIcon: titleIcon, child: child);
 
@@ -343,9 +579,7 @@ class AppWidgets {
                           )
                         else
                           _buildImage(track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
-                        
                         SizedBox(width: R.w(12)),
-                        
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,7 +600,6 @@ class AppWidgets {
                             ],
                           ),
                         ),
-                        
                         if (showVotingControls && playlistId != null) ...[
                           TrackVotingControls(
                             playlistId: playlistId!,
@@ -375,7 +608,6 @@ class AppWidgets {
                           ),
                           SizedBox(width: R.w(8)),
                         ],
-                        
                         if (onSelectionChanged == null) 
                           _buildTrackActions(showAddButton, 
                             showPlayButton, 
@@ -416,13 +648,10 @@ class AppWidgets {
       final track = playlistTrack.track;
       final isCurrentTrack = track != null && playerService.currentTrack?.id == track.id;
       final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-
       String displayName = track?.name ?? playlistTrack.name;
       String displayArtist = track?.artist ?? 'Unknown Artist';
       String? imageUrl = track?.imageUrl;
-
       if (displayArtist == 'Unknown Artist' && track?.deezerTrackId != null) displayArtist = 'Loading artist info...';
-
       return AnimationConfiguration.staggeredList(
         position: 0,
         duration: const Duration(milliseconds: 375),
@@ -483,41 +712,6 @@ class AppWidgets {
     },
   );
 
-  static Widget votingInfoBanner({
-    required String title,
-    required String message,
-    required IconData icon,
-    Color color = AppTheme.primary,
-    VoidCallback? onAction,
-    String? actionText,
-  }) => Container(
-    padding: R.p(16),
-    margin: R.sym(h: 16, v: 8),
-    decoration: BoxDecoration(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(R.r(8)),
-      border: Border.all(color: color.withOpacity(0.3)),
-    ),
-    child: Row(
-      children: [
-        Icon(icon, color: color, size: R.s(24)),
-        SizedBox(width: R.w(12)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: R.s(16))),
-              SizedBox(height: R.h(4)),
-              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: R.s(14))),
-            ],
-          ),
-        ),
-        if (actionText != null && onAction != null)
-          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color, fontSize: R.s(14)))),
-      ],
-    ),
-  );
-
   static Widget _buildImage(String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) => Container(
     width: R.w(size), height: R.h(size),
     decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(R.r(8))),
@@ -528,24 +722,20 @@ class AppWidgets {
 
   static Widget _buildTrackActions(bool showAddButton, bool showPlayButton, VoidCallback? onAdd, VoidCallback? onPlay, VoidCallback? onRemove, bool trackIsPlaying, DynamicThemeProvider themeProvider, bool isInPlaylist) {
     final actions = <Widget>[];
-    
     if (showPlayButton && onPlay != null) {
       actions.add(IconButton(
         icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor, size: R.s(24)), 
         onPressed: onPlay,
       ));
     }
-    
     if (showAddButton && onAdd != null && !isInPlaylist) {
       actions.add(IconButton(
         icon: Icon(Icons.add_circle_outline, color: Colors.white, size: R.s(20)), 
         onPressed: onAdd, tooltip: 'Add to Playlist',
       ));
     }
-    
     if (isInPlaylist) actions.add(Icon(Icons.check_circle, color: Colors.green, size: R.s(20)));
     if (onRemove != null) actions.add(IconButton(icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)), onPressed: onRemove));
-    
     return actions.isNotEmpty ? Wrap(spacing: R.w(4), children: actions) : const SizedBox.shrink();
   }
 
@@ -572,7 +762,6 @@ class AppWidgets {
         ),
       );
     }
-    
     if (onAdd != null) {
       return Container(
         width: double.infinity,
@@ -589,7 +778,6 @@ class AppWidgets {
         ),
       );
     }
-    
     return const SizedBox.shrink();
   }
 
@@ -606,10 +794,7 @@ class AppWidgets {
       title: Text(playlist.name, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('${playlist.tracks.length} tracks', style: _secondaryStyle),
-          Text('By ${playlist.creator}', style: _greyStyle),
-        ],
+        children: [Text('${playlist.tracks.length} tracks', style: _secondaryStyle), Text('By ${playlist.creator}', style: _greyStyle)],
       ),
       trailing: showPlayButton && onPlay != null
           ? IconButton(icon: Icon(Icons.play_circle_outline, color: AppTheme.primary, size: R.s(24)), onPressed: onPlay)
@@ -632,19 +817,6 @@ class AppWidgets {
     activeColor: AppTheme.primary,
   );
 
-  static Widget statusIndicator({required bool isConnected, String? connectedText, String? disconnectedText}) {
-    final color = isConnected ? Colors.green : Colors.red;
-    final text = isConnected ? (connectedText ?? 'Connected') : (disconnectedText ?? 'Disconnected');
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(width: R.w(8), height: R.h(8), decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        SizedBox(width: R.w(4)),
-        Text(text, style: TextStyle(color: color, fontSize: R.s(12))),
-      ],
-    );
-  }
-
   static Widget quickActionCard({required String title, required IconData icon, required Color color, VoidCallback? onTap}) => Card(
     color: AppTheme.surface,
     child: InkWell(
@@ -654,8 +826,7 @@ class AppWidgets {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: R.s(32)),
-            SizedBox(height: R.h(8)),
+            Icon(icon, color: color, size: R.s(32)), SizedBox(height: R.h(8)),
             Text(title, style: _secondaryStyle.copyWith(fontWeight: FontWeight.w500), textAlign: TextAlign.center),
           ],
         ),
@@ -744,7 +915,6 @@ class AppWidgets {
         ),
       );
     }
-
     return RefreshIndicator(
       onRefresh: onRefresh, color: AppTheme.primary,
       child: AnimationLimiter(
@@ -769,7 +939,6 @@ class MiniPlayerWidget extends StatelessWidget {
       builder: (context, playerService, themeProvider, _) {
         final track = playerService.currentTrack;
         if (track == null) return const SizedBox.shrink();
-
         return Container(
           height: R.h(60),
           decoration: BoxDecoration(
@@ -793,10 +962,7 @@ class MiniPlayerWidget extends StatelessWidget {
                     children: [
                       Text(
                         track.name, 
-                        style: TextStyle(color: Colors.white, 
-                          fontWeight: FontWeight.w600, 
-                          fontSize: R.s(14)
-                        ), 
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: R.s(14)), 
                         maxLines: 1, 
                         overflow: TextOverflow.ellipsis
                       ),
@@ -812,15 +978,9 @@ class MiniPlayerWidget extends StatelessWidget {
               ),
               IconButton(
                 onPressed: playerService.togglePlay, 
-                icon: Icon(
-                  playerService.isPlaying ? Icons.pause : Icons.play_arrow, 
-                  color: themeProvider.primaryColor
-                )
+                icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor)
               ),
-              IconButton(
-                onPressed: () => playerService.stop(),
-                icon: Icon(Icons.close, color: Colors.grey, size: R.s(20)),
-              ),
+              IconButton(onPressed: () => playerService.stop(), icon: Icon(Icons.close, color: Colors.grey, size: R.s(20))),
             ],
           ),
         );

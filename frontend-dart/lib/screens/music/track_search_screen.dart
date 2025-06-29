@@ -11,7 +11,6 @@ import '../../widgets/app_widgets.dart';
 import '../../widgets/sort_button.dart';
 import '../../models/models.dart';
 import '../../models/sort_models.dart';
-import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart';
 import '../../widgets/voting_widgets.dart';
@@ -21,6 +20,7 @@ enum LoadingState { idle, searching, addingTracks }
 class TrackSearchScreen extends StatefulWidget {
   final String? playlistId;
   final Track? initialTrack;
+
   const TrackSearchScreen({Key? key, this.playlistId, this.initialTrack}) : super(key: key);
   @override
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
@@ -33,6 +33,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   LoadingState _loadingState = LoadingState.idle;
   List<Playlist> _userPlaylists = [];
   Timer? _searchTimer;
+  
   static const Duration _searchDelay = Duration(milliseconds: 800); 
   static const int _minSearchLength = 2; 
 
@@ -89,6 +90,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   List<Widget> _buildAppBarActions() {
     final actions = <Widget>[];
+
     if (_isAddingToPlaylist && _isMultiSelectMode && _hasSelection) {
       actions.add(IconButton(
         icon: const Icon(Icons.add_circle, color: AppTheme.primary),
@@ -96,12 +98,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         tooltip: 'Add Selected (${_selectedTracks.length})',
       ));
     }
+
     if (_isAddingToPlaylist) {
       actions.add(TextButton(
         onPressed: _isLoading ? null : _toggleMultiSelectMode,
         child: Text(_isMultiSelectMode ? 'Cancel' : 'Multi-Select', style: const TextStyle(color: AppTheme.primary)),
       ));
     }
+
     actions.add(IconButton(icon: const Icon(Icons.clear), onPressed: _clearSearch, tooltip: 'Clear Search')); 
     return actions;
   }
@@ -288,6 +292,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         tooltip: 'Select multiple tracks',
       );
     }
+
     return null;
   }
 
@@ -300,10 +305,12 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   void _onSearchTextChanged(String value) {
     setState(() {}); 
     _searchTimer?.cancel();
+
     if (value.trim().length < _minSearchLength) {
       getProvider<MusicProvider>().clearSearchResults();
       return;
     }
+
     _searchTimer = Timer(_searchDelay, () {
       if (mounted && _searchController.text.trim().length >= _minSearchLength) {
         _performSearch(isAutoSearch: true);
@@ -410,6 +417,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget _buildTrackItem(Track track) {
     final isInPlaylist = _isTrackInPlaylist(track.id);
+
     return AppWidgets.trackCard(
       track: track,
       isSelected: _selectedTracks.contains(track.id),
@@ -688,10 +696,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
         ],
       ),
     );

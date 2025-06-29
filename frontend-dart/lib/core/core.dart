@@ -309,7 +309,7 @@ class AppRoutes {
 class SocialLoginUtils {
   static GoogleSignIn? _googleSignIn;
   static bool _isInitialized = false;
-  
+
   static Future<void> initialize() async {
     if (_isInitialized) return;
     try {
@@ -352,7 +352,6 @@ class SocialLoginUtils {
     try {
       print('Attempting Facebook login...');
       final result = await FacebookAuth.instance.login();
-      
       if (result.status == LoginStatus.success) {
         final accessToken = result.accessToken?.tokenString;
         if (accessToken != null && accessToken.isNotEmpty) {
@@ -381,7 +380,6 @@ class SocialLoginUtils {
     }
 
     try {
-      print('Attempting Google login...');
       await _googleSignIn!.signOut();
       final user = await _googleSignIn!.signIn();
       
@@ -389,7 +387,6 @@ class SocialLoginUtils {
         print('Google user signed in: ${user.email}');
         final auth = await user.authentication;
         print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
-        
         final idToken = auth.idToken;
         if (idToken != null && idToken.isNotEmpty) {
           print('Google login successful with idToken');

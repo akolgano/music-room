@@ -4,14 +4,15 @@ import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../utils/dialog_utils.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
 import 'social_network_link_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
+
   const ProfileScreen({Key? key, this.isEmbedded = false}) : super(key: key);
+
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -19,8 +20,12 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   @override
   String get screenTitle => 'Profile';
+
   @override
   bool get showBackButton => !widget.isEmbedded;
+
+  @override
+  bool get showMiniPlayer => !widget.isEmbedded;
 
   @override
   void initState() {
@@ -402,7 +407,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Future<void> _editGender(ProfileProvider profileProvider) async {
     final genders = ['male', 'female'];
-    final selectedIndex = await DialogUtils.showSelectionDialog<String>(
+    final selectedIndex = await AppWidgets.showSelectionDialog<String>(
       context: context,
       title: 'Select Gender',
       items: genders,
@@ -419,7 +424,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editLocation(ProfileProvider profileProvider) async {
-    final location = await DialogUtils.showTextInputDialog(
+    final location = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Location',
       initialValue: profileProvider.location,
@@ -440,7 +445,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editBio(ProfileProvider profileProvider) async {
-    final bio = await DialogUtils.showTextInputDialog(
+    final bio = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Bio',
       initialValue: profileProvider.bio,
@@ -461,7 +466,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editFirstName(ProfileProvider profileProvider) async {
-    final firstName = await DialogUtils.showTextInputDialog(
+    final firstName = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit First Name',
       initialValue: profileProvider.firstName,
@@ -481,7 +486,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editLastName(ProfileProvider profileProvider) async {
-    final lastName = await DialogUtils.showTextInputDialog(
+    final lastName = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Last Name',
       initialValue: profileProvider.lastName,
@@ -501,7 +506,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editPhone(ProfileProvider profileProvider) async {
-    final phone = await DialogUtils.showTextInputDialog(
+    final phone = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Phone Number',
       initialValue: profileProvider.phone,
@@ -522,7 +527,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editStreet(ProfileProvider profileProvider) async {
-    final street = await DialogUtils.showTextInputDialog(
+    final street = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Street Address',
       initialValue: profileProvider.street,
@@ -553,7 +558,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       'Australia'
     ];
 
-    final selectedIndex = await DialogUtils.showSelectionDialog<String>(
+    final selectedIndex = await AppWidgets.showSelectionDialog<String>(
       context: context,
       title: 'Select Country',
       items: countries,
@@ -573,7 +578,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editPostalCode(ProfileProvider profileProvider) async {
-    final postalCode = await DialogUtils.showTextInputDialog(
+    final postalCode = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Postal Code',
       initialValue: profileProvider.postalCode,
@@ -649,7 +654,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editFriendInfo(ProfileProvider profileProvider) async {
-    final friendInfo = await DialogUtils.showTextInputDialog(
+    final friendInfo = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Friend Info',
       initialValue: profileProvider.friendInfo,
@@ -822,10 +827,7 @@ class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, _selectedGenres),
           style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
