@@ -13,7 +13,6 @@ import '../models/api_models.dart';
 
 class ProfileProvider extends BaseProvider { 
   final ApiService _apiService;  
-  
   String? _userId;
   String? _username;
   String? _userEmail;
@@ -22,7 +21,6 @@ class ProfileProvider extends BaseProvider {
   String? _socialType;
   String? _socialId;
   bool _isPasswordUsable = false;
-  
   String? _avatar;
   String? _gender;
   String? _location;
@@ -62,7 +60,6 @@ class ProfileProvider extends BaseProvider {
   List<String>? get musicPreferences => _musicPreferences;
 
   GoogleSignIn? googleSignIn;
-
   ProfileProvider() : _apiService = getIt<ApiService>();
 
   void resetValues() {
@@ -94,13 +91,11 @@ class ProfileProvider extends BaseProvider {
     return await executeBool(
       () async {
         resetValues();
-        
         final userData = await _apiService.getUserData(token);
         _userId = userData['id'];
         _username = userData['username'];
         _userEmail = userData['email'];
         _isPasswordUsable = userData['is_password_usable'] as bool;
-        
         final hasSocialAccount = userData['has_social_account'] as bool;
         if (hasSocialAccount) {
           final social = userData['social'] as Map<String, dynamic>;
@@ -109,7 +104,6 @@ class ProfileProvider extends BaseProvider {
           _socialName = social['social_name'];
           _socialId = social['social_id'];
         }
-
         final profileData = await _apiService.getProfileData(token!);
         _avatar = profileData['avatar'];
         _gender = profileData['gender'];
@@ -121,10 +115,8 @@ class ProfileProvider extends BaseProvider {
         _street = profileData['street'];
         _country = profileData['country'];
         _postalCode = profileData['postal_code'];
-        
         final dobString = profileData['dob'];
         if (dobString != null) _dob = DateTime.parse(dobString);
-        
         _hobbies = (profileData['hobbies'] as List<dynamic>?)?.cast<String>();
         _friendInfo = profileData['friend_info'];
         _musicPreferences = (profileData['music_preferences'] as List<dynamic>?)?.cast<String>();
@@ -204,12 +196,12 @@ class ProfileProvider extends BaseProvider {
     String? postalCode,
     String? dob,
     List<String>? hobbies,
-    String? friendInfo, List<String>? musicPreferences,
+    String? friendInfo, 
+    List<String>? musicPreferences,
   }) async {
     return await executeBool(
       () async {
         final updateData = <String, dynamic>{};
-        
         if (avatarBase64 != null) updateData['avatar_base64'] = avatarBase64;
         if (mimeType != null) updateData['mime_type'] = mimeType;
         if (gender != null) updateData['gender'] = gender;
@@ -225,9 +217,7 @@ class ProfileProvider extends BaseProvider {
         if (hobbies != null) updateData['hobbies'] = hobbies;
         if (friendInfo != null) updateData['friend_info'] = friendInfo;
         if (musicPreferences != null) updateData['music_preferences'] = musicPreferences;
-        
         await _apiService.updateProfile(token!, updateData);
-        
         if (avatarBase64 != null) _avatar = avatarBase64;
         if (gender != null) _gender = gender;
         if (location != null) _location = location;
@@ -246,10 +236,6 @@ class ProfileProvider extends BaseProvider {
       successMessage: 'Profile updated successfully',
       errorMessage: 'Failed to update profile',
     );
-  }
-
-  Future<bool> updateAvatar(String? token, String? avatarBase64, String? mimeType) async {
-    return updateProfile(token, avatarBase64: avatarBase64, mimeType: mimeType);
   }
 
   Future<bool> updatePersonalInfo(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) async {
