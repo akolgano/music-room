@@ -10,6 +10,22 @@ Fetch from slack
 
 check swagger
 
-## Notes
+## Folder structure
 
-.env value in slack
+### Core Folder (lib/core/)
+Contains fundamental app utilities and configuration.
+
+### Models Folder (lib/models/)
+Data structures and API request/response models
+
+### Providers Folder (lib/providers/)
+State management using Provider pattern https://pub.dev/packages/provider
+
+### Services Folder (lib/services/)
+Business logic and external service integration
+
+### Screens Folder (lib/screens/)
+UI screens organized by features
+
+### Widgets Folder (lib/widgets/)
+Reusable UI components

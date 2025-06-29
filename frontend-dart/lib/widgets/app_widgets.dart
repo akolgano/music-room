@@ -12,70 +12,36 @@ import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';
 import '../models/voting_models.dart';
 
-class R {
-  static double s(double size) {
+class ResponsiveUtils {
+  static double _safeResponsive(double size, double Function() responsiveFunction, {double? maxValue, String? type}) {
     if (kIsWeb) return size;
     try {
-      final result = size.sp;
-      return result.isFinite && result > 0 && result < 1000 ? result : size;
+      final result = responsiveFunction();
+      final max = maxValue ?? (type == 'size' || type == 'radius' ? 1000 : 10000);
+      return result.isFinite && result > 0 && result < max ? result : size;
     } catch (e) {
-      print('ScreenUtil error for size $size: $e');
+      print('ScreenUtil error for $type $size: $e');
       return size;
     }
   }
-  static double w(double size) {
-    if (kIsWeb) return size;
-    try {
-      final result = size.w;
-      return result.isFinite && result > 0 && result < 10000 ? result : size;
-    } catch (e) {
-      print('ScreenUtil error for width $size: $e');
-      return size;
-    }
-  }
-  static double h(double size) {
-    if (kIsWeb) return size;
-    try {
-      final result = size.h;
-      return result.isFinite && result > 0 && result < 10000 ? result : size;
-    } catch (e) {
-      print('ScreenUtil error for height $size: $e');
-      return size;
-    }
-  }
-  static double r(double size) {
-    if (kIsWeb) return size;
-    try {
-      final result = size.r;
-      return result.isFinite && result > 0 && result < 1000 ? result : size;
-    } catch (e) {
-      print('ScreenUtil error for radius $size: $e');
-      return size;
-    }
-  }
+
+  static double s(double size) => _safeResponsive(size, () => size.sp, type: 'size');
+  static double w(double size) => _safeResponsive(size, () => size.w, type: 'width');
+  static double h(double size) => _safeResponsive(size, () => size.h, type: 'height');
+  static double r(double size) => _safeResponsive(size, () => size.r, type: 'radius');
+
   static EdgeInsets p(double size) {
     if (kIsWeb) return EdgeInsets.all(size);
-    try {
-      final result = EdgeInsets.all(size.w);
-      return result;
-    } catch (e) {
-      print('ScreenUtil error for padding $size: $e');
-      return EdgeInsets.all(size);
-    }
+    return EdgeInsets.all(w(size));
   }
+
   static EdgeInsets sym({double? h, double? v}) {
     if (kIsWeb) return EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0);
-    try {
-      return EdgeInsets.symmetric(
-        horizontal: (h ?? 0).w, 
-        vertical: (v ?? 0).h
-      );
-    } catch (e) {
-      print('ScreenUtil error for symmetric padding h:$h v:$v: $e');
-      return EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0);
-    }
+    return EdgeInsets.symmetric(horizontal: w(h ?? 0), vertical: ResponsiveUtils.h(v ?? 0));
   }
 }
+
+typedef R = ResponsiveUtils;
 
 class AppWidgets {
   static final _primaryStyle = TextStyle(color: Colors.white, fontSize: R.s(16), fontWeight: FontWeight.w600);

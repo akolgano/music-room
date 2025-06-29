@@ -35,7 +35,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   List<PlaylistTrack> _tracks = [];
   List<String> _notifications = [];
   bool _isOwner = false;
-  bool _showVotingMode = false; 
+  bool _showVotingMode = false;
+  VotingProvider? _votingProvider;
 
   @override
   String get screenTitle => _playlist?.name ?? 'Playlist Details';
@@ -775,15 +776,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(currentSort.icon, size: 14, color: AppTheme.primary),
-                        const SizedBox(width: 4),
+                        Icon(currentSort.icon, size: 14, color: AppTheme.primary), const SizedBox(width: 4),
                         Text(
                           'Sorted by ${currentSort.displayName}',
-                          style: const TextStyle(
-                            color: AppTheme.primary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: const TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(width: 4),
                         GestureDetector(
