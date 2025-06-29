@@ -87,8 +87,7 @@ class AppWidgets {
     required String title,
     required String message,
     bool isDangerous = false,
-    String confirmText = 'Confirm',
-    String cancelText = 'Cancel',
+    String confirmText = 'Confirm', String cancelText = 'Cancel',
   }) async {
     final result = await showDialog<bool>(
       context: context,
@@ -615,8 +614,7 @@ class AppWidgets {
                             onPlay, 
                             onRemove, 
                             trackIsPlaying, 
-                            themeProvider, 
-                            isInPlaylist
+                            themeProvider, isInPlaylist
                           ),
                       ],
                     ),
@@ -636,6 +634,7 @@ class AppWidgets {
     required PlaylistTrack playlistTrack,
     bool isSelected = false,
     bool showVotingControls = false,
+    bool showPoints = false, 
     String? playlistId,
     int? trackIndex,
     VoidCallback? onTap,
@@ -648,10 +647,15 @@ class AppWidgets {
       final track = playlistTrack.track;
       final isCurrentTrack = track != null && playerService.currentTrack?.id == track.id;
       final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
+
       String displayName = track?.name ?? playlistTrack.name;
       String displayArtist = track?.artist ?? 'Unknown Artist';
       String? imageUrl = track?.imageUrl;
-      if (displayArtist == 'Unknown Artist' && track?.deezerTrackId != null) displayArtist = 'Loading artist info...';
+
+      if (displayArtist == 'Unknown Artist' && track?.deezerTrackId != null) {
+        displayArtist = 'Loading artist info...';
+      }
+
       return AnimationConfiguration.staggeredList(
         position: 0,
         duration: const Duration(milliseconds: 375),
@@ -678,6 +682,27 @@ class AppWidgets {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        if (showPoints && playlistTrack.points != 0) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                playlistTrack.points > 0 ? Icons.thumb_up : Icons.thumb_down,
+                                size: 12,
+                                color: playlistTrack.points > 0 ? Colors.green : Colors.red,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${playlistTrack.points > 0 ? '+' : ''}${playlistTrack.points} points',
+                                style: TextStyle(
+                                  color: playlistTrack.points > 0 ? Colors.green : Colors.red,
+                                  fontSize: R.s(11),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         if (showVotingControls && playlistId != null) ...[
                           const SizedBox(height: 4),
                           TrackVotingControls(playlistId: playlistId!, trackId: playlistTrack.trackId, isCompact: true),
@@ -687,6 +712,27 @@ class AppWidgets {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (playlistTrack.points > 5 || playlistTrack.points < -5) ...[
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: R.w(6), vertical: R.h(2)),
+                            decoration: BoxDecoration(
+                              color: (playlistTrack.points > 0 ? Colors.green : Colors.red).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(R.r(10)),
+                              border: Border.all(
+                                color: (playlistTrack.points > 0 ? Colors.green : Colors.red).withOpacity(0.5),
+                              ),
+                            ),
+                            child: Text(
+                              '${playlistTrack.points > 0 ? '+' : ''}${playlistTrack.points}',
+                              style: TextStyle(
+                                color: playlistTrack.points > 0 ? Colors.green : Colors.red,
+                                fontSize: R.s(10),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: R.w(8)),
+                        ],
                         if (onPlay != null)
                           IconButton(
                             icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, 
@@ -730,8 +776,7 @@ class AppWidgets {
     }
     if (showAddButton && onAdd != null && !isInPlaylist) {
       actions.add(IconButton(
-        icon: Icon(Icons.add_circle_outline, color: Colors.white, size: R.s(20)), 
-        onPressed: onAdd, tooltip: 'Add to Playlist',
+        icon: Icon(Icons.add_circle_outline, color: Colors.white, size: R.s(20)), onPressed: onAdd, tooltip: 'Add to Playlist',
       ));
     }
     if (isInPlaylist) actions.add(Icon(Icons.check_circle, color: Colors.green, size: R.s(20)));

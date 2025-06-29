@@ -92,9 +92,6 @@ class ApiService {
   Future<AuthResult> login(LoginRequest request) => 
       _post('/users/login/', request, AuthResult.fromJson);
       
-  Future<AuthResult> signup(SignupRequest request) => 
-      _post('/users/signup/', request, AuthResult.fromJson);
-      
   Future<void> logout(String token, LogoutRequest request) => 
       _postVoid('/users/logout/', request, token: token);
       

@@ -10,43 +10,15 @@ class LoginRequest {
   Map<String, dynamic> toJson() => {'username': username, 'password': password};
 }
 
-class SignupRequest {
-  final String username;
-  final String email;
-  final String password;
-
-  const SignupRequest({
-    required this.username,
-    required this.email,
-    required this.password,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'username': username,
-    'email': email,
-    'password': password,
-  };
-}
-
 class SignupWithOtpRequest {
   final String username;
   final String email;
   final String password;
   final int otp;
 
-  const SignupWithOtpRequest({
-    required this.username,
-    required this.email,
-    required this.password,
-    required this.otp,
-  });
+  const SignupWithOtpRequest({ required this.username, required this.email, required this.password, required this.otp });
 
-  Map<String, dynamic> toJson() => {
-    'username': username,
-    'email': email,
-    'password': password,
-    'otp': otp,
-  };
+  Map<String, dynamic> toJson() => {'username': username, 'email': email, 'password': password, 'otp': otp};
 }
 
 class LogoutRequest {

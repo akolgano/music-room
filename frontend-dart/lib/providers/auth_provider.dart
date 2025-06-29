@@ -50,14 +50,6 @@ class AuthProvider extends BaseProvider {
     );
   }
 
-  Future<bool> signup(String username, String email, String password) async {
-    return await executeBool(
-      () => _authService.signup(username, email, password),
-      successMessage: 'Account created successfully!',
-      errorMessage: 'Signup failed',
-    );
-  }
-
   Future<bool> logout() async {
     return await executeBool(
       () => _authService.logout(),
@@ -80,11 +72,7 @@ class AuthProvider extends BaseProvider {
   Future<bool> forgotChangePassword(String email, String otp, String password) async {
     return await executeBool(
       () async {
-        final request = ChangePasswordRequest(
-          email: email,
-          otp: int.parse(otp),
-          password: password,
-        );
+        final request = ChangePasswordRequest(email: email, otp: int.parse(otp), password: password);
         await _authService.api.forgotChangePassword(request);
       },
       successMessage: 'Password changed successfully',
@@ -135,10 +123,7 @@ class AuthProvider extends BaseProvider {
           await Future.delayed(const Duration(milliseconds: 500));
         }
         
-        if (SocialLoginUtils.googleSignInInstance == null) {
-          throw Exception('Google Sign-In is not properly configured');
-        }
-        
+        if (SocialLoginUtils.googleSignInInstance == null) throw Exception('Google Sign-In is not properly configured');
         final result = await SocialLoginUtils.loginWithGoogle();
         if (result.success && result.token != null) {
           await _authService.googleLogin('app', result.token!);
