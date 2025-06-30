@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../services/music_player_service.dart';
+import '../../core/service_locator.dart';
+import '../../services/api_service.dart';
 import '../../models/models.dart';
 import '../../core/core.dart';
 import '../../widgets/widgets.dart';
@@ -176,20 +178,34 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _saveChanges() async {
     if (!_isEditMode) return;
-
     if (_nameController.text.trim().isEmpty) {
       showError('Please enter a playlist name');
       return;
     }
-
     setState(() => _isLoading = true);
     try {
-      showSuccess('Playlist changes saved locally');
-      Navigator.pushReplacementNamed(
-        context, 
-        AppRoutes.playlistDetail, 
-        arguments: widget.playlistId
-      );
+      final apiService = getIt<ApiService>();
+      
+      if (_playlist != null && _playlist!.isPublic != _isPublic) {
+        final visibilityRequest = VisibilityRequest(public: _isPublic);
+        await apiService.changePlaylistVisibility(
+          widget.playlistId!, 
+          'Token ${auth.token!}', 
+          visibilityRequest
+        );
+      }
+      
+      if (_playlist != null && 
+          (_playlist!.name != _nameController.text.trim() || 
+           _playlist!.description != _descriptionController.text.trim())) {
+        showInfo('Note: Name and description changes are only saved locally. API enhancement needed for server persistence.');
+      }
+      
+      final musicProvider = getProvider<MusicProvider>();
+      await musicProvider.fetchUserPlaylists(auth.token!);
+      
+      showSuccess('Playlist visibility updated successfully!');
+      Navigator.pushReplacementNamed(context, AppRoutes.playlistDetail, arguments: widget.playlistId);
     } catch (e) {
       showError('Failed to update playlist: $e');
     } finally {
@@ -260,9 +276,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           final musicProvider = getProvider<MusicProvider>();
           await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId!, trackId: trackId, token: auth.token!);
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
-          setState(() {
-            _tracks = musicProvider.playlistTracks;
-          });
+          setState(() => _tracks = musicProvider.playlistTracks);
         },
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',

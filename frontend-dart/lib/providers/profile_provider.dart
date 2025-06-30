@@ -12,7 +12,6 @@ import '../models/api_models.dart';
 
 class ProfileProvider extends BaseProvider { 
   final ApiService _apiService;  
-  
   String? _userId;
   String? _username;
   String? _userEmail;
@@ -203,9 +202,9 @@ class ProfileProvider extends BaseProvider {
         if (hobbies != null) updateData['hobbies'] = hobbies;
         if (friendInfo != null) updateData['friend_info'] = friendInfo;
         if (musicPreferences != null) updateData['music_preferences'] = musicPreferences;
-        
+
         await _apiService.updateProfile(token!, updateData);
-        
+
         if (avatarBase64 != null) _avatar = avatarBase64;
         if (gender != null) _gender = gender;
         if (location != null) _location = location;
@@ -228,10 +227,6 @@ class ProfileProvider extends BaseProvider {
 
   Future<bool> updateFriendInfo(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {
     return updateProfile(token, dob: dob, hobbies: hobbies, friendInfo: friendInfo);
-  }
-
-  Future<bool> updateMusicPreferences(String? token, List<String>? musicPreferences) async {
-    return updateProfile(token, musicPreferences: musicPreferences);
   }
 
   String? get avatarUrl {

@@ -15,21 +15,17 @@ import '../models/voting_models.dart';
 class R {
   static double _screenWidth = 375;
   static double _screenHeight = 812;
-  
   static void init(BuildContext context) {
     final size = MediaQuery.of(context).size;
     _screenWidth = size.width;
     _screenHeight = size.height;
   }
-  
   static double w(double width) => (_screenWidth / 375) * width;
   static double h(double height) => (_screenHeight / 812) * height;
-  
   static double s(double size) {
     final scale = (_screenWidth / 375).clamp(0.8, 1.2); 
     return size * scale;
   }
-  
   static double r(double radius) => (_screenWidth / 375) * radius;
   static EdgeInsets p(double padding) => EdgeInsets.all((_screenWidth / 375) * padding);
   static EdgeInsets sym({double h = 0, double v = 0}) => EdgeInsets.symmetric(
@@ -41,50 +37,36 @@ class R {
 class ResponsiveHelper {
   static double fontSize(BuildContext context, double size) {
     final screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth < 360) {
-      return size * 0.85; 
-    } else if (screenWidth > 600) {
-      return size * 1.1; 
-    }
+    if (screenWidth < 360) return size * 0.85; 
+    else if (screenWidth > 600) return size * 1.1; 
     return size; 
   }
-  
+
   static double spacing(BuildContext context, double size) {
     if (ResponsiveBreakpoints.of(context).isMobile) return size * 0.9;
     else if (ResponsiveBreakpoints.of(context).isTablet) return size;
     else return size * 1.1;
   }
-  
   static EdgeInsets padding(BuildContext context, double size) {
     final responsive = spacing(context, size);
     return EdgeInsets.all(responsive);
   }
-  
   static EdgeInsets symmetricPadding(BuildContext context, {double? horizontal, double? vertical}) {
     return EdgeInsets.symmetric(
       horizontal: horizontal != null ? spacing(context, horizontal) : 0,
       vertical: vertical != null ? spacing(context, vertical) : 0,
     );
   }
-  
   static double iconSize(BuildContext context, double size) {
     final screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth < 360) {
-      return size * 0.9;
-    } else if (screenWidth > 600) {
-      return size * 1.1;
-    }
+    if (screenWidth < 360) return size * 0.9;
+    else if (screenWidth > 600) return size * 1.1;
     return size;
   }
-  
   static double borderRadius(BuildContext context, double radius) {
-    if (ResponsiveBreakpoints.of(context).isMobile) {
-      return radius * 0.8;
-    } else if (ResponsiveBreakpoints.of(context).isTablet) {
-      return radius;
-    } else {
-      return radius * 1.2;
-    }
+    if (ResponsiveBreakpoints.of(context).isMobile) return radius * 0.8;
+    else if (ResponsiveBreakpoints.of(context).isTablet) return radius;
+    else return radius * 1.2;
   }
 }
 
@@ -126,11 +108,7 @@ class AppWidgets {
       hintText: hintText, 
       prefixIcon: prefixIcon
     ).copyWith(
-      contentPadding: ResponsiveHelper.symmetricPadding(
-        context, 
-        horizontal: 16, 
-        vertical: 12
-      ),
+      contentPadding: ResponsiveHelper.symmetricPadding(context, horizontal: 16, vertical: 12),
     ),
   );
 
@@ -142,7 +120,6 @@ class AppWidgets {
     bool isInPlaylist = false,
     bool showAddButton = true,
     bool showPlayButton = true,
-    bool showExplicitAddButton = false,
     bool showVotingControls = false,
     String? playlistContext,
     String? playlistId,
@@ -163,7 +140,6 @@ class AppWidgets {
       } else if (displayArtist.isEmpty) {
         displayArtist = 'Unknown Artist';
       }
-
       return AnimationConfiguration.staggeredList(
         position: 0,
         duration: const Duration(milliseconds: 375),
@@ -179,88 +155,78 @@ class AppWidgets {
                 borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 12)),
                 border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
               ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: ResponsiveHelper.padding(context, 12),
-                    child: Row(
-                      children: [
-                        if (onSelectionChanged != null)
-                          SizedBox(
-                            width: 56,
-                            child: Checkbox(
-                              value: isSelected, 
-                              onChanged: onSelectionChanged, 
-                              activeColor: themeProvider.primaryColor
+              child: Padding(
+                padding: ResponsiveHelper.padding(context, 12),
+                child: Row(
+                  children: [
+                    if (onSelectionChanged != null)
+                      SizedBox(
+                        width: 56,
+                        child: Checkbox(
+                          value: isSelected, 
+                          onChanged: onSelectionChanged, 
+                          activeColor: themeProvider.primaryColor
+                        ),
+                      )
+                    else
+                      _buildImage(context, track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
+                    SizedBox(width: ResponsiveHelper.spacing(context, 12)),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  track.name, 
+                                  style: _primaryStyle(context), 
+                                  maxLines: 1, 
+                                  overflow: TextOverflow.ellipsis
+                                ),
+                                Text(
+                                  displayArtist, 
+                                  style: _secondaryStyle(context), 
+                                  maxLines: 1, 
+                                  overflow: TextOverflow.ellipsis
+                                ),
+                              ],
                             ),
-                          )
-                        else
-                          _buildImage(context, track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
-                        
-                        SizedBox(width: ResponsiveHelper.spacing(context, 12)),
-                        
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      track.name, 
-                                      style: _primaryStyle(context), 
-                                      maxLines: 1, 
-                                      overflow: TextOverflow.ellipsis
-                                    ),
-                                    Text(
-                                      displayArtist, 
-                                      style: _secondaryStyle(context), 
-                                      maxLines: 1, 
-                                      overflow: TextOverflow.ellipsis
-                                    ),
-                                  ],
+                          ),
+                          if (showVotingControls && playlistId != null)
+                            Flexible(
+                              flex: 1,
+                              child: Padding(
+                                padding: EdgeInsets.only(right: ResponsiveHelper.spacing(context, 8)),
+                                child: TrackVotingControls(
+                                  playlistId: playlistId!,
+                                  trackId: track.id,
+                                  isCompact: true,
                                 ),
                               ),
-                              
-                              if (showVotingControls && playlistId != null)
-                                Flexible(
-                                  flex: 1,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(right: ResponsiveHelper.spacing(context, 8)),
-                                    child: TrackVotingControls(
-                                      playlistId: playlistId!,
-                                      trackId: track.id,
-                                      isCompact: true,
-                                    ),
-                                  ),
-                                ),
-                              
-                              if (onSelectionChanged == null)
-                                Flexible(
-                                  flex: 1,
-                                  child: _buildTrackActions(
-                                    context, 
-                                    showAddButton, 
-                                    showPlayButton, 
-                                    onAdd, 
-                                    onPlay, 
-                                    onRemove, 
-                                    trackIsPlaying, 
-                                    themeProvider, 
-                                    isInPlaylist
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
+                            ),
+                          if (onSelectionChanged == null)
+                            Flexible(
+                              flex: 1,
+                              child: _buildTrackActions(
+                                context, 
+                                showAddButton, 
+                                showPlayButton, 
+                                onAdd, 
+                                onPlay, 
+                                onRemove, 
+                                trackIsPlaying, 
+                                themeProvider, 
+                                isInPlaylist
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                  if (showExplicitAddButton) 
-                    _buildExplicitButton(context, onAdd, isInPlaylist, playlistContext, themeProvider),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -300,7 +266,6 @@ class AppWidgets {
     bool isInPlaylist
   ) {
     final actions = <Widget>[];
-    
     if (showPlayButton && onPlay != null) {
       actions.add(IconButton(
         icon: Icon(
@@ -313,7 +278,6 @@ class AppWidgets {
         constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
       ));
     }
-    
     if (showAddButton && onAdd != null && !isInPlaylist) {
       actions.add(IconButton(
         icon: Icon(
@@ -327,7 +291,6 @@ class AppWidgets {
         constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
       ));
     }
-    
     if (isInPlaylist) {
       actions.add(Padding(
         padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)),
@@ -338,7 +301,6 @@ class AppWidgets {
         ),
       ));
     }
-    
     if (onRemove != null) {
       actions.add(IconButton(
         icon: Icon(
@@ -351,9 +313,7 @@ class AppWidgets {
         constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
       ));
     }
-
     if (actions.isEmpty) return const SizedBox.shrink();
-    
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: actions.length > 2 
@@ -362,88 +322,7 @@ class AppWidgets {
     );
   }
 
-  static Widget _buildExplicitButton(
-    BuildContext context,
-    VoidCallback? onAdd, 
-    bool isInPlaylist, 
-    String? playlistContext, 
-    DynamicThemeProvider themeProvider
-  ) {
-    if (isInPlaylist) {
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(
-          ResponsiveHelper.spacing(context, 16), 
-          0, 
-          ResponsiveHelper.spacing(context, 16), 
-          ResponsiveHelper.spacing(context, 12)
-        ),
-        child: Container(
-          padding: ResponsiveHelper.symmetricPadding(context, horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 20)),
-            border: Border.all(color: Colors.green.withOpacity(0.5)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: ResponsiveHelper.iconSize(context, 16)),
-              SizedBox(width: ResponsiveHelper.spacing(context, 8)),
-              Flexible(
-                child: Text(
-                  'Already in playlist', 
-                  style: TextStyle(
-                    color: Colors.green, 
-                    fontSize: ResponsiveHelper.fontSize(context, 14), 
-                    fontWeight: FontWeight.w600
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                )
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    
-    if (onAdd != null) {
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(
-          ResponsiveHelper.spacing(context, 16), 
-          0, 
-          ResponsiveHelper.spacing(context, 16), 
-          ResponsiveHelper.spacing(context, 12)
-        ),
-        child: ElevatedButton.icon(
-          onPressed: onAdd,
-          icon: Icon(Icons.add, size: ResponsiveHelper.iconSize(context, 18)),
-          label: Flexible(
-            child: Text(
-              playlistContext != null ? 'Add to $playlistContext' : 'Add to Playlist', 
-              style: TextStyle(
-                fontSize: ResponsiveHelper.fontSize(context, 14), 
-                fontWeight: FontWeight.w600
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: themeProvider.primaryColor, 
-            foregroundColor: Colors.black, 
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 20))
-            ),
-            padding: ResponsiveHelper.symmetricPadding(context, horizontal: 20, vertical: 10),
-          ),
-        ),
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
+  // Rest of the AppWidgets methods remain unchanged...
   static Future<bool> showConfirmDialog(
     BuildContext context, {
     required String title,

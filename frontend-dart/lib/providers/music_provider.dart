@@ -145,19 +145,18 @@ class MusicProvider extends BaseProvider {
       () => _musicService.getPlaylistTracksWithDetails(playlistId, token),
       errorMessage: 'Failed to load playlist tracks',
     );
-    if (result != null) {
-      _playlistTracks = result;
-    }
+    if (result != null) _playlistTracks = result;
   }
 
   bool isTrackInPlaylist(String trackId) {
     return _playlistTracks.any((pt) => pt.trackId == trackId || pt.track?.id == trackId);
   }
 
-  Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
+ Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     try {
-      final backendTrackId = Track.toBackendId(trackId);
-      await _musicService.addTrackToPlaylist(playlistId, backendTrackId, token);
+      await _musicService.addTrackToPlaylist(playlistId, trackId, token);
+      await fetchPlaylistTracks(playlistId, token);
+      notifyListeners();
       return AddTrackResult(success: true, message: 'Track added successfully');
     } catch (e) {
       return AddTrackResult(success: false, message: e.toString());
@@ -167,6 +166,8 @@ class MusicProvider extends BaseProvider {
   Future<AddTrackResult> addTrackObjectToPlaylist(String playlistId, Track track, String token) async {
     try {
       await _musicService.addTrackToPlaylist(playlistId, track.backendId, token);
+      await fetchPlaylistTracks(playlistId, token);
+      notifyListeners();
       return AddTrackResult(success: true, message: 'Track added successfully');
     } catch (e) {
       return AddTrackResult(success: false, message: e.toString());
@@ -186,10 +187,7 @@ class MusicProvider extends BaseProvider {
     List<String> errors = [];
 
     for (int i = 0; i < trackIds.length; i++) {
-      if (onProgress != null) {
-        onProgress(i + 1, trackIds.length);
-      }
-      
+      if (onProgress != null) onProgress(i + 1, trackIds.length);
       try {
         if (isTrackInPlaylist(trackIds[i])) {
           duplicateCount++;
@@ -201,21 +199,14 @@ class MusicProvider extends BaseProvider {
         failureCount++;
         errors.add(e.toString());
       }
-      
       if (i < trackIds.length - 1) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
     }
-
     await fetchPlaylistTracks(playlistId, token);
-    
+    notifyListeners();
     return BatchAddResult(
-      totalTracks: trackIds.length,
-      successCount: successCount,
-      duplicateCount: duplicateCount,
-      failureCount: failureCount,
-      errors: errors,
-    );
+      totalTracks: trackIds.length, successCount: successCount, duplicateCount: duplicateCount, failureCount: failureCount, errors: errors);
   }
 
   Future<void> removeTrackFromPlaylist({
@@ -224,7 +215,10 @@ class MusicProvider extends BaseProvider {
     required String token,
   }) async {
     await executeAsync(
-      () => _musicService.removeTrackFromPlaylist(playlistId, trackId, token),
+      () async {
+        await _musicService.removeTrackFromPlaylist(playlistId, trackId, token);
+        await fetchPlaylistTracks(playlistId, token);
+      },
       successMessage: 'Track removed from playlist',
       errorMessage: 'Failed to remove track',
     );
@@ -238,8 +232,15 @@ class MusicProvider extends BaseProvider {
     int rangeLength = 1,
   }) async {
     await executeAsync(
-      () => _musicService.moveTrackInPlaylist(
-        playlistId: playlistId, rangeStart: rangeStart, insertBefore: insertBefore, rangeLength: rangeLength, token: token),
+      () async {
+        await _musicService.moveTrackInPlaylist(playlistId: playlistId, 
+          rangeStart: rangeStart, 
+          insertBefore: insertBefore, 
+          rangeLength: rangeLength, 
+          token: token
+        );
+        await fetchPlaylistTracks(playlistId, token);
+      },
       successMessage: 'Track order updated',
       errorMessage: 'Failed to update track order',
     );

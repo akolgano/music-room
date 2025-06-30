@@ -4,31 +4,34 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
+import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../models/models.dart';
 import '../profile/profile_screen.dart';
+import '../music/track_search_screen.dart';
+import '../friends/friends_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-  
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 5, vsync: this); 
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -52,9 +55,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               tabs: const [
                 Tab(icon: Icon(Icons.home), text: 'Home'),
                 Tab(icon: Icon(Icons.library_music), text: 'Library'),
+                Tab(icon: Icon(Icons.search), text: 'Search'),
+                Tab(icon: Icon(Icons.people), text: 'Friends'),
                 Tab(icon: Icon(Icons.person), text: 'Profile'),
               ],
-              tabViews: [_buildDashboard(auth), _buildPlaylists(), const ProfileScreen(isEmbedded: true)],
+              tabViews: [
+                _buildDashboard(auth),
+                _buildPlaylists(),
+                _buildSearchTab(),
+                _buildFriendsTab(),
+                const ProfileScreen(isEmbedded: true)
+              ],
               controller: _tabController,
             ),
           ),
@@ -89,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 title: 'Search Tracks',
                 icon: Icons.search,
                 color: Colors.blue,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
+                onTap: () => _tabController.animateTo(2), 
               ),
               AppWidgets.quickActionCard(
                 title: 'Create Playlist',
@@ -101,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 title: 'Find Friends',
                 icon: Icons.people,
                 color: Colors.purple,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.friends),
+                onTap: () => _tabController.animateTo(3), 
               ),
               AppWidgets.quickActionCard(
                 title: 'Public Playlists',
@@ -141,12 +152,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             itemCount: music.playlists.length,
             itemBuilder: (context, index) {
               final playlist = music.playlists[index];
-              print('Playlist ID: ${playlist.id}, Name: ${playlist.name}'); 
-              
+              print('Playlist ID: ${playlist.id}, Name: ${playlist.name}');
               return AppWidgets.playlistCard(
                 playlist: playlist,
                 onTap: () {
-                  print('Navigating to playlist with ID: ${playlist.id}'); 
+                  print('Navigating to playlist with ID: ${playlist.id}');
                   if (playlist.id.isNotEmpty && playlist.id != 'null') {
                     Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
                   } else {
@@ -163,16 +173,127 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildSearchTab() {
+    return const TrackSearchScreen();
+  }
+
+  Widget _buildFriendsTab() {
+    return Consumer<FriendProvider>(
+      builder: (context, friendProvider, _) {
+        if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppWidgets.infoBanner(
+                title: 'Connect with Friends',
+                message: 'Add friends to share and collaborate on playlists together!',
+                icon: Icons.people,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
+                      icon: const Icon(Icons.person_add),
+                      label: const Text('Add Friend'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
+                      icon: const Icon(Icons.list),
+                      label: const Text('View All'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.surface,
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              AppWidgets.sectionTitle('Recent Friends'),
+              const SizedBox(height: 16),
+              if (friendProvider.friends.isEmpty)
+                AppWidgets.emptyState(
+                  icon: Icons.people_outline,
+                  title: 'No friends yet',
+                  subtitle: 'Add some friends to start sharing music!',
+                  buttonText: 'Add Friend',
+                  onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: friendProvider.friends.length > 5 ? 5 : friendProvider.friends.length,
+                  itemBuilder: (context, index) {
+                    final friendId = friendProvider.friends[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      color: AppTheme.surface,
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
+                          child: const Icon(Icons.person, color: Colors.white),
+                        ),
+                        title: Text(
+                          'Friend #$friendId',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                        ),
+                        subtitle: Text(
+                          'User ID: $friendId',
+                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                        trailing: Icon(Icons.music_note, color: AppTheme.primary, size: 20),
+                        onTap: () {
+                          _showInfo('Friend features coming soon!');
+                        },
+                      ),
+                    );
+                  },
+                ),
+              if (friendProvider.friends.length > 5) ...[
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
+                    child: Text(
+                      'View all ${friendProvider.friends.length} friends',
+                      style: const TextStyle(color: AppTheme.primary),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _loadData() async {
     try {
       final music = Provider.of<MusicProvider>(context, listen: false);
       final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       final auth = Provider.of<AuthProvider>(context, listen: false);
-      
+
       if (auth.isLoggedIn && auth.token != null) {
-        await Future.wait([
-          music.fetchUserPlaylists(auth.token!),
-          profileProvider.loadProfile(auth.token),
+        await Future.wait([music.fetchUserPlaylists(auth.token!), profileProvider.loadProfile(auth.token),
+          friendProvider.fetchFriends(auth.token!),
         ]);
       }
     } catch (e) {

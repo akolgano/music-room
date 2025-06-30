@@ -8,7 +8,7 @@ import '../models/models.dart';
 
 class VotingProvider extends BaseProvider {
   final VotingService _votingService = getIt<VotingService>();
-  
+
   Map<String, VoteStats> _trackVotes = {};
   Map<String, VoteStats> get trackVotes => Map.unmodifiable(_trackVotes);
 
@@ -16,12 +16,11 @@ class VotingProvider extends BaseProvider {
   bool get canVote => _canVote;
 
   Map<int, int> _userVotesByIndex = {};
-  
   Map<int, int> _trackPoints = {};
   Map<int, int> get trackPoints => Map.unmodifiable(_trackPoints);
 
   VoteStats? getTrackVotes(String trackId) => _trackVotes[trackId];
-  
+
   VoteStats? getTrackVotesByIndex(int index) {
     final trackKey = 'track_$index';
     return _trackVotes[trackKey];
@@ -89,9 +88,9 @@ class VotingProvider extends BaseProvider {
           trackIndex: trackIndex, 
           token: token
         );
-        
+
         _userVotesByIndex[trackIndex] = 1; 
-        
+
         if (response.playlist.isNotEmpty) {
           _updateVotingDataFromPlaylist(response.playlist);
         } else {
@@ -108,79 +107,43 @@ class VotingProvider extends BaseProvider {
     return await voteForTrackByIndex(playlistId: playlistId, trackIndex: trackIndex, token: token);
   }
 
-  Future<bool> voteForTrack({
-    required String playlistId, 
-    required String trackId, 
-    required int voteValue, 
-    required String token
-  }) async {
-    return await voteForTrackByIndex(
-      playlistId: playlistId,
-      trackIndex: 0, 
-      token: token
-    );
-  }
-
   Future<bool> upvoteTrack(String playlistId, String trackId, String token) async {
-    return await voteForTrack(
-      playlistId: playlistId, 
-      trackId: trackId, 
-      voteValue: 1, 
-      token: token
-    );
-  }
-
-  Future<bool> downvoteTrack(String playlistId, String trackId, String token) async {
-    return await voteForTrack(
-      playlistId: playlistId, 
-      trackId: trackId, 
-      voteValue: -1, 
-      token: token
-    );
+    return await voteForTrackByIndex(playlistId: playlistId, trackIndex: 0, token: token);
   }
 
   Future<bool> removeVote(String playlistId, String trackId, String token) async {
-    return await voteForTrack(
-      playlistId: playlistId, 
-      trackId: trackId, 
-      voteValue: 0, 
-      token: token
-    );
+    setError('Vote removal is not currently supported');
+    return false;
   }
 
   void _updateVotingDataFromPlaylist(List<PlaylistInfoWithVotes> playlistData) {
     _trackVotes.clear();
     _trackPoints.clear();
-    
+
     for (int i = 0; i < playlistData.length; i++) {
       final playlistInfo = playlistData[i];
       for (int j = 0; j < playlistInfo.tracks.length; j++) {
         final track = playlistInfo.tracks[j];
         final trackKey = 'track_$j';
-        
+
         if (track.containsKey('points')) {
           final points = track['points'] as int? ?? 0;
           _trackPoints[j] = points; 
-          
+
           final userHasVoted = _userVotesByIndex.containsKey(j);
           final userVoteValue = _userVotesByIndex[j];
-          
+
           _trackVotes[trackKey] = VoteStats(
-            totalVotes: points.abs(),
-            upvotes: points > 0 ? points : 0,
-            downvotes: points < 0 ? points.abs() : 0,
+            totalVotes: points.abs(), upvotes: points > 0 ? points : 0, downvotes: 0, 
             userHasVoted: userHasVoted,
             userVoteValue: userVoteValue,
             voteScore: points.toDouble(),
           );
         } else {
           _trackVotes[trackKey] = VoteStats(
-            totalVotes: 0,
-            upvotes: 0,
-            downvotes: 0,
+            totalVotes: 0, upvotes: 0, downvotes: 0,
             userHasVoted: _userVotesByIndex.containsKey(j),
-            userVoteValue: _userVotesByIndex[j],
-            voteScore: 0.0,
+            userVoteValue: _userVotesByIndex[j], voteScore: 0.0,
           );
         }
       }
@@ -202,18 +165,17 @@ class VotingProvider extends BaseProvider {
   void setUserVote(int trackIndex, int voteValue) {
     _userVotesByIndex[trackIndex] = voteValue;
     final trackKey = 'track_$trackIndex';
-    
     final currentPoints = _trackPoints[trackIndex] ?? 0;
     _trackPoints[trackIndex] = currentPoints + voteValue;
-    
+
     final currentStats = _trackVotes[trackKey];
     if (currentStats != null) {
       _trackVotes[trackKey] = VoteStats(
         totalVotes: currentStats.totalVotes + 1,
-        upvotes: voteValue > 0 ? currentStats.upvotes + 1 : currentStats.upvotes,
-        downvotes: voteValue < 0 ? currentStats.downvotes + 1 : currentStats.downvotes,
+        upvotes: voteValue > 0 ? currentStats.upvotes + 1 : currentStats.upvotes, downvotes: 0, 
         userHasVoted: true,
-        userVoteValue: voteValue, voteScore: currentStats.voteScore + voteValue,
+        userVoteValue: voteValue, 
+        voteScore: currentStats.voteScore + voteValue,
       );
     }
     notifyListeners();
