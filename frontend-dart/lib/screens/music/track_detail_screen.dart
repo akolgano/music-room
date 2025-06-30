@@ -551,16 +551,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _addToCurrentPlaylist() async {
     if (widget.playlistId == null || _track == null) return;
-    
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        final result = await musicProvider.addTrackToPlaylist(widget.playlistId!, _track!.id, auth.token!);
-        if (result.success) {
-          _isInPlaylist = true;
-        } else {
-          throw Exception(result.message);
-        }
+        final result = await musicProvider.addTrackObjectToPlaylist(widget.playlistId!, _track!, auth.token!);
+        if (result.success) _isInPlaylist = true;
+        else throw Exception(result.message);
       },
       successMessage: 'Added "${_track!.name}" to playlist!',
       errorMessage: 'Failed to add track to playlist',
@@ -614,10 +610,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 leading: Container(
                   width: 40, 
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.2), 
-                    borderRadius: BorderRadius.circular(8)
-                  ),
+                  decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.library_music, color: AppTheme.primary),
                 ),
                 title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
@@ -642,11 +635,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _addToPlaylist(String playlistId) async {
     if (_track == null) return;
-    
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        final result = await musicProvider.addTrackToPlaylist(playlistId, _track!.id, auth.token!);
+        final result = await musicProvider.addTrackObjectToPlaylist(playlistId, _track!, auth.token!);
         if (!result.success) throw Exception(result.message);
       },
       successMessage: 'Added "${_track!.name}" to playlist!',

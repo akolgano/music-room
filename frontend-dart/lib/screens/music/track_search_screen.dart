@@ -364,24 +364,23 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _addSelectedTracks() async {
     if (!_isAddingToPlaylist || !_hasSelection) return;
-    
     _setLoadingState(LoadingState.addingTracks);
     try {
       final result = await getProvider<MusicProvider>().addMultipleTracksToPlaylist(
         playlistId: widget.playlistId!,
         trackIds: _selectedTracks.toList(),
-        token: auth.token!,
-        onProgress: (current, total) {},
+        token: auth.token!, onProgress: (current, total) {},
       );
-      
-      _showMessage('✓ Added ${result.successCount} tracks to playlist!', isError: false);
-      if (result.duplicateCount > 0) {
-        _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
-      }
-      if (result.failureCount > 0) {
-        _showMessage('${result.failureCount} tracks failed to add');
-      }
+      _showMessage('Added ${result.successCount} tracks to playlist!', isError: false);
+      if (result.duplicateCount > 0) _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
+      if (result.failureCount > 0) _showMessage('${result.failureCount} tracks failed to add');
       _clearSelection();
+      
+      if (mounted) {
+        final musicProvider = getProvider<MusicProvider>();
+        await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
+        if (Navigator.canPop(context)) Navigator.pop(context, true);
+      }
     } catch (e) {
       _showMessage('Failed to add tracks: $e');
     } finally {
@@ -443,13 +442,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget _buildTrackItem(Track track) {
     final isInPlaylist = _isTrackInPlaylist(track.id);
-    
     return AppWidgets.trackCard(
       context: context,
       track: track,
       isSelected: _selectedTracks.contains(track.id),
       isInPlaylist: isInPlaylist,
-      showExplicitAddButton: false, 
       showVotingControls: _isAddingToPlaylist,
       playlistContext: _isAddingToPlaylist ? 'Playlist' : null,
       playlistId: _isAddingToPlaylist ? widget.playlistId : null,
@@ -458,7 +455,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       onAdd: !_isMultiSelectMode && !isInPlaylist ? () => _handleAddTrack(track) : null, 
       onPlay: () => _playTrack(track),
       showAddButton: true,
-    );
+    ); 
   }
 
   void _showSearchSortOptions() {
@@ -470,10 +467,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: AppTheme.surface, 
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))
-        ),
+        decoration: const BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -660,6 +654,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         final musicProvider = getProvider<MusicProvider>();
         final result = await musicProvider.addTrackObjectToPlaylist(playlistId, track, auth.token!);
         if (!result.success) throw Exception(result.message);
+        if (mounted) await musicProvider.fetchPlaylistTracks(playlistId, auth.token!);
       },
       successMessage: 'Added "${track.name}" to playlist!',
       errorMessage: 'Failed to add track to playlist',
@@ -679,18 +674,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     );
     
     if (selectedIndex != null) {
-      if (selectedIndex == _userPlaylists.length) {
-        await _createNewPlaylistAndAddTrack(track);
-      } else {
-        await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
-      }
+      if (selectedIndex == _userPlaylists.length) await _createNewPlaylistAndAddTrack(track);
+      else await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
     }
   }
 
   Future<void> _createNewPlaylistAndAddTrack(Track track) async {
     final playlistName = await AppWidgets.showTextInputDialog(
-      context, 
-      title: 'Create New Playlist',
+      context, title: 'Create New Playlist',
       hintText: 'Enter playlist name',
       validator: (value) => value?.isEmpty ?? true ? 'Please enter a playlist name' : null,
     );

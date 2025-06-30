@@ -34,7 +34,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
           ],
         ),
       ),
-      floatingActionButton: floatingActionButton,
+      floatingActionButton: floatingActionButton != null && showMiniPlayer
+          ? Container(
+              margin: const EdgeInsets.only(bottom: 80),
+              child: floatingActionButton,
+            )
+          : floatingActionButton,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
@@ -107,9 +112,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     return Consumer<P>(builder: (context, provider, _) => builder(context, provider));
   }
 
-  Widget buildListWithRefresh<E>({
-    required List<E> items,
-    required Widget Function(E, int) itemBuilder,
+  Widget buildListWithRefresh<E>({required List<E> items, required Widget Function(E, int) itemBuilder,
     required Future<void> Function() onRefresh,
     Widget? emptyState, EdgeInsets? padding,
   }) {
@@ -123,13 +126,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     Widget? emptyState,
     EdgeInsets? padding,
   }) {
-    return buildListWithRefresh<E>(
-      items: items,
-      itemBuilder: itemBuilder,
-      onRefresh: onRefresh,
-      emptyState: emptyState,
-      padding: padding,
-    );
+    return buildListWithRefresh<E>(items: items, itemBuilder: itemBuilder, onRefresh: onRefresh, emptyState: emptyState, padding: padding);
   }
 
   Widget buildTabContent({required List<Tab> tabs, required List<Widget> tabViews, TabController? controller}) {

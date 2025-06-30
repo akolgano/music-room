@@ -14,7 +14,8 @@ class VoteButton extends StatelessWidget {
   final double size;
 
   const VoteButton({
-    Key? key, required this.voteType,
+    Key? key, 
+    required this.voteType, 
     required this.isSelected,
     this.onPressed,
     this.isEnabled = true,
@@ -24,15 +25,15 @@ class VoteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSelected 
-        ? (voteType == VoteType.upvote ? Colors.green : Colors.red)
+        ? (voteType == VoteType.upvote ? Colors.green : Colors.grey)
         : (isEnabled ? Colors.grey : Colors.grey.withOpacity(0.5));
-
+    
     final icon = voteType == VoteType.upvote 
         ? (isSelected ? Icons.thumb_up : Icons.thumb_up_outlined)
-        : (isSelected ? Icons.thumb_down : Icons.thumb_down_outlined);
+        : Icons.thumb_down_off_alt; 
 
     return InkWell(
-      onTap: isEnabled ? onPressed : null,
+      onTap: voteType == VoteType.upvote && isEnabled ? onPressed : null,
       borderRadius: BorderRadius.circular(size / 2),
       child: Container(
         padding: EdgeInsets.all(size * 0.2),
@@ -78,20 +79,12 @@ class VoteCounter extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 2),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.thumb_down, color: Colors.red, size: fontSize + 2),
-              const SizedBox(width: 4),
-              Text(
-                '${stats.downvotes}',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          Text(
+            'Downvotes not supported',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: fontSize - 2,
+            ),
           ),
         ],
       );
@@ -108,13 +101,13 @@ class VoteCounter extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            stats.netVotes >= 0 ? Icons.trending_up : Icons.trending_down,
+            Icons.trending_up, 
             color: stats.scoreColor,
             size: fontSize + 2,
           ),
           const SizedBox(width: 4),
           Text(
-            '${stats.netVotes >= 0 ? '+' : ''}${stats.netVotes}',
+            '+${stats.upvotes}', 
             style: TextStyle(
               color: stats.scoreColor,
               fontSize: fontSize,
@@ -130,7 +123,7 @@ class VoteCounter extends StatelessWidget {
 class TrackVotingControls extends StatelessWidget {
   final String playlistId;
   final String trackId;
-  final int? trackIndex;  
+  final int? trackIndex;
   final VoteStats? stats;
   final bool isCompact;
   final VoidCallback? onVoteSubmitted;
@@ -140,7 +133,9 @@ class TrackVotingControls extends StatelessWidget {
     required this.playlistId,
     required this.trackId,
     this.trackIndex,
-    this.stats, this.isCompact = false, this.onVoteSubmitted
+    this.stats,
+    this.isCompact = false,
+    this.onVoteSubmitted,
   }) : super(key: key);
 
   @override
@@ -148,20 +143,20 @@ class TrackVotingControls extends StatelessWidget {
     return Consumer2<VotingProvider, AuthProvider>(
       builder: (context, votingProvider, authProvider, _) {
         final canVote = votingProvider.canVote;
-        
+
         int? effectiveIndex = trackIndex;
         if (effectiveIndex == null && trackId.startsWith('track_')) {
           effectiveIndex = int.tryParse(trackId.split('_').last);
         }
-        
+
         final userVote = effectiveIndex != null 
             ? votingProvider.getUserVoteByIndex(effectiveIndex)
             : votingProvider.getUserVote(trackId);
-            
+
         final trackStats = stats ?? (effectiveIndex != null 
             ? votingProvider.getTrackVotesByIndex(effectiveIndex)
             : votingProvider.getTrackVotes(trackId));
-            
+
         final currentPoints = effectiveIndex != null ? votingProvider.getTrackPoints(effectiveIndex) : 0;
 
         final effectiveStats = trackStats ?? VoteStats(
@@ -192,7 +187,9 @@ class TrackVotingControls extends StatelessWidget {
     AuthProvider authProvider,
     bool canVote,
     int? userVote,
-    VoteStats trackStats, int? trackIndex, int currentPoints,
+    VoteStats trackStats,
+    int? trackIndex,
+    int currentPoints,
   ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -200,10 +197,10 @@ class TrackVotingControls extends StatelessWidget {
         VoteButton(
           voteType: VoteType.upvote,
           isSelected: userVote == 1,
-          isEnabled: canVote && userVote == null, 
+          isEnabled: canVote && userVote == null,
           size: 16,
           onPressed: canVote && userVote == null 
-              ? () => _handleUpvote(votingProvider, authProvider, trackIndex) 
+              ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
               : null,
         ),
         const SizedBox(width: 4),
@@ -215,7 +212,7 @@ class TrackVotingControls extends StatelessWidget {
             border: Border.all(color: _getPointsColor(currentPoints).withOpacity(0.5)),
           ),
           child: Text(
-            '${currentPoints > 0 ? '+' : ''}$currentPoints',
+            '+$currentPoints', 
             style: TextStyle(
               color: _getPointsColor(currentPoints),
               fontSize: 11,
@@ -224,15 +221,6 @@ class TrackVotingControls extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        VoteButton(
-          voteType: VoteType.downvote,
-          isSelected: userVote == -1,
-          isEnabled: canVote && userVote == null, 
-          size: 16,
-          onPressed: canVote && userVote == null 
-              ? () => _handleDownvote(votingProvider, authProvider, trackIndex) 
-              : null,
-        ),
       ],
     );
   }
@@ -244,7 +232,8 @@ class TrackVotingControls extends StatelessWidget {
     bool canVote,
     int? userVote,
     VoteStats trackStats,
-    int? trackIndex, int currentPoints,
+    int? trackIndex,
+    int currentPoints,
   ) {
     return Container(
       padding: const EdgeInsets.all(8),
@@ -267,16 +256,17 @@ class TrackVotingControls extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  currentPoints >= 0 ? Icons.trending_up : Icons.trending_down,
+                  Icons.trending_up,
                   color: _getPointsColor(currentPoints),
                   size: 16,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${currentPoints > 0 ? '+' : ''}$currentPoints points',
+                  '+$currentPoints points', 
                   style: TextStyle(
                     color: _getPointsColor(currentPoints),
-                    fontSize: 14, fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -289,22 +279,22 @@ class TrackVotingControls extends StatelessWidget {
               VoteButton(
                 voteType: VoteType.upvote,
                 isSelected: userVote == 1,
-                isEnabled: canVote && userVote == null, 
+                isEnabled: canVote && userVote == null,
                 onPressed: canVote && userVote == null 
-                    ? () => _handleUpvote(votingProvider, authProvider, trackIndex) 
+                    ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
                     : null,
               ),
               Text(
                 userVote != null ? 'You voted' : 'Vote for this track',
-                style: TextStyle(color: userVote != null ? Colors.green : Colors.white70, fontSize: 12),
+                style: TextStyle(
+                  color: userVote != null ? Colors.green : Colors.white70,
+                  fontSize: 12,
+                ),
               ),
-              VoteButton(
-                voteType: VoteType.downvote,
-                isSelected: userVote == -1,
-                isEnabled: canVote && userVote == null, 
-                onPressed: canVote && userVote == null 
-                    ? () => _handleDownvote(votingProvider, authProvider, trackIndex) 
-                    : null,
+              Icon(
+                Icons.info_outline,
+                color: Colors.grey,
+                size: 20,
               ),
             ],
           ),
@@ -326,23 +316,17 @@ class TrackVotingControls extends StatelessWidget {
 
   Color _getPointsColor(int points) {
     if (points > 0) return Colors.green;
-    if (points < 0) return Colors.red;
-    return Colors.grey;
+    return Colors.grey; 
   }
 
-  void _handleUpvote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex) async {
-    if (trackIndex != null) {
-      votingProvider.setUserVote(trackIndex, 1);
+  void _handleVote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex, int voteValue) async {
+    if (trackIndex != null && voteValue > 0) { 
+      votingProvider.setUserVote(trackIndex, voteValue);
       final success = await votingProvider.upvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
       if (success && onVoteSubmitted != null) onVoteSubmitted!();
-    }
-  }
-
-  void _handleDownvote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex) async {
-    if (trackIndex != null) {
-      votingProvider.setUserVote(trackIndex, -1);
-      final success = await votingProvider.upvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
-      if (success && onVoteSubmitted != null) onVoteSubmitted!();
+      if (!success) {
+        print('Vote failed, should revert UI state');
+      }
     }
   }
 }
@@ -363,7 +347,7 @@ class VotingRestrictionsCard extends StatelessWidget {
       case VotingPermission.allowed:
         cardColor = Colors.green;
         cardIcon = Icons.how_to_vote;
-        title = 'Voting Enabled';
+        title = 'Voting Enabled (Upvotes Only)'; 
         break;
       case VotingPermission.notInvited:
         cardColor = Colors.orange;
@@ -493,7 +477,7 @@ class PlaylistVotingBanner extends StatelessWidget {
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  'Voting Available',
+                  'Upvoting Available', 
                   style: TextStyle(
                     color: Colors.blue,
                     fontSize: 16,
@@ -547,7 +531,12 @@ class VotingStatsCard extends StatelessWidget {
               Icon(Icons.poll, color: AppTheme.primary, size: 20),
               SizedBox(width: 8),
               Text(
-                'Voting Statistics', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                'Voting Statistics (Upvotes Only)', 
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -555,9 +544,10 @@ class VotingStatsCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Total Votes', totalVotes.toString(), Icons.how_to_vote),
+              _buildStatItem('Total Upvotes', totalVotes.toString(), Icons.thumb_up), 
               _buildStatItem('Tracks', trackVotes.length.toString(), Icons.music_note),
-              if (topTrack != null) _buildStatItem('Top Score', topTrack.value.voteScore.toStringAsFixed(1), Icons.star),
+              if (topTrack != null) 
+                _buildStatItem('Top Score', topTrack.value.voteScore.toStringAsFixed(1), Icons.star),
             ],
           ),
         ],
@@ -570,7 +560,14 @@ class VotingStatsCard extends StatelessWidget {
       children: [
         Icon(icon, color: AppTheme.primary, size: 20),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );

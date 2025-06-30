@@ -50,24 +50,23 @@ class TrackSortingService {
     }
   }
 
-  static Map<String, List<PlaylistTrack>> groupTracksByField(
+  static (List<PlaylistTrack>, List<PlaylistTrack>) partitionTracksByCondition(
     List<PlaylistTrack> tracks,
-    TrackSortField field,
+    bool Function(PlaylistTrack) condition,
   ) {
-    return tracks.groupListsBy((track) {
-      switch (field) {
-        case TrackSortField.artist:
-          return track.track?.artist ?? 'Unknown Artist';
-        case TrackSortField.album:
-          return track.track?.album ?? 'Unknown Album';
-        case TrackSortField.name:
-          return track.track?.name.substring(0, 1).toUpperCase() ?? 'Unknown';
-        case TrackSortField.position:
-          return 'Position ${track.position}';
-        case TrackSortField.dateAdded:
-          return 'Added';
-      }
-    });
+    final matching = tracks.where(condition).toList();
+    final nonMatching = tracks.where((track) => !condition(track)).toList();
+    return (matching, nonMatching);
+  }
+
+  static List<PlaylistTrack> getTopNTracks(List<PlaylistTrack> tracks, TrackSortOption sortOption, int count) {
+    return tracks
+        .sorted((a, b) {
+          final comparison = _getComparison(a, b, sortOption.field);
+          return sortOption.order == SortOrder.ascending ? comparison : -comparison;
+        })
+        .take(count)
+        .toList();
   }
 
   static List<PlaylistTrack> filterTracks(
@@ -85,51 +84,6 @@ class TrackSortingService {
              album.contains(lowerSearchTerm);
     }).toList();
   }
-
-  static List<String> getUniqueFieldValues(
-    List<PlaylistTrack> tracks,
-    TrackSortField field,
-  ) {
-    return tracks
-        .map((track) {
-          switch (field) {
-            case TrackSortField.artist:
-              return track.track?.artist ?? 'Unknown Artist';
-            case TrackSortField.album:
-              return track.track?.album ?? 'Unknown Album';
-            case TrackSortField.name:
-            case TrackSortField.position:
-            case TrackSortField.dateAdded:
-              return '';
-          }
-        })
-        .where((value) => value.isNotEmpty)
-        .toSet()
-        .sorted(compareAsciiLowerCase);
-  }
-
-  static (List<PlaylistTrack>, List<PlaylistTrack>) partitionTracksByCondition(
-    List<PlaylistTrack> tracks,
-    bool Function(PlaylistTrack) condition,
-  ) {
-    final matching = tracks.where(condition).toList();
-    final nonMatching = tracks.where((track) => !condition(track)).toList();
-    return (matching, nonMatching);
-  }
-
-  static List<PlaylistTrack> getTopNTracks(
-    List<PlaylistTrack> tracks,
-    TrackSortOption sortOption,
-    int count,
-  ) {
-    return tracks
-        .sorted((a, b) {
-          final comparison = _getComparison(a, b, sortOption.field);
-          return sortOption.order == SortOrder.ascending ? comparison : -comparison;
-        })
-        .take(count)
-        .toList();
-  }
 }
 
 extension PlaylistTrackSorting on List<PlaylistTrack> {
@@ -145,12 +99,7 @@ extension PlaylistTrackSorting on List<PlaylistTrack> {
   }
 
   List<PlaylistTrack> thenSortBy(TrackSortField field, [SortOrder order = SortOrder.ascending]) {
-    final option = TrackSortOption(
-      field: field,
-      order: order,
-      displayName: '',
-      icon: Icons.sort,
-    );
+    final option = TrackSortOption(field: field, order: order, displayName: '', icon: Icons.sort);
     return sortedCopy(option);
   }
 }
