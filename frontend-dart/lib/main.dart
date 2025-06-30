@@ -13,48 +13,24 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    print('Starting app initialization...');
-    
     try {
       await dotenv.load(fileName: ".env");
-      print('Environment variables loaded successfully');
-      
-      print('Environment check:');
       final apiBaseUrl = dotenv.env['API_BASE_URL'];
-      if (apiBaseUrl != null && apiBaseUrl.isNotEmpty) {
-        print('   API_BASE_URL found: $apiBaseUrl');
-      } else {
-        print('   API_BASE_URL not found in .env file, will use defaults');
-      }
-    } catch (e) {
-      print('Warning: Failed to load .env file: $e');
-      print('   Will use default configuration');
-    }
+      if (apiBaseUrl == null || apiBaseUrl.isEmpty) {}
+    } catch (e) {}
     
-    print('Setting up service locator...');
     await setupServiceLocator();
-    print('Service locator setup complete');
     
     try {
-      print('Initializing social login services...');
       await SocialLoginUtils.initialize();
-      print('Social login services initialized successfully');
     } catch (e) {
-      print('Warning: Social login initialization failed: $e');
-      print('   Social login features may not work properly');
     }
-    
-    print('Starting MyApp...');
+ 
     runApp(const MyApp());
-    
   } catch (e, stackTrace) {
-    print('Critical error during app initialization: $e');
-    print('Stack trace: $stackTrace');
-    
     try {
       runApp(ErrorApp(error: e.toString()));
     } catch (errorAppError) {
-      print('Failed to show error app: $errorAppError');
       runApp(MaterialApp(
         home: Scaffold(
           backgroundColor: Colors.black,
@@ -114,7 +90,7 @@ class MyApp extends StatelessWidget {
 
 class ErrorApp extends StatelessWidget {
   final String? error;
-  
+
   const ErrorApp({Key? key, this.error}) : super(key: key);
 
   @override

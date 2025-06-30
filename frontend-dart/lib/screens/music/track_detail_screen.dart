@@ -18,7 +18,9 @@ class TrackDetailScreen extends StatefulWidget {
   final String? trackId;
   final Track? track;
   final String? playlistId; 
+
   const TrackDetailScreen({Key? key, this.trackId, this.track, this.playlistId}) : super(key: key);
+
   @override
   State<TrackDetailScreen> createState() => _TrackDetailScreenState();
 }
@@ -40,13 +42,23 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         itemBuilder: (context) => [
           const PopupMenuItem(
             value: 'add_to_playlist',
-            child: Row(children: [Icon(Icons.playlist_add, size: 16), SizedBox(width: 8), Text('Add to Playlist')]),
+            child: Row(
+              children: [
+                Icon(Icons.playlist_add, size: 16), 
+                SizedBox(width: 8), 
+                Text('Add to Playlist')
+              ]
+            ),
           ),
           if (_track!.deezerTrackId != null)
             const PopupMenuItem(
               value: 'add_to_library',
               child: Row(
-                children: [Icon(Icons.library_add, size: 16), SizedBox(width: 8), Text('Add to Library')],
+                children: [
+                  Icon(Icons.library_add, size: 16), 
+                  SizedBox(width: 8), 
+                  Text('Add to Library')
+                ],
               ),
             ),
         ],
@@ -63,7 +75,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   @override
   Widget buildContent() {
     if (_track == null) return buildLoadingState(message: 'Loading track details...');
-
+    
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
         return RefreshIndicator(
@@ -112,7 +124,9 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
                       color: themeProvider.surfaceColor,
-                      child: const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+                      child: const Center(
+                        child: CircularProgressIndicator(color: AppTheme.primary)
+                      ),
                     ),
                     errorWidget: (context, url, error) => Container(
                       color: themeProvider.surfaceColor,
@@ -128,7 +142,11 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           const SizedBox(height: 24),
           Text(
             _track!.name,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 24, 
+              fontWeight: FontWeight.bold, 
+              color: Colors.white
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -155,7 +173,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       builder: (context, playerService, votingProvider, _) {
         final isCurrentTrack = playerService.currentTrack?.id == _track!.id;
         final isPlaying = isCurrentTrack && playerService.isPlaying;
-
+        
         return Card(
           color: AppTheme.surface,
           child: Padding(
@@ -171,7 +189,11 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                       onPressed: _playPauseTrack,
                       isPrimary: true,
                     ),
-                    _buildActionButton(icon: Icons.playlist_add, label: 'Add to Playlist', onPressed: _showAddToPlaylistDialog),
+                    _buildActionButton(
+                      icon: Icons.playlist_add, 
+                      label: 'Add to Playlist', 
+                      onPressed: _showAddToPlaylistDialog
+                    ),
                     if (_track!.deezerTrackId != null)
                       _buildActionButton(
                         icon: Icons.library_add,
@@ -184,7 +206,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   const SizedBox(height: 20),
                   _buildProgressBar(playerService),
                 ],
-                if (widget.playlistId != null) ...[const SizedBox(height: 20), _buildVotingSection(votingProvider)],
+                if (widget.playlistId != null) ...[
+                  const SizedBox(height: 20), 
+                  _buildVotingSection(votingProvider)
+                ],
               ],
             ),
           ),
@@ -244,7 +269,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     );
   }
 
-  Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onPressed, bool isPrimary = false}) {
+  Widget _buildActionButton({
+    required IconData icon, 
+    required String label, 
+    required VoidCallback onPressed, 
+    bool isPrimary = false
+  }) {
     return Column(
       children: [
         Container(
@@ -254,7 +284,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             color: isPrimary ? AppTheme.primary : AppTheme.surfaceVariant,
             shape: BoxShape.circle,
             boxShadow: [
-              if (isPrimary) BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
+              if (isPrimary) 
+                BoxShadow(
+                  color: AppTheme.primary.withOpacity(0.3), 
+                  blurRadius: 10, 
+                  offset: const Offset(0, 4)
+                ),
             ],
           ),
           child: IconButton(
@@ -358,7 +393,11 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             width: 80,
             child: Text(
               label,
-              style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: Colors.grey, 
+                fontSize: 14, 
+                fontWeight: FontWeight.w500
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -376,7 +415,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Widget _buildPlaylistActions() {
     if (widget.playlistId == null) return const SizedBox.shrink();
-
+    
     return Card(
       color: AppTheme.surface,
       child: Padding(
@@ -390,7 +429,11 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Playlist Actions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.bold, 
+                    color: Colors.white
+                  ),
                 ),
               ],
             ),
@@ -409,7 +452,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   onPressed: _removeFromPlaylist,
                   icon: const Icon(Icons.remove_circle_outline),
                   label: const Text('Remove from Playlist'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red, 
+                    foregroundColor: Colors.white
+                  ),
                 ),
               ),
             ] else ...[
@@ -419,7 +465,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   onPressed: _addToCurrentPlaylist,
                   icon: const Icon(Icons.add_circle_outline),
                   label: const Text('Add to Current Playlist'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary, 
+                    foregroundColor: Colors.black
+                  ),
                 ),
               ),
             ],
@@ -442,19 +491,21 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             _track = musicProvider.getTrackById(widget.trackId!);
           }
         }
-
+        
         if (_track != null && widget.playlistId != null) {
           final musicProvider = getProvider<MusicProvider>();
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
           _isInPlaylist = musicProvider.isTrackInPlaylist(_track!.id);
         }
-
+        
         final musicProvider = getProvider<MusicProvider>();
         await musicProvider.fetchUserPlaylists(auth.token!);
         _userPlaylists = musicProvider.playlists;
-
+        
         final themeProvider = getProvider<DynamicThemeProvider>();
-        if (_track?.imageUrl != null) themeProvider.extractAndApplyDominantColor(_track!.imageUrl);
+        if (_track?.imageUrl != null) {
+          themeProvider.extractAndApplyDominantColor(_track!.imageUrl);
+        }
       },
       errorMessage: 'Failed to load track details',
     );
@@ -462,25 +513,29 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _playPauseTrack() async {
     if (_track == null) return;
-
+    
     try {
       final playerService = getProvider<MusicPlayerService>();
       if (playerService.currentTrack?.id == _track!.id) {
         await playerService.togglePlay();
         return;
       }
-
+      
       String? previewUrl = _track!.previewUrl;
       if (previewUrl == null && _track!.deezerTrackId != null) {
         final musicProvider = getProvider<MusicProvider>();
         final fullTrackDetails = await musicProvider.getDeezerTrack(_track!.deezerTrackId!, auth.token!);
-        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
+        if (fullTrackDetails?.previewUrl != null) {
+          previewUrl = fullTrackDetails!.previewUrl;
+        }
       }
-
+      
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(_track!, previewUrl);
         showSuccess('Playing "${_track!.name}"');
-      } else showError('No preview available for this track');
+      } else {
+        showError('No preview available for this track');
+      }
     } catch (e) {
       showError('Failed to play track: $e');
     }
@@ -491,7 +546,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       showError('Cannot add non-Deezer track to library');
       return;
     }
-
+    
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
@@ -504,16 +559,16 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _addToCurrentPlaylist() async {
     if (widget.playlistId == null || _track == null) return;
-
+    
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        print('Adding track ${_track!.name} to current playlist...');
         final result = await musicProvider.addTrackToPlaylist(widget.playlistId!, _track!.id, auth.token!);
         if (result.success) {
           _isInPlaylist = true;
-          print('Successfully added ${_track!.name} to playlist');
-        } else throw Exception(result.message);
+        } else {
+          throw Exception(result.message);
+        }
       },
       successMessage: 'Added "${_track!.name}" to playlist!',
       errorMessage: 'Failed to add track to playlist',
@@ -522,7 +577,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _removeFromPlaylist() async {
     if (widget.playlistId == null || _track == null) return;
-
+    
     final confirmed = await showConfirmDialog(
       'Remove Track',
       'Remove "${_track!.name}" from this playlist?',
@@ -531,7 +586,11 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       await runAsyncAction(
         () async {
           final musicProvider = getProvider<MusicProvider>();
-          await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId!, trackId: _track!.id, token: auth.token!);
+          await musicProvider.removeTrackFromPlaylist(
+            playlistId: widget.playlistId!, 
+            trackId: _track!.id, 
+            token: auth.token!
+          );
           _isInPlaylist = false;
         },
         successMessage: 'Removed "${_track!.name}" from playlist',
@@ -545,7 +604,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       showError('No playlists available. Create a playlist first.');
       return;
     }
-
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -554,13 +613,18 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
-            shrinkWrap: true, itemCount: _userPlaylists.length,
+            shrinkWrap: true, 
+            itemCount: _userPlaylists.length,
             itemBuilder: (context, index) {
               final playlist = _userPlaylists[index];
               return ListTile(
                 leading: Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                  width: 40, 
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.2), 
+                    borderRadius: BorderRadius.circular(8)
+                  ),
                   child: const Icon(Icons.library_music, color: AppTheme.primary),
                 ),
                 title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
@@ -574,7 +638,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey))
+          ),
         ],
       ),
     );
@@ -582,14 +649,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Future<void> _addToPlaylist(String playlistId) async {
     if (_track == null) return;
-
+    
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        print('Adding track ${_track!.name} to playlist $playlistId...');
         final result = await musicProvider.addTrackToPlaylist(playlistId, _track!.id, auth.token!);
         if (!result.success) throw Exception(result.message);
-        print('Successfully added ${_track!.name} to playlist');
       },
       successMessage: 'Added "${_track!.name}" to playlist!',
       errorMessage: 'Failed to add track to playlist',
@@ -608,6 +673,8 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   }
 
   void _shareTrack() {
-    if (_track != null) showInfo('Sharing "${_track!.name}" by ${_track!.artist}');
+    if (_track != null) {
+      showInfo('Sharing "${_track!.name}" by ${_track!.artist}');
+    }
   }
 }

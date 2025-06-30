@@ -1,4 +1,5 @@
 // lib/screens/playlists/playlist_detail_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'playlist_licensing_screen.dart';
@@ -6,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../services/api_service.dart';
+import '../../core/service_locator.dart'; 
 import '../../models/models.dart';
 import '../../models/sort_models.dart';
 import '../../services/track_sorting_service.dart';
@@ -29,8 +31,11 @@ class PlaylistDetailScreen extends StatefulWidget {
 
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   final _webSocketService = WebSocketService();
-  final _apiService = ApiService();
-  Set<String> _fetchingTrackDetails = {};
+  late final ApiService _apiService;
+  
+  final Set<String> _fetchingTrackDetails = {};
+  final Set<Completer<void>> _pendingOperations = {};
+  
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
   List<String> _notifications = [];
@@ -44,8 +49,28 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _apiService = getIt<ApiService>();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
     _setupWebSocket();
+  }
+
+  @override
+  void dispose() {
+    _cancelPendingOperations();
+    _webSocketService.disconnect();
+    final votingProvider = getProvider<VotingProvider>(listen: false);
+    votingProvider.clearVotingData();
+    super.dispose();
+  }
+
+  void _cancelPendingOperations() {
+    for (final completer in _pendingOperations) {
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    }
+    _pendingOperations.clear();
+    _fetchingTrackDetails.clear();
   }
 
   @override
@@ -58,87 +83,195 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               _showVotingMode ? Icons.music_note : Icons.how_to_vote,
               color: _showVotingMode ? AppTheme.primary : Colors.white,
             ),
-            onPressed: _toggleVotingMode, tooltip: 'Show Voting',
+            onPressed: _toggleVotingMode, 
+            tooltip: 'Show Voting',
           );
         }
         return const SizedBox.shrink();
       },
     ),
     if (_isOwner)
-      IconButton(icon: const Icon(Icons.settings), onPressed: _openPlaylistSettings, tooltip: 'Playlist Settings'),
-    IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
-    IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData, tooltip: 'Refresh'),
+      IconButton(
+        icon: const Icon(Icons.settings), 
+        onPressed: _openPlaylistSettings, 
+        tooltip: 'Playlist Settings'
+      ),
+    IconButton(
+      icon: const Icon(Icons.share), 
+      onPressed: _sharePlaylist, 
+      tooltip: 'Share Playlist'
+    ),
+    IconButton(
+      icon: const Icon(Icons.refresh), 
+      onPressed: _loadData, 
+      tooltip: 'Refresh'
+    ),
   ];
 
   void _openPlaylistSettings() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PlaylistLicensingScreen(playlistId: widget.playlistId, playlistName: _playlist?.name ?? 'Playlist'),
+        builder: (context) => PlaylistLicensingScreen(
+          playlistId: widget.playlistId, 
+          playlistName: _playlist?.name ?? 'Playlist'
+        ),
       ),
     ).then((_) {
-      _loadData();
+      if (mounted) {
+        _loadData();
+      }
     });
   }
 
   Future<void> _loadData() async {
-    print('Loading playlist data for ID: ${widget.playlistId}');
+    if (!mounted) return;
+    
     try {
+      print('Loading playlist data with ID: ${widget.playlistId}');
       final musicProvider = getProvider<MusicProvider>();
       final votingProvider = getProvider<VotingProvider>();
       
       final playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
+      
+      if (!mounted) return;
+      
       if (playlist != null) {
         setState(() {
           _playlist = playlist;
           _isOwner = _playlist!.creator == auth.username;
         });
         
-        await Future.wait([musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!)]);
+        await Future.wait([
+          musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!)
+        ]);
+        
+        if (!mounted) return;
         
         votingProvider.setVotingPermission(true);
         setState(() => _tracks = musicProvider.playlistTracks);
-        
         votingProvider.initializeTrackPoints(_tracks);
-        
-        print('Loaded ${_tracks.length} tracks');
         _initializeVotingData(votingProvider); 
+        
         _startBatchTrackDetailsFetch();
         
-        if (_webSocketService.currentPlaylistId != widget.playlistId)
+        if (_webSocketService.currentPlaylistId != widget.playlistId) {
           await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
-      } else showError('Failed to load playlist data');
+        }
+        
+        print('Playlist data loaded successfully');
+      } else {
+        if (mounted) {
+          showError('Failed to load playlist data');
+        }
+      }
     } catch (e) {
-      print('Error loading data: $e');
-      showError('Failed to load playlist details: $e');
+      if (mounted) {
+        showError('Failed to load playlist details: $e');
+      }
     }
   }
 
   void _initializeVotingData(VotingProvider votingProvider) {
     votingProvider.clearVotingData();
-    print('Initializing voting data for ${_tracks.length} tracks');
   }
 
   Future<void> _enableOpenVoting() async {
     await runAsyncAction(
       () async {
-        final request = PlaylistLicenseRequest(licenseType: 'open', invitedUsers: null, voteStartTime: null,
-          voteEndTime: null, latitude: null, longitude: null, allowedRadiusMeters: null,
+        print('Enabling open voting for playlist ${widget.playlistId}');
+        final request = PlaylistLicenseRequest(
+          licenseType: 'open', 
+          invitedUsers: null, 
+          voteStartTime: null,
+          voteEndTime: null, 
+          latitude: null, 
+          longitude: null, 
+          allowedRadiusMeters: null,
         );
         await _apiService.updatePlaylistLicense(widget.playlistId, 'Token ${auth.token!}', request);
-        await _loadData();
+        if (mounted) {
+          await _loadData();
+        }
       },
       successMessage: 'Voting enabled for all users!',
       errorMessage: 'Failed to enable voting',
     );
   }
 
+  Future<void> _fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack) async {
+    final deezerTrackId = playlistTrack.track?.deezerTrackId;
+    if (deezerTrackId == null || 
+        _fetchingTrackDetails.contains(deezerTrackId) || 
+        !mounted) {
+      return;
+    }
+
+    print('Fetching track details for Deezer ID: $deezerTrackId');
+    _fetchingTrackDetails.add(deezerTrackId);
+    
+    final completer = Completer<void>();
+    _pendingOperations.add(completer);
+
+    try {
+      final trackDetails = await _apiService.getDeezerTrack(deezerTrackId, auth.token!);
+      
+      if (!mounted || completer.isCompleted) {
+        return;
+      }
+      
+      if (trackDetails != null) {
+        print('Successfully fetched track details: ${trackDetails.name}');
+        
+        setState(() {
+          final trackIndex = _tracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
+          if (trackIndex != -1) {
+            _tracks[trackIndex] = PlaylistTrack(
+              trackId: playlistTrack.trackId, 
+              name: playlistTrack.name, 
+              position: playlistTrack.position, 
+              track: trackDetails
+            );
+          }
+        });
+        
+        if (mounted) {
+          final musicProvider = getProvider<MusicProvider>();
+          final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
+          final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
+          if (providerIndex != -1) {
+            providerTracks[providerIndex] = PlaylistTrack(
+              trackId: playlistTrack.trackId, 
+              name: playlistTrack.name, 
+              position: playlistTrack.position, 
+              track: trackDetails
+            );
+            musicProvider.playlistTracks.clear();
+            musicProvider.playlistTracks.addAll(providerTracks);
+            musicProvider.notifyListeners();
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        print('Failed to fetch track details for $deezerTrackId: $e');
+      }
+    } finally {
+      if (mounted) {
+        _fetchingTrackDetails.remove(deezerTrackId);
+        _pendingOperations.remove(completer);
+      }
+      
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    }
+  }
+
   Widget _buildVotingSection() {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
-        print('Voting section - canVote: ${votingProvider.canVote}, showVotingMode: $_showVotingMode');
         final trackVotes = votingProvider.trackVotes;
-        
         if (!votingProvider.canVote && _isOwner) {
           return Card(
             color: AppTheme.surface,
@@ -194,7 +327,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             ),
           );
         }
-
         return Column(
           children: [
             if (votingProvider.canVote) 
@@ -209,8 +341,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.poll, color: AppTheme.primary, size: 20),
-                          SizedBox(width: 8),
+                          Icon(Icons.poll, color: AppTheme.primary, size: 20), SizedBox(width: 8),
                           Text(
                             'Track Ratings',
                             style: TextStyle(
@@ -292,8 +423,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            if (_notifications.isNotEmpty) _buildNotificationBar(), _buildPlaylistHeader(),
-            const SizedBox(height: 16), _buildPlaylistStats(),
+            if (_notifications.isNotEmpty) _buildNotificationBar(),
+            _buildPlaylistHeader(),
+            const SizedBox(height: 16),
+            _buildPlaylistStats(),
             const SizedBox(height: 16),
             _buildPlaylistActions(),
             const SizedBox(height: 16),
@@ -310,7 +443,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     final canReorder = currentSort.field == TrackSortField.position && _isOwner && !_showVotingMode;
     if (canReorder) {
       return ReorderableListView.builder(
-        shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: tracks.length,
+        shrinkWrap: true, 
+        physics: const NeverScrollableScrollPhysics(), 
+        itemCount: tracks.length,
         onReorder: _onReorderTracks,
         itemBuilder: (context, index) {
           final playlistTrack = tracks[index];
@@ -332,14 +467,21 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
     final track = playlistTrack.track;
-    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails) _fetchTrackDetailsIfNeeded(playlistTrack);
+    
+    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails && mounted) {
+      _fetchTrackDetailsIfNeeded(playlistTrack);
+    }
+
     if (track?.deezerTrackId != null && 
         _fetchingTrackDetails.contains(track!.deezerTrackId) && 
         (track.artist.isEmpty || track.album.isEmpty)) {
       return Container(
         key: key,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: AppTheme.surface, 
+          borderRadius: BorderRadius.circular(12)
+        ),
         child: ListTile(
           leading: Container(
             width: 56,
@@ -398,7 +540,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         leading: Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(color: Colors.red.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.3), 
+            borderRadius: BorderRadius.circular(8)
+          ),
           child: const Icon(Icons.music_off, color: Colors.white),
         ),
         title: Text(playlistTrack.name, style: const TextStyle(color: Colors.white)),
@@ -412,41 +557,36 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   Future<void> _refreshAfterVoting() async {
+    if (!mounted) return;
+    
     try {
       final musicProvider = getProvider<MusicProvider>();
       final votingProvider = getProvider<VotingProvider>();
-      
       await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
       
-      setState(() {
-        _tracks = musicProvider.playlistTracks;
-      });
-      
-      votingProvider.initializeTrackPoints(_tracks);
-      
-      print('Refreshed ${_tracks.length} tracks with updated points');
+      if (mounted) {
+        setState(() {
+          _tracks = musicProvider.playlistTracks;
+        });
+        votingProvider.initializeTrackPoints(_tracks);
+      }
     } catch (e) {
-      print('Error refreshing after voting: $e');
     }
   }
 
   void _toggleVotingMode() {
+    if (!mounted) return;
+    
     setState(() => _showVotingMode = !_showVotingMode);
-    print('Voting mode toggled to: $_showVotingMode');
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
-        if (_showVotingMode) showInfo('Voting mode enabled');
-        else showInfo('Voting mode disabled');
+        if (_showVotingMode) {
+          showInfo('Voting mode enabled');
+        } else {
+          showInfo('Voting mode disabled');
+        }
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _webSocketService.disconnect();
-    final votingProvider = getProvider<VotingProvider>(listen: false);
-    votingProvider.clearVotingData();
-    super.dispose();
   }
 
   @override
@@ -467,6 +607,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             ),
           );
         }
+        
         if (_isOwner) {
           if (actions.isNotEmpty) actions.add(const SizedBox(height: 8));
           actions.add(
@@ -480,10 +621,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             ),
           );
         }
+        
         if (actions.isEmpty) return const SizedBox.shrink();
         if (actions.length == 1) {
           return actions.first;
         }
+        
         return ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 140),
           child: Column(
@@ -500,7 +643,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.blue.withOpacity(0.3)),
       ),
@@ -508,10 +652,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         children: [
           const Icon(Icons.info, color: Colors.blue, size: 20),
           const SizedBox(width: 8),
-          Expanded(child: Text(_notifications.last, style: const TextStyle(color: Colors.blue))),
+          Expanded(
+            child: Text(_notifications.last, style: const TextStyle(color: Colors.blue))
+          ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.blue, size: 20),
-            onPressed: () => setState(() => _notifications.clear()),
+            onPressed: () {
+              if (mounted) {
+                setState(() => _notifications.clear());
+              }
+            },
           ),
         ],
       ),
@@ -530,10 +680,17 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AppTheme.primary.withOpacity(0.8), AppTheme.primary.withOpacity(0.4)],
+                colors: [
+                  AppTheme.primary.withOpacity(0.8), 
+                  AppTheme.primary.withOpacity(0.4)
+                ],
               ),
               boxShadow: [
-                BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
+                BoxShadow(
+                  color: AppTheme.primary.withOpacity(0.3), 
+                  blurRadius: 20, 
+                  offset: const Offset(0, 8)
+                ),
               ],
             ),
             child: _playlist!.imageUrl?.isNotEmpty == true
@@ -776,16 +933,23 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(currentSort.icon, size: 14, color: AppTheme.primary), const SizedBox(width: 4),
+                        Icon(currentSort.icon, size: 14, color: AppTheme.primary), 
+                        const SizedBox(width: 4),
                         Text(
                           'Sorted by ${currentSort.displayName}',
-                          style: const TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            color: AppTheme.primary, 
+                            fontSize: 12, 
+                            fontWeight: FontWeight.w500
+                          ),
                         ),
                         const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () {
                             musicProvider.resetToCustomOrder();
-                            showInfo('Restored to custom order');
+                            if (mounted) {
+                              showInfo('Restored to custom order');
+                            }
                           },
                           child: const Icon(Icons.close, size: 14, color: AppTheme.primary),
                         ),
@@ -794,8 +958,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                   ),
                 ],
                 const SizedBox(height: 16),
-                if (sortedTracks.isEmpty) _buildEmptyTracksState()
-                else _buildTracksList(sortedTracks, currentSort),
+                if (sortedTracks.isEmpty) 
+                  _buildEmptyTracksState()
+                else 
+                  _buildTracksList(sortedTracks, currentSort),
               ],
             ),
           ),
@@ -814,7 +980,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             const SizedBox(height: 16),
             const Text(
               'No tracks yet',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 18, 
+                fontWeight: FontWeight.bold, 
+                color: Colors.white
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -828,7 +998,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
                 icon: const Icon(Icons.add),
                 label: const Text('Add Tracks'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary, 
+                  foregroundColor: Colors.black
+                ),
               ),
             ],
           ],
@@ -841,10 +1014,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          icon: const Icon(Icons.play_arrow, color: AppTheme.primary),
-          onPressed: () => _playTrackAt(index),
-        ),
+        IconButton(icon: const Icon(Icons.play_arrow, color: AppTheme.primary), onPressed: () => _playTrackAt(index)),
         if (_isOwner)
           IconButton(
             icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
@@ -855,43 +1025,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
-  Future<void> _fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack) async {
-    final deezerTrackId = playlistTrack.track?.deezerTrackId;
-    if (deezerTrackId == null || _fetchingTrackDetails.contains(deezerTrackId)) return;
-    print('Fetching details for Deezer track ID: $deezerTrackId');
-    _fetchingTrackDetails.add(deezerTrackId);
-
-    try {
-      final trackDetails = await _apiService.getDeezerTrack(deezerTrackId, auth.token!);
-      if (trackDetails != null && mounted) {
-        print('Successfully fetched track details: ${trackDetails.name} by ${trackDetails.artist}');
-        setState(() {
-          final trackIndex = _tracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
-          if (trackIndex != -1) {
-            _tracks[trackIndex] = PlaylistTrack(
-              trackId: playlistTrack.trackId, name: playlistTrack.name, position: playlistTrack.position, track: trackDetails);
-          }
-        });
-        final musicProvider = getProvider<MusicProvider>();
-        final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
-        final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
-        if (providerIndex != -1) {
-          providerTracks[providerIndex] = PlaylistTrack(
-            trackId: playlistTrack.trackId, name: playlistTrack.name, position: playlistTrack.position, track: trackDetails
-          );
-          musicProvider.playlistTracks.clear();
-          musicProvider.playlistTracks.addAll(providerTracks);
-          musicProvider.notifyListeners();
-        }
-      } else print('Failed to fetch track details for Deezer ID: $deezerTrackId');
-    } catch (e) {
-      print('Error fetching track details for $deezerTrackId: $e');
-    } finally {
-      _fetchingTrackDetails.remove(deezerTrackId);
-    }
-  }
-
   void _onReorderTracks(int oldIndex, int newIndex) {
+    if (!mounted) return;
+    
     setState(() {
       if (newIndex > oldIndex) newIndex -= 1;
       final musicProvider = getProvider<MusicProvider>();
@@ -899,7 +1035,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       final item = tracks.removeAt(oldIndex);
       tracks.insert(newIndex, item);
       for (int i = 0; i < tracks.length; i++) {
-        tracks[i] = PlaylistTrack(trackId: tracks[i].trackId, name: tracks[i].name, position: i, track: tracks[i].track);
+        tracks[i] = PlaylistTrack(
+          trackId: tracks[i].trackId, 
+          name: tracks[i].name, 
+          position: i, 
+          track: tracks[i].track
+        );
       }
     });
     _updateTrackOrder(oldIndex, newIndex);
@@ -908,21 +1049,28 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
     try {
       final musicProvider = getProvider<MusicProvider>();
-      await musicProvider.moveTrackInPlaylist(playlistId: widget.playlistId, rangeStart: oldIndex, insertBefore: newIndex, token: auth.token!);
+      await musicProvider.moveTrackInPlaylist(playlistId: widget.playlistId, rangeStart: oldIndex, insertBefore: newIndex,
+        token: auth.token!,
+      );
     } catch (e) {
-      showError('Failed to update track order: $e');
-      await _loadData(); 
+      if (mounted) {
+        showError('Failed to update track order: $e');
+        await _loadData(); 
+      }
     }
   }
 
   void _showSortOptions() {
     TrackSortBottomSheet.show(
-      context, currentSort: getProvider<MusicProvider>().currentSortOption,
+      context, 
+      currentSort: getProvider<MusicProvider>().currentSortOption,
       onSortChanged: (sortOption) {
         final musicProvider = getProvider<MusicProvider>();
         musicProvider.setSortOption(sortOption);
         final isCustomOrder = sortOption.field == TrackSortField.position;
-        showInfo(isCustomOrder ? 'Tracks restored to custom order' : 'Tracks sorted by ${sortOption.displayName}');
+        if (mounted) {
+          showInfo(isCustomOrder ? 'Tracks restored to custom order' : 'Tracks sorted by ${sortOption.displayName}');
+        }
       },
     );
   }
@@ -939,74 +1087,97 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   Future<void> _startBatchTrackDetailsFetch() async {
+    if (!mounted) return;
+    
     final tracksNeedingDetails = _tracks.where((pt) => pt.needsTrackDetails).toList();
-    if (tracksNeedingDetails.isEmpty) {
-      print('All tracks have complete details');
-      return;
-    }
+    if (tracksNeedingDetails.isEmpty) return;
 
-    print('Starting batch fetch for ${tracksNeedingDetails.length} tracks needing details');
     for (int i = 0; i < tracksNeedingDetails.length; i++) {
+      if (!mounted) break; 
+      
       final playlistTrack = tracksNeedingDetails[i];
       _fetchTrackDetailsIfNeeded(playlistTrack);
-      if (i < tracksNeedingDetails.length - 1) await Future.delayed(const Duration(milliseconds: 200));
+      
+      if (i < tracksNeedingDetails.length - 1 && mounted) {
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
     }
   }
 
   Future<void> _playPlaylist() async {
     if (_tracks.isEmpty) {
-      showInfo('No tracks to play');
+      if (mounted) {
+        showInfo('No tracks to play');
+      }
       return;
     }
     await _playTrackAt(0);
-    showInfo('Playing "${_playlist!.name}"');
+    if (mounted) {
+      showInfo('Playing "${_playlist!.name}"');
+    }
   }
 
   Future<void> _shufflePlaylist() async {
     if (_tracks.isEmpty) {
-      showInfo('No tracks to shuffle');
+      if (mounted) {
+        showInfo('No tracks to shuffle');
+      }
       return;
     }
-    showInfo('Shuffling "${_playlist!.name}"');
+    if (mounted) {
+      showInfo('Shuffling "${_playlist!.name}"');
+    }
   }
 
   Future<void> _playTrackAt(int index) async {
-    if (index < 0 || index >= _tracks.length) return;
+    if (index < 0 || index >= _tracks.length || !mounted) return;
+    
     final playlistTrack = _tracks[index];
     final track = playlistTrack.track;
+    
     try {
       String? previewUrl;
       Track trackToPlay;
+      
       if (track != null) {
         trackToPlay = track;
         previewUrl = track.previewUrl;
         if (previewUrl == null && track.deezerTrackId != null) {
-          print('Fetching preview URL for Deezer track: ${track.deezerTrackId}');
           final fullTrackDetails = await _apiService.getDeezerTrack(track.deezerTrackId!, auth.token!);
           if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
         }
+      } else {
+        trackToPlay = Track(id: playlistTrack.trackId, name: playlistTrack.name, artist: 'Unknown Artist', album: '', url: '');
       }
-      else trackToPlay = Track(id: playlistTrack.trackId, name: playlistTrack.name, artist: 'Unknown Artist', album: '', url: '');
+      
+      if (!mounted) return;
+      
       if (previewUrl != null && previewUrl.isNotEmpty) {
         final playerService = getProvider<MusicPlayerService>();
         await playerService.playTrack(trackToPlay, previewUrl);
         showSuccess('Playing "${playlistTrack.name}"');
+      } else {
+        showError('No preview available for "${playlistTrack.name}"');
       }
-      else showError('No preview available for "${playlistTrack.name}"');
     } catch (e) {
-      showError('Failed to play track: $e');
+      if (mounted) {
+        showError('Failed to play track: $e');
+      }
     }
   }
 
   Future<void> _removeTrack(String trackId) async {
-    if (!_isOwner) return;
+    if (!_isOwner || !mounted) return;
+    
     final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
-    if (confirmed) {
+    if (confirmed && mounted) {
       await runAsyncAction(
         () async {
           final musicProvider = getProvider<MusicProvider>();
           await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId, trackId: trackId, token: auth.token!);
-          await _loadData(); 
+          if (mounted) {
+            await _loadData(); 
+          }
         },
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',
@@ -1015,6 +1186,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   void _sharePlaylist() {
-    if (_playlist != null) navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
+    if (_playlist != null && mounted) {
+      navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
+    }
   }
 }

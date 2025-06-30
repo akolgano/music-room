@@ -78,8 +78,7 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
                         ),
                       ],
                     ),
-                    if (profileProvider.isLoading) ...[
-                      const SizedBox(height: 24),
+                    if (profileProvider.isLoading) ...[const SizedBox(height: 24),
                       const CircularProgressIndicator(color: AppTheme.primary),
                     ],
                     const SizedBox(height: 24),
@@ -106,11 +105,8 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
         if (provider == 'Facebook') result = await SocialLoginUtils.loginWithFacebook();
         else if (provider == 'Google') result = await SocialLoginUtils.loginWithGoogle();
         else throw Exception('Unknown social provider: $provider');
-
         if (!result.success || result.token == null) throw Exception(result.error ?? '$provider login failed');
-
         final profileProvider = getProvider<ProfileProvider>();
-        
         if (provider == 'Facebook') await profileProvider.facebookLink(auth.token);
         else if (provider == 'Google') await profileProvider.googleLinkApp(auth.token);
         await profileProvider.loadProfile(auth.token);

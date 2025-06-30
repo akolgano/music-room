@@ -105,19 +105,7 @@ class VotingProvider extends BaseProvider {
   }
 
   Future<bool> upvoteTrackByIndex(String playlistId, int trackIndex, String token) async {
-    return await voteForTrackByIndex(
-      playlistId: playlistId, 
-      trackIndex: trackIndex, 
-      token: token
-    );
-  }
-
-  Future<bool> downvoteTrackByIndex(String playlistId, int trackIndex, String token) async {
-    return await voteForTrackByIndex(
-      playlistId: playlistId, 
-      trackIndex: trackIndex, 
-      token: token
-    );
+    return await voteForTrackByIndex(playlistId: playlistId, trackIndex: trackIndex, token: token);
   }
 
   Future<bool> voteForTrack({
