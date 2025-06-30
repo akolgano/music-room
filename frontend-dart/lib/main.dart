@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'core/core.dart';
 import 'core/service_locator.dart';
 import 'core/app_builder.dart';
@@ -11,21 +12,16 @@ import 'widgets/app_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
   try {
     try {
       await dotenv.load(fileName: ".env");
       final apiBaseUrl = dotenv.env['API_BASE_URL'];
       if (apiBaseUrl == null || apiBaseUrl.isEmpty) {}
     } catch (e) {}
-    
     await setupServiceLocator();
-    
     try {
       await SocialLoginUtils.initialize();
-    } catch (e) {
-    }
- 
+    } catch (e) {}
     runApp(const MyApp());
   } catch (e, stackTrace) {
     try {
@@ -40,16 +36,9 @@ void main() async {
               children: [
                 const Icon(Icons.error, size: 64, color: Colors.red),
                 const SizedBox(height: 16),
-                const Text(
-                  'App Initialization Failed',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
+                const Text('App Initialization Failed', style: TextStyle(color: Colors.white, fontSize: 18)),
                 const SizedBox(height: 8),
-                Text(
-                  e.toString(),
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
+                Text(e.toString(), style: const TextStyle(color: Colors.grey, fontSize: 14), textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -71,16 +60,20 @@ class MyApp extends StatelessWidget {
       useInheritedMediaQuery: true,
       builder: (context, child) {
         return MultiProvider(
-          providers: [
-            ...AppBuilder.buildProviders(), 
-            ...AppBuilder.buildAdditionalProviders()
-          ],
-          child: MaterialApp(
-            title: AppConstants.appName,
-            theme: AppTheme.getResponsiveDarkTheme(),
-            onGenerateRoute: AppBuilder.generateRoute,
-            initialRoute: '/',
-            debugShowCheckedModeBanner: false,
+          providers: [...AppBuilder.buildProviders(), ...AppBuilder.buildAdditionalProviders()],
+          child: ResponsiveBreakpoints(
+            breakpoints: [
+              const Breakpoint(start: 0, end: 450, name: MOBILE),
+              const Breakpoint(start: 451, end: 800, name: TABLET),
+              const Breakpoint(start: 801, end: 1920, name: DESKTOP),
+              const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
+            ],
+            child: MaterialApp(
+              title: AppConstants.appName,
+              theme: AppTheme.getResponsiveDarkTheme(),
+              onGenerateRoute: AppBuilder.generateRoute,
+              initialRoute: '/', debugShowCheckedModeBanner: false
+            ),
           ),
         );
       },
@@ -90,7 +83,6 @@ class MyApp extends StatelessWidget {
 
 class ErrorApp extends StatelessWidget {
   final String? error;
-
   const ErrorApp({Key? key, this.error}) : super(key: key);
 
   @override
@@ -107,19 +99,10 @@ class ErrorApp extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline, 
-                    size: 80, 
-                    color: AppTheme.error
-                  ),
+                  const Icon(Icons.error_outline, size: 80, color: AppTheme.error),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Failed to Initialize App',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const Text('Failed to Initialize App',
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -133,10 +116,7 @@ class ErrorApp extends StatelessWidget {
                       ),
                       child: Text(
                         error!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 14,
-                        ),
+                        style: const TextStyle(color: Colors.red, fontSize: 14),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -155,10 +135,7 @@ class ErrorApp extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
                 ],

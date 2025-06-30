@@ -71,8 +71,7 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
                         const SizedBox(width: 16),
                         Expanded(
                           child: SocialLoginButton(
-                            provider: 'Facebook',
-                            onPressed: () => _linkWithSocial('Facebook'),
+                            provider: 'Facebook', onPressed: () => _linkWithSocial('Facebook'),
                             isLoading: profileProvider.isLoading,
                           ),
                         ),
@@ -82,7 +81,12 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
                       const CircularProgressIndicator(color: AppTheme.primary),
                     ],
                     const SizedBox(height: 24),
-                    AppWidgets.secondaryButton(text: 'Go Back', onPressed: navigateBack, icon: Icons.arrow_back),
+                    AppWidgets.secondaryButton(
+                      context: context,
+                      text: 'Go Back', 
+                      onPressed: navigateBack, 
+                      icon: Icons.arrow_back
+                    ),
                   ],
                 );
               },

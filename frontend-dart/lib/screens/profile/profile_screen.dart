@@ -160,10 +160,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -193,7 +190,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         maxHeight: 512,
         imageQuality: 80,
       );
-      
+
       if (image == null) return;
 
       Uint8List imageBytes;
@@ -205,13 +202,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       }
 
       final String base64Image = base64Encode(imageBytes);
-      final String mimeType = _getMimeType(image.path);
+      
+      final String mimeType = image.mimeType ?? 'image/jpeg';
 
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        avatarBase64: base64Image,
-        mimeType: mimeType,
-      );
+      final success = await profileProvider.updateProfile(auth.token, avatarBase64: base64Image, mimeType: mimeType);
 
       if (success) {
         showSuccess('Avatar updated successfully!');
@@ -265,23 +259,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         );
       },
     );
-  }
-
-  String _getMimeType(String filePath) {
-    final String extension = filePath.split('.').last.toLowerCase();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'webp':
-        return 'image/webp';
-      default:
-        return 'image/jpeg';
-    }
   }
 
   Widget _buildAccountInfoSection(ProfileProvider profileProvider) {

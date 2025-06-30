@@ -18,9 +18,9 @@ class TrackDetailScreen extends StatefulWidget {
   final String? trackId;
   final Track? track;
   final String? playlistId; 
-
+  
   const TrackDetailScreen({Key? key, this.trackId, this.track, this.playlistId}) : super(key: key);
-
+  
   @override
   State<TrackDetailScreen> createState() => _TrackDetailScreenState();
 }
@@ -36,7 +36,11 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   @override
   List<Widget> get actions => [
     if (_track != null) ...[
-      IconButton(icon: const Icon(Icons.share), onPressed: _shareTrack, tooltip: 'Share Track'),
+      IconButton(
+        icon: const Icon(Icons.share), 
+        onPressed: _shareTrack, 
+        tooltip: 'Share Track'
+      ),
       PopupMenuButton<String>(
         onSelected: _handleMenuAction,
         itemBuilder: (context) => [
@@ -91,6 +95,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 _buildTrackInfo(),
                 const SizedBox(height: 24),
                 _buildPlaylistActions(),
+                if (widget.playlistId != null) ...[
+                  const SizedBox(height: 24),
+                  _buildVotingSection(),
+                ],
               ],
             ),
           ),
@@ -169,8 +177,8 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   }
 
   Widget _buildTrackActions() {
-    return Consumer2<MusicPlayerService, VotingProvider>(
-      builder: (context, playerService, votingProvider, _) {
+    return Consumer<MusicPlayerService>(
+      builder: (context, playerService, _) {
         final isCurrentTrack = playerService.currentTrack?.id == _track!.id;
         final isPlaying = isCurrentTrack && playerService.isPlaying;
         
@@ -206,10 +214,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   const SizedBox(height: 20),
                   _buildProgressBar(playerService),
                 ],
-                if (widget.playlistId != null) ...[
-                  const SizedBox(height: 20), 
-                  _buildVotingSection(votingProvider)
-                ],
               ],
             ),
           ),
@@ -218,54 +222,41 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     );
   }
 
-  Widget _buildVotingSection(VotingProvider votingProvider) {
-    return Column(
-      children: [
-        const Divider(color: Colors.white24),
-        const SizedBox(height: 16),
-        const Row(
-          children: [
-            Icon(Icons.how_to_vote, color: AppTheme.primary, size: 20),
-            SizedBox(width: 8),
-            Text(
-              'Rate This Track',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (votingProvider.canVote)
-          TrackVotingControls(
-            playlistId: widget.playlistId!,
-            trackId: _track!.id,
-            isCompact: false,
-          )
-        else
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange.withOpacity(0.3)),
-            ),
-            child: Row(
+  Widget _buildVotingSection() {
+    return Consumer<VotingProvider>(
+      builder: (context, votingProvider, _) {
+        return Card(
+          color: AppTheme.surface,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.info, color: Colors.orange, size: 16),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    votingProvider.getVotingStatusMessage(),
-                    style: const TextStyle(color: Colors.orange, fontSize: 14),
-                  ),
+                const Row(
+                  children: [
+                    Icon(Icons.how_to_vote, color: AppTheme.primary, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Rate This Track',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TrackVotingControls(
+                  playlistId: widget.playlistId!,
+                  trackId: _track!.id,
+                  isCompact: false,
                 ),
               ],
             ),
           ),
-      ],
+        );
+      },
     );
   }
 
@@ -516,6 +507,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     
     try {
       final playerService = getProvider<MusicPlayerService>();
+      
       if (playerService.currentTrack?.id == _track!.id) {
         await playerService.togglePlay();
         return;
@@ -582,6 +574,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       'Remove Track',
       'Remove "${_track!.name}" from this playlist?',
     );
+    
     if (confirmed) {
       await runAsyncAction(
         () async {
@@ -673,8 +666,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   }
 
   void _shareTrack() {
-    if (_track != null) {
-      showInfo('Sharing "${_track!.name}" by ${_track!.artist}');
-    }
+    if (_track != null) showInfo('Sharing "${_track!.name}" by ${_track!.artist}');
   }
 }

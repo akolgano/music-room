@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:responsive_framework/responsive_framework.dart';
 import '../core/core.dart';
 import '../models/models.dart';
 import '../services/music_player_service.dart';
@@ -12,41 +12,437 @@ import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';
 import '../models/voting_models.dart';
 
-class ResponsiveUtils {
-  static double _safeResponsive(double size, double Function() responsiveFunction, {double? maxValue, String? type}) {
-    if (kIsWeb) return size;
-    try {
-      final result = responsiveFunction();
-      final max = maxValue ?? (type == 'size' || type == 'radius' ? 1000 : 10000);
-      return result.isFinite && result > 0 && result < max ? result : size;
-    } catch (e) {
-      print('ScreenUtil error for $type $size: $e');
-      return size;
+class R {
+  static double _screenWidth = 375;
+  static double _screenHeight = 812;
+  
+  static void init(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    _screenWidth = size.width;
+    _screenHeight = size.height;
+  }
+  
+  static double w(double width) => (_screenWidth / 375) * width;
+  static double h(double height) => (_screenHeight / 812) * height;
+  
+  static double s(double size) {
+    final scale = (_screenWidth / 375).clamp(0.8, 1.2); 
+    return size * scale;
+  }
+  
+  static double r(double radius) => (_screenWidth / 375) * radius;
+  static EdgeInsets p(double padding) => EdgeInsets.all((_screenWidth / 375) * padding);
+  static EdgeInsets sym({double h = 0, double v = 0}) => EdgeInsets.symmetric(
+    horizontal: w(h), 
+    vertical: R.h(v)
+  );
+}
+
+class ResponsiveHelper {
+  static double fontSize(BuildContext context, double size) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 360) {
+      return size * 0.85; 
+    } else if (screenWidth > 600) {
+      return size * 1.1; 
     }
+    return size; 
   }
-
-  static double s(double size) => _safeResponsive(size, () => size.sp, type: 'size');
-  static double w(double size) => _safeResponsive(size, () => size.w, type: 'width');
-  static double h(double size) => _safeResponsive(size, () => size.h, type: 'height');
-  static double r(double size) => _safeResponsive(size, () => size.r, type: 'radius');
-
-  static EdgeInsets p(double size) {
-    if (kIsWeb) return EdgeInsets.all(size);
-    return EdgeInsets.all(w(size));
+  
+  static double spacing(BuildContext context, double size) {
+    if (ResponsiveBreakpoints.of(context).isMobile) return size * 0.9;
+    else if (ResponsiveBreakpoints.of(context).isTablet) return size;
+    else return size * 1.1;
   }
-
-  static EdgeInsets sym({double? h, double? v}) {
-    if (kIsWeb) return EdgeInsets.symmetric(horizontal: h ?? 0, vertical: v ?? 0);
-    return EdgeInsets.symmetric(horizontal: w(h ?? 0), vertical: ResponsiveUtils.h(v ?? 0));
+  
+  static EdgeInsets padding(BuildContext context, double size) {
+    final responsive = spacing(context, size);
+    return EdgeInsets.all(responsive);
+  }
+  
+  static EdgeInsets symmetricPadding(BuildContext context, {double? horizontal, double? vertical}) {
+    return EdgeInsets.symmetric(
+      horizontal: horizontal != null ? spacing(context, horizontal) : 0,
+      vertical: vertical != null ? spacing(context, vertical) : 0,
+    );
+  }
+  
+  static double iconSize(BuildContext context, double size) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 360) {
+      return size * 0.9;
+    } else if (screenWidth > 600) {
+      return size * 1.1;
+    }
+    return size;
+  }
+  
+  static double borderRadius(BuildContext context, double radius) {
+    if (ResponsiveBreakpoints.of(context).isMobile) {
+      return radius * 0.8;
+    } else if (ResponsiveBreakpoints.of(context).isTablet) {
+      return radius;
+    } else {
+      return radius * 1.2;
+    }
   }
 }
 
-typedef R = ResponsiveUtils;
-
 class AppWidgets {
-  static final _primaryStyle = TextStyle(color: Colors.white, fontSize: R.s(16), fontWeight: FontWeight.w600);
-  static final _secondaryStyle = TextStyle(color: Colors.white70, fontSize: R.s(14));
-  static final _greyStyle = TextStyle(color: Colors.grey, fontSize: R.s(12));
+  static TextStyle _primaryStyle(BuildContext context) => TextStyle(
+    color: Colors.white, fontSize: ResponsiveHelper.fontSize(context, 16), 
+    fontWeight: FontWeight.w600
+  );
+  static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
+    color: Colors.white70, 
+    fontSize: ResponsiveHelper.fontSize(context, 14)
+  );
+  static TextStyle _greyStyle(BuildContext context) => TextStyle(
+    color: Colors.grey, 
+    fontSize: ResponsiveHelper.fontSize(context, 12)
+  );
+
+  static Widget textField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String labelText,
+    String? hintText,
+    IconData? prefixIcon,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
+    int minLines = 1,
+    int maxLines = 1,
+  }) => TextFormField(
+    controller: controller,
+    obscureText: obscureText,
+    validator: validator,
+    onChanged: onChanged,
+    minLines: minLines,
+    maxLines: maxLines,
+    style: _primaryStyle(context),
+    decoration: AppTheme.getInputDecoration(
+      labelText: labelText, 
+      hintText: hintText, 
+      prefixIcon: prefixIcon
+    ).copyWith(
+      contentPadding: ResponsiveHelper.symmetricPadding(
+        context, 
+        horizontal: 16, 
+        vertical: 12
+      ),
+    ),
+  );
+
+  static Widget trackCard({
+    Key? key,
+    required BuildContext context,
+    required Track track,
+    bool isSelected = false,
+    bool isInPlaylist = false,
+    bool showAddButton = true,
+    bool showPlayButton = true,
+    bool showExplicitAddButton = false,
+    bool showVotingControls = false,
+    String? playlistContext,
+    String? playlistId,
+    VoidCallback? onTap,
+    VoidCallback? onAdd,
+    VoidCallback? onPlay,
+    VoidCallback? onRemove,
+    VoidCallback? onAddToLibrary,
+    ValueChanged<bool?>? onSelectionChanged,
+  }) => Consumer2<MusicPlayerService, DynamicThemeProvider>(
+    key: key,
+    builder: (context, playerService, themeProvider, _) {
+      final isCurrentTrack = playerService.currentTrack?.id == track.id;
+      final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
+      String displayArtist = track.artist;
+      if (displayArtist.isEmpty && track.deezerTrackId != null) {
+        displayArtist = 'Loading artist info...';
+      } else if (displayArtist.isEmpty) {
+        displayArtist = 'Unknown Artist';
+      }
+
+      return AnimationConfiguration.staggeredList(
+        position: 0,
+        duration: const Duration(milliseconds: 375),
+        child: SlideAnimation(
+          verticalOffset: 50.0,
+          child: FadeInAnimation(
+            child: Container(
+              margin: ResponsiveHelper.symmetricPadding(context, horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? themeProvider.primaryColor.withOpacity(0.2) : 
+                       isCurrentTrack ? themeProvider.primaryColor.withOpacity(0.1) : 
+                       themeProvider.surfaceColor,
+                borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 12)),
+                border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: ResponsiveHelper.padding(context, 12),
+                    child: Row(
+                      children: [
+                        if (onSelectionChanged != null)
+                          SizedBox(
+                            width: 56,
+                            child: Checkbox(
+                              value: isSelected, 
+                              onChanged: onSelectionChanged, 
+                              activeColor: themeProvider.primaryColor
+                            ),
+                          )
+                        else
+                          _buildImage(context, track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
+                        
+                        SizedBox(width: ResponsiveHelper.spacing(context, 12)),
+                        
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      track.name, 
+                                      style: _primaryStyle(context), 
+                                      maxLines: 1, 
+                                      overflow: TextOverflow.ellipsis
+                                    ),
+                                    Text(
+                                      displayArtist, 
+                                      style: _secondaryStyle(context), 
+                                      maxLines: 1, 
+                                      overflow: TextOverflow.ellipsis
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              
+                              if (showVotingControls && playlistId != null)
+                                Flexible(
+                                  flex: 1,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: ResponsiveHelper.spacing(context, 8)),
+                                    child: TrackVotingControls(
+                                      playlistId: playlistId!,
+                                      trackId: track.id,
+                                      isCompact: true,
+                                    ),
+                                  ),
+                                ),
+                              
+                              if (onSelectionChanged == null)
+                                Flexible(
+                                  flex: 1,
+                                  child: _buildTrackActions(
+                                    context, 
+                                    showAddButton, 
+                                    showPlayButton, 
+                                    onAdd, 
+                                    onPlay, 
+                                    onRemove, 
+                                    trackIsPlaying, 
+                                    themeProvider, 
+                                    isInPlaylist
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (showExplicitAddButton) 
+                    _buildExplicitButton(context, onAdd, isInPlaylist, playlistContext, themeProvider),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  static Widget _buildImage(BuildContext context, String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) => Container(
+    width: ResponsiveHelper.spacing(context, size), 
+    height: ResponsiveHelper.spacing(context, size),
+    decoration: BoxDecoration(
+      color: backgroundColor, 
+      borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 8))
+    ),
+    child: imageUrl?.isNotEmpty == true
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 8)), 
+            child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover)
+          )
+        : Icon(
+            defaultIcon, 
+            color: Colors.white, 
+            size: ResponsiveHelper.iconSize(context, size * 0.5)
+          ),
+  );
+
+  static Widget _buildTrackActions(
+    BuildContext context,
+    bool showAddButton, 
+    bool showPlayButton, 
+    VoidCallback? onAdd, 
+    VoidCallback? onPlay, 
+    VoidCallback? onRemove, 
+    bool trackIsPlaying, 
+    DynamicThemeProvider themeProvider, 
+    bool isInPlaylist
+  ) {
+    final actions = <Widget>[];
+    
+    if (showPlayButton && onPlay != null) {
+      actions.add(IconButton(
+        icon: Icon(
+          trackIsPlaying ? Icons.pause : Icons.play_arrow, 
+          color: themeProvider.primaryColor, 
+          size: ResponsiveHelper.iconSize(context, 20) 
+        ), 
+        onPressed: onPlay,
+        padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)), 
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
+      ));
+    }
+    
+    if (showAddButton && onAdd != null && !isInPlaylist) {
+      actions.add(IconButton(
+        icon: Icon(
+          Icons.add_circle_outline, 
+          color: Colors.white, 
+          size: ResponsiveHelper.iconSize(context, 18) 
+        ), 
+        onPressed: onAdd, 
+        tooltip: 'Add to Playlist',
+        padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)), 
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
+      ));
+    }
+    
+    if (isInPlaylist) {
+      actions.add(Padding(
+        padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)),
+        child: Icon(
+          Icons.check_circle, 
+          color: Colors.green, 
+          size: ResponsiveHelper.iconSize(context, 18) 
+        ),
+      ));
+    }
+    
+    if (onRemove != null) {
+      actions.add(IconButton(
+        icon: Icon(
+          Icons.remove_circle_outline, 
+          color: Colors.red, 
+          size: ResponsiveHelper.iconSize(context, 18) 
+        ), 
+        onPressed: onRemove,
+        padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)), 
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
+      ));
+    }
+
+    if (actions.isEmpty) return const SizedBox.shrink();
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: actions.length > 2 
+        ? actions.take(2).toList() 
+        : actions,
+    );
+  }
+
+  static Widget _buildExplicitButton(
+    BuildContext context,
+    VoidCallback? onAdd, 
+    bool isInPlaylist, 
+    String? playlistContext, 
+    DynamicThemeProvider themeProvider
+  ) {
+    if (isInPlaylist) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(
+          ResponsiveHelper.spacing(context, 16), 
+          0, 
+          ResponsiveHelper.spacing(context, 16), 
+          ResponsiveHelper.spacing(context, 12)
+        ),
+        child: Container(
+          padding: ResponsiveHelper.symmetricPadding(context, horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.green.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 20)),
+            border: Border.all(color: Colors.green.withOpacity(0.5)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: ResponsiveHelper.iconSize(context, 16)),
+              SizedBox(width: ResponsiveHelper.spacing(context, 8)),
+              Flexible(
+                child: Text(
+                  'Already in playlist', 
+                  style: TextStyle(
+                    color: Colors.green, 
+                    fontSize: ResponsiveHelper.fontSize(context, 14), 
+                    fontWeight: FontWeight.w600
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                )
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    if (onAdd != null) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(
+          ResponsiveHelper.spacing(context, 16), 
+          0, 
+          ResponsiveHelper.spacing(context, 16), 
+          ResponsiveHelper.spacing(context, 12)
+        ),
+        child: ElevatedButton.icon(
+          onPressed: onAdd,
+          icon: Icon(Icons.add, size: ResponsiveHelper.iconSize(context, 18)),
+          label: Flexible(
+            child: Text(
+              playlistContext != null ? 'Add to $playlistContext' : 'Add to Playlist', 
+              style: TextStyle(
+                fontSize: ResponsiveHelper.fontSize(context, 14), 
+                fontWeight: FontWeight.w600
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: themeProvider.primaryColor, 
+            foregroundColor: Colors.black, 
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 20))
+            ),
+            padding: ResponsiveHelper.symmetricPadding(context, horizontal: 20, vertical: 10),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
 
   static Future<bool> showConfirmDialog(
     BuildContext context, {
@@ -131,82 +527,706 @@ class AppWidgets {
     );
   }
 
-  static Future<void> showInfoDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    IconData? icon,
-    List<String>? points,
-    String? tip,
-  }) async {
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Row(
+  static Widget loading([String? message]) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (icon != null) ...[
-              Icon(icon, color: AppTheme.primary),
-              const SizedBox(width: 8),
-            ],
-            Expanded(
-              child: Text(title, style: const TextStyle(color: Colors.white)),
-            ),
+            const CircularProgressIndicator(color: AppTheme.primary),
+            if (message != null) ...[SizedBox(height: R.h(16)), Text(message, style: _secondaryStyle(context))],
           ],
         ),
-        content: Column(
+      );
+    });
+  }
+
+  static Widget emptyState({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    String? buttonText,
+    VoidCallback? onButtonPressed,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return Center(
+        child: Padding(
+          padding: R.p(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: R.s(64), color: Colors.grey),
+              SizedBox(height: R.h(16)),
+              Text(title, style: _primaryStyle(context).copyWith(fontSize: R.s(18), fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+              if (subtitle != null) ...[SizedBox(height: R.h(8)), Text(subtitle, style: _secondaryStyle(context), textAlign: TextAlign.center)],
+              if (buttonText != null && onButtonPressed != null) ...[
+                SizedBox(height: R.h(24)),
+                ElevatedButton(onPressed: onButtonPressed, child: Text(buttonText, style: TextStyle(fontSize: R.s(14)))),
+              ],
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
+    R.init(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message, style: TextStyle(fontSize: R.s(14))),
+      backgroundColor: backgroundColor ?? AppTheme.primary,
+      behavior: SnackBarBehavior.fixed,
+      duration: const Duration(seconds: 2),
+      action: SnackBarAction(
+        label: 'Dismiss', textColor: Colors.white,
+        onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+      ),
+    ));
+  }
+
+  static Widget primaryButton({
+    required BuildContext context,
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool fullWidth = true,
+  }) {
+    R.init(context);
+    final content = isLoading 
+      ? SizedBox(width: R.w(16), height: R.h(16), child: const CircularProgressIndicator(strokeWidth: 2))
+      : Row(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[Icon(icon, size: R.s(16)), SizedBox(width: R.w(8))],
+            Flexible(
+              child: Text(text, style: TextStyle(fontSize: R.s(14)), overflow: TextOverflow.visible,
+                textAlign: TextAlign.center, maxLines: 1)
+            ),
+          ],
+        );
+    final button = ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppTheme.primary, 
+        foregroundColor: Colors.black,
+        minimumSize: Size(R.w(88), R.h(50)), 
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(25))),
+        padding: EdgeInsets.symmetric(horizontal: R.w(16), vertical: R.h(12)),
+      ),
+      child: content,
+    );
+    return fullWidth ? SizedBox(width: double.infinity, height: R.h(50), child: button) : button;
+  }
+
+  static Widget secondaryButton({required BuildContext context, 
+    required String text, 
+    required VoidCallback? onPressed, 
+    IconData? icon, 
+    bool fullWidth = true,
+  }) {
+    R.init(context);
+    final content = Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (icon != null) ...[Icon(icon, size: R.s(16)), SizedBox(width: R.w(6))],
+        Flexible(
+          child: Text(
+            text, 
+            style: TextStyle(fontSize: R.s(13)), 
+            overflow: TextOverflow.visible,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+          )
+        ),
+      ],
+    );
+    final button = OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.white,
+        side: const BorderSide(color: Colors.white),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(8))),
+        padding: EdgeInsets.symmetric(horizontal: R.w(12), vertical: R.h(12)),
+      ),
+      child: content,
+    );
+    return fullWidth ? SizedBox(width: double.infinity, height: R.h(50), child: button) : button;
+  }
+
+  static Widget infoBanner({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color? color,
+    String? actionText,
+    VoidCallback? onAction,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      final bannerColor = color ?? Colors.blue;
+      return Container(
+        margin: R.sym(h: 16, v: 8),
+        padding: R.p(16),
+        decoration: BoxDecoration(
+          color: bannerColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(R.r(12)),
+          border: Border.all(color: bannerColor.withOpacity(0.3)),
+        ),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(message, style: const TextStyle(color: Colors.white70)),
-            if (points != null && points.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              ...points.map((point) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('• ', style: TextStyle(color: AppTheme.primary)),
-                    Expanded(
-                      child: Text(point, style: const TextStyle(color: Colors.white70)),
+            Row(
+              children: [
+                Icon(icon, color: bannerColor, size: R.s(20)),
+                SizedBox(width: R.w(8)),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: bannerColor,
+                      fontSize: R.s(16),
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
+                  ),
                 ),
-              )),
-            ],
-            if (tip != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.tips_and_updates, color: Colors.blue, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(tip, style: const TextStyle(color: Colors.blue, fontSize: 12)),
-                    ),
-                  ],
+              ],
+            ),
+            SizedBox(height: R.h(8)),
+            Text(
+              message,
+              style: TextStyle(
+                color: bannerColor,
+                fontSize: R.s(14),
+              ),
+            ),
+            if (actionText != null && onAction != null) ...[
+              SizedBox(height: R.h(12)),
+              TextButton(
+                onPressed: onAction,
+                child: Text(
+                  actionText,
+                  style: TextStyle(
+                    color: bannerColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ],
         ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.black,
+      );
+    });
+  }
+
+  static Widget errorBanner({
+    required String message,
+    VoidCallback? onDismiss,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return Container(
+        margin: R.sym(h: 16, v: 8),
+        padding: R.p(16),
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(R.r(12)),
+          border: Border.all(color: Colors.red.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.error, color: Colors.red, size: R.s(20)),
+            SizedBox(width: R.w(8)),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: R.s(14),
+                ),
+              ),
             ),
-            child: const Text('OK'),
+            if (onDismiss != null)
+              IconButton(
+                onPressed: onDismiss,
+                icon: Icon(Icons.close, color: Colors.red, size: R.s(20)),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  static Widget tabScaffold({ required List<Tab> tabs, required List<Widget> tabViews, TabController? controller}) {
+    return Builder(builder: (context) {
+      return DefaultTabController(
+        length: tabs.length,
+        child: Column(
+          children: [
+            Container(
+              color: AppTheme.background,
+              child: TabBar(
+                controller: controller,
+                tabs: tabs,
+                indicatorColor: AppTheme.primary,
+                labelColor: AppTheme.primary,
+                unselectedLabelColor: Colors.white70,
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: controller,
+                children: tabViews,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  static Widget sectionTitle(String title) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return Padding(
+        padding: R.sym(h: 16, v: 8),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: R.s(20),
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    });
+  }
+
+  static Widget quickActionCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: R.p(16),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(R.r(12)),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: R.p(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(R.r(12)),
+                ),
+                child: Icon(icon, color: color, size: R.s(32)),
+              ),
+              SizedBox(height: R.h(12)),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: R.s(14),
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  static Widget playlistCard({
+    required Playlist playlist,
+    required VoidCallback onTap,
+    VoidCallback? onPlay,
+    bool showPlayButton = false,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: R.sym(h: 16, v: 8),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(R.r(12)),
+          ),
+          child: Padding(
+            padding: R.p(16),
+            child: Row(
+              children: [
+                Container(
+                  width: R.w(60),
+                  height: R.h(60),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(R.r(8)),
+                  ),
+                  child: playlist.imageUrl?.isNotEmpty == true
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(R.r(8)),
+                          child: Image.network(
+                            playlist.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Icon(Icons.library_music, color: AppTheme.primary, size: R.s(30)),
+                          ),
+                        )
+                      : Icon(Icons.library_music, color: AppTheme.primary, size: R.s(30)),
+                ),
+                SizedBox(width: R.w(16)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        playlist.name,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: R.s(16),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: R.h(4)),
+                      Text(
+                        '${playlist.tracks.length} tracks • ${playlist.creator}',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: R.s(12),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (playlist.description.isNotEmpty) ...[
+                        SizedBox(height: R.h(4)),
+                        Text(
+                          playlist.description,
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: R.s(11),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (showPlayButton && onPlay != null)
+                  IconButton(
+                    onPressed: onPlay,
+                    icon: Icon(Icons.play_arrow, color: AppTheme.primary, size: R.s(28)),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  static Widget playlistTrackCard({
+    Key? key,
+    required PlaylistTrack playlistTrack,
+    VoidCallback? onTap,
+    VoidCallback? onPlay,
+    VoidCallback? onRemove,
+    bool showVotingControls = false,
+    bool showPoints = false,
+    String? playlistId,
+    int? trackIndex,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      final track = playlistTrack.track;
+      
+      return Container(
+        key: key,
+        margin: R.sym(h: 16, v: 4),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(R.r(12)),
+        ),
+        child: ListTile(
+          leading: Container(
+            width: R.w(56),
+            height: R.h(56),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(R.r(8)),
+            ),
+            child: track?.imageUrl?.isNotEmpty == true
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(R.r(8)),
+                    child: Image.network(
+                      track!.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(Icons.music_note, color: Colors.white, size: R.s(24)),
+                    ),
+                  )
+                : Icon(Icons.music_note, color: Colors.white, size: R.s(24)),
+          ),
+          title: Text(
+            track?.name ?? playlistTrack.name,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: R.s(14),
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                track?.artist ?? 'Unknown Artist',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: R.s(12),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (showPoints) ...[
+                SizedBox(height: R.h(4)),
+                Text(
+                  '${playlistTrack.points} points',
+                  style: TextStyle(
+                    color: playlistTrack.points > 0 ? Colors.green : 
+                           playlistTrack.points < 0 ? Colors.red : Colors.grey,
+                    fontSize: R.s(11),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showVotingControls && playlistId != null && trackIndex != null)
+                TrackVotingControls(
+                  playlistId: playlistId,
+                  trackId: track?.id ?? playlistTrack.trackId,
+                  trackIndex: trackIndex,
+                  isCompact: true,
+                ),
+              if (onPlay != null)
+                IconButton(
+                  onPressed: onPlay,
+                  icon: Icon(Icons.play_arrow, color: AppTheme.primary, size: R.s(20)),
+                ),
+              if (onRemove != null)
+                IconButton(
+                  onPressed: onRemove,
+                  icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)),
+                ),
+            ],
+          ),
+          onTap: onTap,
+        ),
+      );
+    });
+  }
+
+  static Widget switchTile({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String title,
+    String? subtitle,
+    IconData? icon,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return SwitchListTile(
+        value: value,
+        onChanged: onChanged,
+        title: Text(
+          title,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: R.s(16),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: R.s(14),
+                ),
+              )
+            : null,
+        secondary: icon != null ? Icon(icon, color: AppTheme.primary, size: R.s(24)) : null,
+        activeColor: AppTheme.primary,
+        contentPadding: R.sym(h: 16, v: 8),
+      );
+    });
+  }
+
+  static Widget settingsSection({
+    required String title,
+    required List<Widget> items,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return Container(
+        margin: R.sym(h: 16, v: 8),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(R.r(12)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: R.p(16),
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: R.s(18),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ...items,
+          ],
+        ),
+      );
+    });
+  }
+
+  static Widget settingsItem({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      final itemColor = color ?? Colors.white;
+      return ListTile(
+        leading: Icon(icon, color: color ?? AppTheme.primary, size: R.s(24)),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: itemColor,
+            fontSize: R.s(16),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle,
+                style: TextStyle(
+                  color: itemColor.withOpacity(0.7),
+                  fontSize: R.s(14),
+                ),
+              )
+            : null,
+        trailing: Icon(Icons.chevron_right, color: itemColor.withOpacity(0.5), size: R.s(20)),
+        onTap: onTap,
+        contentPadding: R.sym(h: 16, v: 8),
+      );
+    });
+  }
+
+  static Widget errorState({
+    required String message,
+    VoidCallback? onRetry,
+    String? retryText,
+  }) {
+    return Builder(builder: (context) {
+      R.init(context);
+      return Center(
+        child: Padding(
+          padding: R.p(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: R.s(64), color: Colors.red),
+              SizedBox(height: R.h(16)),
+              Text(
+                message,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: R.s(18),
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (onRetry != null) ...[
+                SizedBox(height: R.h(24)),
+                ElevatedButton(
+                  onPressed: onRetry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: Text(retryText ?? 'Retry'),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  static Widget refreshableList<T>({
+    required List<T> items,
+    required Widget Function(T, int) itemBuilder,
+    required Future<void> Function() onRefresh,
+    Widget? emptyState,
+    EdgeInsets? padding,
+  }) {
+    return Builder(builder: (context) {
+      if (items.isEmpty && emptyState != null) {
+        return RefreshIndicator(
+          onRefresh: onRefresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: emptyState,
+            ),
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        color: AppTheme.primary,
+        child: ListView.builder(
+          padding: padding ?? const EdgeInsets.all(16),
+          itemCount: items.length,
+          itemBuilder: (context, index) => itemBuilder(items[index], index),
+        ),
+      );
+    });
   }
 
   static Future<int?> showSelectionDialog<T>({
@@ -214,8 +1234,7 @@ class AppWidgets {
     required String title,
     required List<T> items,
     required String Function(T) itemTitle,
-    String Function(T)? itemSubtitle,
-    Widget Function(T)? itemLeading,
+    List<IconData>? icons,
   }) async {
     return showDialog<int>(
       context: context,
@@ -230,25 +1249,21 @@ class AppWidgets {
             itemBuilder: (context, index) {
               final item = items[index];
               return ListTile(
-                leading: itemLeading?.call(item),
+                leading: icons != null && index < icons.length
+                    ? Icon(icons[index], color: AppTheme.primary)
+                    : null,
                 title: Text(
                   itemTitle(item),
                   style: const TextStyle(color: Colors.white),
                 ),
-                subtitle: itemSubtitle != null
-                    ? Text(
-                        itemSubtitle(item),
-                        style: const TextStyle(color: Colors.grey),
-                      )
-                    : null,
-                onTap: () => Navigator.of(context).pop(index),
+                onTap: () => Navigator.pop(context, index),
               );
             },
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.pop(context),
             child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
         ],
@@ -256,686 +1271,41 @@ class AppWidgets {
     );
   }
 
-  static Widget textField({
-    required TextEditingController controller,
-    required String labelText,
-    String? hintText,
-    IconData? prefixIcon,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-    ValueChanged<String>? onChanged,
-    int minLines = 1,
-    int maxLines = 1,
-  }) => TextFormField(
-    controller: controller,
-    obscureText: obscureText,
-    validator: validator,
-    onChanged: onChanged,
-    minLines: minLines,
-    maxLines: maxLines,
-    style: _primaryStyle,
-    decoration: AppTheme.getInputDecoration(labelText: labelText, hintText: hintText, prefixIcon: prefixIcon),
-  );
-
-  static Widget _buildButton({
-    required String text,
-    required VoidCallback? onPressed,
+  static Future<void> showInfoDialog({
+    required BuildContext context,
+    required String title,
+    required String message,
     IconData? icon,
-    bool isLoading = false,
-    bool fullWidth = true,
-    bool isOutlined = false,
-    Color? backgroundColor,
-    Color? foregroundColor,
-  }) {
-    final content = isLoading 
-      ? SizedBox(width: R.w(16), height: R.h(16), child: const CircularProgressIndicator(strokeWidth: 2))
-      : Row(
-          mainAxisSize: MainAxisSize.min,
+  }) async {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Row(
           children: [
-            if (icon != null) ...[Icon(icon, size: R.s(16)), SizedBox(width: R.w(8))],
-            Text(text, style: TextStyle(fontSize: R.s(14))),
-          ],
-        );
-    final button = isOutlined 
-      ? OutlinedButton(
-          onPressed: onPressed,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: foregroundColor ?? Colors.white,
-            side: BorderSide(color: foregroundColor ?? Colors.white),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(8))),
-          ),
-          child: content,
-        )
-      : ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor ?? AppTheme.primary,
-            foregroundColor: foregroundColor ?? Colors.black,
-            minimumSize: Size(R.w(88), R.h(50)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(25))),
-          ),
-          child: content,
-        );
-    return fullWidth ? SizedBox(width: double.infinity, height: R.h(50), child: button) : button;
-  }
-
-  static Widget primaryButton({
-    required String text,
-    required VoidCallback? onPressed,
-    IconData? icon,
-    bool isLoading = false,
-    bool fullWidth = true,
-  }) => _buildButton(text: text, onPressed: onPressed, icon: icon, isLoading: isLoading, fullWidth: fullWidth);
-
-  static Widget secondaryButton({
-    required String text,
-    required VoidCallback? onPressed,
-    IconData? icon,
-    bool fullWidth = true,
-  }) => _buildButton(text: text, onPressed: onPressed, icon: icon, fullWidth: fullWidth, isOutlined: true);
-
-  static Widget loading([String? message]) => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const CircularProgressIndicator(color: AppTheme.primary),
-        if (message != null) ...[SizedBox(height: R.h(16)), Text(message, style: _secondaryStyle)],
-      ],
-    ),
-  );
-
-  static Widget emptyState({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    String? buttonText,
-    VoidCallback? onButtonPressed,
-  }) => Center(
-    child: Padding(
-      padding: R.p(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: R.s(64), color: Colors.grey),
-          SizedBox(height: R.h(16)),
-          Text(title, style: _primaryStyle.copyWith(fontSize: R.s(18), fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-          if (subtitle != null) ...[SizedBox(height: R.h(8)), Text(subtitle, style: _secondaryStyle, textAlign: TextAlign.center)],
-          if (buttonText != null && onButtonPressed != null) ...[
-            SizedBox(height: R.h(24)),
-            ElevatedButton(onPressed: onButtonPressed, child: Text(buttonText, style: TextStyle(fontSize: R.s(14)))),
-          ],
-        ],
-      ),
-    ),
-  );
-
-  static Widget errorState({
-    required String message,
-    VoidCallback? onRetry,
-    String? retryText,
-  }) => Center(
-    child: Padding(
-      padding: R.p(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: R.s(64), color: AppTheme.error),
-          SizedBox(height: R.h(16)),
-          Text('Error', style: _primaryStyle.copyWith(fontSize: R.s(18), fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-          SizedBox(height: R.h(8)),
-          Text(message, style: _secondaryStyle, textAlign: TextAlign.center),
-          if (onRetry != null) ...[
-            SizedBox(height: R.h(24)),
-            ElevatedButton(
-              onPressed: onRetry,
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
-              child: Text(retryText ?? 'Retry', style: TextStyle(fontSize: R.s(14))),
+            if (icon != null) ...[
+              Icon(icon, color: AppTheme.primary),
+              const SizedBox(width: 8),
+            ],
+            Expanded(
+              child: Text(title, style: const TextStyle(color: Colors.white)),
             ),
           ],
-        ],
-      ),
-    ),
-  );
-
-  static Widget _banner({
-    required String title,
-    required String message,
-    required IconData icon,
-    required Color color,
-    VoidCallback? onAction,
-    String? actionText,
-  }) => Container(
-    padding: R.p(16),
-    margin: R.sym(h: 16, v: 8),
-    decoration: BoxDecoration(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(R.r(8)),
-      border: Border.all(color: color.withOpacity(0.3)),
-    ),
-    child: Row(
-      children: [
-        Icon(icon, color: color, size: R.s(24)),
-        SizedBox(width: R.w(12)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: R.s(16))),
-              SizedBox(height: R.h(4)),
-              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: R.s(14))),
-            ],
-          ),
         ),
-        if (actionText != null && onAction != null)
-          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color, fontSize: R.s(14)))),
-      ],
-    ),
-  );
-
-  static Widget infoBanner({
-    required String title,
-    required String message,
-    required IconData icon,
-    Color color = AppTheme.primary,
-    VoidCallback? onAction,
-    String? actionText,
-  }) => _banner(title: title, message: message, icon: icon, color: color, onAction: onAction, actionText: actionText);
-
-  static Widget errorBanner({required String message, VoidCallback? onDismiss}) => 
-    _banner(title: 'Error', message: message, icon: Icons.error_outline, color: Colors.red, actionText: onDismiss != null ? 'Dismiss' : null, onAction: onDismiss);
-
-  static Widget successBanner({required String message}) => 
-    _banner(title: 'Success', message: message, icon: Icons.check_circle, color: Colors.green);
-
-  static Widget votingInfoBanner({
-    required String title,
-    required String message,
-    required IconData icon,
-    Color color = AppTheme.primary,
-    VoidCallback? onAction,
-    String? actionText,
-  }) => Container(
-    padding: R.p(16),
-    margin: R.sym(h: 16, v: 8),
-    decoration: BoxDecoration(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(R.r(8)),
-      border: Border.all(color: color.withOpacity(0.3)),
-    ),
-    child: Row(
-      children: [
-        Icon(icon, color: color, size: R.s(24)),
-        SizedBox(width: R.w(12)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: R.s(16))),
-              SizedBox(height: R.h(4)),
-              Text(message, style: TextStyle(color: color.withOpacity(0.8), fontSize: R.s(14))),
-            ],
-          ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white70),
         ),
-        if (actionText != null && onAction != null)
-          TextButton(onPressed: onAction, child: Text(actionText, style: TextStyle(color: color, fontSize: R.s(14)))),
-      ],
-    ),
-  );
-
-  static Widget formCard({required String title, IconData? titleIcon, required Widget child}) => 
-    AppTheme.buildFormCard(title: title, titleIcon: titleIcon, child: child);
-
-  static Widget sectionTitle(String title) => Padding(
-    padding: R.sym(h: 16, v: 8),
-    child: Text(title, style: _primaryStyle.copyWith(fontSize: R.s(20), fontWeight: FontWeight.bold)),
-  );
-
-  static Widget trackCard({
-    Key? key,
-    required Track track,
-    bool isSelected = false,
-    bool isInPlaylist = false,
-    bool showAddButton = true,
-    bool showPlayButton = true,
-    bool showExplicitAddButton = false,
-    bool showVotingControls = false,
-    String? playlistContext,
-    String? playlistId,
-    VoidCallback? onTap,
-    VoidCallback? onAdd,
-    VoidCallback? onPlay,
-    VoidCallback? onRemove,
-    VoidCallback? onAddToLibrary,
-    ValueChanged<bool?>? onSelectionChanged,
-  }) => Consumer2<MusicPlayerService, DynamicThemeProvider>(
-    key: key,
-    builder: (context, playerService, themeProvider, _) {
-      final isCurrentTrack = playerService.currentTrack?.id == track.id;
-      final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-      String displayArtist = track.artist;
-      if (displayArtist.isEmpty && track.deezerTrackId != null) displayArtist = 'Loading artist info...';
-      else if (displayArtist.isEmpty) displayArtist = 'Unknown Artist';
-      return AnimationConfiguration.staggeredList(
-        position: 0,
-        duration: const Duration(milliseconds: 375),
-        child: SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: Container(
-              margin: R.sym(h: 16, v: 4),
-              decoration: BoxDecoration(
-                color: isSelected ? themeProvider.primaryColor.withOpacity(0.2) : 
-                       isCurrentTrack ? themeProvider.primaryColor.withOpacity(0.1) : 
-                       themeProvider.surfaceColor,
-                borderRadius: BorderRadius.circular(R.r(12)),
-                border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
-              ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: R.p(12),
-                    child: Row(
-                      children: [
-                        if (onSelectionChanged != null)
-                          Checkbox(
-                            value: isSelected, 
-                            onChanged: onSelectionChanged, 
-                            activeColor: themeProvider.primaryColor
-                          )
-                        else
-                          _buildImage(track.imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
-                        SizedBox(width: R.w(12)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                track.name, 
-                                style: _primaryStyle, 
-                                maxLines: 1, 
-                                overflow: TextOverflow.ellipsis
-                              ),
-                              Text(
-                                displayArtist, 
-                                style: _secondaryStyle, 
-                                maxLines: 1, 
-                                overflow: TextOverflow.ellipsis
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (showVotingControls && playlistId != null) ...[
-                          TrackVotingControls(
-                            playlistId: playlistId!,
-                            trackId: track.id,
-                            isCompact: true,
-                          ),
-                          SizedBox(width: R.w(8)),
-                        ],
-                        if (onSelectionChanged == null) 
-                          _buildTrackActions(showAddButton, 
-                            showPlayButton, 
-                            onAdd, 
-                            onPlay, 
-                            onRemove, 
-                            trackIsPlaying, 
-                            themeProvider, isInPlaylist
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (showExplicitAddButton) _buildExplicitButton(onAdd, isInPlaylist, playlistContext, themeProvider),
-                ],
-              ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.black,
             ),
+            child: const Text('OK'),
           ),
-        ),
-      );
-    },
-  );
-
-  static Widget playlistTrackCard({
-    Key? key,
-    required PlaylistTrack playlistTrack,
-    bool isSelected = false,
-    bool showVotingControls = false,
-    bool showPoints = false, 
-    String? playlistId,
-    int? trackIndex,
-    VoidCallback? onTap,
-    VoidCallback? onPlay,
-    VoidCallback? onRemove,
-    ValueChanged<bool?>? onSelectionChanged,
-  }) => Consumer2<MusicPlayerService, DynamicThemeProvider>(
-    key: key,
-    builder: (context, playerService, themeProvider, _) {
-      final track = playlistTrack.track;
-      final isCurrentTrack = track != null && playerService.currentTrack?.id == track.id;
-      final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-
-      String displayName = track?.name ?? playlistTrack.name;
-      String displayArtist = track?.artist ?? 'Unknown Artist';
-      String? imageUrl = track?.imageUrl;
-
-      if (displayArtist == 'Unknown Artist' && track?.deezerTrackId != null) {
-        displayArtist = 'Loading artist info...';
-      }
-
-      return AnimationConfiguration.staggeredList(
-        position: 0,
-        duration: const Duration(milliseconds: 375),
-        child: SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: Container(
-              margin: R.sym(h: 16, v: 4),
-              decoration: BoxDecoration(
-                color: isSelected ? themeProvider.primaryColor.withOpacity(0.2) : 
-                       isCurrentTrack ? themeProvider.primaryColor.withOpacity(0.1) : 
-                       themeProvider.surfaceColor,
-                borderRadius: BorderRadius.circular(R.r(12)),
-                border: isCurrentTrack ? Border.all(color: themeProvider.primaryColor, width: 2) : null,
-              ),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: onSelectionChanged != null
-                        ? Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: themeProvider.primaryColor)
-                        : _buildImage(imageUrl, 56, themeProvider.surfaceColor, Icons.music_note),
-                    title: Text(displayName, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(displayArtist, style: _secondaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-                        if (showPoints && playlistTrack.points != 0) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                playlistTrack.points > 0 ? Icons.thumb_up : Icons.thumb_down,
-                                size: 12,
-                                color: playlistTrack.points > 0 ? Colors.green : Colors.red,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${playlistTrack.points > 0 ? '+' : ''}${playlistTrack.points} points',
-                                style: TextStyle(
-                                  color: playlistTrack.points > 0 ? Colors.green : Colors.red,
-                                  fontSize: R.s(11),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if (showVotingControls && playlistId != null) ...[
-                          const SizedBox(height: 4),
-                          TrackVotingControls(playlistId: playlistId!, trackId: playlistTrack.trackId, isCompact: true),
-                        ],
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (playlistTrack.points > 5 || playlistTrack.points < -5) ...[
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: R.w(6), vertical: R.h(2)),
-                            decoration: BoxDecoration(
-                              color: (playlistTrack.points > 0 ? Colors.green : Colors.red).withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(R.r(10)),
-                              border: Border.all(
-                                color: (playlistTrack.points > 0 ? Colors.green : Colors.red).withOpacity(0.5),
-                              ),
-                            ),
-                            child: Text(
-                              '${playlistTrack.points > 0 ? '+' : ''}${playlistTrack.points}',
-                              style: TextStyle(
-                                color: playlistTrack.points > 0 ? Colors.green : Colors.red,
-                                fontSize: R.s(10),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: R.w(8)),
-                        ],
-                        if (onPlay != null)
-                          IconButton(
-                            icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, 
-                                      color: themeProvider.primaryColor, size: R.s(24)), 
-                            onPressed: onPlay,
-                          ),
-                        if (onRemove != null)
-                          IconButton(
-                            icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)), 
-                            onPressed: onRemove
-                          ),
-                        Icon(Icons.drag_handle, color: Colors.grey, size: R.s(20)),
-                      ],
-                    ),
-                    onTap: onTap,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    },
-  );
-
-  static Widget _buildImage(String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) => Container(
-    width: R.w(size), height: R.h(size),
-    decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(R.r(8))),
-    child: imageUrl?.isNotEmpty == true
-        ? ClipRRect(borderRadius: BorderRadius.circular(R.r(8)), child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover))
-        : Icon(defaultIcon, color: Colors.white, size: R.s(size * 0.5)),
-  );
-
-  static Widget _buildTrackActions(bool showAddButton, bool showPlayButton, VoidCallback? onAdd, VoidCallback? onPlay, VoidCallback? onRemove, bool trackIsPlaying, DynamicThemeProvider themeProvider, bool isInPlaylist) {
-    final actions = <Widget>[];
-    if (showPlayButton && onPlay != null) {
-      actions.add(IconButton(
-        icon: Icon(trackIsPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor, size: R.s(24)), 
-        onPressed: onPlay,
-      ));
-    }
-    if (showAddButton && onAdd != null && !isInPlaylist) {
-      actions.add(IconButton(
-        icon: Icon(Icons.add_circle_outline, color: Colors.white, size: R.s(20)), onPressed: onAdd, tooltip: 'Add to Playlist',
-      ));
-    }
-    if (isInPlaylist) actions.add(Icon(Icons.check_circle, color: Colors.green, size: R.s(20)));
-    if (onRemove != null) actions.add(IconButton(icon: Icon(Icons.remove_circle_outline, color: Colors.red, size: R.s(20)), onPressed: onRemove));
-    return actions.isNotEmpty ? Wrap(spacing: R.w(4), children: actions) : const SizedBox.shrink();
-  }
-
-  static Widget _buildExplicitButton(VoidCallback? onAdd, bool isInPlaylist, String? playlistContext, DynamicThemeProvider themeProvider) {
-    if (isInPlaylist) {
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(R.w(16), 0, R.w(16), R.h(12)),
-        child: Container(
-          padding: R.sym(h: 16, v: 8),
-          decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(R.r(20)),
-            border: Border.all(color: Colors.green.withOpacity(0.5)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.check_circle, color: Colors.green, size: 16),
-              SizedBox(width: R.w(8)),
-              Text('Already in playlist', style: TextStyle(color: Colors.green, fontSize: R.s(14), fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
-      );
-    }
-    if (onAdd != null) {
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(R.w(16), 0, R.w(16), R.h(12)),
-        child: ElevatedButton.icon(
-          onPressed: onAdd,
-          icon: const Icon(Icons.add, size: 18),
-          label: Text(playlistContext != null ? 'Add to $playlistContext' : 'Add to Playlist', style: TextStyle(fontSize: R.s(14), fontWeight: FontWeight.w600)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: themeProvider.primaryColor, foregroundColor: Colors.black, elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.r(20))),
-            padding: R.sym(h: 20, v: 10),
-          ),
-        ),
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
-  static Widget playlistCard({
-    required Playlist playlist,
-    required VoidCallback? onTap,
-    VoidCallback? onPlay,
-    bool showPlayButton = false,
-  }) => Card(
-    margin: EdgeInsets.only(bottom: R.h(12)),
-    color: AppTheme.surface,
-    child: ListTile(
-      leading: _buildImage(playlist.imageUrl, 56, AppTheme.primary.withOpacity(0.2), Icons.library_music),
-      title: Text(playlist.name, style: _primaryStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Text('${playlist.tracks.length} tracks', style: _secondaryStyle), Text('By ${playlist.creator}', style: _greyStyle)],
-      ),
-      trailing: showPlayButton && onPlay != null
-          ? IconButton(icon: Icon(Icons.play_circle_outline, color: AppTheme.primary, size: R.s(24)), onPressed: onPlay)
-          : Icon(Icons.chevron_right, color: Colors.grey, size: R.s(20)),
-      onTap: onTap,
-    ),
-  );
-
-  static Widget switchTile({
-    required bool value,
-    required ValueChanged<bool> onChanged,
-    required String title,
-    String? subtitle,
-    IconData? icon,
-  }) => SwitchListTile(
-    value: value, onChanged: onChanged,
-    title: Text(title, style: _primaryStyle),
-    subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle) : null,
-    secondary: icon != null ? Icon(icon, color: AppTheme.primary) : null,
-    activeColor: AppTheme.primary,
-  );
-
-  static Widget quickActionCard({required String title, required IconData icon, required Color color, VoidCallback? onTap}) => Card(
-    color: AppTheme.surface,
-    child: InkWell(
-      onTap: onTap, borderRadius: BorderRadius.circular(R.r(12)),
-      child: Padding(
-        padding: R.p(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: R.s(32)), SizedBox(height: R.h(8)),
-            Text(title, style: _secondaryStyle.copyWith(fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    ),
-  );
-
-  static Widget featureCard({required IconData icon, required String title, required String description, VoidCallback? onTap}) => Card(
-    color: AppTheme.surface, margin: EdgeInsets.only(bottom: R.h(12)),
-    child: ListTile(
-      leading: Container(
-        padding: R.p(8),
-        decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(R.r(8))),
-        child: Icon(icon, color: AppTheme.primary),
-      ),
-      title: Text(title, style: _primaryStyle),
-      subtitle: Text(description, style: _secondaryStyle),
-      trailing: Icon(Icons.chevron_right, color: Colors.grey, size: R.s(20)),
-      onTap: onTap,
-    ),
-  );
-
-  static Widget settingsSection({required String title, required List<Widget> items}) => Card(
-    color: AppTheme.surface, margin: EdgeInsets.only(bottom: R.h(16)),
-    child: Padding(
-      padding: R.p(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: TextStyle(fontSize: R.s(16), fontWeight: FontWeight.bold, color: AppTheme.primary)),
-          SizedBox(height: R.h(8)), ...items,
         ],
-      ),
-    ),
-  );
-
-  static Widget settingsItem({required IconData icon, required String title, required String subtitle, VoidCallback? onTap, Color color = Colors.white}) => ListTile(
-    leading: Icon(icon, color: color),
-    title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w500, fontSize: R.s(16))),
-    subtitle: Text(subtitle, style: TextStyle(color: Colors.grey, fontSize: R.s(14))),
-    trailing: Icon(Icons.chevron_right, color: Colors.grey, size: R.s(20)),
-    onTap: onTap,
-  );
-
-  static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
-    final scaffold = Scaffold.maybeOf(context);
-    final mediaQuery = MediaQuery.of(context);
-    final bottomPadding = mediaQuery.viewInsets.bottom + mediaQuery.padding.bottom;
-    
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: TextStyle(fontSize: R.s(14))),
-      backgroundColor: backgroundColor ?? AppTheme.primary,
-      behavior: SnackBarBehavior.fixed,
-      duration: const Duration(seconds: 2),
-      action: SnackBarAction(
-        label: 'Dismiss',
-        textColor: Colors.white,
-        onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-      ),
-    ));
-  }
-
-  static Widget tabScaffold({required List<Tab> tabs, required List<Widget> tabViews, TabController? controller}) => DefaultTabController(
-    length: tabs.length,
-    child: Column(
-      children: [
-        TabBar(controller: controller, labelColor: AppTheme.primary, unselectedLabelColor: Colors.grey, tabs: tabs),
-        Expanded(child: TabBarView(controller: controller, children: tabViews)),
-      ],
-    ),
-  );
-
-  static Widget refreshableList<T>({
-    required List<T> items,
-    required Widget Function(T, int) itemBuilder,
-    required Future<void> Function() onRefresh,
-    Widget? emptyState,
-    EdgeInsets? padding,
-  }) {
-    if (items.isEmpty && emptyState != null) {
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(height: R.h(600), child: emptyState),
-        ),
-      );
-    }
-    return RefreshIndicator(
-      onRefresh: onRefresh, color: AppTheme.primary,
-      child: AnimationLimiter(
-        child: ListView.builder(
-          padding: padding ?? R.p(16), itemCount: items.length,
-          itemBuilder: (context, index) => AnimationConfiguration.staggeredList(
-            position: index, duration: const Duration(milliseconds: 375),
-            child: SlideAnimation(verticalOffset: 50.0, child: FadeInAnimation(child: itemBuilder(items[index], index))),
-          ),
-        ),
       ),
     );
   }
@@ -948,8 +1318,10 @@ class MiniPlayerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<MusicPlayerService, DynamicThemeProvider>(
       builder: (context, playerService, themeProvider, _) {
+        R.init(context);
         final track = playerService.currentTrack;
         if (track == null) return const SizedBox.shrink();
+
         return Container(
           height: R.h(60),
           decoration: BoxDecoration(
@@ -979,9 +1351,7 @@ class MiniPlayerWidget extends StatelessWidget {
                       ),
                       Text(
                         track.artist, 
-                        style: TextStyle(color: Colors.grey, fontSize: R.s(12)), 
-                        maxLines: 1, 
-                        overflow: TextOverflow.ellipsis
+                        style: TextStyle(color: Colors.grey, fontSize: R.s(12)), maxLines: 1, overflow: TextOverflow.ellipsis
                       ),
                     ],
                   ),
@@ -989,9 +1359,14 @@ class MiniPlayerWidget extends StatelessWidget {
               ),
               IconButton(
                 onPressed: playerService.togglePlay, 
-                icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor)
+                icon: Icon(playerService.isPlaying ? Icons.pause : Icons.play_arrow, color: themeProvider.primaryColor),
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
               ),
-              IconButton(onPressed: () => playerService.stop(), icon: Icon(Icons.close, color: Colors.grey, size: R.s(20))),
+              IconButton(
+                onPressed: () => playerService.stop(), 
+                icon: Icon(Icons.close, color: Colors.grey, size: R.s(20)),
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              ),
             ],
           ),
         );
