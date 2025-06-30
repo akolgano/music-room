@@ -282,9 +282,8 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
                 children: [
                   Expanded(
                     child: AppWidgets.textField(
-                      controller: TextEditingController(
-                        text: _latitude?.toString() ?? '',
-                      ),
+                      context: context,
+                      controller: TextEditingController(text: _latitude?.toString() ?? ''),
                       labelText: 'Latitude',
                       prefixIcon: Icons.my_location,
                       onChanged: (value) => _latitude = double.tryParse(value),
@@ -293,9 +292,8 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
                   const SizedBox(width: 16),
                   Expanded(
                     child: AppWidgets.textField(
-                      controller: TextEditingController(
-                        text: _longitude?.toString() ?? '',
-                      ),
+                      context: context,
+                      controller: TextEditingController(text: _longitude?.toString() ?? ''),
                       labelText: 'Longitude',
                       prefixIcon: Icons.location_on,
                       onChanged: (value) => _longitude = double.tryParse(value),
@@ -305,9 +303,8 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
               ),
               const SizedBox(height: 16),
               AppWidgets.textField(
-                controller: TextEditingController(
-                  text: _allowedRadiusMeters?.toString() ?? '100',
-                ),
+                context: context,
+                controller: TextEditingController(text: _allowedRadiusMeters?.toString() ?? '100'),
                 labelText: 'Allowed Radius (meters)',
                 prefixIcon: Icons.radio_button_unchecked,
                 onChanged: (value) => _allowedRadiusMeters = int.tryParse(value),
@@ -382,6 +379,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     return SizedBox(
       width: double.infinity,
       child: AppWidgets.primaryButton(
+        context: context,
         text: _isLoading ? 'Saving...' : 'Save Access Control',
         onPressed: _isLoading ? null : _saveSettings,
         isLoading: _isLoading,
@@ -394,7 +392,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     await runAsyncAction(
       () async {
         print('Loading playlist licensing data for ${widget.playlistId}');
-        
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.fetchFriends(auth.token!);
         setState(() {

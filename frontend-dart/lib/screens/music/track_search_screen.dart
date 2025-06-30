@@ -150,17 +150,17 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       children: [
         Expanded(
           child: AppWidgets.textField(
+            context: context,
             controller: _searchController,
             labelText: '',
-            hintText: _isAddingToPlaylist 
-              ? 'Search Deezer tracks to add to playlist'
-              : 'Search Deezer tracks',
+            hintText: _isAddingToPlaylist ? 'Search Deezer tracks to add to playlist' : 'Search Deezer tracks',
             prefixIcon: Icons.search,
             onChanged: _onSearchTextChanged, 
           ),
         ),
         const SizedBox(width: 8),
         AppWidgets.primaryButton(
+          context: context,
           text: 'Search',
           onPressed: _searchController.text.isNotEmpty ? _performSearch : null,
           isLoading: _isSearching,
@@ -427,19 +427,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('${tracks.length} results', style: const TextStyle(color: Colors.grey)),
-                SortButton(
-                  currentSort: _searchSortOption,
-                  onPressed: _showSearchSortOptions,
-                  showLabel: true,
-                ),
+                SortButton(currentSort: _searchSortOption, onPressed: _showSearchSortOptions, showLabel: true),
               ],
             ),
           ),
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.only(bottom: 16), 
-            itemCount: sortedTracks.length, 
-            itemBuilder: (ctx, i) => _buildTrackItem(sortedTracks[i])
+            itemCount: sortedTracks.length, itemBuilder: (ctx, i) => _buildTrackItem(sortedTracks[i])
           ),
         ),
       ],
@@ -450,6 +445,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     final isInPlaylist = _isTrackInPlaylist(track.id);
     
     return AppWidgets.trackCard(
+      context: context,
       track: track,
       isSelected: _selectedTracks.contains(track.id),
       isInPlaylist: isInPlaylist,

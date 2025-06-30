@@ -12,6 +12,7 @@ import '../models/api_models.dart';
 
 class ProfileProvider extends BaseProvider { 
   final ApiService _apiService;  
+  
   String? _userId;
   String? _username;
   String? _userEmail;
@@ -34,7 +35,6 @@ class ProfileProvider extends BaseProvider {
   List<String>? _hobbies;
   String? _friendInfo;
   List<String>? _musicPreferences;
-
   String? get userId => _userId;
   String? get username => _username;
   String? get userEmail => _userEmail;
@@ -182,7 +182,8 @@ class ProfileProvider extends BaseProvider {
     String? postalCode,
     String? dob,
     List<String>? hobbies,
-    String? friendInfo, List<String>? musicPreferences,
+    String? friendInfo, 
+    List<String>? musicPreferences,
   }) async {
     return await executeBool(
       () async {
@@ -202,7 +203,9 @@ class ProfileProvider extends BaseProvider {
         if (hobbies != null) updateData['hobbies'] = hobbies;
         if (friendInfo != null) updateData['friend_info'] = friendInfo;
         if (musicPreferences != null) updateData['music_preferences'] = musicPreferences;
+        
         await _apiService.updateProfile(token!, updateData);
+        
         if (avatarBase64 != null) _avatar = avatarBase64;
         if (gender != null) _gender = gender;
         if (location != null) _location = location;
@@ -221,10 +224,6 @@ class ProfileProvider extends BaseProvider {
       successMessage: 'Profile updated successfully',
       errorMessage: 'Failed to update profile',
     );
-  }
-
-  Future<bool> updatePersonalInfo(String? token, String? firstName, String? lastName, String? phone, String? street, String? country, String? postalCode) async {
-    return updateProfile(token, firstName: firstName, lastName: lastName, phone: phone, street: street, country: country, postalCode: postalCode);
   }
 
   Future<bool> updateFriendInfo(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {

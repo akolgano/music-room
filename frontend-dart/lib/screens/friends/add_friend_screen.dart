@@ -38,16 +38,16 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           ),
           const SizedBox(height: 16),
           AppTheme.buildFormCard(
-            title: 'Add Friend by User ID',
-            titleIcon: Icons.person_add,
+            title: 'Add Friend by User ID', titleIcon: Icons.person_add,
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
                   AppWidgets.textField(
+                    context: context,
                     controller: _userIdController, 
                     labelText: 'Friend\'s User ID',
-                    hintText: 'e.g., 12345',
+                    hintText: 'e.g., 12',
                     prefixIcon: Icons.person_search,
                     validator: (value) {
                       if (value?.isEmpty ?? true) return 'Please enter a user ID';
@@ -61,6 +61,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: AppWidgets.primaryButton(
+                      context: context,
                       text: 'Send Friend Request',
                       onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null, icon: Icons.send,
                     ),

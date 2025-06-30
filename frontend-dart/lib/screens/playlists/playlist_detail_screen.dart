@@ -32,15 +32,12 @@ class PlaylistDetailScreen extends StatefulWidget {
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   final _webSocketService = WebSocketService();
   late final ApiService _apiService;
-  
   final Set<String> _fetchingTrackDetails = {};
   final Set<Completer<void>> _pendingOperations = {};
-  
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
   List<String> _notifications = [];
   bool _isOwner = false;
-  bool _showVotingMode = false;
   VotingProvider? _votingProvider;
 
   @override
@@ -75,21 +72,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   List<Widget> get actions => [
-    Consumer<VotingProvider>(
-      builder: (context, votingProvider, _) {
-        if (votingProvider.canVote) {
-          return IconButton(
-            icon: Icon(
-              _showVotingMode ? Icons.music_note : Icons.how_to_vote,
-              color: _showVotingMode ? AppTheme.primary : Colors.white,
-            ),
-            onPressed: _toggleVotingMode, 
-            tooltip: 'Show Voting',
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    ),
     if (_isOwner)
       IconButton(
         icon: const Icon(Icons.settings), 
@@ -126,46 +108,38 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Future<void> _loadData() async {
     if (!mounted) return;
-    
     try {
       print('Loading playlist data with ID: ${widget.playlistId}');
       final musicProvider = getProvider<MusicProvider>();
       final votingProvider = getProvider<VotingProvider>();
-      
       final playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
-      
       if (!mounted) return;
-      
       if (playlist != null) {
         setState(() {
           _playlist = playlist;
           _isOwner = _playlist!.creator == auth.username;
         });
-        
         await Future.wait([
           musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!)
         ]);
-        
         if (!mounted) return;
-        
         votingProvider.setVotingPermission(true);
         setState(() => _tracks = musicProvider.playlistTracks);
         votingProvider.initializeTrackPoints(_tracks);
         _initializeVotingData(votingProvider); 
-        
         _startBatchTrackDetailsFetch();
-        
         if (_webSocketService.currentPlaylistId != widget.playlistId) {
           await _webSocketService.connectToPlaylist(widget.playlistId, auth.userId!, auth.token!);
         }
-        
         print('Playlist data loaded successfully');
       } else {
         if (mounted) {
           showError('Failed to load playlist data');
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('ERROR loading playlist data: $e');
+      print('Stack trace: $stackTrace');
       if (mounted) {
         showError('Failed to load playlist details: $e');
       }
@@ -190,9 +164,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           allowedRadiusMeters: null,
         );
         await _apiService.updatePlaylistLicense(widget.playlistId, 'Token ${auth.token!}', request);
-        if (mounted) {
-          await _loadData();
-        }
+        if (mounted) await _loadData();
       },
       successMessage: 'Voting enabled for all users!',
       errorMessage: 'Failed to enable voting',
@@ -206,23 +178,17 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         !mounted) {
       return;
     }
-
     print('Fetching track details for Deezer ID: $deezerTrackId');
     _fetchingTrackDetails.add(deezerTrackId);
-    
     final completer = Completer<void>();
     _pendingOperations.add(completer);
-
     try {
       final trackDetails = await _apiService.getDeezerTrack(deezerTrackId, auth.token!);
-      
       if (!mounted || completer.isCompleted) {
         return;
       }
-      
       if (trackDetails != null) {
         print('Successfully fetched track details: ${trackDetails.name}');
-        
         setState(() {
           final trackIndex = _tracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
           if (trackIndex != -1) {
@@ -230,11 +196,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               trackId: playlistTrack.trackId, 
               name: playlistTrack.name, 
               position: playlistTrack.position, 
-              track: trackDetails
+              points: playlistTrack.points, track: trackDetails
             );
           }
         });
-        
         if (mounted) {
           final musicProvider = getProvider<MusicProvider>();
           final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
@@ -244,7 +209,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               trackId: playlistTrack.trackId, 
               name: playlistTrack.name, 
               position: playlistTrack.position, 
-              track: trackDetails
+              points: playlistTrack.points, track: trackDetails
             );
             musicProvider.playlistTracks.clear();
             musicProvider.playlistTracks.addAll(providerTracks);
@@ -252,7 +217,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           }
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('ERROR fetching track details for $deezerTrackId: $e');
+      print('Stack trace: $stackTrace');
       if (mounted) {
         print('Failed to fetch track details for $deezerTrackId: $e');
       }
@@ -261,10 +228,223 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         _fetchingTrackDetails.remove(deezerTrackId);
         _pendingOperations.remove(completer);
       }
-      
       if (!completer.isCompleted) {
         completer.complete();
       }
+    }
+  }
+
+  String _generateUniqueKey(PlaylistTrack playlistTrack, int index) {
+    final trackId = playlistTrack.trackId ?? 'unknown';
+    final trackName = playlistTrack.track?.name ?? playlistTrack.name ?? 'unknown';
+    final position = playlistTrack.position;
+    final deezerTrackId = playlistTrack.track?.deezerTrackId ?? 'none';
+    
+    final keyString = 'track_${trackId}_${position}_${index}_${deezerTrackId}_${trackName.hashCode}_${DateTime.now().millisecondsSinceEpoch}';
+    print('Generated key for track at index $index: $keyString');
+    return keyString;
+  }
+
+  Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
+    final canReorder = currentSort.field == TrackSortField.position && _isOwner;
+    
+    print('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}');
+    
+    if (canReorder) {
+      print('Creating ReorderableListView with ${tracks.length} items');
+      
+      return ReorderableListView.builder(
+        shrinkWrap: true, 
+        physics: const NeverScrollableScrollPhysics(), 
+        itemCount: tracks.length,
+        onReorder: _onReorderTracks,
+        itemBuilder: (context, index) {
+          try {
+            final playlistTrack = tracks[index];
+            
+            final keyString = 'reorder_${playlistTrack.trackId}_${playlistTrack.position}_$index';
+            final uniqueKey = ValueKey(keyString);
+            
+            print('Building reorderable item $index with key: $keyString');
+            
+            final widget = _buildTrackItem(playlistTrack, index, key: uniqueKey);
+            
+            return KeyedSubtree(
+              key: uniqueKey,
+              child: widget,
+            );
+          } catch (e, stackTrace) {
+            print('ERROR building reorderable track item at index $index: $e');
+            print('Stack trace: $stackTrace');
+            
+            return Container(
+              key: ValueKey('error_$index'),
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Error loading track at position $index',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
+        },
+      );
+    } else {
+      return ListView.builder(
+        shrinkWrap: true, 
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: tracks.length,
+        itemBuilder: (context, index) {
+          try {
+            final playlistTrack = tracks[index];
+            return _buildTrackItem(playlistTrack, index);
+          } catch (e, stackTrace) {
+            print('ERROR building track item at index $index: $e');
+            print('Stack trace: $stackTrace');
+            
+            return Container(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Error loading track at position $index',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
+        },
+      );
+    }
+  }
+
+  Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
+    try {
+      final track = playlistTrack.track;
+      
+      print('Building track item for index $index, trackId: ${playlistTrack.trackId}, key: $key');
+      
+      if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails && mounted) {
+        _fetchTrackDetailsIfNeeded(playlistTrack);
+      }
+
+      if (track?.deezerTrackId != null && 
+          _fetchingTrackDetails.contains(track!.deezerTrackId) && 
+          (track.artist.isEmpty || track.album.isEmpty)) {
+        
+        print('Showing loading state for track at index $index');
+        
+        return Container(
+          key: key, 
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppTheme.surface, 
+            borderRadius: BorderRadius.circular(12)
+          ),
+          child: ListTile(
+            leading: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.3), 
+                borderRadius: BorderRadius.circular(8)
+              ),
+              child: const Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(Icons.music_note, color: Colors.white),
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
+                  ),
+                ],
+              ),
+            ),
+            title: Text(
+              track?.name ?? playlistTrack.name,
+              style: const TextStyle(color: Colors.white),
+            ),
+            subtitle: const Text(
+              'Loading track details...',
+              style: TextStyle(color: Colors.grey),
+            ),
+            trailing: _buildTrackActions(index, playlistTrack),
+          ),
+        );
+      }
+
+      if (track != null) {
+        print('Showing normal track card for index $index');
+        
+        return AppWidgets.playlistTrackCard(
+          key: key, 
+          playlistTrack: playlistTrack,
+          onTap: () => _playTrackAt(index),
+          onPlay: () => _playTrackAt(index),
+          onRemove: _isOwner ? () => _removeTrack(track.id) : null,
+          showVotingControls: true, 
+          showPoints: true, 
+          playlistId: widget.playlistId,
+          trackIndex: index, 
+        );
+      }
+
+      print('Showing error state for track at index $index');
+      
+      return Container(
+        key: key, 
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ListTile(
+          leading: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.3), 
+              borderRadius: BorderRadius.circular(8)
+            ),
+            child: const Icon(Icons.music_off, color: Colors.white),
+          ),
+          title: Text(playlistTrack.name, style: const TextStyle(color: Colors.white)),
+          subtitle: const Text(
+            'Track details unavailable',
+            style: TextStyle(color: Colors.grey),
+          ),
+          trailing: _buildTrackActions(index, playlistTrack),
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('ERROR in _buildTrackItem for index $index: $e');
+      print('Stack trace: $stackTrace');
+      
+      return Container(
+        key: key,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Error loading track at position $index',
+              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Track ID: ${playlistTrack.trackId}',
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            Text(
+              'Error: $e',
+              style: const TextStyle(color: Colors.red, fontSize: 10),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -341,7 +521,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.poll, color: AppTheme.primary, size: 20), SizedBox(width: 8),
+                          Icon(Icons.poll, color: AppTheme.primary, size: 20), 
+                          SizedBox(width: 8),
                           Text(
                             'Track Ratings',
                             style: TextStyle(
@@ -366,16 +547,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 ),
               ),
             ],
-            if (_showVotingMode && trackVotes.isNotEmpty) VotingStatsCard(trackVotes: trackVotes),
-            if (votingProvider.canVote && !_showVotingMode)
-              AppWidgets.votingInfoBanner(
-                title: 'Voting Available',
-                message: 'Tap the voting icon to rate tracks in this playlist',
-                icon: Icons.how_to_vote,
-                color: Colors.blue,
-                actionText: 'Show Voting',
-                onAction: _toggleVotingMode,
-              ),
+            if (trackVotes.isNotEmpty) VotingStatsCard(trackVotes: trackVotes),
           ],
         );
       },
@@ -387,11 +559,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       children: [
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
@@ -431,7 +599,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             _buildPlaylistActions(),
             const SizedBox(height: 16),
             _buildVotingSection(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), 
             _buildTracksSection(),
           ],
         ),
@@ -439,203 +607,33 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
-  Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
-    final canReorder = currentSort.field == TrackSortField.position && _isOwner && !_showVotingMode;
-    if (canReorder) {
-      return ReorderableListView.builder(
-        shrinkWrap: true, 
-        physics: const NeverScrollableScrollPhysics(), 
-        itemCount: tracks.length,
-        onReorder: _onReorderTracks,
-        itemBuilder: (context, index) {
-          final playlistTrack = tracks[index];
-          return _buildTrackItem(playlistTrack, index, key: ValueKey(playlistTrack.trackId));
-        },
-      );
-    } else {
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: tracks.length,
-        itemBuilder: (context, index) {
-          final playlistTrack = tracks[index];
-          return _buildTrackItem(playlistTrack, index);
-        },
-      );
-    }
-  }
-
-  Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
-    final track = playlistTrack.track;
-    
-    if (track?.deezerTrackId != null && playlistTrack.needsTrackDetails && mounted) {
-      _fetchTrackDetailsIfNeeded(playlistTrack);
-    }
-
-    if (track?.deezerTrackId != null && 
-        _fetchingTrackDetails.contains(track!.deezerTrackId) && 
-        (track.artist.isEmpty || track.album.isEmpty)) {
-      return Container(
-        key: key,
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppTheme.surface, 
-          borderRadius: BorderRadius.circular(12)
-        ),
-        child: ListTile(
-          leading: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3), 
-              borderRadius: BorderRadius.circular(8)
-            ),
-            child: const Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(Icons.music_note, color: Colors.white),
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
-                ),
-              ],
-            ),
-          ),
-          title: Text(
-            track?.name ?? playlistTrack.name,
-            style: const TextStyle(color: Colors.white),
-          ),
-          subtitle: const Text(
-            'Loading track details...',
-            style: TextStyle(color: Colors.grey),
-          ),
-          trailing: _buildTrackActions(index, playlistTrack),
-        ),
-      );
-    }
-
-    if (track != null) {
-      return AppWidgets.playlistTrackCard(
-        key: key,
-        playlistTrack: playlistTrack,
-        onTap: () => _playTrackAt(index),
-        onPlay: () => _playTrackAt(index),
-        onRemove: _isOwner ? () => _removeTrack(track.id) : null,
-        showVotingControls: _showVotingMode,
-        showPoints: true, 
-        playlistId: widget.playlistId,
-        trackIndex: index, 
-      );
-    }
-
-    return Container(
-      key: key,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.3), 
-            borderRadius: BorderRadius.circular(8)
-          ),
-          child: const Icon(Icons.music_off, color: Colors.white),
-        ),
-        title: Text(playlistTrack.name, style: const TextStyle(color: Colors.white)),
-        subtitle: const Text(
-          'Track details unavailable',
-          style: TextStyle(color: Colors.grey),
-        ),
-        trailing: _buildTrackActions(index, playlistTrack),
-      ),
-    );
-  }
-
   Future<void> _refreshAfterVoting() async {
     if (!mounted) return;
-    
     try {
       final musicProvider = getProvider<MusicProvider>();
       final votingProvider = getProvider<VotingProvider>();
       await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
-      
       if (mounted) {
         setState(() {
           _tracks = musicProvider.playlistTracks;
         });
         votingProvider.initializeTrackPoints(_tracks);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('ERROR refreshing after voting: $e');
+      print('Stack trace: $stackTrace');
     }
-  }
-
-  void _toggleVotingMode() {
-    if (!mounted) return;
-    
-    setState(() => _showVotingMode = !_showVotingMode);
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        if (_showVotingMode) {
-          showInfo('Voting mode enabled');
-        } else {
-          showInfo('Voting mode disabled');
-        }
-      }
-    });
   }
 
   @override
   Widget? get floatingActionButton {
-    return Consumer<VotingProvider>(
-      builder: (context, votingProvider, _) {
-        final List<Widget> actions = [];
-        if (votingProvider.canVote) {
-          actions.add(
-            FloatingActionButton(
-              heroTag: "voting_toggle",
-              onPressed: _toggleVotingMode,
-              backgroundColor: _showVotingMode ? AppTheme.primary : AppTheme.surface,
-              foregroundColor: _showVotingMode ? Colors.black : Colors.white,
-              child: Icon(_showVotingMode ? Icons.how_to_vote : Icons.how_to_vote_outlined),
-              tooltip: _showVotingMode ? 'Hide Voting' : 'Show Voting',
-              mini: true,
-            ),
-          );
-        }
-        
-        if (_isOwner) {
-          if (actions.isNotEmpty) actions.add(const SizedBox(height: 8));
-          actions.add(
-            FloatingActionButton.extended(
-              heroTag: "add_songs",
-              onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.black,
-              icon: const Icon(Icons.add),
-              label: const Text('Add Songs'),
-            ),
-          );
-        }
-        
-        if (actions.isEmpty) return const SizedBox.shrink();
-        if (actions.length == 1) {
-          return actions.first;
-        }
-        
-        return ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 140),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: actions,
-          ),
-        );
-      },
+    if (!_isOwner) return null;
+    return FloatingActionButton.extended(
+      onPressed: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
+      backgroundColor: AppTheme.primary,
+      foregroundColor: Colors.black,
+      icon: const Icon(Icons.add),
+      label: const Text('Add Songs'),
     );
   }
 
@@ -881,91 +879,125 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       builder: (context, musicProvider, _) {
         final sortedTracks = musicProvider.sortedPlaylistTracks;
         final currentSort = musicProvider.currentSortOption;
-        return Card(
-          color: AppTheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.queue_music, color: AppTheme.primary, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Tracks',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+        
+        try {
+          return Card(
+            color: AppTheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.queue_music, color: AppTheme.primary, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Tracks',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          '${sortedTracks.length} tracks',
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        const SizedBox(width: 8),
-                        SortButton(
-                          currentSort: currentSort,
-                          onPressed: _showSortOptions,
-                          showLabel: false,
-                        ),
-                      ],
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            '${sortedTracks.length} tracks',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                          const SizedBox(width: 8),
+                          SortButton(
+                            currentSort: currentSort,
+                            onPressed: _showSortOptions,
+                            showLabel: false,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (currentSort.field != TrackSortField.position) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(currentSort.icon, size: 14, color: AppTheme.primary), 
+                          const SizedBox(width: 4),
+                          Text(
+                            'Sorted by ${currentSort.displayName}',
+                            style: const TextStyle(
+                              color: AppTheme.primary, 
+                              fontSize: 12, 
+                              fontWeight: FontWeight.w500
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          GestureDetector(
+                            onTap: () {
+                              musicProvider.resetToCustomOrder();
+                              if (mounted) {
+                                showInfo('Restored to custom order');
+                              }
+                            },
+                            child: const Icon(Icons.close, size: 14, color: AppTheme.primary),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                ),
-                if (currentSort.field != TrackSortField.position) ...[
+                  const SizedBox(height: 16),
+                  if (sortedTracks.isEmpty) 
+                    _buildEmptyTracksState()
+                  else 
+                    _buildTracksList(sortedTracks, currentSort),
+                ],
+              ),
+            ),
+          );
+        } catch (e, stackTrace) {
+          print('ERROR building tracks section: $e');
+          print('Stack trace: $stackTrace');
+          
+          return Card(
+            color: AppTheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Icon(Icons.error, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Error loading tracks',
+                    style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(currentSort.icon, size: 14, color: AppTheme.primary), 
-                        const SizedBox(width: 4),
-                        Text(
-                          'Sorted by ${currentSort.displayName}',
-                          style: const TextStyle(
-                            color: AppTheme.primary, 
-                            fontSize: 12, 
-                            fontWeight: FontWeight.w500
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () {
-                            musicProvider.resetToCustomOrder();
-                            if (mounted) {
-                              showInfo('Restored to custom order');
-                            }
-                          },
-                          child: const Icon(Icons.close, size: 14, color: AppTheme.primary),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    'Error: $e',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadData,
+                    child: const Text('Retry'),
                   ),
                 ],
-                const SizedBox(height: 16),
-                if (sortedTracks.isEmpty) 
-                  _buildEmptyTracksState()
-                else 
-                  _buildTracksList(sortedTracks, currentSort),
-              ],
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
     );
   }
@@ -1014,7 +1046,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(icon: const Icon(Icons.play_arrow, color: AppTheme.primary), onPressed: () => _playTrackAt(index)),
+        IconButton(
+          icon: const Icon(Icons.play_arrow, color: AppTheme.primary), 
+          onPressed: () => _playTrackAt(index)
+        ),
         if (_isOwner)
           IconButton(
             icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
@@ -1028,31 +1063,47 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   void _onReorderTracks(int oldIndex, int newIndex) {
     if (!mounted) return;
     
-    setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
-      final musicProvider = getProvider<MusicProvider>();
-      final tracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
-      final item = tracks.removeAt(oldIndex);
-      tracks.insert(newIndex, item);
-      for (int i = 0; i < tracks.length; i++) {
-        tracks[i] = PlaylistTrack(
-          trackId: tracks[i].trackId, 
-          name: tracks[i].name, 
-          position: i, 
-          track: tracks[i].track
-        );
+    print('Reordering tracks: oldIndex=$oldIndex, newIndex=$newIndex');
+    
+    try {
+      setState(() {
+        if (newIndex > oldIndex) newIndex -= 1;
+        final musicProvider = getProvider<MusicProvider>();
+        final tracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
+        final item = tracks.removeAt(oldIndex);
+        tracks.insert(newIndex, item);
+        for (int i = 0; i < tracks.length; i++) {
+          tracks[i] = PlaylistTrack(
+            trackId: tracks[i].trackId, 
+            name: tracks[i].name, 
+            position: i, 
+            track: tracks[i].track
+          );
+        }
+        _tracks = tracks;
+      });
+      _updateTrackOrder(oldIndex, newIndex);
+    } catch (e, stackTrace) {
+      print('ERROR reordering tracks: $e');
+      print('Stack trace: $stackTrace');
+      if (mounted) {
+        showError('Failed to reorder tracks: $e');
       }
-    });
-    _updateTrackOrder(oldIndex, newIndex);
+    }
   }
 
   Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
     try {
       final musicProvider = getProvider<MusicProvider>();
-      await musicProvider.moveTrackInPlaylist(playlistId: widget.playlistId, rangeStart: oldIndex, insertBefore: newIndex,
+      await musicProvider.moveTrackInPlaylist(
+        playlistId: widget.playlistId, 
+        rangeStart: oldIndex, 
+        insertBefore: newIndex,
         token: auth.token!,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('ERROR updating track order: $e');
+      print('Stack trace: $stackTrace');
       if (mounted) {
         showError('Failed to update track order: $e');
         await _loadData(); 
@@ -1069,7 +1120,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         musicProvider.setSortOption(sortOption);
         final isCustomOrder = sortOption.field == TrackSortField.position;
         if (mounted) {
-          showInfo(isCustomOrder ? 'Tracks restored to custom order' : 'Tracks sorted by ${sortOption.displayName}');
+          showInfo(isCustomOrder 
+            ? 'Tracks restored to custom order' 
+            : 'Tracks sorted by ${sortOption.displayName}'
+          );
         }
       },
     );
@@ -1088,16 +1142,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Future<void> _startBatchTrackDetailsFetch() async {
     if (!mounted) return;
-    
     final tracksNeedingDetails = _tracks.where((pt) => pt.needsTrackDetails).toList();
     if (tracksNeedingDetails.isEmpty) return;
-
     for (int i = 0; i < tracksNeedingDetails.length; i++) {
       if (!mounted) break; 
-      
       final playlistTrack = tracksNeedingDetails[i];
       _fetchTrackDetailsIfNeeded(playlistTrack);
-      
       if (i < tracksNeedingDetails.length - 1 && mounted) {
         await Future.delayed(const Duration(milliseconds: 200));
       }
@@ -1106,39 +1156,28 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Future<void> _playPlaylist() async {
     if (_tracks.isEmpty) {
-      if (mounted) {
-        showInfo('No tracks to play');
-      }
+      if (mounted) showInfo('No tracks to play');
       return;
     }
     await _playTrackAt(0);
-    if (mounted) {
-      showInfo('Playing "${_playlist!.name}"');
-    }
+    if (mounted) showInfo('Playing "${_playlist!.name}"');
   }
 
   Future<void> _shufflePlaylist() async {
     if (_tracks.isEmpty) {
-      if (mounted) {
-        showInfo('No tracks to shuffle');
-      }
+      if (mounted) showInfo('No tracks to shuffle');
       return;
     }
-    if (mounted) {
-      showInfo('Shuffling "${_playlist!.name}"');
-    }
+    if (mounted) showInfo('Shuffling "${_playlist!.name}"');
   }
 
   Future<void> _playTrackAt(int index) async {
     if (index < 0 || index >= _tracks.length || !mounted) return;
-    
     final playlistTrack = _tracks[index];
     final track = playlistTrack.track;
-    
     try {
       String? previewUrl;
       Track trackToPlay;
-      
       if (track != null) {
         trackToPlay = track;
         previewUrl = track.previewUrl;
@@ -1149,9 +1188,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       } else {
         trackToPlay = Track(id: playlistTrack.trackId, name: playlistTrack.name, artist: 'Unknown Artist', album: '', url: '');
       }
-      
       if (!mounted) return;
-      
       if (previewUrl != null && previewUrl.isNotEmpty) {
         final playerService = getProvider<MusicPlayerService>();
         await playerService.playTrack(trackToPlay, previewUrl);
@@ -1159,25 +1196,25 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       } else {
         showError('No preview available for "${playlistTrack.name}"');
       }
-    } catch (e) {
-      if (mounted) {
-        showError('Failed to play track: $e');
-      }
+    } catch (e, stackTrace) {
+      print('ERROR playing track at index $index: $e');
+      print('Stack trace: $stackTrace');
+      if (mounted) showError('Failed to play track: $e');
     }
   }
 
   Future<void> _removeTrack(String trackId) async {
     if (!_isOwner || !mounted) return;
-    
-    final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
+    final confirmed = await showConfirmDialog(
+      'Remove Track', 
+      'Remove this track from the playlist?'
+    );
     if (confirmed && mounted) {
       await runAsyncAction(
         () async {
           final musicProvider = getProvider<MusicProvider>();
           await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId, trackId: trackId, token: auth.token!);
-          if (mounted) {
-            await _loadData(); 
-          }
+          if (mounted) await _loadData(); 
         },
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',
@@ -1186,8 +1223,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   void _sharePlaylist() {
-    if (_playlist != null && mounted) {
-      navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
-    }
+    if (_playlist != null && mounted) navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
   }
 }

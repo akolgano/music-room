@@ -52,6 +52,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
           children: [
             if (!_otpSent) ...[
               AppWidgets.textField(
+                context: context,
                 controller: _emailController,
                 labelText: 'Email',
                 prefixIcon: Icons.email,
@@ -59,6 +60,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
               ),
               const SizedBox(height: 16),
               AppWidgets.textField(
+                context: context,
                 controller: _usernameController,
                 labelText: 'Username',
                 prefixIcon: Icons.person,
@@ -66,6 +68,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
               ),
               const SizedBox(height: 16),
               AppWidgets.textField(
+                context: context,
                 controller: _passwordController,
                 labelText: 'Password',
                 prefixIcon: Icons.lock,
@@ -74,6 +77,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
               ),
               const SizedBox(height: 24),
               AppWidgets.primaryButton(
+                context: context,
                 text: 'Send Verification Code',
                 onPressed: _isLoading ? null : _sendOtp,
                 isLoading: _isLoading,
@@ -87,6 +91,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
               ),
               const SizedBox(height: 16),
               AppWidgets.textField(
+                context: context,
                 controller: _otpController,
                 labelText: 'Verification Code',
                 prefixIcon: Icons.lock,
@@ -103,9 +108,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                     onPressed: _canResendOtp ? _sendOtp : null,
                     child: Text(
                       _canResendOtp ? 'Resend Code' : 'Resend in $_resendCountdown s',
-                      style: TextStyle(
-                        color: _canResendOtp ? AppTheme.primary : Colors.grey,
-                      ),
+                      style: TextStyle(color: _canResendOtp ? AppTheme.primary : Colors.grey),
                     ),
                   ),
                   const Spacer(),
@@ -121,6 +124,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
               ),
               const SizedBox(height: 24),
               AppWidgets.primaryButton(
+                context: context,
                 text: 'Create Account',
                 onPressed: _isLoading ? null : _signup,
                 isLoading: _isLoading,
@@ -141,7 +145,6 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.sendSignupEmailOtp(_emailController.text);
-      
       if (success) {
         setState(() {
           _otpSent = true;

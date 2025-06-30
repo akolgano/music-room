@@ -55,9 +55,13 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
             children: [
-              _buildHeader(), const SizedBox(height: 32),
-              _buildForm(), const SizedBox(height: 24),
-              _buildSocialButtons(), const SizedBox(height: 16), _buildModeToggle(),
+              _buildHeader(), 
+              const SizedBox(height: 32),
+              _buildForm(), 
+              const SizedBox(height: 24),
+              _buildSocialButtons(), 
+              const SizedBox(height: 16), 
+              _buildModeToggle(),
             ],
           ),
         ),
@@ -134,6 +138,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
       child: Column(
         children: [
           AppWidgets.textField(
+            context: context,
             controller: _usernameController, 
             labelText: 'Username', 
             prefixIcon: Icons.person, 
@@ -142,6 +147,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           if (!_isLogin) ...[
             const SizedBox(height: 16),
             AppWidgets.textField(
+              context: context,
               controller: _emailController,
               labelText: 'Email',
               prefixIcon: Icons.email,
@@ -150,6 +156,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           ],
           const SizedBox(height: 16),
           AppWidgets.textField(
+            context: context,
             controller: _passwordController,
             labelText: 'Password',
             prefixIcon: Icons.lock,
@@ -159,6 +166,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           const SizedBox(height: 24),
           Consumer<AuthProvider>(
             builder: (context, authProvider, _) => AppWidgets.primaryButton(
+              context: context,
               text: _isLogin ? 'Sign In' : 'Sign Up',
               onPressed: authProvider.isLoading ? null : _submit,
               isLoading: authProvider.isLoading,
@@ -172,23 +180,74 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   Widget _buildSocialButtons() => AppTheme.buildFormCard(
     title: 'Or continue with',
-    child: Row(
-      children: [
-        Expanded(child: _buildSocialButton('Google', Icons.g_mobiledata)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildSocialButton('Facebook', Icons.facebook)),
-      ],
+    child: Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        return Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: authProvider.isLoading ? null : () => _socialLogin('Google'),
+                icon: authProvider.isLoading 
+                  ? const SizedBox(
+                      width: 16, 
+                      height: 16, 
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2, 
+                        color: Colors.red,
+                      ),
+                    )
+                  : const Icon(Icons.g_mobiledata, color: Colors.red, size: 20),
+                label: Text(
+                  authProvider.isLoading ? 'Signing in...' : 'Continue with Google',
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  overflow: TextOverflow.visible,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.surface,
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.red),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: authProvider.isLoading ? null : () => _socialLogin('Facebook'),
+                icon: authProvider.isLoading 
+                  ? const SizedBox(
+                      width: 16, 
+                      height: 16, 
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2, 
+                        color: Colors.blue,
+                      ),
+                    )
+                  : const Icon(Icons.facebook, color: Colors.blue, size: 20),
+                label: Text(
+                  authProvider.isLoading ? 'Signing in...' : 'Continue with Facebook',
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  overflow: TextOverflow.visible,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.surface,
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.blue),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 2,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     ),
   );
-
-  Widget _buildSocialButton(String provider, IconData icon) => 
-      Consumer<AuthProvider>(
-        builder: (context, authProvider, _) => AppWidgets.secondaryButton(
-          text: provider,
-          icon: icon,
-          onPressed: authProvider.isLoading ? null : () => _socialLogin(provider),
-        ),
-      );
 
   Widget _buildModeToggle() => TextButton(
     onPressed: () {
@@ -209,8 +268,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         style: const TextStyle(color: AppTheme.textSecondary),
         children: [
           TextSpan(text: _isLogin ? 'Don\'t have an account? ' : 'Already have an account? '),
-          TextSpan(
-            text: _isLogin ? 'Sign Up' : 'Sign In',
+          TextSpan(text: _isLogin ? 'Sign Up' : 'Sign In',
             style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
           ),
         ],
@@ -243,7 +301,6 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
       () async {
         print('Starting $provider login process...');
         final authProvider = getProvider<AuthProvider>();
-        
         if (provider == 'Google') {
           print('Checking Google Sign-In initialization...');
           if (!SocialLoginUtils.isInitialized) {
@@ -255,7 +312,6 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             throw Exception('Google Sign-In is not available. Please check your configuration.');
           print('Google Sign-In instance is available, proceeding...');
         }
-
         bool success;
         if (provider == 'Google') success = await authProvider.googleLoginApp();
         else success = await authProvider.facebookLogin();

@@ -81,6 +81,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       child: Column(
         children: [
           AppWidgets.textField(
+            context: context,
             controller: _nameController,
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
@@ -88,6 +89,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           ),
           const SizedBox(height: 16),
           AppWidgets.textField(
+            context: context,
             controller: _descriptionController,
             labelText: 'Description (optional)',
             prefixIcon: Icons.description,
@@ -106,6 +108,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           ),
           const SizedBox(height: 24),
           AppWidgets.primaryButton(
+            context: context,
             text: _isEditMode ? 'Save Changes' : 'Create Playlist',
             icon: _isEditMode ? Icons.save : Icons.add,
             onPressed: _isLoading ? null : (_isEditMode ? _saveChanges : _createPlaylist),

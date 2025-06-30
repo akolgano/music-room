@@ -58,12 +58,16 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             const SizedBox(height: 16),
                           ],
                           if (profileProvider.hasSuccess) ...[
-                            AppWidgets.successBanner(
+                            AppWidgets.infoBanner(
+                              title: 'Success',
                               message: profileProvider.successMessage ?? 'Success',
+                              icon: Icons.check_circle,
+                              color: Colors.green,
                             ),
                             const SizedBox(height: 16),
                           ],
                           AppWidgets.textField(
+                            context: context,
                             controller: _currentPasswordController,
                             labelText: 'Current Password',
                             obscureText: true,
@@ -72,6 +76,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                           ),
                           const SizedBox(height: 24),
                           AppWidgets.textField(
+                            context: context,
                             controller: _newPasswordController,
                             labelText: 'New Password',
                             obscureText: true,
@@ -81,7 +86,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                           const SizedBox(height: 24),
                           profileProvider.isLoading
                             ? const CircularProgressIndicator(color: AppTheme.primary)
-                            : AppWidgets.primaryButton(text: 'Submit', onPressed: _submit),
+                            : AppWidgets.primaryButton(context: context, text: 'Submit', onPressed: _submit),
                           const SizedBox(height: 24),
                           TextButton(
                             onPressed: () => Navigator.pop(context),
