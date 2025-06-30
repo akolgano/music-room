@@ -238,8 +238,7 @@ class AppTheme {
       children: [
         Row(
           children: [
-            if (titleIcon != null) ...[
-              Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
+            if (titleIcon != null) ...[Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
               SizedBox(width: kIsWeb ? 8 : 8.w)
             ],
             Flexible(
@@ -312,8 +311,10 @@ class SocialLoginUtils {
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
+
     try {
       print('Initializing social login services...');
+
       final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
       if (kIsWeb && fbAppId != null) {
         await FacebookAuth.instance.webAndDesktopInitialize(
@@ -324,22 +325,30 @@ class SocialLoginUtils {
         );
         print('Facebook initialized for web');
       }
+
       final googleClientId = kIsWeb 
           ? dotenv.env['GOOGLE_CLIENT_ID_WEB']
           : dotenv.env['GOOGLE_CLIENT_ID_APP'];
-      if (googleClientId != null) {
+
+      if (googleClientId != null && googleClientId.isNotEmpty) {
         _googleSignIn = GoogleSignIn(
-          scopes: ['email', 'profile', 'openid'],
+          scopes: <String>[
+            'email',
+            'profile',
+            'openid',
+          ],
           clientId: googleClientId,
         );
         print('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...');
       } else {
         print('Warning: Google Client ID not found in environment variables');
       }
+
       _isInitialized = true;
       print('Social login initialization completed successfully');
     } catch (e) {
       print('Social login initialization error: $e');
+      rethrow;
     }
   }
 
@@ -348,10 +357,11 @@ class SocialLoginUtils {
 
   static Future<SocialLoginResult> loginWithFacebook() async {
     if (!_isInitialized) await initialize();
-    
+
     try {
       print('Attempting Facebook login...');
       final result = await FacebookAuth.instance.login();
+      
       if (result.status == LoginStatus.success) {
         final accessToken = result.accessToken?.tokenString;
         if (accessToken != null && accessToken.isNotEmpty) {
@@ -359,7 +369,7 @@ class SocialLoginUtils {
           return SocialLoginResult.success(accessToken, 'facebook');
         }
       }
-      
+
       print('Facebook login failed - no valid token received');
       return SocialLoginResult.error('Facebook login failed - no valid token received');
     } catch (e) {
@@ -373,7 +383,7 @@ class SocialLoginUtils {
       print('Google Sign-In not initialized, initializing now...');
       await initialize();
     }
-    
+
     if (_googleSignIn == null) {
       print('Google Sign-In instance is null after initialization');
       return SocialLoginResult.error('Google Sign-In not properly initialized. Please check your configuration.');
@@ -381,12 +391,14 @@ class SocialLoginUtils {
 
     try {
       await _googleSignIn!.signOut();
-      final user = await _googleSignIn!.signIn();
+      
+      final GoogleSignInAccount? user = await _googleSignIn!.signIn();
       
       if (user != null) {
         print('Google user signed in: ${user.email}');
-        final auth = await user.authentication;
+        final GoogleSignInAuthentication auth = await user.authentication;
         print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
+        
         final idToken = auth.idToken;
         if (idToken != null && idToken.isNotEmpty) {
           print('Google login successful with idToken');
@@ -396,7 +408,7 @@ class SocialLoginUtils {
         print('Google sign-in was cancelled by user');
         return SocialLoginResult.error('Google sign-in was cancelled');
       }
-      
+
       print('Google login failed - no valid token received');
       return SocialLoginResult.error('Google login failed - no valid token received');
     } catch (e) {
@@ -430,6 +442,7 @@ class SocialLoginButton extends StatelessWidget {
 
     IconData icon;
     Color color;
+
     if (isGoogle) {
       icon = Icons.g_mobiledata;
       color = Colors.red;
@@ -449,7 +462,10 @@ class SocialLoginButton extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(color)),
           ) 
         : Icon(icon, color: color, size: 20),
-      label: Text(isLoading ? 'Signing in...' : 'Continue with $provider', style: const TextStyle(fontWeight: FontWeight.w600)),
+      label: Text(
+        isLoading ? 'Signing in...' : 'Continue with $provider', 
+        style: const TextStyle(fontWeight: FontWeight.w600)
+      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.surface,
         foregroundColor: Colors.white,

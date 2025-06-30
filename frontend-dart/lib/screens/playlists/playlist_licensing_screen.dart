@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
+import '../../core/service_locator.dart'; 
 import '../../widgets/app_widgets.dart';
 import '../../models/api_models.dart';
 import '../../services/api_service.dart';
@@ -13,14 +14,17 @@ class PlaylistLicensingScreen extends StatefulWidget {
   final String playlistId;
   final String playlistName;
 
-  const PlaylistLicensingScreen({Key? key, required this.playlistId, required this.playlistName}) : super(key: key);
+  const PlaylistLicensingScreen({Key? key, 
+    required this.playlistId, 
+    required this.playlistName
+  }) : super(key: key);
 
   @override
   State<PlaylistLicensingScreen> createState() => _PlaylistLicensingScreenState();
 }
 
 class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> {
-  final _apiService = ApiService();
+  late final ApiService _apiService;
   
   String _licenseType = 'open';
   List<int> _invitedUsers = [];
@@ -38,6 +42,9 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   @override
   void initState() {
     super.initState();
+    
+    _apiService = getIt<ApiService>();
+    
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
 
@@ -127,7 +134,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     Color color,
   ) {
     final isSelected = _licenseType == value;
-    
     return GestureDetector(
       onTap: () => setState(() => _licenseType = value),
       child: Container(
@@ -267,7 +273,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
           ),
         ),
         const SizedBox(height: 16),
-        
         AppTheme.buildFormCard(
           title: 'Location Restrictions',
           titleIcon: Icons.location_on,
@@ -388,6 +393,8 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   Future<void> _loadData() async {
     await runAsyncAction(
       () async {
+        print('Loading playlist licensing data for ${widget.playlistId}');
+        
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.fetchFriends(auth.token!);
         setState(() {
@@ -399,6 +406,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             widget.playlistId,
             'Token ${auth.token!}',
           );
+          print('Loaded existing license settings: ${license.licenseType}');
           setState(() {
             _licenseType = license.licenseType;
             _invitedUsers = license.invitedUsers;
@@ -421,7 +429,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             _allowedRadiusMeters = license.allowedRadiusMeters;
           });
         } catch (e) {
-          print('Failed to load existing license: $e');
+          print('No existing license found, using defaults: $e');
         }
       },
       errorMessage: 'Failed to load playlist settings',
@@ -454,7 +462,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
         );
       },
     );
-    
     if (picked != null) {
       onTimeSelected(picked);
     }
@@ -470,16 +477,17 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
 
   Future<void> _saveSettings() async {
     setState(() => _isLoading = true);
-
+    
     try {
+      print('Saving playlist license settings: $_licenseType');
+      
       String? voteStartTimeStr;
       String? voteEndTimeStr;
-
+      
       if (_voteStartTime != null) {
         voteStartTimeStr = '${_voteStartTime!.hour.toString().padLeft(2, '0')}:'
             '${_voteStartTime!.minute.toString().padLeft(2, '0')}:00';
       }
-
       if (_voteEndTime != null) {
         voteEndTimeStr = '${_voteEndTime!.hour.toString().padLeft(2, '0')}:'
             '${_voteEndTime!.minute.toString().padLeft(2, '0')}:00';
@@ -496,7 +504,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
       );
 
       await _apiService.updatePlaylistLicense(widget.playlistId, 'Token ${auth.token!}', request);
-
+      
       showSuccess('Playlist access control updated successfully!');
       navigateBack();
     } catch (e) {

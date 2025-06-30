@@ -9,7 +9,7 @@ import '../services/track_sorting_service.dart';
 
 class MusicProvider extends BaseProvider {
   final MusicService _musicService = getIt<MusicService>();
-  
+
   List<Playlist> _playlists = [];
   List<Track> _searchResults = [];
   List<PlaylistTrack> _playlistTracks = [];
@@ -22,6 +22,7 @@ class MusicProvider extends BaseProvider {
 
   TrackSortOption _currentSortOption = TrackSortOption.defaultOptions.first;
   TrackSortOption get currentSortOption => _currentSortOption;
+
   List<PlaylistTrack> get sortedPlaylistTracks => 
       TrackSortingService.sortTracks(_playlistTracks, _currentSortOption);
 
@@ -43,7 +44,9 @@ class MusicProvider extends BaseProvider {
     if (result != null) {
       _playlists = result;
       _hasConnectionError = false;
-    } else _hasConnectionError = true;
+    } else {
+      _hasConnectionError = true;
+    }
   }
 
   Future<void> fetchPublicPlaylists(String token) async {
@@ -154,11 +157,9 @@ class MusicProvider extends BaseProvider {
   Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     try {
       final backendTrackId = Track.toBackendId(trackId);
-      print('Adding track to playlist: frontendId=$trackId, backendId=$backendTrackId');
       await _musicService.addTrackToPlaylist(playlistId, backendTrackId, token);
       return AddTrackResult(success: true, message: 'Track added successfully');
     } catch (e) {
-      print('Error adding track to playlist: $e');
       return AddTrackResult(success: false, message: e.toString());
     }
   }
@@ -188,6 +189,7 @@ class MusicProvider extends BaseProvider {
       if (onProgress != null) {
         onProgress(i + 1, trackIds.length);
       }
+      
       try {
         if (isTrackInPlaylist(trackIds[i])) {
           duplicateCount++;
@@ -199,12 +201,14 @@ class MusicProvider extends BaseProvider {
         failureCount++;
         errors.add(e.toString());
       }
+      
       if (i < trackIds.length - 1) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
     }
 
     await fetchPlaylistTracks(playlistId, token);
+    
     return BatchAddResult(
       totalTracks: trackIds.length,
       successCount: successCount,
@@ -235,12 +239,7 @@ class MusicProvider extends BaseProvider {
   }) async {
     await executeAsync(
       () => _musicService.moveTrackInPlaylist(
-        playlistId: playlistId,
-        rangeStart: rangeStart,
-        insertBefore: insertBefore,
-        rangeLength: rangeLength,
-        token: token,
-      ),
+        playlistId: playlistId, rangeStart: rangeStart, insertBefore: insertBefore, rangeLength: rangeLength, token: token),
       successMessage: 'Track order updated',
       errorMessage: 'Failed to update track order',
     );

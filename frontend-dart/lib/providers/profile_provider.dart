@@ -6,7 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import '../core/core.dart';
 import '../core/base_provider.dart'; 
 import '../models/api_models.dart';
@@ -59,7 +58,6 @@ class ProfileProvider extends BaseProvider {
   String? get friendInfo => _friendInfo;
   List<String>? get musicPreferences => _musicPreferences;
 
-  GoogleSignIn? googleSignIn;
   ProfileProvider() : _apiService = getIt<ApiService>();
 
   void resetValues() {
@@ -153,26 +151,14 @@ class ProfileProvider extends BaseProvider {
     );
   }
 
-  Future<bool> googleLinkWeb(String? token, GoogleSignInUserData? account) async {
-    return await executeBool(
-      () async {
-        var idToken = account?.idToken;
-        if (idToken == null) throw Exception("Google login failed!");
-        await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken, type: 'web'));
-      },
-      successMessage: 'Google account linked successfully',
-      errorMessage: 'Failed to link Google account',
-    );
-  }
-
   Future<bool> googleLinkApp(String? token) async {
     return await executeBool(
       () async {
         final googleSignIn = SocialLoginUtils.googleSignInInstance;
         if (googleSignIn == null) throw Exception("Google Sign-In not initialized");
-        final user = await googleSignIn.signIn();
+        final GoogleSignInAccount? user = await googleSignIn.signIn();
         if (user == null) throw Exception("Google login failed!");
-        final auth = await user.authentication;
+        final GoogleSignInAuthentication auth = await user.authentication;
         final idToken = auth.idToken;
         if (idToken == null) throw Exception("Google login failed!");
         await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken, type: 'app'));
@@ -196,8 +182,7 @@ class ProfileProvider extends BaseProvider {
     String? postalCode,
     String? dob,
     List<String>? hobbies,
-    String? friendInfo, 
-    List<String>? musicPreferences,
+    String? friendInfo, List<String>? musicPreferences,
   }) async {
     return await executeBool(
       () async {
@@ -248,5 +233,14 @@ class ProfileProvider extends BaseProvider {
 
   Future<bool> updateMusicPreferences(String? token, List<String>? musicPreferences) async {
     return updateProfile(token, musicPreferences: musicPreferences);
+  }
+
+  String? get avatarUrl {
+    if (_avatar?.isNotEmpty == true) {
+      if (_avatar!.startsWith('data:')) return _avatar;
+      else if (_avatar!.length > 100) return 'data:image/jpeg;base64,$_avatar';
+      else return _avatar;
+    }
+    return null;
   }
 }

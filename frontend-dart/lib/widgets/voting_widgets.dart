@@ -296,9 +296,7 @@ class TrackVotingControls extends StatelessWidget {
               ),
               Text(
                 userVote != null ? 'You voted' : 'Vote for this track',
-                style: TextStyle(
-                  color: userVote != null ? Colors.green : Colors.white70, fontSize: 12,
-                ),
+                style: TextStyle(color: userVote != null ? Colors.green : Colors.white70, fontSize: 12),
               ),
               VoteButton(
                 voteType: VoteType.downvote,
@@ -313,9 +311,7 @@ class TrackVotingControls extends StatelessWidget {
           if (!canVote || userVote != null) ...[
             const SizedBox(height: 8),
             Text(
-              userVote != null 
-                  ? 'You have voted' 
-                  : votingProvider.getVotingStatusMessage(),
+              userVote != null ? 'You have voted' : votingProvider.getVotingStatusMessage(),
               style: TextStyle(
                 color: userVote != null ? Colors.green : Colors.orange,
                 fontSize: 10,
@@ -345,7 +341,7 @@ class TrackVotingControls extends StatelessWidget {
   void _handleDownvote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex) async {
     if (trackIndex != null) {
       votingProvider.setUserVote(trackIndex, -1);
-      final success = await votingProvider.downvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
+      final success = await votingProvider.upvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
       if (success && onVoteSubmitted != null) onVoteSubmitted!();
     }
   }

@@ -22,6 +22,7 @@ class TrackSearchScreen extends StatefulWidget {
   final Track? initialTrack;
 
   const TrackSearchScreen({Key? key, this.playlistId, this.initialTrack}) : super(key: key);
+
   @override
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
@@ -44,11 +45,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   bool get _isLoading => _loadingState != LoadingState.idle;
   bool get _isSearching => _loadingState == LoadingState.searching; 
   bool get _isAddingTracks => _loadingState == LoadingState.addingTracks;
-
+  
   MusicPlayerService get _playerService => getProvider<MusicPlayerService>();
-
+  
   TrackSortOption _searchSortOption = const TrackSortOption(
-    field: TrackSortField.name, order: SortOrder.ascending, displayName: 'Track Name (A-Z)', icon: Icons.sort_by_alpha
+    field: TrackSortField.name, 
+    order: SortOrder.ascending, 
+    displayName: 'Track Name (A-Z)', 
+    icon: Icons.sort_by_alpha
   );
 
   @override
@@ -90,7 +94,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   List<Widget> _buildAppBarActions() {
     final actions = <Widget>[];
-
+    
     if (_isAddingToPlaylist && _isMultiSelectMode && _hasSelection) {
       actions.add(IconButton(
         icon: const Icon(Icons.add_circle, color: AppTheme.primary),
@@ -98,15 +102,23 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         tooltip: 'Add Selected (${_selectedTracks.length})',
       ));
     }
-
+    
     if (_isAddingToPlaylist) {
       actions.add(TextButton(
         onPressed: _isLoading ? null : _toggleMultiSelectMode,
-        child: Text(_isMultiSelectMode ? 'Cancel' : 'Multi-Select', style: const TextStyle(color: AppTheme.primary)),
+        child: Text(
+          _isMultiSelectMode ? 'Cancel' : 'Multi-Select', 
+          style: const TextStyle(color: AppTheme.primary)
+        ),
       ));
     }
-
-    actions.add(IconButton(icon: const Icon(Icons.clear), onPressed: _clearSearch, tooltip: 'Clear Search')); 
+    
+    actions.add(IconButton(
+      icon: const Icon(Icons.clear), 
+      onPressed: _clearSearch, 
+      tooltip: 'Clear Search'
+    )); 
+    
     return actions;
   }
 
@@ -115,11 +127,20 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withOpacity(0.1), 
+            blurRadius: 4, 
+            offset: const Offset(0, 2)
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [if (_isAddingToPlaylist) _buildPlaylistBanner(), _buildSearchRow(musicProvider)],
+        children: [
+          if (_isAddingToPlaylist) _buildPlaylistBanner(), 
+          _buildSearchRow(musicProvider)
+        ],
       ),
     );
   }
@@ -205,13 +226,15 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     if (!_isAddingToPlaylist || getProvider<MusicProvider>().searchResults.isEmpty) {
       return const SizedBox.shrink();
     }
-
+    
     final actions = [
       ('Select All', Icons.select_all, _selectAllTracks),
       ('Clear', Icons.clear_all, _clearSelection),
-      (_isMultiSelectMode ? 'Done' : 'Select', _isMultiSelectMode ? Icons.check_box : Icons.check_box_outline_blank, _toggleMultiSelectMode),
+      (_isMultiSelectMode ? 'Done' : 'Select', 
+       _isMultiSelectMode ? Icons.check_box : Icons.check_box_outline_blank, 
+       _toggleMultiSelectMode),
     ];
-
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -223,9 +246,17 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
               icon: Icon(action.$2, size: 16),
               label: Text(action.$1),
               style: ElevatedButton.styleFrom(
-                backgroundColor: action.$1.contains('Done') && _isMultiSelectMode ? AppTheme.primary : AppTheme.surface,
-                foregroundColor: action.$1.contains('Done') && _isMultiSelectMode ? Colors.black : Colors.white,
-                side: BorderSide(color: action.$1.contains('Done') && _isMultiSelectMode ? AppTheme.primary : Colors.white54),
+                backgroundColor: action.$1.contains('Done') && _isMultiSelectMode 
+                  ? AppTheme.primary 
+                  : AppTheme.surface,
+                foregroundColor: action.$1.contains('Done') && _isMultiSelectMode 
+                  ? Colors.black 
+                  : Colors.white,
+                side: BorderSide(
+                  color: action.$1.contains('Done') && _isMultiSelectMode 
+                    ? AppTheme.primary 
+                    : Colors.white54
+                ),
               ),
             ),
           ),
@@ -266,7 +297,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget? _buildFloatingActionButton() {
     if (!_isAddingToPlaylist) return null;
-
+    
     if (_isMultiSelectMode && _hasSelection) {
       return FloatingActionButton.extended(
         onPressed: _canAddTracks ? _addSelectedTracks : null,
@@ -282,7 +313,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
       );
     }
-
+    
     if (!_isMultiSelectMode) {
       return FloatingActionButton(
         onPressed: _toggleMultiSelectMode,
@@ -292,7 +323,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         tooltip: 'Select multiple tracks',
       );
     }
-
+    
     return null;
   }
 
@@ -305,12 +336,12 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   void _onSearchTextChanged(String value) {
     setState(() {}); 
     _searchTimer?.cancel();
-
+    
     if (value.trim().length < _minSearchLength) {
       getProvider<MusicProvider>().clearSearchResults();
       return;
     }
-
+    
     _searchTimer = Timer(_searchDelay, () {
       if (mounted && _searchController.text.trim().length >= _minSearchLength) {
         _performSearch(isAutoSearch: true);
@@ -320,7 +351,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _performSearch({bool isAutoSearch = false}) async {
     if (!mounted || _searchController.text.trim().length < _minSearchLength) return;
-
+    
     await runAsyncAction(
       () async {
         _setLoadingState(LoadingState.searching);
@@ -333,26 +364,26 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _addSelectedTracks() async {
     if (!_isAddingToPlaylist || !_hasSelection) return;
-
+    
     _setLoadingState(LoadingState.addingTracks);
     try {
-      print('Starting batch addition of ${_selectedTracks.length} tracks...');
       final result = await getProvider<MusicProvider>().addMultipleTracksToPlaylist(
         playlistId: widget.playlistId!,
         trackIds: _selectedTracks.toList(),
         token: auth.token!,
-        onProgress: (current, total) => print('Progress: $current/$total tracks processed'),
+        onProgress: (current, total) {},
       );
-
+      
       _showMessage('✓ Added ${result.successCount} tracks to playlist!', isError: false);
-      if (result.duplicateCount > 0) _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
-      if (result.failureCount > 0) _showMessage('${result.failureCount} tracks failed to add');
-
+      if (result.duplicateCount > 0) {
+        _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
+      }
+      if (result.failureCount > 0) {
+        _showMessage('${result.failureCount} tracks failed to add');
+      }
       _clearSelection();
-      print('Batch addition completed: ${result.successCount} success, ${result.failureCount} failed');
     } catch (e) {
       _showMessage('Failed to add tracks: $e');
-      print('Exception during batch addition: $e');
     } finally {
       _setLoadingState(LoadingState.idle);
     }
@@ -366,7 +397,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         subtitle: 'Start typing to search Deezer tracks automatically!'
       );
     }
-
+    
     if (tracks.isEmpty && _searchController.text.isNotEmpty) {
       if (_searchController.text.length < _minSearchLength) {
         return AppWidgets.emptyState(
@@ -384,9 +415,9 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         );
       }
     }
-
+    
     final sortedTracks = TrackSortingService.sortTracksByField(tracks, _searchSortOption);
-
+    
     return Column(
       children: [
         if (tracks.isNotEmpty)
@@ -417,7 +448,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget _buildTrackItem(Track track) {
     final isInPlaylist = _isTrackInPlaylist(track.id);
-
+    
     return AppWidgets.trackCard(
       track: track,
       isSelected: _selectedTracks.contains(track.id),
@@ -438,12 +469,15 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     final searchSortOptions = TrackSortOption.defaultOptions
         .where((option) => option.field != TrackSortField.position && option.field != TrackSortField.dateAdded)
         .toList();
-
+    
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        decoration: const BoxDecoration(
+          color: AppTheme.surface, 
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -482,7 +516,10 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
             ...searchSortOptions.map((option) {
               final isSelected = option == _searchSortOption;
               return ListTile(
-                leading: Icon(option.icon, color: isSelected ? AppTheme.primary : Colors.white70),
+                leading: Icon(
+                  option.icon, 
+                  color: isSelected ? AppTheme.primary : Colors.white70
+                ),
                 title: Text(
                   option.displayName,
                   style: TextStyle(
@@ -534,8 +571,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   void _toggleSelection(String trackId) {
     setState(() {
-      if (_selectedTracks.contains(trackId)) _selectedTracks.remove(trackId);
-      else _selectedTracks.add(trackId);
+      if (_selectedTracks.contains(trackId)) {
+        _selectedTracks.remove(trackId);
+      } else {
+        _selectedTracks.add(trackId);
+      }
     });
   }
 
@@ -552,14 +592,21 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   void _handleTrackTap(Track track) {
-    if (_isMultiSelectMode) _toggleSelection(track.id);
-    else if (_isAddingToPlaylist && !_isTrackInPlaylist(track.id)) _addTrackToPlaylist(widget.playlistId!, track);
-    else _playTrack(track);
+    if (_isMultiSelectMode) {
+      _toggleSelection(track.id);
+    } else if (_isAddingToPlaylist && !_isTrackInPlaylist(track.id)) {
+      _addTrackToPlaylist(widget.playlistId!, track);
+    } else {
+      _playTrack(track);
+    }
   }
 
   Future<void> _handleAddTrack(Track track) async {
-    if (_isAddingToPlaylist) await _addTrackObjectToPlaylist(widget.playlistId!, track);
-    else await _showPlaylistSelectionDialog(track);
+    if (_isAddingToPlaylist) {
+      await _addTrackObjectToPlaylist(widget.playlistId!, track);
+    } else {
+      await _showPlaylistSelectionDialog(track);
+    }
   }
 
   Future<void> _addTrackObjectToPlaylist(String playlistId, Track track) async {
@@ -591,18 +638,21 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
           await _playerService.togglePlay();
           return;
         }
-
+        
         String? previewUrl = track.previewUrl;
         if (previewUrl == null && track.deezerTrackId != null) {
           final fullTrackDetails = await getProvider<MusicProvider>().getDeezerTrack(track.deezerTrackId!, auth.token!);
-          if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
+          if (fullTrackDetails?.previewUrl != null) {
+            previewUrl = fullTrackDetails!.previewUrl;
+          }
         }
-
+        
         if (previewUrl?.isNotEmpty == true) {
           await _playerService.playTrack(track, previewUrl!);
           _showMessage('Playing preview of "${track.name}"', isError: false);
+        } else {
+          _showMessage('No preview available for this track');
         }
-        else _showMessage('No preview available for this track');
       },
       errorMessage: 'Failed to play preview',
     );
@@ -625,39 +675,48 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       _showMessage('No playlists available. Create a playlist first.');
       return;
     }
-
+    
     final selectedIndex = await _showSelectionDialog(
       title: 'Add to Playlist',
       items: [..._userPlaylists.map((p) => p.name), 'Create New Playlist'],
       icons: [..._userPlaylists.map((_) => Icons.library_music), Icons.add],
     );
-
+    
     if (selectedIndex != null) {
-      if (selectedIndex == _userPlaylists.length) await _createNewPlaylistAndAddTrack(track);
-      else await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
+      if (selectedIndex == _userPlaylists.length) {
+        await _createNewPlaylistAndAddTrack(track);
+      } else {
+        await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
+      }
     }
   }
 
   Future<void> _createNewPlaylistAndAddTrack(Track track) async {
     final playlistName = await AppWidgets.showTextInputDialog(
-      context, title: 'Create New Playlist',
+      context, 
+      title: 'Create New Playlist',
       hintText: 'Enter playlist name',
       validator: (value) => value?.isEmpty ?? true ? 'Please enter a playlist name' : null,
     );
-
+    
     if (playlistName?.isNotEmpty == true) {
       await runAsyncAction(
         () async {
           _setLoadingState(LoadingState.addingTracks);
           final playlistId = await getProvider<MusicProvider>().createPlaylist(
-            playlistName!, 'Created while adding "${track.name}"', false, auth.token!,
+            playlistName!, 
+            'Created while adding "${track.name}"', 
+            false, 
+            auth.token!,
           );
         if (playlistId?.isNotEmpty == true) {
           final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);
           if (result.success) {
             _showMessage('Created playlist "$playlistName" and added "${track.name}"!', isError: false);
             await _loadUserPlaylists();
-          } else throw Exception(result.message);
+          } else {
+            throw Exception(result.message);
+          }
         }
         _setLoadingState(LoadingState.idle);
       },
@@ -668,11 +727,18 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   void _showMessage(String message, {bool isError = true}) {
-    if (isError) showError(message);
-    else showSuccess(message);
+    if (isError) {
+      showError(message);
+    } else {
+      showSuccess(message);
+    }
   }
 
-  Future<int?> _showSelectionDialog({required String title, required List<String> items, List<IconData>? icons}) async {
+  Future<int?> _showSelectionDialog({
+    required String title, 
+    required List<String> items, 
+    List<IconData>? icons
+  }) async {
     return showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
@@ -681,10 +747,12 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
-            shrinkWrap: true, itemCount: items.length,
+            shrinkWrap: true, 
+            itemCount: items.length,
             itemBuilder: (context, index) => ListTile(
               leading: Container(
-                width: 40, height: 40,
+                width: 40, 
+                height: 40,
                 decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
                 child: Icon(icons?[index] ?? Icons.music_note, color: AppTheme.primary),
               ),
@@ -694,7 +762,10 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey))
+          ),
         ],
       ),
     );
