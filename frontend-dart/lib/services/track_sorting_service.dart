@@ -50,15 +50,6 @@ class TrackSortingService {
     }
   }
 
-  static (List<PlaylistTrack>, List<PlaylistTrack>) partitionTracksByCondition(
-    List<PlaylistTrack> tracks,
-    bool Function(PlaylistTrack) condition,
-  ) {
-    final matching = tracks.where(condition).toList();
-    final nonMatching = tracks.where((track) => !condition(track)).toList();
-    return (matching, nonMatching);
-  }
-
   static List<PlaylistTrack> getTopNTracks(List<PlaylistTrack> tracks, TrackSortOption sortOption, int count) {
     return tracks
         .sorted((a, b) {
@@ -79,9 +70,7 @@ class TrackSortingService {
       final name = (track.track?.name ?? track.name).toLowerCase();
       final artist = (track.track?.artist ?? '').toLowerCase();
       final album = (track.track?.album ?? '').toLowerCase();
-      return name.contains(lowerSearchTerm) ||
-             artist.contains(lowerSearchTerm) ||
-             album.contains(lowerSearchTerm);
+      return name.contains(lowerSearchTerm) || artist.contains(lowerSearchTerm) || album.contains(lowerSearchTerm);
     }).toList();
   }
 }

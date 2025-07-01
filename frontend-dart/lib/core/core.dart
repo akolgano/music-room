@@ -10,54 +10,50 @@ import 'package:form_validator/form_validator.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:duration/duration.dart'; 
 import '../services/api_service.dart';
+import '../models/models.dart';
+import 'responsive_helper.dart'; 
+
+export 'responsive_helper.dart';
 
 class AppValidators {
   static String? required(String? value, [String? fieldName]) =>
       ValidationBuilder().required('Please enter ${fieldName ?? 'this field'}').build()(value);
+  
   static String? email(String? value) =>
       ValidationBuilder().email('Please enter a valid email address').build()(value);
+  
   static String? password(String? value, [int minLength = 8]) =>
       ValidationBuilder().minLength(minLength, 'Password must be at least $minLength characters').build()(value);
+  
   static String? username(String? value) =>
       ValidationBuilder()
           .minLength(3, 'Username must be at least 3 characters')
           .maxLength(30, 'Username must be less than 30 characters')
-          .regExp(RegExp(r'^[a-zA-Z0-9_]+$'), 'Username can only contain letters, numbers, and underscores')
-          .build()(value);
+          .regExp(RegExp(r'^[a-zA-Z0-9_]+$'), 'Username can only contain letters, numbers, and underscores').build()(value);
+  
   static String? phoneNumber(String? value, [bool required = false]) {
     if (!required && (value?.isEmpty ?? true)) return null;
     final phoneRegex = RegExp(r'^\+?[\d\s\-\(\)]{8,15}$');
     return phoneRegex.hasMatch(value ?? '') ? null : 'Please enter a valid phone number';
   }
+  
   static String? playlistName(String? value) =>
       ValidationBuilder().maxLength(100, 'Playlist name must be less than 100 characters').build()(value);
+  
   static String? description(String? value) =>
       value != null && value.length > 500 ? 'Description must be less than 500 characters' : null;
 }
 
 class DateTimeUtils {
   static String formatDate(DateTime? date) => date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+  
   static String formatDuration(Duration duration) {
-    return printDuration(
-      duration,
-      abbreviated: false,
+    return printDuration(duration, abbreviated: false,
       spacer: '',
       delimiter: ':',
       conjugation: '',
       tersity: duration.inHours > 0 ? DurationTersity.hour : DurationTersity.minute,
     );
-  }
-  static String formatDurationCompact(Duration duration) {
-    if (duration.inHours > 0) {
-      final hours = duration.inHours;
-      final minutes = duration.inMinutes % 60;
-      final seconds = duration.inSeconds % 60;
-      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    } else {
-      final minutes = duration.inMinutes;
-      final seconds = duration.inSeconds % 60;
-      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
   }
 }
 
@@ -158,10 +154,10 @@ class AppTheme {
   );
 
   static Widget _buildCard({
-    required Widget child,
-    EdgeInsets? margin,
-    EdgeInsets? padding,
-    double? elevation,
+    required Widget child, 
+    EdgeInsets? margin, 
+    EdgeInsets? padding, 
+    double? elevation, 
     double? borderRadius,
   }) => Card(
     color: surface,
@@ -189,12 +185,12 @@ class AppTheme {
       children: [
         Row(
           children: [
-            if (titleIcon != null) ...[Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
+            if (titleIcon != null) ...[
+              Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
               SizedBox(width: kIsWeb ? 8 : 8.w)
             ],
             Flexible(
-              child: Text(
-                title, 
+              child: Text(title, 
                 style: TextStyle(fontSize: kIsWeb ? 18 : 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
                 overflow: TextOverflow.ellipsis,
               ), 
@@ -223,6 +219,7 @@ class AppStrings {
   static const String unknownError = 'An unknown error occurred.';
 }
 
+
 class AppRoutes {
   static const String home = '/home';
   static const String auth = '/auth';
@@ -237,7 +234,6 @@ class AppRoutes {
   static const String friendRequests = '/friend_requests';
   static const String playlistSharing = '/playlist_sharing';
   static const String player = '/player';
-  static const String deezerTrackDetail = '/deezer_track_detail';
   static const String userPasswordChange = '/user_password_change';
   static const String socialNetworkLink = '/social_network_link';
   static const String signupOtp = '/signup_otp';
@@ -249,8 +245,10 @@ class SocialLoginUtils {
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
+
     try {
       print('Initializing social login services...');
+      
       final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
       if (kIsWeb && fbAppId != null) {
         await FacebookAuth.instance.webAndDesktopInitialize(
@@ -265,6 +263,7 @@ class SocialLoginUtils {
       final googleClientId = kIsWeb 
           ? dotenv.env['GOOGLE_CLIENT_ID_WEB']
           : dotenv.env['GOOGLE_CLIENT_ID_APP'];
+      
       if (googleClientId != null && googleClientId.isNotEmpty) {
         _googleSignIn = GoogleSignIn(
           scopes: <String>[
@@ -292,9 +291,11 @@ class SocialLoginUtils {
 
   static Future<SocialLoginResult> loginWithFacebook() async {
     if (!_isInitialized) await initialize();
+
     try {
       print('Attempting Facebook login...');
       final result = await FacebookAuth.instance.login();
+      
       if (result.status == LoginStatus.success) {
         final accessToken = result.accessToken?.tokenString;
         if (accessToken != null && accessToken.isNotEmpty) {
@@ -302,6 +303,7 @@ class SocialLoginUtils {
           return SocialLoginResult.success(accessToken, 'facebook');
         }
       }
+      
       print('Facebook login failed - no valid token received');
       return SocialLoginResult.error('Facebook login failed - no valid token received');
     } catch (e) {
@@ -324,10 +326,12 @@ class SocialLoginUtils {
     try {
       await _googleSignIn!.signOut();
       final GoogleSignInAccount? user = await _googleSignIn!.signIn();
+      
       if (user != null) {
         print('Google user signed in: ${user.email}');
         final GoogleSignInAuthentication auth = await user.authentication;
         print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
+        
         final idToken = auth.idToken;
         if (idToken != null && idToken.isNotEmpty) {
           print('Google login successful with idToken');
@@ -337,6 +341,7 @@ class SocialLoginUtils {
         print('Google sign-in was cancelled by user');
         return SocialLoginResult.error('Google sign-in was cancelled');
       }
+      
       print('Google login failed - no valid token received');
       return SocialLoginResult.error('Google login failed - no valid token received');
     } catch (e) {
@@ -346,22 +351,17 @@ class SocialLoginUtils {
   }
 }
 
-class SocialLoginResult {
-  final bool success;
-  final String? token;
-  final String? provider;
-  final String? error;
-
-  SocialLoginResult.success(this.token, this.provider) : success = true, error = null;
-  SocialLoginResult.error(this.error) : success = false, token = null, provider = null;
-}
-
 class SocialLoginButton extends StatelessWidget {
   final String provider;
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  const SocialLoginButton({Key? key, required this.provider, this.onPressed, this.isLoading = false}) : super(key: key);
+  const SocialLoginButton({
+    Key? key, 
+    required this.provider, 
+    this.onPressed, 
+    this.isLoading = false
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -394,7 +394,9 @@ class SocialLoginButton extends StatelessWidget {
           elevation: 2,
         ),
         child: isLoading 
-          ? SizedBox(width: 20, height: 20, 
+          ? SizedBox(
+              width: 20, 
+              height: 20, 
               child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(color)),
             ) 
           : Row(
@@ -406,8 +408,7 @@ class SocialLoginButton extends StatelessWidget {
                 Flexible(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: Text(
-                      'Continue with $provider',
+                    child: Text('Continue with $provider',
                       style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14), maxLines: 1,
                     ),
                   ),

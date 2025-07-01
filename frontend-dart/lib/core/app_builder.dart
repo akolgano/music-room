@@ -11,7 +11,6 @@ import '../providers/profile_provider.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../providers/voting_provider.dart';
 import '../services/music_player_service.dart';
-import '../services/websocket_service.dart';
 import '../models/models.dart';
 import '../screens/screens.dart';
 
@@ -36,7 +35,6 @@ class AppBuilder {
         },
         update: (context, themeProvider, previous) => previous ?? getIt<MusicPlayerService>(),
       ),
-      Provider<WebSocketService>(create: (_) => WebSocketService()),
     ];
   }
 
@@ -52,9 +50,7 @@ class AppBuilder {
     AppRoutes.friendRequests,
     AppRoutes.playlistSharing,
     AppRoutes.player,
-    AppRoutes.deezerTrackDetail,
-    AppRoutes.userPasswordChange,
-    AppRoutes.socialNetworkLink,
+    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink,
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -111,20 +107,7 @@ class AppBuilder {
       );
     }
 
-    if (settings.name?.startsWith('/track/') == true) {
-      final trackId = settings.name!.split('/').last;
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (context) => Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
-            return TrackDetailScreen(trackId: trackId);
-          },
-        ),
-      );
-    }
-
-    if (settings.name?.startsWith('/deezer_track/') == true) {
+    if (settings.name?.startsWith('/track/') == true || settings.name?.startsWith('/deezer_track/') == true) {
       final trackId = settings.name!.split('/').last;
       return MaterialPageRoute(
         settings: settings,
@@ -145,7 +128,7 @@ class AppBuilder {
 
   static Widget _buildProtectedRoute(RouteSettings settings) {
     print('Building protected route: ${settings.name} with arguments: ${settings.arguments}');
-
+    
     switch (settings.name) {
       case AppRoutes.home:
         return const HomeScreen();
@@ -175,8 +158,6 @@ class AppBuilder {
         return _buildTrackDetail(settings);
       case AppRoutes.playlistSharing:
         return _buildPlaylistSharing(settings);
-      case AppRoutes.deezerTrackDetail:
-        return _buildDeezerTrackDetail(settings);
       default:
         return _buildErrorScreen('Page not found');
     }
@@ -190,15 +171,18 @@ class AppBuilder {
   static Widget _buildPlaylistDetail(RouteSettings settings) {
     final args = settings.arguments;
     print('Playlist detail args: $args, type: ${args.runtimeType}');
+    
     if (args == null) {
       print('No arguments provided for playlist detail');
       return _buildErrorScreen('No playlist ID provided');
     }
 
     String? playlistId;
-    if (args is String) playlistId = args;
-    else if (args is Map<String, dynamic> && args.containsKey('id')) playlistId = args['id'].toString();
-    else {
+    if (args is String) {
+      playlistId = args;
+    } else if (args is Map<String, dynamic> && args.containsKey('id')) {
+      playlistId = args['id'].toString();
+    } else {
       print('Invalid arguments type for playlist detail: ${args.runtimeType}');
       return _buildErrorScreen('Invalid playlist ID format');
     }
@@ -214,6 +198,7 @@ class AppBuilder {
 
   static Widget _buildTrackDetail(RouteSettings settings) {
     final args = settings.arguments;
+    
     if (args is Map<String, dynamic>) {
       return TrackDetailScreen(
         trackId: args['trackId'] as String?,
@@ -229,13 +214,6 @@ class AppBuilder {
     final args = settings.arguments;
     if (args is Playlist) return PlaylistSharingScreen(playlist: args);
     return _buildErrorScreen('Invalid playlist data');
-  }
-
-  static Widget _buildDeezerTrackDetail(RouteSettings settings) {
-    final args = settings.arguments;
-    if (args is String) return TrackDetailScreen(trackId: args);
-    if (args is Track) return TrackDetailScreen(track: args);
-    return _buildErrorScreen('Invalid track data');
   }
 
   static Widget _buildErrorScreen(String message) {

@@ -16,21 +16,13 @@ class ApiService {
     
     String baseUrl;
     final envBaseUrl = dotenv.env['API_BASE_URL'];
-    if (envBaseUrl != null && envBaseUrl.isNotEmpty) {
-      baseUrl = envBaseUrl;
-    } else {
-      baseUrl = kIsWeb ? 'http://localhost:8000' : 'http://10.0.2.2:8000';
-    }
+    if (envBaseUrl != null && envBaseUrl.isNotEmpty) baseUrl = envBaseUrl;
+    else baseUrl = 'http://localhost:8000';
     
-    if (baseUrl.endsWith('/')) {
-      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
-    }
+    if (baseUrl.endsWith('/')) baseUrl = baseUrl.substring(0, baseUrl.length - 1);
     
     dio.options.baseUrl = baseUrl;
-    dio.options.headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
+    dio.options.headers = {'Content-Type': 'application/json', 'Accept': 'application/json'};
     dio.options.connectTimeout = const Duration(seconds: 10);
     dio.options.receiveTimeout = const Duration(seconds: 10);
     dio.options.sendTimeout = const Duration(seconds: 10);

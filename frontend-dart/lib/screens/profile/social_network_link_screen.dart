@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
+import '../../models/models.dart';
 import '../base_screen.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {
@@ -81,12 +82,7 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
                       const CircularProgressIndicator(color: AppTheme.primary),
                     ],
                     const SizedBox(height: 24),
-                    AppWidgets.secondaryButton(
-                      context: context,
-                      text: 'Go Back', 
-                      onPressed: navigateBack, 
-                      icon: Icons.arrow_back
-                    ),
+                    AppWidgets.secondaryButton(context: context, text: 'Go Back', onPressed: navigateBack, icon: Icons.arrow_back),
                   ],
                 );
               },
