@@ -2,6 +2,9 @@
 
 Music, Collaboration and mobility
 
+## running app
+adb reverse tcp:8000 tcp:8000; flutter run;
+
 ## VAR
 
 Fetch from slack

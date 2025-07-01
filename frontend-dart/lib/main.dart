@@ -9,6 +9,7 @@ import 'core/service_locator.dart';
 import 'core/app_builder.dart';
 import 'widgets/network_connectivity_widget.dart';
 import 'widgets/app_widgets.dart';
+import 'providers/dynamic_theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,11 +69,16 @@ class MyApp extends StatelessWidget {
               const Breakpoint(start: 801, end: 1920, name: DESKTOP),
               const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
             ],
-            child: MaterialApp(
-              title: AppConstants.appName,
-              theme: AppTheme.getResponsiveDarkTheme(),
-              onGenerateRoute: AppBuilder.generateRoute,
-              initialRoute: '/', debugShowCheckedModeBanner: false
+            child: Consumer<DynamicThemeProvider>(
+              builder: (context, themeProvider, _) {
+                return MaterialApp(
+                  title: AppConstants.appName,
+                  theme: themeProvider.dynamicTheme, 
+                  onGenerateRoute: AppBuilder.generateRoute,
+                  initialRoute: '/', 
+                  debugShowCheckedModeBanner: false,
+                );
+              },
             ),
           ),
         );
@@ -114,8 +120,7 @@ class ErrorApp extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.red.withOpacity(0.3)),
                       ),
-                      child: Text(
-                        error!,
+                      child: Text(error!,
                         style: const TextStyle(color: Colors.red, fontSize: 14),
                         textAlign: TextAlign.center,
                       ),

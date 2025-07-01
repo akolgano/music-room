@@ -142,8 +142,7 @@ class Playlist {
     'name': name,
     'description': description,
     'public': isPublic,
-    'creator': creator,
-    'tracks': tracks.map((t) => t.toJson()).toList(), 'image_url': imageUrl
+    'creator': creator, 'tracks': tracks.map((t) => t.toJson()).toList(), 'image_url': imageUrl
   };
 }
 
@@ -164,10 +163,17 @@ class PlaylistTrack {
 
   factory PlaylistTrack.fromJson(Map<String, dynamic> json) {
     Track? track;
+    
     if (json['track'] != null) {
-      track = Track.fromJson(json['track'] as Map<String, dynamic>);
-    } else if (json['deezer_track_id'] != null) {
+      try {
+        track = Track.fromJson(json['track'] as Map<String, dynamic>);
+      } catch (e) {
+        print('Error parsing nested track: $e');
+      }
+    } 
+    else if (json['deezer_track_id'] != null) {
       final deezerTrackId = json['deezer_track_id'].toString();
+      
       String? artist;
       String? album;
       String? previewUrl;
@@ -191,9 +197,9 @@ class PlaylistTrack {
 
       track = Track(
         id: 'deezer_$deezerTrackId',
-        name: json['name'] as String,
-        artist: artist ?? '',
-        album: album ?? '',
+        name: json['name'] as String? ?? '',
+        artist: artist ?? '', 
+        album: album ?? '',   
         url: json['url'] as String? ?? '',
         deezerTrackId: deezerTrackId,
         previewUrl: json['preview_url'] as String?,
@@ -210,10 +216,93 @@ class PlaylistTrack {
     );
   }
 
-  Map<String, dynamic> toJson() => {'track_id': trackId, 'name': name, 'position': position, 'points': points, 'track': track?.toJson()};
+  Map<String, dynamic> toJson() => {
+    'track_id': trackId,
+    'name': name,
+    'position': position,
+    'points': points,
+    'track': track?.toJson(),
+  };
 
-  bool get needsTrackDetails => track?.deezerTrackId != null && 
-      (track?.artist.isEmpty == true || track?.album.isEmpty == true);
+  bool get needsTrackDetails {
+    if (track?.deezerTrackId == null) return false;
+    
+    final needsArtist = track?.artist.isEmpty ?? true;
+    final needsAlbum = track?.album.isEmpty ?? true;
+    final needsImage = track?.imageUrl?.isEmpty ?? true;
+    final needsPreview = track?.previewUrl?.isEmpty ?? true;
+    
+    final criticalInfoMissing = needsArtist || needsAlbum;
+    
+    if (criticalInfoMissing) {
+      print('Track ${track?.name} (Deezer ID: ${track?.deezerTrackId}) needs details: artist=${track?.artist.isEmpty}, album=${track?.album.isEmpty}');
+    }
+    
+    return criticalInfoMissing;
+  }
+
+  bool get hasCompleteDetails {
+    return track?.deezerTrackId != null &&
+           track?.artist.isNotEmpty == true &&
+           track?.album.isNotEmpty == true;
+  }
+
+  String get displayName {
+    if (track?.name?.isNotEmpty == true) {
+      return track!.name;
+    }
+    return name;
+  }
+
+  String get displayArtist {
+    if (track?.artist?.isNotEmpty == true) {
+      return track!.artist;
+    }
+    return 'Unknown Artist';
+  }
+
+  String get displayAlbum {
+    if (track?.album?.isNotEmpty == true) {
+      return track!.album;
+    }
+    return 'Unknown Album';
+  }
+
+  PlaylistTrack copyWithTrack(Track newTrack) {
+    return PlaylistTrack(
+      trackId: trackId,
+      name: name,
+      position: position,
+      points: points,
+      track: newTrack,
+    );
+  }
+
+  PlaylistTrack copyWithPoints(int newPoints) {
+    return PlaylistTrack(
+      trackId: trackId,
+      name: name,
+      position: position,
+      points: newPoints,
+      track: track,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'PlaylistTrack(trackId: $trackId, name: $name, position: $position, points: $points, hasTrack: ${track != null}, needsDetails: $needsTrackDetails)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is PlaylistTrack &&
+           other.trackId == trackId &&
+           other.position == position;
+  }
+
+  @override
+  int get hashCode => trackId.hashCode ^ position.hashCode;
 }
 
 class Device {
@@ -411,8 +500,7 @@ class PlaylistInfoWithVotes {
         tracks: (json['tracks'] as List<dynamic>?) ?.map((track) => track as Map<String, dynamic>).toList() ?? [],
       );
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
+  Map<String, dynamic> toJson() => {'id': id,
     'playlist_name': playlistName,
     'description': description,
     'public': public,

@@ -6,7 +6,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
-import '../../widgets/app_widgets.dart';
+import '../../widgets/widgets.dart';
 import '../../models/models.dart';
 import '../profile/profile_screen.dart';
 import '../music/track_search_screen.dart';
@@ -14,7 +14,6 @@ import '../friends/friends_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -62,14 +61,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               tabViews: [
                 _buildDashboard(auth),
                 _buildPlaylists(),
-                _buildSearchTab(),
+                const TrackSearchScreen(isEmbedded: true), 
                 _buildFriendsTab(),
                 const ProfileScreen(isEmbedded: true)
               ],
               controller: _tabController,
             ),
           ),
-          const MiniPlayerWidget(),
+          const MiniPlayerWidget(), 
         ],
       ),
     );
@@ -133,7 +132,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (music.isLoading) {
           return AppWidgets.loading('Loading playlists...');
         }
-
         if (music.playlists.isEmpty) {
           return AppWidgets.emptyState(
             icon: Icons.playlist_play,
@@ -143,7 +141,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           );
         }
-
         return RefreshIndicator(
           onRefresh: _loadData,
           color: AppTheme.primary,
@@ -173,15 +170,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSearchTab() {
-    return const TrackSearchScreen();
-  }
-
   Widget _buildFriendsTab() {
     return Consumer<FriendProvider>(
       builder: (context, friendProvider, _) {
         if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
-
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -270,8 +262,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
-                    child: Text(
-                      'View all ${friendProvider.friends.length} friends',
+                    child: Text('View all ${friendProvider.friends.length} friends',
                       style: const TextStyle(color: AppTheme.primary),
                     ),
                   ),
