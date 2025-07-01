@@ -17,5 +17,7 @@ urlpatterns = [
     path('user_password_change/', views.user_password_change, name='user_password_change'),
     path('get_user/', views.get_user, name='get_user'),
     path('signup_email_otp/', views.signup_email_otp, name='signup_email_otp'),
+    path('invitations/received/', views.get_pending_friend_request, name='get_pending_friend_request'),
+    path('invitations/sent/', views.get_sent_friend_request, name='get_sent_friend_request'),
 ]
 
