@@ -34,7 +34,6 @@ import re
 User = get_user_model()
 
 
-
 @swagger_auto_schema(
     method='post',
     operation_summary="User login",
@@ -213,8 +212,10 @@ def test_token(request):
 @permission_classes([IsAuthenticated])
 def remove_friend(request, user_id):
     friendship = Friendship.objects.filter(
-        Q(from_user=request.user, to_user=user_id) | Q(from_user=user_id, to_user=request.user))
-    if not friendship:
+        Q(from_user=request.user, to_user_id=user_id, status='accepted') |
+        Q(from_user_id=user_id, to_user=request.user, status='accepted')
+    )
+    if not friendship.exists():
         return JsonResponse({'message': 'You are not friends with this user.'}, status=status.HTTP_400_BAD_REQUEST)
 
     friendship.delete()
@@ -225,21 +226,25 @@ def remove_friend(request, user_id):
 @permission_classes([IsAuthenticated])
 def get_friends_list(request):
     user = request.user
+    profile_picture_url = 'TODO'
     try:
-
-        friends = Friendship.objects.filter(
-        Q(from_user=request.user) | Q(to_user=request.user))
+        friendships = Friendship.objects.filter(
+            Q(from_user=user) | Q(to_user=user),
+            status='accepted'
+        )
+        
         friends_list = []
-        for friend in friends:
-            if friend.from_user.username == request.user.username:
-                friend_id = friend.to_user.id
-            else:
-                friend_id = friend.from_user.id
+        for fr in friendships:
+            friend = fr.to_user if fr.from_user == user else fr.from_user
+            friends_list.append({
+                'friend_id': friend.id,
+                'friend_username': friend.username,
+                "profile_picture_url": profile_picture_url,
+            })
 
-            friends_list.append(friend_id)
-        return JsonResponse({'friends': friends_list})
+        return Response({'friends': friends_list})
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        return Response({'error': str(e)}, status=400)
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -249,17 +254,47 @@ def send_friend_request(request, user_id):
     if request.user.username == to_user.username:
         return JsonResponse({'message': 'You cannot add yourself as a friend.'}, status=status.HTTP_400_BAD_REQUEST)
     existing_friendship = Friendship.objects.filter(
-        from_user=request.user, to_user=to_user
+        Q(from_user=request.user, to_user=to_user) | Q(to_user=request.user, from_user=to_user)
     ).first()
 
-    if existing_friendship:
-        return JsonResponse({'message': 'You already have a pending friend request or are already friends.'}, status=status.HTTP_400_BAD_REQUEST)
+    if existing_friendship and existing_friendship.status == 'pending':
+        return Response({'message': 'You already have a pending friend request.'}, status=status.HTTP_400_BAD_REQUEST)
+    if existing_friendship and existing_friendship.status == 'accepted':
+        return Response({'message': 'You are already friends.'}, status=status.HTTP_400_BAD_REQUEST)
     friendship = Friendship.objects.create(from_user=request.user, to_user=to_user, status='pending')
     return JsonResponse({
         'message': f'Friend request sent to {to_user.username}.',
         'friend_id': to_user.id,
         'friendship_id': friendship.id,
-    }, status=200)
+    }, status=201)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_pending_friend_request(request):
+    profile_picture_url = 'TODO'
+    friendships = Friendship.objects.filter(to_user=request.user, status='pending')
+    data = [{'friend_id': fr.from_user.id,
+            'friend_username': fr.from_user.username,
+            'friendship_id': fr.id,
+            "profile_picture_url": profile_picture_url,
+            "status": fr.status} for fr in friendships]
+    return JsonResponse({'received_invitations': data}, status=200)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_sent_friend_request(request):
+    profile_picture_url = 'TODO'
+    friendships = Friendship.objects.filter(from_user=request.user, status='pending')
+    data = [{'friend_id': fr.to_user.id,
+            'friend_username': fr.to_user.username,
+            'friendship_id': fr.id,
+            "profile_picture_url": profile_picture_url,
+            "status": fr.status} for fr in friendships]
+    return JsonResponse({'sent_invitations': data}, status=200)
 
 
 @api_view(['POST'])
@@ -413,7 +448,6 @@ def forgot_change_password(request):
         return JsonResponse({'username': user.username, 'email' : user.email}, status=status.HTTP_201_CREATED)
     else:
         return JsonResponse({'error': 'OTP not match'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @swagger_auto_schema(

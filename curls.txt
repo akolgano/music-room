@@ -94,3 +94,14 @@ curl -X POST http://localhost:8000/users/reject_friend_request/5/ \
 curl -X POST http://localhost:8000/users/remove_friend/4/ \
 -H "Authorization: Token 3e267e52152026ef9ceeafd319aaad0b31745f6b" \
 -H "Content-Type: application/json"
+
+-------- Friends invitations received and sent -----------------------
+curl -X GET http://localhost:8000/users/invitations/received/ \
+-H "Content-Type: application/json" \
+-H "Authorization: Token 53b9600a7d16d334f8e698c28b4decdf0e0fabc2"
+
+curl -X GET http://localhost:8000/users/invitations/sent/ \
+-H "Content-Type: application/json" \
+-H "Authorization: Token 53b9600a7d16d334f8e698c28b4decdf0e0fabc2"
+
+-----------------------------------------------------------------------
