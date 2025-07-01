@@ -8,12 +8,11 @@ import '../models/api_models.dart';
 
 class ApiService {
   final Dio _dio;
-
+  
   ApiService([Dio? dio]) : _dio = dio ?? _createConfiguredDio();
-
+  
   static Dio _createConfiguredDio() {
     final dio = Dio();
-    
     String baseUrl;
     final envBaseUrl = dotenv.env['API_BASE_URL'];
     if (envBaseUrl != null && envBaseUrl.isNotEmpty) baseUrl = envBaseUrl;
@@ -26,17 +25,16 @@ class ApiService {
     dio.options.connectTimeout = const Duration(seconds: 10);
     dio.options.receiveTimeout = const Duration(seconds: 10);
     dio.options.sendTimeout = const Duration(seconds: 10);
-
+    
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,
       requestBody: true,
       responseBody: true,
       responseHeader: false,
       error: true,
-      compact: true,
-      maxWidth: 120,
+      compact: true, maxWidth: 120,
     ));
-
+    
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         handler.next(options);
@@ -48,7 +46,7 @@ class ApiService {
         handler.next(error);
       },
     ));
-
+    
     return dio;
   }
 
@@ -144,6 +142,12 @@ class ApiService {
   Future<void> removeFriend(int userId, String token) => 
       _postVoid('/users/remove_friend/$userId/', {}, token: token);
 
+  Future<FriendInvitationsResponse> getReceivedInvitations(String token) => 
+      _get('/users/invitations/received/', FriendInvitationsResponse.fromJson, token: token);
+
+  Future<FriendInvitationsResponse> getSentInvitations(String token) => 
+      _get('/users/invitations/sent/', FriendInvitationsResponse.fromJson, token: token);
+
   Future<Map<String, dynamic>> getProfileData(String token) => 
       _get('/profile/profile/', (data) => data, token: token);
 
@@ -214,4 +218,86 @@ class ApiService {
 
   Future<VoteResponse> voteForTrack(String playlistId, String token, VoteRequest request) => 
       _post('/playlists/$playlistId/tracks/vote/', request, VoteResponse.fromJson, token: token);
+
+  Future<DeviceResponse> registerDevice(String token, RegisterDeviceRequest request) => 
+      _post('/devices/register/', request, DeviceResponse.fromJson, token: token);
+
+  Future<DevicesResponse> getUserDevices(String token) => 
+      _get('/devices/', DevicesResponse.fromJson, token: token);
+
+  Future<DeviceResponse> getDeviceInfo(String deviceUuid, String token) => 
+      _get('/devices/$deviceUuid/', DeviceResponse.fromJson, token: token);
+
+  Future<void> updateDeviceStatus(String deviceUuid, String token, Map<String, dynamic> data) => 
+      _postVoid('/devices/$deviceUuid/status/', data, token: token);
+
+  Future<void> delegateDeviceControl(String token, DelegateControlRequest request) => 
+      _postVoid('/devices/delegate/', request, token: token);
+
+  Future<PermissionResponse> checkDevicePermission(String deviceUuid, String token) => 
+      _get('/devices/$deviceUuid/permission/', PermissionResponse.fromJson, token: token);
+
+  Future<BatchAddResult> addMultipleTracksToPlaylist({
+    required String playlistId,
+    required List<String> trackIds,
+    required String token,
+    String? deviceUuid,
+  }) async {
+    int totalTracks = trackIds.length;
+    int successCount = 0;
+    int duplicateCount = 0;
+    int failureCount = 0;
+    List<String> errors = [];
+
+    for (String trackId in trackIds) {
+      try {
+        final request = AddTrackRequest(trackId: trackId, deviceUuid: deviceUuid);
+        await addTrackToPlaylist(playlistId, token, request);
+        successCount++;
+      } catch (e) {
+        if (e.toString().contains('already exists') || e.toString().contains('duplicate')) {
+          duplicateCount++;
+        } else {
+          failureCount++;
+          errors.add(e.toString());
+        }
+      }
+      
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    return BatchAddResult(
+      totalTracks: totalTracks,
+      successCount: successCount,
+      duplicateCount: duplicateCount,
+      failureCount: failureCount,
+      errors: errors,
+    );
+  }
+
+  String _extractErrorMessage(DioException error) {
+    if (error.response?.data is Map<String, dynamic>) {
+      final data = error.response!.data as Map<String, dynamic>;
+      if (data.containsKey('error')) {
+        return data['error'].toString();
+      }
+      if (data.containsKey('detail')) {
+        return data['detail'].toString();
+      }
+      if (data.containsKey('message')) {
+        return data['message'].toString();
+      }
+    }
+    return error.message ?? 'Unknown error occurred';
+  }
+
+  String get baseUrl => _dio.options.baseUrl;
+  
+  void updateAuthToken(String token) {
+    _dio.options.headers['Authorization'] = 'Token $token';
+  }
+  
+  void clearAuthToken() {
+    _dio.options.headers.remove('Authorization');
+  }
 }

@@ -846,11 +846,7 @@ class AppWidgets {
           key: formKey,
           child: TextFormField(
             controller: controller,
-            decoration: InputDecoration(
-              hintText: hintText,
-              filled: true,
-              fillColor: _getBackground(context),
-            ),
+            decoration: InputDecoration(hintText: hintText, filled: true, fillColor: _getBackground(context)),
             style: TextStyle(color: _getOnSurface(context)),
             maxLines: maxLines,
             validator: validator,
@@ -863,9 +859,7 @@ class AppWidgets {
           ),
           ElevatedButton(
             onPressed: () {
-              if (formKey.currentState?.validate() ?? true) {
-                Navigator.pop(context, controller.text);
-              }
+              if (formKey.currentState?.validate() ?? true) Navigator.pop(context, controller.text);
             },
             child: const Text('Save'),
           ),
