@@ -706,14 +706,7 @@ class ProfilePrivateResponse {
   final String? country;
   final String? postalCode;
 
-  const ProfilePrivateResponse({
-    this.firstName, 
-    this.lastName, 
-    this.phone, 
-    this.street, 
-    this.country, 
-    this.postalCode
-  });
+  const ProfilePrivateResponse({this.firstName, this.lastName, this.phone, this.street, this.country, this.postalCode});
 
   factory ProfilePrivateResponse.fromJson(Map<String, dynamic> json) => 
       ProfilePrivateResponse(
@@ -748,4 +741,13 @@ class ProfileMusicResponse {
 
   factory ProfileMusicResponse.fromJson(Map<String, dynamic> json) => 
       ProfileMusicResponse(musicPreferences: (json['music_preferences'] as List<dynamic>?)?.cast<String>());
+}
+
+class FriendInvitationsResponse {
+  final List<Map<String, dynamic>> invitations;
+  const FriendInvitationsResponse({required this.invitations});
+  factory FriendInvitationsResponse.fromJson(Map<String, dynamic> json) => 
+      FriendInvitationsResponse(
+        invitations: (json['invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [],
+      );
 }
