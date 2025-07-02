@@ -17,9 +17,7 @@ class ThemeUtils {
   );
 
   static TextStyle getSubheadingStyle(BuildContext context) => TextStyle(
-    color: getOnSurface(context),
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
+    color: getOnSurface(context), fontSize: 18, fontWeight: FontWeight.w600,
   );
 
   static TextStyle getBodyStyle(BuildContext context) => TextStyle(
@@ -137,36 +135,6 @@ class ThemeUtils {
     context: context,
     child: child, 
     elevation: 8
-  );
-
-  static Widget buildThemedFormCard({
-    required BuildContext context,
-    required String title, 
-    IconData? titleIcon, 
-    required Widget child
-  }) => buildThemedCard(
-    context: context,
-    borderRadius: 12,
-    padding: const EdgeInsets.all(20),
-    margin: EdgeInsets.zero,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            if (titleIcon != null) ...[
-              Icon(titleIcon, color: AppTheme.primary, size: 20), 
-              const SizedBox(width: 8)
-            ],
-            Flexible(
-              child: Text(title, style: getSubheadingStyle(context), overflow: TextOverflow.ellipsis), 
-            ),
-          ],
-        ),
-        const SizedBox(height: 16), 
-        child,
-      ],
-    ),
   );
 
   static InputDecoration getThemedInputDecoration(

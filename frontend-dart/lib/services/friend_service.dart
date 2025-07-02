@@ -29,4 +29,14 @@ class FriendService {
   Future<void> removeFriend(int friendId, String token) async {
     await _api.removeFriend(friendId, token); 
   }
+
+  Future<List<Map<String, dynamic>>> getReceivedInvitations(String token) async {
+    final response = await _api.getReceivedInvitations(token);
+    return response.invitations;
+  }
+
+  Future<List<Map<String, dynamic>>> getSentInvitations(String token) async {
+    final response = await _api.getSentInvitations(token);
+    return response.invitations;
+  }
 }

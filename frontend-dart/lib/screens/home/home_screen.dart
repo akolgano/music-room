@@ -154,11 +154,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 playlist: playlist,
                 onTap: () {
                   print('Navigating to playlist with ID: ${playlist.id}');
-                  if (playlist.id.isNotEmpty && playlist.id != 'null') {
+                  if (playlist.id.isNotEmpty && playlist.id != 'null')
                     Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
-                  } else {
-                    _showError('Invalid playlist ID');
-                  }
+                  else _showError('Invalid playlist ID');
                 },
                 onPlay: () => _playPlaylist(playlist),
                 showPlayButton: true,
@@ -174,6 +172,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Consumer<FriendProvider>(
       builder: (context, friendProvider, _) {
         if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
+        
+        final pendingRequests = friendProvider.receivedInvitations;
+        
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -185,6 +186,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 icon: Icons.people,
               ),
               const SizedBox(height: 16),
+              
+              if (pendingRequests.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.notifications, color: Colors.orange, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'You have ${pendingRequests.length} pending friend request${pendingRequests.length == 1 ? '' : 's'}',
+                          style: const TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.friendRequests),
+                        child: const Text(
+                          'View',
+                          style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -222,8 +257,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 AppWidgets.emptyState(
                   icon: Icons.people_outline,
                   title: 'No friends yet',
-                  subtitle: 'Add some friends to start sharing music!',
-                  buttonText: 'Add Friend',
+                  subtitle: 'Add some friends to start sharing music!', buttonText: 'Add Friend',
                   onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
                 )
               else
@@ -250,9 +284,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         trailing: Icon(Icons.music_note, color: AppTheme.primary, size: 20),
-                        onTap: () {
-                          _showInfo('Friend features coming soon!');
-                        },
+                        onTap: () => _showInfo('Friend features coming soon!'),
                       ),
                     );
                   },
@@ -281,10 +313,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       final auth = Provider.of<AuthProvider>(context, listen: false);
-
       if (auth.isLoggedIn && auth.token != null) {
-        await Future.wait([music.fetchUserPlaylists(auth.token!), profileProvider.loadProfile(auth.token),
-          friendProvider.fetchFriends(auth.token!),
+        await Future.wait([
+          music.fetchUserPlaylists(auth.token!), 
+          profileProvider.loadProfile(auth.token),
+          friendProvider.fetchAllFriendData(auth.token!),
         ]);
       }
     } catch (e) {

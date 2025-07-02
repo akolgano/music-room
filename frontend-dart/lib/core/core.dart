@@ -68,12 +68,7 @@ class AppTheme {
   static const error = Color(0xFFE91429);
   static const success = Color(0xFF00C851);
 
-  static ThemeData _buildTheme({bool responsive = false}) {
-    double fontSize(double size) => responsive && !kIsWeb ? size.sp : size;
-    double dimension(double size) => responsive && !kIsWeb ? size.w : size;
-    double radius(double size) => responsive && !kIsWeb ? size.r : size;
-    EdgeInsets padding(double size) => responsive && !kIsWeb ? EdgeInsets.all(size.w) : EdgeInsets.all(size);
-
+  static ThemeData _buildTheme() {
     return ThemeData(
       useMaterial3: true, 
       brightness: Brightness.dark,
@@ -93,9 +88,9 @@ class AppTheme {
         backgroundColor: background, 
         foregroundColor: Colors.white, 
         elevation: 0,
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: Colors.white,
-          fontSize: fontSize(20),
+          fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -103,39 +98,122 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.black,
-          minimumSize: Size(dimension(88), dimension(50)), 
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius(25))),
-          textStyle: TextStyle(fontSize: fontSize(16), fontWeight: FontWeight.w600),
+          minimumSize: const Size(88, 50), 
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
-      textTheme: TextTheme(
-        displayLarge: TextStyle(fontSize: fontSize(32), fontWeight: FontWeight.bold, color: Colors.white),
-        displayMedium: TextStyle(fontSize: fontSize(28), fontWeight: FontWeight.bold, color: Colors.white),
-        displaySmall: TextStyle(fontSize: fontSize(24), fontWeight: FontWeight.bold, color: Colors.white),
-        headlineLarge: TextStyle(fontSize: fontSize(22), fontWeight: FontWeight.w600, color: Colors.white),
-        headlineMedium: TextStyle(fontSize: fontSize(20), fontWeight: FontWeight.w600, color: Colors.white),
-        headlineSmall: TextStyle(fontSize: fontSize(18), fontWeight: FontWeight.w600, color: Colors.white),
-        titleLarge: TextStyle(fontSize: fontSize(16), fontWeight: FontWeight.w500, color: Colors.white),
-        titleMedium: TextStyle(fontSize: fontSize(14), fontWeight: FontWeight.w500, color: Colors.white),
-        titleSmall: TextStyle(fontSize: fontSize(12), fontWeight: FontWeight.w500, color: Colors.white),
-        bodyLarge: TextStyle(fontSize: fontSize(16), color: Colors.white),
-        bodyMedium: TextStyle(fontSize: fontSize(14), color: Colors.white),
-        bodySmall: TextStyle(fontSize: fontSize(12), color: Colors.white70),
-        labelLarge: TextStyle(fontSize: fontSize(14), fontWeight: FontWeight.w500, color: Colors.white),
-        labelMedium: TextStyle(fontSize: fontSize(12), fontWeight: FontWeight.w500, color: Colors.white),
-        labelSmall: TextStyle(fontSize: fontSize(10), fontWeight: FontWeight.w500, color: Colors.white),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primary,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: BorderSide(color: primary),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surfaceVariant,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: error, width: 2),
+        ),
+        labelStyle: const TextStyle(color: Colors.white70),
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+      ),
+      cardTheme: CardThemeData(
+        color: surface,
+        elevation: 4,
+        shadowColor: primary.withOpacity(0.1),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      iconTheme: IconThemeData(color: primary),
+      primaryIconTheme: const IconThemeData(color: Colors.white),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: Colors.black,
+        elevation: 6,
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: surface,
+        selectedItemColor: primary,
+        unselectedItemColor: Colors.white60,
+        type: BottomNavigationBarType.fixed,
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: primary,
+        unselectedLabelColor: Colors.white70,
+        indicatorColor: primary,
+        indicatorSize: TabBarIndicatorSize.tab,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) return primary;
+          return Colors.grey;
+        }),
+        trackColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) return primary.withOpacity(0.5);
+          return Colors.grey.withOpacity(0.3);
+        }),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) return primary;
+          return Colors.transparent;
+        }),
+        checkColor: const MaterialStatePropertyAll(Colors.black),
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: primary,
+        inactiveTrackColor: primary.withOpacity(0.3),
+        thumbColor: primary,
+        overlayColor: primary.withOpacity(0.2),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: primary,
+        linearTrackColor: primary.withOpacity(0.3),
+        circularTrackColor: primary.withOpacity(0.3),
+      ),
+      dividerTheme: DividerThemeData(color: surface, thickness: 1),
+      listTileTheme: ListTileThemeData(textColor: Colors.white, iconColor: primary, selectedColor: primary,
+        selectedTileColor: primary.withOpacity(0.1),
+      ),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+        displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+        displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+        headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
+        headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+        headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+        titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+        titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
+        titleSmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
+        bodyLarge: TextStyle(fontSize: 16, color: Colors.white),
+        bodyMedium: TextStyle(fontSize: 14, color: Colors.white),
+        bodySmall: TextStyle(fontSize: 12, color: Colors.white70),
+        labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
+        labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
+        labelSmall: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white),
       ),
     );
   }
 
   static ThemeData get darkTheme => _buildTheme();
-  static ThemeData getResponsiveDarkTheme() => _buildTheme(responsive: true);
 
-  static InputDecoration getInputDecoration({
-    required String labelText, 
-    String? hintText, 
-    IconData? prefixIcon
-  }) => InputDecoration(
+  static InputDecoration getInputDecoration({required String labelText, String? hintText, IconData? prefixIcon}) => InputDecoration(
     labelText: labelText,
     hintText: hintText,
     prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: onSurfaceVariant) : null,
