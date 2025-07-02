@@ -31,8 +31,7 @@ class ApiService {
       requestBody: true,
       responseBody: true,
       responseHeader: false,
-      error: true,
-      compact: true, maxWidth: 120,
+      error: true, compact: true, maxWidth: 120,
     ));
     
     dio.interceptors.add(InterceptorsWrapper(

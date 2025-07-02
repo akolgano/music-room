@@ -10,104 +10,6 @@ import '../../widgets/widgets.dart';
 import '../../core/theme_utils.dart';
 
 class PlaylistDetailWidgets {
-  static Widget buildPlaylistHeader(BuildContext context, Playlist playlist) {
-    return AppTheme.buildHeaderCard(
-      child: Column(
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primary.withOpacity(0.8), 
-                  AppTheme.primary.withOpacity(0.4)
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3), 
-                  blurRadius: 20, 
-                  offset: const Offset(0, 8)
-                ),
-              ],
-            ),
-            child: playlist.imageUrl?.isNotEmpty == true
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    playlist.imageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => 
-                      const Icon(Icons.library_music, size: 60, color: Colors.white),
-                  ),
-                )
-              : const Icon(Icons.library_music, size: 60, color: Colors.white),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            playlist.name,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          if (playlist.description.isNotEmpty) ...[
-            Text(
-              playlist.description,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white.withOpacity(0.8),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-          ],
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Created by ${playlist.creator}',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(width: 12),
-              buildVisibilityChip(playlist.isPublic),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue.withOpacity(0.3)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.refresh, color: Colors.blue, size: 16),
-                SizedBox(width: 6),
-                Text(
-                  'Pull down to refresh • Auto-refresh every 30s',
-                  style: TextStyle(color: Colors.blue, fontSize: 12, fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   static Widget buildThemedPlaylistHeader(BuildContext context, Playlist playlist) {
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
@@ -126,11 +28,7 @@ class PlaylistDetailWidgets {
                     colors: [AppTheme.primary.withOpacity(0.8), AppTheme.primary.withOpacity(0.4)],
                   ),
                   boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3), 
-                      blurRadius: 20, 
-                      offset: const Offset(0, 8)
-                    ),
+                    BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: playlist.imageUrl?.isNotEmpty == true

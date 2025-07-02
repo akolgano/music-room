@@ -20,6 +20,15 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   String get screenTitle => 'Add New Friend';
 
   @override
+  List<Widget> get actions => [
+    TextButton.icon(
+      onPressed: () => navigateTo(AppRoutes.friendRequests),
+      icon: const Icon(Icons.inbox, color: AppTheme.primary),
+      label: const Text('Requests', style: TextStyle(color: AppTheme.primary)),
+    ),
+  ];
+
+  @override
   void dispose() {
     _userIdController.dispose();
     super.dispose();
@@ -38,7 +47,8 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           ),
           const SizedBox(height: 16),
           AppTheme.buildFormCard(
-            title: 'Add Friend by User ID', titleIcon: Icons.person_add,
+            title: 'Add Friend by User ID', 
+            titleIcon: Icons.person_add,
             child: Form(
               key: _formKey,
               child: Column(
@@ -58,13 +68,21 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                     onChanged: (value) => setState(() {}),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppWidgets.primaryButton(
-                      context: context,
-                      text: 'Send Friend Request',
-                      onPressed: _userIdController.text.isNotEmpty ? _sendFriendRequest : null, icon: Icons.send,
-                    ),
+                  buildConsumerContent<FriendProvider>(
+                    builder: (context, friendProvider) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: AppWidgets.primaryButton(
+                          context: context,
+                          text: friendProvider.isLoading ? 'Sending...' : 'Send Friend Request',
+                          onPressed: _userIdController.text.isNotEmpty && !friendProvider.isLoading 
+                            ? _sendFriendRequest 
+                            : null, 
+                          icon: Icons.send,
+                          isLoading: friendProvider.isLoading,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -72,17 +90,19 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           ),
           const SizedBox(height: 16),
           AppWidgets.infoBanner(
-            title: 'Important Note',
-            message: 'Friend requests are sent directly to the user. Since the API doesn\'t support retrieving pending requests, the recipient will need to manage requests through their own interface.',
+            title: 'Quick Access',
+            message: 'Check your sent and received friend requests',
             icon: Icons.info_outline,
-            color: Colors.orange,
+            color: Colors.blue,
+            actionText: 'View Requests',
+            onAction: () => navigateTo(AppRoutes.friendRequests),
           ),
           const SizedBox(height: 16),
           AppWidgets.infoBanner(
             title: 'How It Works',
             message: '1. Get their user ID\n2. Enter it above\n3. Send the request\n4. They accept your request\n5. Start sharing music!',
             icon: Icons.help_outline,
-            color: Colors.blue,
+            color: Colors.purple,
           ),
         ],
       ),
@@ -120,6 +140,19 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
     await runAsyncAction(
       () async {
         final friendProvider = getProvider<FriendProvider>();
+        
+        if (friendProvider.friends.contains(userId)) {
+          throw Exception('This user is already your friend');
+        }
+        
+        final sentInvitations = friendProvider.sentInvitations;
+        final alreadySent = sentInvitations.any((invitation) {
+          final toUserId = friendProvider.getToUserId(invitation);
+          final status = friendProvider.getInvitationStatus(invitation);
+          return toUserId == userId && status == 'pending';
+        });
+        
+        if (alreadySent) throw Exception('You already sent a friend request to this user');
         await friendProvider.sendFriendRequest(auth.token!, userId!);
         _userIdController.clear();
       },
