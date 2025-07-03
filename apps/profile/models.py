@@ -5,13 +5,6 @@ from django.contrib.postgres.fields import ArrayField
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-
-    gender = models.CharField(
-        max_length=6,
-        choices=[('female', 'female'), ('male', 'male')],
-        null=True,
-        blank=True
-        )
     
     avatar = models.CharField(
         max_length=100,
@@ -34,15 +27,8 @@ class Profile(models.Model):
         default=''
         )
 
-    first_name = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        default=''
-        )
-    
-    last_name = models.CharField(
-        max_length=50,
+    name = models.CharField(
+        max_length=100,
         null=True,
         blank=True,
         default=''
@@ -54,39 +40,6 @@ class Profile(models.Model):
         blank=True,
         default=''
         )
-    
-    street = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        default=''
-        )
-    
-    country = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        default=''
-        )
-    
-    postal_code = models.CharField(
-        max_length=10,
-        null=True,
-        blank=True,
-        default=''
-        )
-
-    dob = models.DateField(
-        null=True, 
-        blank=True
-    )
-    
-    hobbies = ArrayField(
-        models.CharField(max_length=50),
-        null=True,
-        blank=True,
-        default=list
-    )
 
     friend_info = models.CharField(
         max_length=500,
@@ -111,10 +64,10 @@ class Profile(models.Model):
         
     def __str__(self):
         return (
-            f"user id: {self.user.id}, gender: {self.gender}, avatar: {self.avatar},"
+            f"user id: {self.user.id}, avatar: {self.avatar},"
             f"location: {self.location}, bio: {self.bio},"
-            f"first_name: {self.first_name}, last_name: {self.last_name},"
-            f"phone: {self.phone}, street: {self.street}, country: {self.country}, postal_code: {self.postal_code},"    
-            f"dob: {self.dob}, hobbies: {self.hobbies}, friend_info: {self.friend_info},"
+            f"name: {self.name},"
+            f"phone: {self.phone},"    
+            f"friend_info: {self.friend_info},"
             f"music_preferences: {self.music_preferences}"
         )

@@ -16,7 +16,6 @@ export PYTHONPATH=/app
 
 echo "Applying migrations..."
 python manage.py makemigrations
-python manage.py makemigrations profile
 python manage.py migrate
 echo "Loading data..."
 if [ -f "/app/sample.json" ]; then

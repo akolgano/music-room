@@ -14,12 +14,14 @@ import uuid
 from urllib.parse import urljoin
 from .models import Profile
 from rest_framework import serializers
-from .serializers import ProfileSerializer
+from .serializers import ProfileSerializer, FriendInfoSerializer, PublicInfoSerializer
 from django.core.exceptions import ValidationError
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from PIL import Image
 import io
+from apps.users.models import Friendship
+from django.db.models import Q
 
 
 MAX_FILE_SIZE_MB = 1
@@ -27,27 +29,19 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 
 User = get_user_model()
 
-    
 
 @swagger_auto_schema(
-    method='post',
+    method='patch',
     operation_summary="Update user profile",
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
             'avatar_base64': openapi.Schema(type=openapi.TYPE_STRING, description="Base64 encoded avatar image"),
             'mime_type': openapi.Schema(type=openapi.TYPE_STRING, description="MIME type of the image ('image/jpeg' or 'image/png')"),
-            'gender': openapi.Schema(type=openapi.TYPE_STRING, description="Gender (male or female)"),
             'location': openapi.Schema(type=openapi.TYPE_STRING),
             'bio': openapi.Schema(type=openapi.TYPE_STRING),
-            'first_name': openapi.Schema(type=openapi.TYPE_STRING),
-            'last_name': openapi.Schema(type=openapi.TYPE_STRING),
+            'name': openapi.Schema(type=openapi.TYPE_STRING),
             'phone': openapi.Schema(type=openapi.TYPE_STRING),
-            'street': openapi.Schema(type=openapi.TYPE_STRING),
-            'country': openapi.Schema(type=openapi.TYPE_STRING),
-            'postal_code': openapi.Schema(type=openapi.TYPE_STRING),
-            'dob': openapi.Schema(type=openapi.TYPE_STRING, format='date', description='Date of birth (YYYY-MM-DD)'),
-            'hobbies': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
             'friend_info': openapi.Schema(type=openapi.TYPE_STRING),
             'music_preferences': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
         }
@@ -77,22 +71,18 @@ User = get_user_model()
                     items=openapi.Schema(type=openapi.TYPE_STRING)
                 ),
                 example={
-                    "gender": ["\" malee \" is not a valid choice"],
                     "phone": ["Phone number must contain only digits"],
-                    "postal_code": ["Postal code must contain only digits"],
-                    "country": ["Country is not in countries list"],
-                    "dob": ["Dob must be in the past"],
-                    "hobbies": ["xxxx is not in hobbies list"],
-                    "hobbies": ["Each hobby must be unique"],
                     "music_preferences": ["xxxx is not in music preferences list"],
                     "music_preferences": ["Each music preference must be unique"],
-                    "error": "avatar_base64 is not valid image | mime_type not image/png or image/jpeg"
+                    "error": "avatar_base64 is not valid image | mime_type not image/png or image/jpeg",
+                    "error": "avatar file size exceeds 1 MB limit",
+                    "error": "mime_type not image/png or image/jpeg"
                 }
             ),
         )
     }
 )
-@api_view(['POST'])
+@api_view(['PATCH'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
@@ -114,7 +104,7 @@ def update_profile(request):
             filename = uuid.uuid4().hex + ext
             file_data = base64.b64decode(avatar_base64)
             if len(file_data) > MAX_FILE_SIZE_BYTES:
-                return JsonResponse({'error': f'Avatar file size exceeds {MAX_FILE_SIZE_MB}MB limit'}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({'error': f'avatar file size exceeds {MAX_FILE_SIZE_MB} MB limit'}, status=status.HTTP_400_BAD_REQUEST)
             save_dir = os.path.join(settings.MEDIA_ROOT)
             file_path = os.path.join(save_dir, filename)
             with open(file_path, 'wb') as f:
@@ -135,14 +125,29 @@ def update_profile(request):
     return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @swagger_auto_schema(
     method='get',
     operation_summary="Get user profile",
+    manual_parameters=[
+        openapi.Parameter(
+            'user_id',
+            openapi.IN_PATH,
+            description="Get user profile",
+            type=openapi.TYPE_INTEGER,
+            required=True,
+        )
+    ],
     responses={
         200: openapi.Response(
             description="User profile get successful",
             schema=ProfileSerializer()
+        ),
+        400: openapi.Response(
+            description="User profile get failed due to error ",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
+            )
         ),
         401: openapi.Response(
             description="Unauthorized",
@@ -152,27 +157,32 @@ def update_profile(request):
                 example={'detail': 'Authentication credentials were not provided'}
             )
         ),
-        400: openapi.Response(
-            description="User profile get failed due to error ",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
-            )
-        ),
     }
 )
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def get_profile(request):
+def get_user_profile(request, user_id):
     user = request.user
     try:
-        profile = Profile.objects.filter(user=user).first()
-        serializer = ProfileSerializer(profile)
-        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+        if user.id == user_id:
+            profile = Profile.objects.filter(user=user).first()
+            serializer = ProfileSerializer(profile)
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+
+        profile = Profile.objects.filter(user_id=user_id).first()
+        if not profile:
+            return JsonResponse({'error': "No such profile"}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_friend = is_a_friend(user, user_id)
+        if is_friend:
+            serializer = FriendInfoSerializer(profile)
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+        else:
+            serializer = PublicInfoSerializer(profile)
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 def is_valid_image_base64(img_base64, mime_type):
@@ -190,3 +200,17 @@ def is_valid_image_base64(img_base64, mime_type):
         return image.format == expected_format
     except Exception as e:
         return False
+
+
+def is_a_friend(user, friend_id):
+    friends = Friendship.objects.filter(
+        Q(from_user=user) | Q(to_user=user),
+        status='accepted')
+
+    for friend in friends:
+        if (friend.from_user_id == friend_id):
+            return True
+        if (friend.to_user_id == friend_id):
+            return True
+    
+    return False
