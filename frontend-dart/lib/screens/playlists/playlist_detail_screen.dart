@@ -429,8 +429,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             trackId: playlistTrack.trackId,
             name: playlistTrack.name,
             position: playlistTrack.position,
-            points: playlistTrack.points,
-            track: trackDetails,
+            points: playlistTrack.points, track: trackDetails,
           );
           musicProvider.playlistTracks.clear();
           musicProvider.playlistTracks.addAll(providerTracks);
@@ -466,44 +465,79 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     }
   }
 
-
   Future<void> _playPlaylist() async {
     if (_tracks.isEmpty) {
       showInfo('No tracks to play');
       return;
     }
-    await _playTrackAt(0);
-    showInfo('Playing "${_playlist!.name}"');
+    
+    try {
+      final playerService = getProvider<MusicPlayerService>();
+      await playerService.setPlaylistAndPlay(
+        playlist: _tracks,
+        startIndex: 0,
+        playlistId: widget.playlistId,
+      );
+      showInfo('Playing "${_playlist!.name}"');
+    } catch (e) {
+      showError('Failed to play playlist: $e');
+    }
   }
 
-  void _shufflePlaylist() {
+  void _shufflePlaylist() async {
     if (_tracks.isEmpty) {
       showInfo('No tracks to shuffle');
       return;
     }
-    showInfo('Shuffling "${_playlist!.name}"');
+    
+    try {
+      final playerService = getProvider<MusicPlayerService>();
+      final shuffledTracks = List<PlaylistTrack>.from(_tracks);
+      shuffledTracks.shuffle();
+      
+      await playerService.setPlaylistAndPlay(
+        playlist: shuffledTracks,
+        startIndex: 0,
+        playlistId: widget.playlistId,
+      );
+      playerService.toggleShuffle();
+      
+      showInfo('Shuffling "${_playlist!.name}"');
+    } catch (e) {
+      showError('Failed to shuffle playlist: $e');
+    }
   }
 
   Future<void> _playTrackAt(int index) async {
     if (index < 0 || index >= _tracks.length) return;
-    final track = _tracks[index].track;
     
-    if (track?.previewUrl != null) {
+    try {
       final playerService = getProvider<MusicPlayerService>();
-      await playerService.playTrack(track!, track.previewUrl!);
-      showSuccess('Playing "${track.name}"');
-    } else {
-      showError('No preview available for this track');
+      
+      if (playerService.playlistId == widget.playlistId && 
+          playerService.playlist.length == _tracks.length) {
+        await playerService.playTrackAtIndex(index);
+      } else {
+        await playerService.setPlaylistAndPlay(
+          playlist: _tracks,
+          startIndex: index,
+          playlistId: widget.playlistId,
+        );
+      }
+      
+      final track = _tracks[index].track;
+      if (track != null) {
+        showSuccess('Playing "${track.name}"');
+      }
+    } catch (e) {
+      showError('Failed to play track: $e');
     }
   }
 
   Future<void> _removeTrack(String trackId) async {
     if (!_isOwner) return;
     
-    final confirmed = await showConfirmDialog(
-      'Remove Track', 
-      'Remove this track from the playlist?'
-    );
+    final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
     
     if (confirmed) {
       await runAsyncAction(
@@ -594,10 +628,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PlaylistLicensingScreen(
-          playlistId: widget.playlistId, 
-          playlistName: _playlist?.name ?? 'Playlist'
-        ),
+        builder: (context) => PlaylistLicensingScreen(playlistId: widget.playlistId, playlistName: _playlist?.name ?? 'Playlist'),
       ),
     ).then((_) {
       if (mounted) _loadData();

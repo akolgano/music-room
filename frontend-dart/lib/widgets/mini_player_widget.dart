@@ -17,10 +17,15 @@ class MiniPlayerWidget extends StatelessWidget {
         if (currentTrack == null) return const SizedBox.shrink();
 
         return Container(
-          height: 100, 
+          height: 100,
           decoration: BoxDecoration(
             color: AppTheme.surface,
-            border: Border(top: BorderSide(color: AppTheme.primary.withOpacity(0.3), width: 1)),
+            border: Border(
+              top: BorderSide(
+                color: AppTheme.primary.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -31,7 +36,7 @@ class MiniPlayerWidget extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildProgressBar(context, playerService), 
+              _buildProgressBar(context, playerService),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -75,6 +80,7 @@ class MiniPlayerWidget extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,36 +97,121 @@ class MiniPlayerWidget extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              currentTrack.artist,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    currentTrack.artist,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (playerService.hasPlaylist) ...[
+                                  const Text(
+                                    ' • ',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Text(
+                                    playerService.currentTrackInfo,
+                                    style: const TextStyle(
+                                      color: AppTheme.primary,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          onPressed: () => playerService.togglePlay(),
-                          icon: Icon(
-                            playerService.isPlaying ? Icons.pause : Icons.play_arrow,
-                            color: Colors.black,
-                            size: 20,
+                      
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: playerService.hasPreviousTrack 
+                                  ? Colors.grey.withOpacity(0.3)
+                                  : Colors.grey.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: playerService.hasPreviousTrack 
+                                  ? () => playerService.playPrevious()
+                                  : null,
+                              icon: Icon(
+                                Icons.skip_previous,
+                                color: playerService.hasPreviousTrack 
+                                    ? Colors.white 
+                                    : Colors.grey,
+                                size: 16,
+                              ),
+                              padding: EdgeInsets.zero,
+                              tooltip: 'Previous track',
+                            ),
                           ),
-                          padding: EdgeInsets.zero,
-                        ),
+                          const SizedBox(width: 8),
+                          
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: () => playerService.togglePlay(),
+                              icon: Icon(
+                                playerService.isPlaying 
+                                    ? Icons.pause 
+                                    : Icons.play_arrow,
+                                color: Colors.black,
+                                size: 20,
+                              ),
+                              padding: EdgeInsets.zero,
+                              tooltip: playerService.isPlaying ? 'Pause' : 'Play',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: playerService.hasNextTrack 
+                                  ? Colors.grey.withOpacity(0.3)
+                                  : Colors.grey.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: playerService.hasNextTrack 
+                                  ? () => playerService.playNext()
+                                  : null,
+                              icon: Icon(
+                                Icons.skip_next,
+                                color: playerService.hasNextTrack 
+                                    ? Colors.white 
+                                    : Colors.grey,
+                                size: 16,
+                              ),
+                              padding: EdgeInsets.zero,
+                              tooltip: 'Next track',
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(width: 8),
+                      
                       Container(
                         width: 32,
                         height: 32,
@@ -130,12 +221,9 @@ class MiniPlayerWidget extends StatelessWidget {
                         ),
                         child: IconButton(
                           onPressed: () => playerService.stop(),
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
-                          ),
+                          icon: const Icon(Icons.close, color: Colors.white, size: 16),
                           padding: EdgeInsets.zero,
+                          tooltip: 'Stop',
                         ),
                       ),
                     ],
@@ -149,16 +237,21 @@ class MiniPlayerWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBar(BuildContext context, MusicPlayerService playerService) { 
+  Widget _buildProgressBar(BuildContext context, MusicPlayerService playerService) {
     final duration = playerService.duration;
     final position = playerService.position;
+    
     if (duration.inSeconds == 0) {
-      return Container(height: 3, color: AppTheme.primary.withOpacity(0.2));
+      return Container(
+        height: 3,
+        color: AppTheme.primary.withOpacity(0.2),
+      );
     }
+
     return Container(
       height: 3,
       child: SliderTheme(
-        data: SliderTheme.of(context).copyWith( 
+        data: SliderTheme.of(context).copyWith(
           trackHeight: 3,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 0),
           overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
@@ -168,7 +261,7 @@ class MiniPlayerWidget extends StatelessWidget {
         child: Slider(
           value: position.inSeconds.toDouble(),
           max: duration.inSeconds.toDouble(),
-          onChanged: (value) => playerService.seek(Duration(seconds: value.toInt()))
+          onChanged: (value) => playerService.seek(Duration(seconds: value.toInt())),
         ),
       ),
     );

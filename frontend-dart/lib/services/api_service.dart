@@ -8,32 +8,33 @@ import '../models/api_models.dart';
 
 class ApiService {
   final Dio _dio;
-  
+
   ApiService([Dio? dio]) : _dio = dio ?? _createConfiguredDio();
-  
+
   static Dio _createConfiguredDio() {
     final dio = Dio();
     String baseUrl;
     final envBaseUrl = dotenv.env['API_BASE_URL'];
     if (envBaseUrl != null && envBaseUrl.isNotEmpty) baseUrl = envBaseUrl;
     else baseUrl = 'http://localhost:8000';
-    
     if (baseUrl.endsWith('/')) baseUrl = baseUrl.substring(0, baseUrl.length - 1);
-    
+
     dio.options.baseUrl = baseUrl;
     dio.options.headers = {'Content-Type': 'application/json', 'Accept': 'application/json'};
     dio.options.connectTimeout = const Duration(seconds: 10);
     dio.options.receiveTimeout = const Duration(seconds: 10);
     dio.options.sendTimeout = const Duration(seconds: 10);
-    
+
     dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,
       requestBody: true,
       responseBody: true,
       responseHeader: false,
-      error: true, compact: true, maxWidth: 120,
+      error: true, 
+      compact: true, 
+      maxWidth: 120,
     ));
-    
+
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         handler.next(options);
@@ -45,7 +46,7 @@ class ApiService {
         handler.next(error);
       },
     ));
-    
+
     return dio;
   }
 
@@ -159,21 +160,13 @@ class ApiService {
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
       String cleanTrackId = trackId;
-      if (trackId.startsWith('deezer_')) {
-        cleanTrackId = trackId.substring(7);
-      }
+      if (trackId.startsWith('deezer_')) cleanTrackId = trackId.substring(7);
       final endpoint = '/deezer/track/$cleanTrackId/';
       return await _get(endpoint, Track.fromJson, token: token);
     } catch (e) {
       return null;
     }
   }
-
-  Future<void> addTrackFromDeezer(int trackId, String token) => 
-      _postVoid('/tracks/add_from_deezer/$trackId/', {}, token: token);
-
-  Future<Map<String, dynamic>> searchTracks(String query, String token) => 
-      _get('/tracks/search/', (data) => data, queryParams: {'query': query}, token: token);
 
   Future<PlaylistsResponse> getSavedPlaylists(String token) => 
       _get('/playlists/saved_playlists/', PlaylistsResponse.fromJson, token: token);
@@ -261,41 +254,31 @@ class ApiService {
           errors.add(e.toString());
         }
       }
-      
       await Future.delayed(const Duration(milliseconds: 100));
     }
 
     return BatchAddResult(
       totalTracks: totalTracks,
-      successCount: successCount,
-      duplicateCount: duplicateCount,
-      failureCount: failureCount,
-      errors: errors,
+      successCount: successCount, duplicateCount: duplicateCount, failureCount: failureCount, errors: errors,
     );
   }
 
   String _extractErrorMessage(DioException error) {
     if (error.response?.data is Map<String, dynamic>) {
       final data = error.response!.data as Map<String, dynamic>;
-      if (data.containsKey('error')) {
-        return data['error'].toString();
-      }
-      if (data.containsKey('detail')) {
-        return data['detail'].toString();
-      }
-      if (data.containsKey('message')) {
-        return data['message'].toString();
-      }
+      if (data.containsKey('error')) return data['error'].toString();
+      if (data.containsKey('detail')) return data['detail'].toString();
+      if (data.containsKey('message')) return data['message'].toString();
     }
     return error.message ?? 'Unknown error occurred';
   }
 
   String get baseUrl => _dio.options.baseUrl;
-  
+
   void updateAuthToken(String token) {
     _dio.options.headers['Authorization'] = 'Token $token';
   }
-  
+
   void clearAuthToken() {
     _dio.options.headers.remove('Authorization');
   }

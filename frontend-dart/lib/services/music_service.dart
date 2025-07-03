@@ -24,12 +24,7 @@ class MusicService {
   }
 
   Future<String> createPlaylist(String name, String description, bool isPublic, String token, [String? deviceUuid]) async {
-    final request = CreatePlaylistRequest(
-      name: name, 
-      description: description, 
-      public: isPublic, 
-      deviceUuid: deviceUuid
-    );
+    final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, deviceUuid: deviceUuid);
     final response = await _api.createPlaylist(token, request); 
     return response.playlistId;
   }
@@ -41,10 +36,6 @@ class MusicService {
 
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     return await _api.getDeezerTrack(trackId, token);
-  }
-
-  Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
-    await _api.addTrackFromDeezer(int.parse(deezerTrackId), token);
   }
 
   Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async {

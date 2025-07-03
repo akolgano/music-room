@@ -126,48 +126,6 @@ class PlaylistDetailWidgets {
     );
   }
 
-  static Widget buildPlaylistActions({
-    required VoidCallback onPlayAll,
-    required VoidCallback onShuffle,
-  }) {
-    return Card(
-      color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: onPlayAll,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Play All'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: onShuffle,
-                icon: const Icon(Icons.shuffle),
-                label: const Text('Shuffle'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.surface,
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white), 
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   static Widget buildThemedPlaylistActions(BuildContext context, {
     required VoidCallback onPlayAll,
     required VoidCallback onShuffle,
@@ -199,9 +157,7 @@ class PlaylistDetailWidgets {
                 icon: const Icon(Icons.shuffle),
                 label: const Text('Shuffle'),
                 style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
-                  padding: MaterialStateProperty.all(
-                    const EdgeInsets.symmetric(vertical: 12)
-                  ),
+                  padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
                 ),
               ),
             ),
@@ -222,7 +178,6 @@ class PlaylistDetailWidgets {
     Key? key,
   }) {
     final track = playlistTrack.track;
-    
     if (track == null) {
       return buildErrorTrackItem(key, playlistTrack, index);
     }
@@ -241,14 +196,18 @@ class PlaylistDetailWidgets {
           children: [
             buildTrackImage(track),
             const SizedBox(width: 12),
+            
             Expanded(
-              flex: 2,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     track.name,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.w600, 
+                      fontSize: 14
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -265,25 +224,34 @@ class PlaylistDetailWidgets {
                 ],
               ),
             ),
+            
             if (playlistId != null) 
-              Expanded(flex: 1, child: buildVotingSection(context, index, playlistTrack)),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 20),
-                  onPressed: onPlay,
-                  tooltip: 'Play track',
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
-                if (isOwner && onRemove != null)
+              Container(
+                constraints: const BoxConstraints(maxWidth: 80),
+                child: buildVotingSection(context, index, playlistTrack),
+              ),
+            
+            Container(
+              constraints: const BoxConstraints(maxWidth: 80),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   IconButton(
-                    icon: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 18),
-                    onPressed: onRemove,
-                    tooltip: 'Remove from playlist', 
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    icon: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 20),
+                    onPressed: onPlay, tooltip: 'Play track',
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
+                    padding: const EdgeInsets.all(4),
                   ),
-              ],
+                  if (isOwner && onRemove != null)
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 18),
+                      onPressed: onRemove,
+                      tooltip: 'Remove from playlist', 
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
+                      padding: const EdgeInsets.all(4),
+                    ),
+                ],
+              ),
             ),
           ],
         ),
@@ -297,9 +265,10 @@ class PlaylistDetailWidgets {
         final currentPoints = playlistTrack.points;
         final hasUserVoted = votingProvider.hasUserVotedByIndex(index);
         final canVote = votingProvider.canVote && !hasUserVoted;
-        
+
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          constraints: const BoxConstraints(maxWidth: 80),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
             color: getPointsColor(currentPoints).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
@@ -308,28 +277,34 @@ class PlaylistDetailWidgets {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              InkWell(
-                onTap: canVote ? () {
-                } : null,
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: InkWell(
+                  onTap: canVote ? () {
+                  } : null,
+                  borderRadius: BorderRadius.circular(10),
                   child: Icon(
                     hasUserVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
                     color: hasUserVoted 
                       ? Colors.green 
                       : (canVote ? getPointsColor(currentPoints) : Colors.grey),
-                    size: 16,
+                    size: 14,
                   ),
                 ),
               ),
               const SizedBox(width: 4),
-              Text(
-                '+$currentPoints',
-                style: TextStyle(
-                  color: getPointsColor(currentPoints), 
-                  fontSize: 12, 
-                  fontWeight: FontWeight.w600
+              
+              Flexible(
+                child: Text(
+                  '+$currentPoints',
+                  style: TextStyle(
+                    color: getPointsColor(currentPoints), 
+                    fontSize: 11, 
+                    fontWeight: FontWeight.w600
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
@@ -339,10 +314,7 @@ class PlaylistDetailWidgets {
     );
   }
 
-  static Widget buildEmptyTracksState({
-    required bool isOwner,
-    VoidCallback? onAddTracks,
-  }) {
+  static Widget buildEmptyTracksState({required bool isOwner, VoidCallback? onAddTracks}) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -435,11 +407,7 @@ class PlaylistDetailWidgets {
           const SizedBox(width: 4),
           Text(
             isPublic ? 'Public' : 'Private',
-            style: TextStyle(
-              color: chipColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: chipColor, fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -471,6 +439,8 @@ class PlaylistDetailWidgets {
               child: Image.network(
                 track.imageUrl!, 
                 fit: BoxFit.cover,
+                width: 56,
+                height: 56,
                 errorBuilder: (context, error, stackTrace) => 
                   const Icon(Icons.music_note, color: Colors.white, size: 24),
               ),
@@ -491,10 +461,7 @@ class PlaylistDetailWidgets {
         leading: Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.3), 
-            borderRadius: BorderRadius.circular(8)
-          ),
+          decoration: BoxDecoration(color: Colors.red.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
           child: const Icon(Icons.music_off, color: Colors.white),
         ),
         title: Text(
@@ -521,10 +488,7 @@ class PlaylistDetailWidgets {
         leading: Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
           child: const Stack(
             alignment: Alignment.center,
             children: [
@@ -532,10 +496,7 @@ class PlaylistDetailWidgets {
               SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppTheme.primary,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
               ),
             ],
           ),
