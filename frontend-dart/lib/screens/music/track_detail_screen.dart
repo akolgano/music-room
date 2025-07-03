@@ -54,19 +54,8 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
               ]
             ),
           ),
-          if (_track!.deezerTrackId != null)
-            const PopupMenuItem(
-              value: 'add_to_library',
-              child: Row(
-                children: [
-                  Icon(Icons.library_add, size: 16), 
-                  SizedBox(width: 8), 
-                  Text('Add to Library')
-                ],
-              ),
-            ),
         ],
-      ),
+      )
     ],
   ];
 
@@ -88,8 +77,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildTrackHeader(themeProvider),
-                const SizedBox(height: 24),
+                _buildTrackHeader(themeProvider), const SizedBox(height: 24),
                 _buildTrackActions(),
                 const SizedBox(height: 24),
                 _buildTrackInfo(),
@@ -197,17 +185,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                       onPressed: _playPauseTrack,
                       isPrimary: true,
                     ),
-                    _buildActionButton(
-                      icon: Icons.playlist_add, 
-                      label: 'Add to Playlist', 
-                      onPressed: _showAddToPlaylistDialog
-                    ),
-                    if (_track!.deezerTrackId != null)
-                      _buildActionButton(
-                        icon: Icons.library_add,
-                        label: 'Add to Library',
-                        onPressed: _addToLibrary,
-                      ),
+                    _buildActionButton(icon: Icons.playlist_add, label: 'Add to Playlist', onPressed: _showAddToPlaylistDialog),
                   ],
                 ),
                 if (isCurrentTrack && playerService.duration.inSeconds > 0) ...[
@@ -525,28 +503,10 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(_track!, previewUrl);
         showSuccess('Playing "${_track!.name}"');
-      } else {
-        showError('No preview available for this track');
-      }
+      } else showError('No preview available for this track');
     } catch (e) {
       showError('Failed to play track: $e');
     }
-  }
-
-  Future<void> _addToLibrary() async {
-    if (_track?.deezerTrackId == null) {
-      showError('Cannot add non-Deezer track to library');
-      return;
-    }
-    
-    await runAsyncAction(
-      () async {
-        final musicProvider = getProvider<MusicProvider>();
-        await musicProvider.addTrackFromDeezer(_track!.deezerTrackId!, auth.token!);
-      },
-      successMessage: 'Added "${_track!.name}" to your library!',
-      errorMessage: 'Failed to add track to library',
-    );
   }
 
   Future<void> _addToCurrentPlaylist() async {
@@ -608,8 +568,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
               final playlist = _userPlaylists[index];
               return ListTile(
                 leading: Container(
-                  width: 40, 
-                  height: 40,
+                  width: 40, height: 40,
                   decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.library_music, color: AppTheme.primary),
                 ),
@@ -650,9 +609,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     switch (action) {
       case 'add_to_playlist':
         _showAddToPlaylistDialog();
-        break;
-      case 'add_to_library':
-        _addToLibrary();
         break;
     }
   }

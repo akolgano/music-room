@@ -65,10 +65,7 @@ class AppWidgets {
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: _getPrimary(context)) : null,
         filled: true,
         fillColor: _getSurface(context),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: _getPrimary(context), width: 2),
         ),
@@ -141,12 +138,13 @@ class AppWidgets {
                       )
                     else
                       _buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
+                    
                     SizedBox(width: ResponsiveHelper.spacing(context, 12)),
+                    
                     Expanded(
                       child: Row(
                         children: [
                           Expanded(
-                            flex: 3,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -166,21 +164,20 @@ class AppWidgets {
                               ],
                             ),
                           ),
+                          
                           if (showVotingControls && playlistId != null)
-                            Flexible(
-                              flex: 1,
-                              child: Padding(
-                                padding: EdgeInsets.only(right: ResponsiveHelper.spacing(context, 8)),
-                                child: TrackVotingControls(
-                                  playlistId: playlistId!,
-                                  trackId: track.id,
-                                  isCompact: true,
-                                ),
+                            Container(
+                              constraints: const BoxConstraints(maxWidth: 80),
+                              child: TrackVotingControls(
+                                playlistId: playlistId!,
+                                trackId: track.id,
+                                isCompact: true,
                               ),
                             ),
+                          
                           if (onSelectionChanged == null)
-                            Flexible(
-                              flex: 1,
+                            Container(
+                              constraints: const BoxConstraints(maxWidth: 100),
                               child: _buildTrackActions(
                                 context, 
                                 showAddButton, 
@@ -207,8 +204,7 @@ class AppWidgets {
 
   static Widget _buildImage(BuildContext context, String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) {
     return Container(
-      width: ResponsiveHelper.spacing(context, size), 
-      height: ResponsiveHelper.spacing(context, size),
+      width: ResponsiveHelper.spacing(context, size), height: ResponsiveHelper.spacing(context, size),
       decoration: BoxDecoration(
         color: backgroundColor, 
         borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 8))
@@ -238,7 +234,7 @@ class AppWidgets {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final actions = <Widget>[];
-
+    
     if (showPlayButton && onPlay != null) {
       actions.add(IconButton(
         icon: Icon(
@@ -248,10 +244,10 @@ class AppWidgets {
         ), 
         onPressed: onPlay,
         padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)), 
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40), 
       ));
     }
-
+    
     if (showAddButton && onAdd != null && !isInPlaylist) {
       actions.add(IconButton(
         icon: Icon(
@@ -262,10 +258,10 @@ class AppWidgets {
         onPressed: onAdd, 
         tooltip: 'Add to Playlist',
         padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)), 
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40), 
       ));
     }
-
+    
     if (isInPlaylist) {
       actions.add(Padding(
         padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)),
@@ -276,7 +272,7 @@ class AppWidgets {
         ),
       ));
     }
-
+    
     if (onRemove != null) {
       actions.add(IconButton(
         icon: Icon(
@@ -286,18 +282,14 @@ class AppWidgets {
         ), 
         onPressed: onRemove,
         padding: EdgeInsets.all(ResponsiveHelper.spacing(context, 4)), 
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32), 
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40), 
       ));
     }
-
+    
     if (actions.isEmpty) return const SizedBox.shrink();
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: actions.length > 2 
-        ? actions.take(2).toList() 
-        : actions,
-    );
+    
+    final displayedActions = actions.take(2).toList();
+    return Row(mainAxisSize: MainAxisSize.min, children: displayedActions);
   }
 
   static Future<bool> showConfirmDialog(

@@ -143,7 +143,6 @@ class TrackVotingControls extends StatelessWidget {
     return Consumer2<VotingProvider, AuthProvider>(
       builder: (context, votingProvider, authProvider, _) {
         final canVote = votingProvider.canVote;
-
         int? effectiveIndex = trackIndex;
         if (effectiveIndex == null && trackId.startsWith('track_')) {
           effectiveIndex = int.tryParse(trackId.split('_').last);
@@ -152,11 +151,9 @@ class TrackVotingControls extends StatelessWidget {
         final userVote = effectiveIndex != null 
             ? votingProvider.getUserVoteByIndex(effectiveIndex)
             : votingProvider.getUserVote(trackId);
-
         final trackStats = stats ?? (effectiveIndex != null 
             ? votingProvider.getTrackVotesByIndex(effectiveIndex)
             : votingProvider.getTrackVotes(trackId));
-
         final currentPoints = effectiveIndex != null ? votingProvider.getTrackPoints(effectiveIndex) : 0;
 
         final effectiveStats = trackStats ?? VoteStats(
@@ -191,37 +188,59 @@ class TrackVotingControls extends StatelessWidget {
     int? trackIndex,
     int currentPoints,
   ) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        VoteButton(
-          voteType: VoteType.upvote,
-          isSelected: userVote == 1,
-          isEnabled: canVote && userVote == null,
-          size: 16,
-          onPressed: canVote && userVote == null 
-              ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
-              : null,
-        ),
-        const SizedBox(width: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: _getPointsColor(currentPoints).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: _getPointsColor(currentPoints).withOpacity(0.5)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth > 0 ? constraints.maxWidth : 80.0;
+        
+        return Container(
+          width: maxWidth,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: InkWell(
+                  onTap: canVote && userVote == null 
+                      ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Icon(
+                    userVote == 1 ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    color: userVote == 1 
+                        ? Colors.green 
+                        : (canVote && userVote == null ? _getPointsColor(currentPoints) : Colors.grey),
+                    size: 16,
+                  ),
+                ),
+              ),
+              
+              const SizedBox(width: 4),
+              
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _getPointsColor(currentPoints).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: _getPointsColor(currentPoints).withOpacity(0.5)),
+                  ),
+                  child: Text(
+                    '+$currentPoints', 
+                    style: TextStyle(
+                      color: _getPointsColor(currentPoints),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ),
+            ],
           ),
-          child: Text(
-            '+$currentPoints', 
-            style: TextStyle(
-              color: _getPointsColor(currentPoints),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-      ],
+        );
+      },
     );
   }
 
@@ -236,6 +255,7 @@ class TrackVotingControls extends StatelessWidget {
     int currentPoints,
   ) {
     return Container(
+      constraints: const BoxConstraints(maxWidth: 200), 
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: AppTheme.surface,
@@ -246,7 +266,7 @@ class TrackVotingControls extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: _getPointsColor(currentPoints).withOpacity(0.2),
               borderRadius: BorderRadius.circular(16),
@@ -261,12 +281,15 @@ class TrackVotingControls extends StatelessWidget {
                   size: 16,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  '+$currentPoints points', 
-                  style: TextStyle(
-                    color: _getPointsColor(currentPoints),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                Flexible(
+                  child: Text(
+                    '+$currentPoints points', 
+                    style: TextStyle(
+                      color: _getPointsColor(currentPoints),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -284,17 +307,21 @@ class TrackVotingControls extends StatelessWidget {
                     ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
                     : null,
               ),
-              Text(
-                userVote != null ? 'You voted' : 'Vote for this track',
-                style: TextStyle(
-                  color: userVote != null ? Colors.green : Colors.white70,
-                  fontSize: 12,
+              Flexible(
+                child: Text(
+                  userVote != null ? 'You voted' : 'Vote for this track',
+                  style: TextStyle(
+                    color: userVote != null ? Colors.green : Colors.white70,
+                    fontSize: 10,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
               ),
               Icon(
                 Icons.info_outline,
                 color: Colors.grey,
-                size: 20,
+                size: 16,
               ),
             ],
           ),
@@ -302,11 +329,10 @@ class TrackVotingControls extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               userVote != null ? 'You have voted' : votingProvider.getVotingStatusMessage(),
-              style: TextStyle(
-                color: userVote != null ? Colors.green : Colors.orange,
-                fontSize: 10,
-              ),
+              style: TextStyle(color: userVote != null ? Colors.green : Colors.orange, fontSize: 9),
               textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
           ],
         ],
@@ -440,11 +466,7 @@ class VotingStatsCard extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],

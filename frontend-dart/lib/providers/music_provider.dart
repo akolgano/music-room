@@ -99,9 +99,7 @@ class MusicProvider extends BaseProvider {
       () => _musicService.searchDeezerTracks(query),
       errorMessage: 'Search failed',
     );
-    if (result != null) {
-      _searchResults = result;
-    }
+    if (result != null) _searchResults = result;
   }
 
   void clearSearchResults() {
@@ -119,14 +117,6 @@ class MusicProvider extends BaseProvider {
       setError('Failed to get track details');
       return null;
     }
-  }
-
-  Future<void> addTrackFromDeezer(String deezerTrackId, String token) async {
-    await executeAsync(
-      () => _musicService.addTrackFromDeezer(deezerTrackId, token),
-      successMessage: 'Track added to library successfully!',
-      errorMessage: 'Failed to add track to library',
-    );
   }
 
   Track? getTrackById(String trackId) {
