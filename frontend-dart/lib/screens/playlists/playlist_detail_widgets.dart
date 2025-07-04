@@ -196,7 +196,6 @@ class PlaylistDetailWidgets {
           children: [
             buildTrackImage(track),
             const SizedBox(width: 12),
-            
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,13 +223,11 @@ class PlaylistDetailWidgets {
                 ],
               ),
             ),
-            
             if (playlistId != null) 
               Container(
                 constraints: const BoxConstraints(maxWidth: 80),
                 child: buildVotingSection(context, index, playlistTrack),
               ),
-            
             Container(
               constraints: const BoxConstraints(maxWidth: 80),
               child: Row(
@@ -294,7 +291,6 @@ class PlaylistDetailWidgets {
                 ),
               ),
               const SizedBox(width: 4),
-              
               Flexible(
                 child: Text(
                   '+$currentPoints',
@@ -350,39 +346,6 @@ class PlaylistDetailWidgets {
             ],
           ],
         ),
-      ),
-    );
-  }
-
-  static Widget buildVisibilityChip(bool isPublic) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: (isPublic ? Colors.green : Colors.orange).withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isPublic ? Colors.green : Colors.orange,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isPublic ? Icons.public : Icons.lock,
-            size: 14,
-            color: isPublic ? Colors.green : Colors.orange,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            isPublic ? 'Public' : 'Private',
-            style: TextStyle(
-              color: isPublic ? Colors.green : Colors.orange,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -468,10 +431,7 @@ class PlaylistDetailWidgets {
           playlistTrack.name,
           style: const TextStyle(color: Colors.white),
         ),
-        subtitle: const Text(
-          'Track details unavailable', 
-          style: TextStyle(color: Colors.grey)
-        ),
+        subtitle: const Text('Track details unavailable', style: TextStyle(color: Colors.grey)),
       ),
     );
   }
@@ -501,10 +461,7 @@ class PlaylistDetailWidgets {
             ],
           ),
         ),
-        title: Text(
-          playlistTrack.track?.name ?? playlistTrack.name,
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: Text(playlistTrack.track?.name ?? playlistTrack.name, style: const TextStyle(color: Colors.white)),
         subtitle: const Text('Loading track details...', style: TextStyle(color: Colors.grey)),
       ),
     );

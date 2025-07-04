@@ -858,7 +858,6 @@ class AppWidgets {
         ],
       ),
     );
-
     controller.dispose();
     return result;
   }
@@ -891,29 +890,6 @@ class AppWidgets {
             child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withOpacity(0.7))),
           ),
         ],
-      ),
-    );
-  }
-
-  static void showInfoDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    required IconData icon,
-  }) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _getSurface(context),
-        title: Row(
-          children: [
-            Icon(icon, color: _getPrimary(context)),
-            const SizedBox(width: 8),
-            Text(title, style: TextStyle(color: _getOnSurface(context))),
-          ],
-        ),
-        content: Text(message, style: TextStyle(color: _getOnSurface(context))),
-        actions: [ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
       ),
     );
   }
