@@ -50,20 +50,7 @@ class TrackSortingService {
     }
   }
 
-  static List<PlaylistTrack> getTopNTracks(List<PlaylistTrack> tracks, TrackSortOption sortOption, int count) {
-    return tracks
-        .sorted((a, b) {
-          final comparison = _getComparison(a, b, sortOption.field);
-          return sortOption.order == SortOrder.ascending ? comparison : -comparison;
-        })
-        .take(count)
-        .toList();
-  }
-
-  static List<PlaylistTrack> filterTracks(
-    List<PlaylistTrack> tracks,
-    String searchTerm,
-  ) {
+  static List<PlaylistTrack> filterTracks(List<PlaylistTrack> tracks, String searchTerm) {
     if (searchTerm.isEmpty) return tracks;
     final lowerSearchTerm = searchTerm.toLowerCase();
     return tracks.where((track) {

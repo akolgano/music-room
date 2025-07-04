@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
@@ -16,6 +17,7 @@ import 'social_network_link_screen.dart';
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
   const ProfileScreen({Key? key, this.isEmbedded = false}) : super(key: key);
+
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -23,8 +25,10 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   @override
   String get screenTitle => 'Profile';
+
   @override
   bool get showBackButton => !widget.isEmbedded;
+
   @override
   bool get showMiniPlayer => !widget.isEmbedded;
 
@@ -42,28 +46,21 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, _) {
         if (profileProvider.isLoading) return buildLoadingState(message: 'Loading profile...');
+
         return RefreshIndicator(
           onRefresh: () => profileProvider.loadProfile(auth.token),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildProfileHeader(profileProvider),
-                const SizedBox(height: 16),
-                _buildAccountInfoSection(profileProvider),
-                const SizedBox(height: 16),
-                _buildPublicInfoSection(profileProvider),
-                const SizedBox(height: 16),
-                _buildPrivateInfoSection(profileProvider),
-                const SizedBox(height: 16),
-                _buildFriendInfoSection(profileProvider),
-                const SizedBox(height: 16),
-                _buildMusicPreferencesSection(profileProvider),
-                const SizedBox(height: 16),
-                _buildSocialAccountsSection(profileProvider),
-                const SizedBox(height: 16), 
-                _buildSecuritySection(profileProvider),
-                const SizedBox(height: 16), 
+                _buildProfileHeader(profileProvider), const SizedBox(height: 16),
+                _buildAccountInfoSection(profileProvider), const SizedBox(height: 16),
+                _buildPublicInfoSection(profileProvider), const SizedBox(height: 16),
+                _buildPrivateInfoSection(profileProvider), const SizedBox(height: 16),
+                _buildFriendInfoSection(profileProvider), const SizedBox(height: 16),
+                _buildMusicPreferencesSection(profileProvider), const SizedBox(height: 16),
+                _buildSocialAccountsSection(profileProvider), const SizedBox(height: 16), 
+                _buildSecuritySection(profileProvider), const SizedBox(height: 16), 
                 _buildAccountActionsSection(),
               ],
             ),
@@ -160,7 +157,10 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2), 
+              borderRadius: BorderRadius.circular(12)
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -185,12 +185,12 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 80,
+        source: source, 
+        maxWidth: 512, 
+        maxHeight: 512, 
+        imageQuality: 80
       );
-
+      
       if (image == null) return;
 
       Uint8List imageBytes;
@@ -202,10 +202,13 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       }
 
       final String base64Image = base64Encode(imageBytes);
-      
       final String mimeType = image.mimeType ?? 'image/jpeg';
 
-      final success = await profileProvider.updateProfile(auth.token, avatarBase64: base64Image, mimeType: mimeType);
+      final success = await profileProvider.updateProfile(
+        auth.token,
+        avatarBase64: base64Image,
+        mimeType: mimeType,
+      );
 
       if (success) {
         showSuccess('Avatar updated successfully!');
@@ -359,9 +362,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         _buildInfoItem(
           icon: Icons.cake,
           title: 'Date of Birth',
-          value: profileProvider.dob != null 
-              ? DateTimeUtils.formatDate(profileProvider.dob!)
-              : 'Not set',
+          value: profileProvider.dob != null ? DateFormat('yyyy-MM-dd').format(profileProvider.dob!) : 'Not set',
           onEdit: () => _editDateOfBirth(profileProvider),
         ),
         _buildInfoItem(
@@ -389,7 +390,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       title: 'Music Preferences',
       items: [
         _buildInfoItem(
-          icon: Icons.music_note,
+          icon: Icons.music_note, 
           title: 'Music Genres',
           value: profileProvider.musicPreferences?.isNotEmpty == true
               ? profileProvider.musicPreferences!.join(', ')
@@ -430,6 +431,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     if (!profileProvider.isPasswordUsable) {
       return const SizedBox.shrink();
     }
+
     return AppWidgets.settingsSection(
       title: 'Security',
       items: [
@@ -485,7 +487,11 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         overflow: TextOverflow.ellipsis,
       ),
       trailing: isEditable && onEdit != null
-          ? IconButton(icon: const Icon(Icons.edit, color: AppTheme.primary, size: 20), onPressed: onEdit) : null,
+          ? IconButton(
+              icon: const Icon(Icons.edit, color: AppTheme.primary, size: 20), 
+              onPressed: onEdit
+            ) 
+          : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     );
   }
@@ -494,11 +500,17 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     final genders = ['male', 'female'];
     final selectedIndex = await AppWidgets.showSelectionDialog<String>(
       context: context,
-      title: 'Select Gender', items: genders,
+      title: 'Select Gender', 
+      items: genders,
       itemTitle: (gender) => gender.substring(0, 1).toUpperCase() + gender.substring(1),
     );
+
     if (selectedIndex != null) {
-      final success = await profileProvider.updateProfile(auth.token, gender: genders[selectedIndex], location: profileProvider.location);
+      final success = await profileProvider.updateProfile(
+        auth.token, 
+        gender: genders[selectedIndex], 
+        location: profileProvider.location
+      );
       if (success) {
         showSuccess('Gender updated successfully');
         profileProvider.loadProfile(auth.token);
@@ -508,10 +520,12 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Future<void> _editLocation(ProfileProvider profileProvider) async {
     final location = await AppWidgets.showTextInputDialog(
-      context, title: 'Edit Location',
+      context, 
+      title: 'Edit Location',
       initialValue: profileProvider.location,
       hintText: 'Enter your location',
     );
+
     if (location != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -533,6 +547,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       hintText: 'Tell us about yourself...',
       maxLines: 3,
     );
+
     if (bio != null) {
       final success = await profileProvider.updateProfile(
         auth.token, 
@@ -552,6 +567,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       initialValue: profileProvider.firstName,
       hintText: 'Enter your first name',
     );
+
     if (firstName != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -571,6 +587,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       initialValue: profileProvider.lastName,
       hintText: 'Enter your last name',
     );
+
     if (lastName != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -591,6 +608,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       hintText: 'Enter your phone number',
       validator: (value) => AppValidators.phoneNumber(value, false),
     );
+
     if (phone != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -610,6 +628,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       initialValue: profileProvider.street,
       hintText: 'Enter your street address',
     );
+
     if (street != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -633,12 +652,14 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       'United Kingdom',
       'Australia'
     ];
+
     final selectedIndex = await AppWidgets.showSelectionDialog<String>(
       context: context,
       title: 'Select Country',
       items: countries,
       itemTitle: (country) => country,
     );
+
     if (selectedIndex != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -658,6 +679,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       initialValue: profileProvider.postalCode,
       hintText: 'Enter your postal code',
     );
+
     if (postalCode != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -672,6 +694,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Future<void> _editDateOfBirth(ProfileProvider profileProvider) async {
     final currentDate = profileProvider.dob ?? DateTime.now().subtract(const Duration(days: 6570)); 
+
     final selectedDate = await showDatePicker(
       context: context,
       initialDate: currentDate,
@@ -689,10 +712,11 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         );
       },
     );
+
     if (selectedDate != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
-        dob: DateTimeUtils.formatDate(selectedDate),
+        dob: DateFormat('yyyy-MM-dd').format(selectedDate),
       );
       if (success) {
         showSuccess('Date of birth updated successfully');
@@ -704,6 +728,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   Future<void> _editHobbies(ProfileProvider profileProvider) async {
     final availableHobbies = ['Sport', 'Movie', 'Music', 'Travel'];
     final currentHobbies = profileProvider.hobbies ?? [];
+
     final selectedHobbies = await showDialog<List<String>>(
       context: context,
       builder: (context) => _HobbySelectionDialog(
@@ -711,6 +736,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         selectedHobbies: currentHobbies,
       ),
     );
+
     if (selectedHobbies != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -731,6 +757,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       hintText: 'Share something about yourself with friends...',
       maxLines: 3,
     );
+
     if (friendInfo != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -746,6 +773,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   Future<void> _editMusicPreferences(ProfileProvider profileProvider) async {
     final availableGenres = ['Classical', 'Jazz', 'Pop', 'Rock', 'Rap', 'R&B', 'Techno'];
     final currentPreferences = profileProvider.musicPreferences ?? [];
+
     final selectedPreferences = await showDialog<List<String>>(
       context: context,
       builder: (context) => _MusicPreferenceDialog(
@@ -753,6 +781,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         selectedGenres: currentPreferences,
       ),
     );
+
     if (selectedPreferences != null) {
       final success = await profileProvider.updateProfile(
         auth.token, 
@@ -780,16 +809,19 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 class _HobbySelectionDialog extends StatefulWidget {
   final List<String> availableHobbies;
   final List<String> selectedHobbies;
+
   const _HobbySelectionDialog({
     required this.availableHobbies,
     required this.selectedHobbies,
   });
+
   @override
   State<_HobbySelectionDialog> createState() => _HobbySelectionDialogState();
 }
 
 class _HobbySelectionDialogState extends State<_HobbySelectionDialog> {
   late List<String> _selectedHobbies;
+
   @override
   void initState() {
     super.initState();
@@ -833,7 +865,10 @@ class _HobbySelectionDialogState extends State<_HobbySelectionDialog> {
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, _selectedHobbies),
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary, 
+            foregroundColor: Colors.black
+          ),
           child: const Text('Save'),
         ),
       ],
@@ -844,13 +879,19 @@ class _HobbySelectionDialogState extends State<_HobbySelectionDialog> {
 class _MusicPreferenceDialog extends StatefulWidget {
   final List<String> availableGenres;
   final List<String> selectedGenres;
-  const _MusicPreferenceDialog({required this.availableGenres, required this.selectedGenres});
+
+  const _MusicPreferenceDialog({
+    required this.availableGenres, 
+    required this.selectedGenres
+  });
+
   @override
   State<_MusicPreferenceDialog> createState() => _MusicPreferenceDialogState();
 }
 
 class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
   late List<String> _selectedGenres;
+
   @override
   void initState() {
     super.initState();
@@ -885,10 +926,16 @@ class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+        TextButton(
+          onPressed: () => Navigator.pop(context), 
+          child: const Text('Cancel', style: TextStyle(color: Colors.grey))
+        ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, _selectedGenres),
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary, 
+            foregroundColor: Colors.black
+          ),
           child: const Text('Save'),
         ),
       ],

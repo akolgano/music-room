@@ -23,22 +23,18 @@ class AppWidgets {
   static Color _getBackground(BuildContext context) => _getColorScheme(context).background;
   static Color _getOnSurface(BuildContext context) => _getColorScheme(context).onSurface;
   static Color _getError(BuildContext context) => _getColorScheme(context).error;
-
+  
   static TextStyle _primaryStyle(BuildContext context) => TextStyle(
     color: _getOnSurface(context), 
-    fontSize: ResponsiveHelper.fontSize(context, 16), fontWeight: FontWeight.w600
+    fontSize: ResponsiveHelper.fontSize(context, 16), 
+    fontWeight: FontWeight.w600
   );
-
+  
   static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
     color: _getOnSurface(context).withOpacity(0.7), 
     fontSize: ResponsiveHelper.fontSize(context, 14)
   );
-
-  static TextStyle _greyStyle(BuildContext context) => TextStyle(
-    color: _getOnSurface(context).withOpacity(0.5), 
-    fontSize: ResponsiveHelper.fontSize(context, 12)
-  );
-
+  
   static Widget textField({
     required BuildContext context,
     required TextEditingController controller,
@@ -46,9 +42,7 @@ class AppWidgets {
     String? hintText,
     IconData? prefixIcon,
     bool obscureText = false,
-    String? Function(String?)? validator,
-    ValueChanged<String>? onChanged,
-    int minLines = 1, int maxLines = 1
+    String? Function(String?)? validator, ValueChanged<String>? onChanged, int minLines = 1, int maxLines = 1
   }) {
     final theme = Theme.of(context);
     return TextFormField(
@@ -100,14 +94,14 @@ class AppWidgets {
       final colorScheme = theme.colorScheme;
       final isCurrentTrack = playerService.currentTrack?.id == track.id;
       final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-
+      
       String displayArtist = track.artist;
       if (displayArtist.isEmpty && track.deezerTrackId != null) {
         displayArtist = 'Loading artist info...';
       } else if (displayArtist.isEmpty) {
         displayArtist = 'Unknown Artist';
       }
-
+      
       return AnimationConfiguration.staggeredList(
         position: 0,
         duration: const Duration(milliseconds: 375),
@@ -138,9 +132,7 @@ class AppWidgets {
                       )
                     else
                       _buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
-                    
                     SizedBox(width: ResponsiveHelper.spacing(context, 12)),
-                    
                     Expanded(
                       child: Row(
                         children: [
@@ -164,7 +156,6 @@ class AppWidgets {
                               ],
                             ),
                           ),
-                          
                           if (showVotingControls && playlistId != null)
                             Container(
                               constraints: const BoxConstraints(maxWidth: 80),
@@ -174,7 +165,6 @@ class AppWidgets {
                                 isCompact: true,
                               ),
                             ),
-                          
                           if (onSelectionChanged == null)
                             Container(
                               constraints: const BoxConstraints(maxWidth: 100),
@@ -204,7 +194,8 @@ class AppWidgets {
 
   static Widget _buildImage(BuildContext context, String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) {
     return Container(
-      width: ResponsiveHelper.spacing(context, size), height: ResponsiveHelper.spacing(context, size),
+      width: ResponsiveHelper.spacing(context, size), 
+      height: ResponsiveHelper.spacing(context, size),
       decoration: BoxDecoration(
         color: backgroundColor, 
         borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(context, 8))
@@ -287,7 +278,6 @@ class AppWidgets {
     }
     
     if (actions.isEmpty) return const SizedBox.shrink();
-    
     final displayedActions = actions.take(2).toList();
     return Row(mainAxisSize: MainAxisSize.min, children: displayedActions);
   }
@@ -557,45 +547,73 @@ class AppWidgets {
     return Builder(builder: (context) {
       final theme = Theme.of(context);
       R.init(context);
-      return Center(
-        child: Padding(
-          padding: R.p(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: R.s(64), color: theme.colorScheme.onSurface.withOpacity(0.5)),
-              SizedBox(height: R.h(16)),
-              Text(
-                title, 
-                style: _primaryStyle(context).copyWith(
-                  fontSize: R.s(18), 
-                  fontWeight: FontWeight.bold
-                ), 
-                textAlign: TextAlign.center
-              ),
-              if (subtitle != null) ...[
-                SizedBox(height: R.h(8)), 
-                Text(subtitle, style: _secondaryStyle(context), textAlign: TextAlign.center)
-              ],
-              if (buttonText != null && onButtonPressed != null) ...[
-                SizedBox(height: R.h(24)),
-                ElevatedButton(
-                  onPressed: onButtonPressed, 
-                  child: Text(buttonText, style: TextStyle(fontSize: R.s(14)))
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final hasFiniteHeight = constraints.maxHeight.isFinite;
+          final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
+          final iconSize = isConstrained ? R.s(32) : R.s(64);
+          final titleSize = isConstrained ? R.s(14) : R.s(18);
+          final spacing = isConstrained ? R.h(8) : R.h(16);
+          
+          Widget content = Padding(
+            padding: R.p(isConstrained ? 16 : 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                SizedBox(height: spacing),
+                Text(
+                  title, 
+                  style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
+                  textAlign: TextAlign.center,
+                  maxLines: isConstrained ? 2 : null,
+                  overflow: isConstrained ? TextOverflow.ellipsis : null,
                 ),
+                if (subtitle != null) ...[
+                  SizedBox(height: spacing / 2), 
+                  Text(
+                    subtitle, 
+                    style: _secondaryStyle(context), 
+                    textAlign: TextAlign.center,
+                    maxLines: isConstrained ? 1 : null,
+                    overflow: isConstrained ? TextOverflow.ellipsis : null,
+                  )
+                ],
+                if (buttonText != null && onButtonPressed != null) ...[
+                  SizedBox(height: spacing),
+                  ElevatedButton(
+                    onPressed: onButtonPressed, 
+                    child: Text(
+                      buttonText, 
+                      style: TextStyle(fontSize: R.s(isConstrained ? 12 : 14)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  ),
+                ],
               ],
-            ],
-          ),
-        ),
+            ),
+          );
+          if (!hasFiniteHeight) {
+            return Center(child: content);
+          } else if (constraints.maxHeight > 0) {
+            return SizedBox(
+              height: constraints.maxHeight,
+              child: Center(child: content),
+            );
+          } else {
+            return Container(
+              height: 200,
+              child: Center(child: content),
+            );
+          }
+        },
       );
     });
   }
 
-  static Widget errorState({
-    required String message,
-    VoidCallback? onRetry,
-    String? retryText,
-  }) {
+  static Widget errorState({required String message, VoidCallback? onRetry, String? retryText}) {
     return Builder(builder: (context) {
       final theme = Theme.of(context);
       R.init(context);
@@ -637,12 +655,18 @@ class AppWidgets {
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: items.isEmpty && emptyState != null
-          ? SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: SizedBox(
-                height: 400,
-                child: emptyState,
-              ),
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight.isFinite ? constraints.maxHeight : MediaQuery.of(context).size.height * 0.6,
+                    ),
+                    child: emptyState,
+                  ),
+                );
+              },
             )
           : ListView.builder(
               padding: padding,
@@ -661,10 +685,7 @@ class AppWidgets {
       length: tabs.length,
       child: Column(
         children: [
-          TabBar(
-            controller: controller,
-            tabs: tabs,
-          ),
+          TabBar(controller: controller, tabs: tabs),
           Expanded(
             child: TabBarView(
               controller: controller,
@@ -809,11 +830,7 @@ class AppWidgets {
         leading: icon != null ? Icon(icon, color: _getPrimary(context)) : null,
         title: Text(title, style: _primaryStyle(context)),
         subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle(context)) : null,
-        trailing: Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: _getPrimary(context),
-        ),
+        trailing: Switch(value: value, onChanged: onChanged, activeColor: _getPrimary(context)),
       );
     });
   }
@@ -862,9 +879,7 @@ class AppWidgets {
     return result;
   }
 
-  static Future<int?> showSelectionDialog<T>({
-    required BuildContext context,
-    required String title,
+  static Future<int?> showSelectionDialog<T>({required BuildContext context, required String title,
     required List<T> items,
     required String Function(T) itemTitle,
   }) async {

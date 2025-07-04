@@ -45,13 +45,9 @@ class AppValidators {
 }
 
 class DateTimeUtils {
-  static String formatDate(DateTime? date) => date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
-  
   static String formatDuration(Duration duration) {
     return printDuration(duration, abbreviated: false,
-      spacer: '',
-      delimiter: ':',
-      conjugation: '',
+      spacer: '', delimiter: ':', conjugation: '',
       tersity: duration.inHours > 0 ? DurationTersity.hour : DurationTersity.minute,
     );
   }
@@ -320,42 +316,14 @@ class AppRoutes {
 class SocialLoginUtils {
   static GoogleSignIn? _googleSignIn;
   static bool _isInitialized = false;
+  static bool _facebookInitialized = false;
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
-
+    
     try {
-      print('Initializing social login services...');
-      
-      final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
-      if (kIsWeb && fbAppId != null) {
-        await FacebookAuth.instance.webAndDesktopInitialize(
-          appId: fbAppId, 
-          cookie: true, 
-          xfbml: true, 
-          version: "v22.0"
-        );
-        print('Facebook initialized for web');
-      }
-
-      final googleClientId = kIsWeb 
-          ? dotenv.env['GOOGLE_CLIENT_ID_WEB']
-          : dotenv.env['GOOGLE_CLIENT_ID_APP'];
-      
-      if (googleClientId != null && googleClientId.isNotEmpty) {
-        _googleSignIn = GoogleSignIn(
-          scopes: <String>[
-            'email',
-            'profile',
-            'openid',
-          ],
-          clientId: googleClientId,
-        );
-        print('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...');
-      } else {
-        print('Warning: Google Client ID not found in environment variables');
-      }
-
+      await _initializeFacebook();
+      await _initializeGoogle();
       _isInitialized = true;
       print('Social login initialization completed successfully');
     } catch (e) {
@@ -364,28 +332,103 @@ class SocialLoginUtils {
     }
   }
 
+  static Future<void> _initializeFacebook() async {
+    try {
+      final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
+      if (fbAppId == null || fbAppId.isEmpty) {
+        print('Warning: FACEBOOK_APP_ID not found in environment variables');
+        return;
+      }
+      if (kIsWeb) {
+        await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v18.0");
+        print('Facebook initialized for web');
+      } else {
+        print('Facebook SDK configured for mobile platform');
+      }
+      _facebookInitialized = true;
+    } catch (e) {
+      print('Facebook initialization error: $e');
+      _facebookInitialized = false;
+      rethrow;
+    }
+  }
+
+  static Future<void> _initializeGoogle() async {
+    try {
+      final googleClientId = kIsWeb ? dotenv.env['GOOGLE_CLIENT_ID_WEB'] : dotenv.env['GOOGLE_CLIENT_ID_APP'];
+          
+      if (googleClientId != null && googleClientId.isNotEmpty) {
+        _googleSignIn = GoogleSignIn(
+          scopes: <String>['email', 'profile', 'openid'],
+          clientId: googleClientId,
+        );
+        print('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...');
+      } else {
+        print('Warning: Google Client ID not found in environment variables');
+      }
+    } catch (e) {
+      print('Google initialization error: $e');
+      rethrow;
+    }
+  }
+
   static GoogleSignIn? get googleSignInInstance => _googleSignIn;
   static bool get isInitialized => _isInitialized;
+  static bool get isFacebookInitialized => _facebookInitialized;
 
   static Future<SocialLoginResult> loginWithFacebook() async {
-    if (!_isInitialized) await initialize();
-
     try {
+      if (!_isInitialized) {
+        print('Social login not initialized, initializing now...');
+        await initialize();
+      }
+
+      if (!_facebookInitialized) {
+        return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.');
+      }
+
       print('Attempting Facebook login...');
-      final result = await FacebookAuth.instance.login();
       
+      try {
+        await FacebookAuth.instance.logOut();
+      } catch (e) {
+        print('Warning: Could not log out existing Facebook session: $e');
+      }
+
+      final result = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
+
+      print('Facebook login result status: ${result.status}');
+
       if (result.status == LoginStatus.success) {
         final accessToken = result.accessToken?.tokenString;
         if (accessToken != null && accessToken.isNotEmpty) {
-          print('Facebook login successful with accessToken');
+          print('Facebook login successful with access token');
           return SocialLoginResult.success(accessToken, 'facebook');
+        } else {
+          print('Facebook login failed - no valid token received');
+          return SocialLoginResult.error('Facebook login failed - no access token received');
         }
+      } else if (result.status == LoginStatus.cancelled) {
+        print('Facebook login was cancelled by user');
+        return SocialLoginResult.error('Facebook login was cancelled');
+      } else if (result.status == LoginStatus.failed) {
+        print('Facebook login failed: ${result.message}');
+        return SocialLoginResult.error('Facebook login failed: ${result.message ?? "Unknown error"}');
+      } else {
+        print('Facebook login failed with status: ${result.status}');
+        return SocialLoginResult.error('Facebook login failed with unexpected status');
       }
-      
-      print('Facebook login failed - no valid token received');
-      return SocialLoginResult.error('Facebook login failed - no valid token received');
     } catch (e) {
       print('Facebook login error: $e');
+      
+      if (e.toString().contains('MissingPluginException')) {
+        return SocialLoginResult.error(
+          'Facebook login is not properly configured. Please check your platform-specific setup.'
+        );
+      }
+      
       return SocialLoginResult.error('Facebook login error: $e');
     }
   }
@@ -398,11 +441,14 @@ class SocialLoginUtils {
 
     if (_googleSignIn == null) {
       print('Google Sign-In instance is null after initialization');
-      return SocialLoginResult.error('Google Sign-In not properly initialized. Please check your configuration.');
+      return SocialLoginResult.error(
+        'Google Sign-In not properly initialized. Please check your configuration.'
+      );
     }
 
     try {
       await _googleSignIn!.signOut();
+      
       final GoogleSignInAccount? user = await _googleSignIn!.signIn();
       
       if (user != null) {
@@ -434,12 +480,7 @@ class SocialLoginButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  const SocialLoginButton({
-    Key? key, 
-    required this.provider, 
-    this.onPressed, 
-    this.isLoading = false
-  }) : super(key: key);
+  const SocialLoginButton({Key? key, required this.provider, this.onPressed, this.isLoading = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

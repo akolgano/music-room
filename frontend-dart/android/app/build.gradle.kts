@@ -1,3 +1,4 @@
+// android/app/build.gradle.kts 
 //added by ssian, to verify if needed
 import java.util.Properties
 
@@ -37,8 +38,10 @@ android {
 
     defaultConfig {
         applicationId = "com.example.music_room"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // minSdk = flutter.minSdkVersion
+        minSdk = 21
+        // targetSdk = flutter.targetSdkVersion
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
@@ -59,4 +62,5 @@ flutter {
 dependencies {
     implementation("com.google.android.gms:play-services-auth:21.3.0")
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.facebook.android:facebook-android-sdk:latest.release")
 }

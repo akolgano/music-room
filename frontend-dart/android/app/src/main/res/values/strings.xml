@@ -1,1 +1,11 @@
-<string name="facebook_app_id">1038283177736047</string>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- android/app/src/main/res/values/strings.xml -->
+<resources>
+    <string name="app_name">Music Room</string>
+    
+    <string name="facebook_app_id">1038283177736047</string>
+    
+    <string name="facebook_client_token">38bf8cca7880d4983e4be7ef4a9d1418</string>
+    
+    <string name="fb_login_protocol_scheme">fb1038283177736047</string>
+</resources>
