@@ -14,17 +14,24 @@ import '../friends/friends_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
+  int _currentIndex = 0; 
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this); 
+    _tabController = TabController(length: 5, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() => _currentIndex = _tabController.index);
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
 
@@ -33,9 +40,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
+      appBar: _currentIndex == 0 ? AppBar(
         backgroundColor: AppTheme.background,
         title: Text(AppConstants.appName),
+        automaticallyImplyLeading: false, 
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -46,11 +54,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           ),
         ],
-      ),
+      ) : null, 
       body: Column(
         children: [
           Expanded(
-            child: AppWidgets.tabScaffold(
+            child: TabBarView(
+              controller: _tabController,
+              children: [_buildDashboard(auth),
+                _buildLibraryWithAppBar(),
+                _buildSearchWithAppBar(),
+                _buildFriendsWithAppBar(),
+                _buildProfileWithAppBar(),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              border: Border(
+                top: BorderSide(color: AppTheme.primary.withOpacity(0.3), width: 1),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: AppTheme.primary,
+              labelStyle: const TextStyle(fontSize: 12),
               tabs: const [
                 Tab(icon: Icon(Icons.home), text: 'Home'),
                 Tab(icon: Icon(Icons.library_music), text: 'Library'),
@@ -58,17 +86,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Tab(icon: Icon(Icons.people), text: 'Friends'),
                 Tab(icon: Icon(Icons.person), text: 'Profile'),
               ],
-              tabViews: [
-                _buildDashboard(auth),
-                _buildPlaylists(),
-                const TrackSearchScreen(isEmbedded: true), 
-                _buildFriendsTab(),
-                const ProfileScreen(isEmbedded: true)
-              ],
-              controller: _tabController,
             ),
           ),
-          const MiniPlayerWidget(), 
+          const MiniPlayerWidget(),
         ],
       ),
     );
@@ -126,12 +146,81 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildLibraryWithAppBar() {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: const Text('Your Library'),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+          ),
+        ],
+      ),
+      body: _buildPlaylists(),
+    );
+  }
+
+  Widget _buildSearchWithAppBar() {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: const Text('Search Music'),
+        automaticallyImplyLeading: false,
+      ),
+      body: const TrackSearchScreen(isEmbedded: true),
+    );
+  }
+
+  Widget _buildFriendsWithAppBar() {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: const Text('Friends'),
+        automaticallyImplyLeading: false,
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
+            icon: const Icon(Icons.person_add, color: AppTheme.primary),
+            label: const Text('Add Friend', style: TextStyle(color: AppTheme.primary)),
+          ),
+        ],
+      ),
+      body: _buildFriendsTab(),
+    );
+  }
+
+  Widget _buildProfileWithAppBar() {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: const Text('Profile'),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+            },
+          ),
+        ],
+      ),
+      body: const ProfileScreen(isEmbedded: true),
+    );
+  }
+
   Widget _buildPlaylists() {
     return Consumer<MusicProvider>(
       builder: (context, music, _) {
         if (music.isLoading) {
           return AppWidgets.loading('Loading playlists...');
         }
+
         if (music.playlists.isEmpty) {
           return AppWidgets.emptyState(
             icon: Icons.playlist_play,
@@ -141,6 +230,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           );
         }
+
         return RefreshIndicator(
           onRefresh: _loadData,
           color: AppTheme.primary,
@@ -172,9 +262,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Consumer<FriendProvider>(
       builder: (context, friendProvider, _) {
         if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
-        
+
         final pendingRequests = friendProvider.receivedInvitations;
-        
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -186,7 +276,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 icon: Icons.people,
               ),
               const SizedBox(height: 16),
-              
               if (pendingRequests.isNotEmpty) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -257,7 +346,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 AppWidgets.emptyState(
                   icon: Icons.people_outline,
                   title: 'No friends yet',
-                  subtitle: 'Add some friends to start sharing music!', buttonText: 'Add Friend',
+                  subtitle: 'Add some friends to start sharing music!', 
+                  buttonText: 'Add Friend',
                   onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
                 )
               else
@@ -279,8 +369,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           'Friend #$friendId',
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                         ),
-                        subtitle: Text(
-                          'User ID: $friendId',
+                        subtitle: Text('User ID: $friendId',
                           style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         trailing: Icon(Icons.music_note, color: AppTheme.primary, size: 20),
@@ -313,6 +402,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
       final friendProvider = Provider.of<FriendProvider>(context, listen: false);
       final auth = Provider.of<AuthProvider>(context, listen: false);
+
       if (auth.isLoggedIn && auth.token != null) {
         await Future.wait([
           music.fetchUserPlaylists(auth.token!), 

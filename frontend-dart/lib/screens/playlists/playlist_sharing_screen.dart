@@ -230,11 +230,25 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
   }
 
   void _shareToSocial() {
-    AppWidgets.showInfoDialog(
+    showDialog(
       context: context,
-      title: 'Share to Social Media',
-      message: 'Social media sharing coming soon!',
-      icon: Icons.share,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Row(
+          children: [
+            Icon(Icons.share, color: AppTheme.primary),
+            const SizedBox(width: 8),
+            const Text('Share to Social Media', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: const Text('Social media sharing coming soon!', style: TextStyle(color: Colors.white)),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 }
