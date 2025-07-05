@@ -8,12 +8,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:duration/duration.dart'; 
+import 'package:duration/duration.dart';
+import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
-import 'responsive_helper.dart'; 
-
-export 'responsive_helper.dart';
 
 class AppValidators {
   static String? required(String? value, [String? fieldName]) =>
@@ -30,11 +28,32 @@ class AppValidators {
           .minLength(3, 'Username must be at least 3 characters')
           .maxLength(30, 'Username must be less than 30 characters')
           .regExp(RegExp(r'^[a-zA-Z0-9_]+$'), 'Username can only contain letters, numbers, and underscores').build()(value);
-  
+
   static String? phoneNumber(String? value, [bool required = false]) {
     if (!required && (value?.isEmpty ?? true)) return null;
-    final phoneRegex = RegExp(r'^\+?[\d\s\-\(\)]{8,15}$');
-    return phoneRegex.hasMatch(value ?? '') ? null : 'Please enter a valid phone number';
+    if (value == null || value.trim().isEmpty) return required ? 'Please enter a phone number' : null;
+    try {
+      final phoneNumber = PhoneNumber.parse(value.trim());
+      if (phoneNumber.isValid()) return null;
+      else return 'Please enter a valid phone number';
+    } catch (e) {
+      return 'Please enter a valid phone number';
+    }
+  }
+  
+  static String? phoneNumberWithCountry(String? value, String? countryCode, [bool required = false]) {
+    if (!required && (value?.isEmpty ?? true)) return null;
+    if (value == null || value.trim().isEmpty) return required ? 'Please enter a phone number' : null;
+    try {
+      final phoneNumber = PhoneNumber.parse(value.trim(), destinationCountry: IsoCode.values.firstWhere(
+        (code) => code.name.toUpperCase() == countryCode?.toUpperCase(),
+        orElse: () => IsoCode.US,
+      ));
+      if (phoneNumber.isValid()) return null;
+      else return 'Please enter a valid phone number for ${countryCode ?? 'the selected country'}';
+    } catch (e) {
+      return 'Please enter a valid phone number';
+    }
   }
   
   static String? playlistName(String? value) =>
@@ -84,11 +103,7 @@ class AppTheme {
         backgroundColor: background, 
         foregroundColor: Colors.white, 
         elevation: 0,
-        titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
