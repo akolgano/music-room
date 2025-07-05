@@ -17,7 +17,7 @@ class StorageService {
     if (value == null) return null;
     return value as T?;
   }
-  
+
   Map<String, dynamic>? getMap(String key) {
     final value = _box.get(key);
     if (value == null) return null;
@@ -25,18 +25,14 @@ class StorageService {
     if (value is Map) return Map<String, dynamic>.from(value);
     return null;
   }
-  
-  List<String>? getStringList(String key) {
-    final value = _box.get(key);
-    if (value == null) return null;
-    if (value is List<String>) return value;
-    if (value is List) return value.cast<String>();
-    return null;
-  }
-  
+
   Future<void> set(String key, dynamic value) => _box.put(key, value);
+
   Future<void> delete(String key) => _box.delete(key);
+
   Future<void> clear() => _box.clear();
+
   bool containsKey(String key) => _box.containsKey(key);
+
   List<String> get keys => _box.keys.cast<String>().toList();
 }

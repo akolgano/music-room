@@ -28,9 +28,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() => _currentIndex = _tabController.index);
-      }
+      if (_tabController.indexIsChanging) setState(() => _currentIndex = _tabController.index);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
@@ -60,9 +58,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [_buildDashboard(auth),
-                _buildLibraryWithAppBar(),
-                _buildSearchWithAppBar(),
+              children: [_buildDashboard(auth), _buildLibraryWithAppBar(), _buildSearchWithAppBar(),
                 _buildFriendsWithAppBar(),
                 _buildProfileWithAppBar(),
               ],
@@ -167,11 +163,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildSearchWithAppBar() {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Search Music'),
-        automaticallyImplyLeading: false,
-      ),
       body: const TrackSearchScreen(isEmbedded: true),
     );
   }
@@ -198,18 +189,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildProfileWithAppBar() {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Profile'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-            },
-          ),
-        ],
-      ),
       body: const ProfileScreen(isEmbedded: true),
     );
   }
@@ -220,7 +199,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (music.isLoading) {
           return AppWidgets.loading('Loading playlists...');
         }
-
         if (music.playlists.isEmpty) {
           return AppWidgets.emptyState(
             icon: Icons.playlist_play,
@@ -230,7 +208,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           );
         }
-
         return RefreshIndicator(
           onRefresh: _loadData,
           color: AppTheme.primary,
@@ -262,9 +239,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Consumer<FriendProvider>(
       builder: (context, friendProvider, _) {
         if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
-
         final pendingRequests = friendProvider.receivedInvitations;
-
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -292,10 +267,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Expanded(
                         child: Text(
                           'You have ${pendingRequests.length} pending friend request${pendingRequests.length == 1 ? '' : 's'}',
-                          style: const TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
                         ),
                       ),
                       TextButton(
@@ -383,9 +355,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
-                    child: Text('View all ${friendProvider.friends.length} friends',
-                      style: const TextStyle(color: AppTheme.primary),
-                    ),
+                    child: Text('View all ${friendProvider.friends.length} friends', style: const TextStyle(color: AppTheme.primary)),
                   ),
                 ),
               ],

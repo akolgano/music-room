@@ -61,10 +61,7 @@ class PlaylistDetailWidgets {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'Created by ${playlist.creator}',
-                    style: ThemeUtils.getCaptionStyle(context),
-                  ),
+                  Text('Created by ${playlist.creator}', style: ThemeUtils.getCaptionStyle(context)),
                   const SizedBox(width: 12),
                   buildThemedVisibilityChip(context, playlist.isPublic),
                 ],

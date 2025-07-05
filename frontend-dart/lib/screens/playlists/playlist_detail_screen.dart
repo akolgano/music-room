@@ -31,6 +31,7 @@ class PlaylistDetailScreen extends StatefulWidget {
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
 
+// Voting is required as per PDF requirements
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   late final ApiService _apiService;
   final Set<String> _fetchingTrackDetails = {};
@@ -67,22 +68,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   List<Widget> get actions => [
-    if (_isOwner)
-      IconButton(
-        icon: const Icon(Icons.settings), 
-        onPressed: _openPlaylistSettings, 
-        tooltip: 'Playlist Settings'
-      ),
-    IconButton(
-      icon: const Icon(Icons.share), 
-      onPressed: _sharePlaylist, 
-      tooltip: 'Share Playlist'
-    ),
-    IconButton(
-      icon: const Icon(Icons.refresh), 
-      onPressed: _loadData, 
-      tooltip: 'Refresh'
-    ),
+    if (_isOwner) IconButton(icon: const Icon(Icons.settings), onPressed: _openPlaylistSettings, tooltip: 'Playlist Settings'),
+    IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
+    IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData, tooltip: 'Refresh'),
   ];
 
   @override
@@ -117,11 +105,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 const SizedBox(height: 16), 
                 PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
                 const SizedBox(height: 16), 
-                PlaylistDetailWidgets.buildThemedPlaylistActions(
-                  context,
-                  onPlayAll: _playPlaylist,
-                  onShuffle: _shufflePlaylist,
-                ),
+                PlaylistDetailWidgets.buildThemedPlaylistActions(context, onPlayAll: _playPlaylist, onShuffle: _shufflePlaylist),
                 const SizedBox(height: 16), 
                 _buildTracksSection(),
               ],
@@ -155,10 +139,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                         children: [
                           Icon(Icons.queue_music, color: ThemeUtils.getPrimary(context), size: 20),
                           const SizedBox(width: 8),
-                          Text(
-                            'Tracks',
-                            style: ThemeUtils.getSubheadingStyle(context),
-                          ),
+                          Text('Tracks', style: ThemeUtils.getSubheadingStyle(context)),
                         ],
                       ),
                       Row(
