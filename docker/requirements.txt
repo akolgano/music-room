@@ -12,7 +12,7 @@ daphne
 pytest
 pytest-django
 pytest-asyncio
-#uvicorn
+uvicorn
 #uvicorn[standard]
 google-auth
 geopy
