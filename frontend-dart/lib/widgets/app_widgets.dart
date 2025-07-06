@@ -40,13 +40,16 @@ class AppWidgets {
     bool obscureText = false,
     String? Function(String?)? validator, 
     ValueChanged<String>? onChanged, 
-    int minLines = 1, 
-    int maxLines = 1
+    int minLines = 1, int maxLines = 1
   }) {
     final theme = Theme.of(context);
     return TextFormField(
       controller: controller,
-      obscureText: obscureText, validator: validator, onChanged: onChanged, minLines: minLines, maxLines: maxLines,
+      obscureText: obscureText, 
+      validator: validator, 
+      onChanged: onChanged, 
+      minLines: minLines, 
+      maxLines: maxLines,
       style: _primaryStyle(context),
       decoration: InputDecoration(
         labelText: labelText,
@@ -54,24 +57,38 @@ class AppWidgets {
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: _getPrimary(context)) : null,
         filled: true,
         fillColor: _getSurface(context),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8), 
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8), 
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: _getPrimary(context), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _getError(context), width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _getError(context), width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
         ),
         labelStyle: TextStyle(fontSize: 16, color: _getOnSurface(context).withOpacity(0.7)),
         hintStyle: TextStyle(fontSize: 14, color: _getOnSurface(context).withOpacity(0.5)),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: kIsWeb ? 16.0 : 16.w.toDouble(), 
-          vertical: kIsWeb ? 12.0 : 12.h.toDouble()
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: kIsWeb ? 16.0 : 16.w.toDouble(), vertical: kIsWeb ? 12.0 : 12.h.toDouble()),
       ),
     );
   }
 
-  static Widget trackCard({
-    Key? key,
-    required BuildContext context,
-    required Track track,
+  static Widget trackCard({Key? key, required BuildContext context, required Track track,
     bool isSelected = false,
     bool isInPlaylist = false,
     bool showAddButton = true,
@@ -92,14 +109,11 @@ class AppWidgets {
       final colorScheme = theme.colorScheme;
       final isCurrentTrack = playerService.currentTrack?.id == track.id;
       final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-      
+
       String displayArtist = track.artist;
-      if (displayArtist.isEmpty && track.deezerTrackId != null) {
-        displayArtist = 'Loading artist info...';
-      } else if (displayArtist.isEmpty) {
-        displayArtist = 'Unknown Artist';
-      }
-      
+      if (displayArtist.isEmpty && track.deezerTrackId != null) displayArtist = 'Loading artist info...';
+      else if (displayArtist.isEmpty) displayArtist = 'Unknown Artist';
+
       return AnimationConfiguration.staggeredList(
         position: 0,
         duration: const Duration(milliseconds: 375),
@@ -125,14 +139,27 @@ class AppWidgets {
                     if (onSelectionChanged != null)
                       SizedBox(
                         width: 56,
-                        child: Checkbox(
-                          value: isSelected, 
-                          onChanged: onSelectionChanged, 
-                          activeColor: colorScheme.primary
-                        ),
+                        child: Checkbox(value: isSelected, onChanged: onSelectionChanged, activeColor: colorScheme.primary),
                       )
                     else
-                      _buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
+                      Container(
+                        width: kIsWeb ? 56.0 : 56.w.toDouble(), 
+                        height: kIsWeb ? 56.0 : 56.h.toDouble(),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface, 
+                          borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble())
+                        ),
+                        child: track.imageUrl?.isNotEmpty == true
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble()), 
+                                child: CachedNetworkImage(imageUrl: track.imageUrl!, fit: BoxFit.cover)
+                              )
+                            : Icon(
+                                Icons.music_note, 
+                                color: _getOnSurface(context), 
+                                size: kIsWeb ? 28.0 : 28.sp.toDouble()
+                              ),
+                      ),
                     SizedBox(width: kIsWeb ? 12.0 : 12.w.toDouble()),
                     Expanded(
                       child: Row(
@@ -193,30 +220,8 @@ class AppWidgets {
     },
   );
 
-  static Widget _buildImage(BuildContext context, String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) {
-    return Container(
-      width: kIsWeb ? size : size.w.toDouble(), 
-      height: kIsWeb ? size : size.h.toDouble(),
-      decoration: BoxDecoration(
-        color: backgroundColor, 
-        borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble())
-      ),
-      child: imageUrl?.isNotEmpty == true
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble()), 
-              child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover)
-            )
-          : Icon(
-              defaultIcon, 
-              color: _getOnSurface(context), 
-              size: kIsWeb ? size * 0.5 : (size * 0.5).sp.toDouble()
-            ),
-    );
-  }
-
   static Widget _buildTrackActions(
-    BuildContext context,
-    bool showAddButton, 
+    BuildContext context, bool showAddButton, 
     bool showPlayButton, 
     VoidCallback? onAdd, 
     VoidCallback? onPlay, 
@@ -231,8 +236,7 @@ class AppWidgets {
       actions.add(IconButton(
         icon: Icon(
           trackIsPlaying ? Icons.pause : Icons.play_arrow, 
-          color: colorScheme.primary, 
-          size: kIsWeb ? 20.0 : 20.sp.toDouble() 
+          color: colorScheme.primary, size: kIsWeb ? 20.0 : 20.sp.toDouble() 
         ), 
         onPressed: onPlay,
         padding: EdgeInsets.all(kIsWeb ? 4.0 : 4.w.toDouble()), 
@@ -314,10 +318,7 @@ class AppWidgets {
       ? SizedBox(
           width: kIsWeb ? 16.0 : 16.w.toDouble(), 
           height: kIsWeb ? 16.0 : 16.h.toDouble(), 
-          child: CircularProgressIndicator(
-            strokeWidth: 2, 
-            color: theme.colorScheme.onPrimary
-          )
+          child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary)
         )
       : Row(
           mainAxisSize: MainAxisSize.min,
@@ -338,54 +339,11 @@ class AppWidgets {
             ),
           ],
         );
-    
     final button = ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: theme.elevatedButtonTheme.style,
       child: content,
     );
-    
-    return fullWidth ? SizedBox(
-      width: double.infinity, 
-      height: kIsWeb ? 50.0 : 50.h.toDouble(), 
-      child: button
-    ) : button;
-  }
-
-  static Widget secondaryButton({
-    required BuildContext context, 
-    required String text, 
-    required VoidCallback? onPressed, 
-    IconData? icon, 
-    bool fullWidth = true,
-  }) {
-    final theme = Theme.of(context);
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: kIsWeb ? 16.0 : 16.sp.toDouble()), 
-          SizedBox(width: kIsWeb ? 6.0 : 6.w.toDouble())
-        ],
-        Flexible(
-          child: Text(
-            text, 
-            style: TextStyle(fontSize: kIsWeb ? 13.0 : 13.sp.toDouble()), 
-            overflow: TextOverflow.visible,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-          )
-        ),
-      ],
-    );
-    
-    final button = OutlinedButton(
-      onPressed: onPressed,
-      style: theme.outlinedButtonTheme.style,
-      child: content,
-    );
-    
     return fullWidth ? SizedBox(
       width: double.infinity, 
       height: kIsWeb ? 50.0 : 50.h.toDouble(), 

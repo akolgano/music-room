@@ -265,8 +265,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Users can only vote within this time window',
+              const Text('Users can only vote within this time window',
                 style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],

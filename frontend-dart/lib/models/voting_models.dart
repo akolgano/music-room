@@ -24,8 +24,7 @@ class Vote {
     createdAt: DateTime.parse(json['created_at'] as String),
   );
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
+  Map<String, dynamic> toJson() => {'id': id,
     'track_id': trackId,
     'user_id': userId,
     'vote_value': voteValue,
@@ -34,43 +33,32 @@ class Vote {
 }
 
 class VoteStats {
-  final int totalVotes;
-  final int upvotes;
-  final int downvotes;
+  final int points; 
   final bool userHasVoted;
   final int? userVoteValue;
-  final double voteScore; 
 
   const VoteStats({
-    required this.totalVotes,
-    required this.upvotes,
-    required this.downvotes,
+    required this.points,
     required this.userHasVoted,
     this.userVoteValue,
-    required this.voteScore,
   });
 
   factory VoteStats.fromJson(Map<String, dynamic> json) => VoteStats(
-    totalVotes: json['total_votes'] as int,
-    upvotes: json['upvotes'] as int? ?? 0,
-    downvotes: json['downvotes'] as int? ?? 0,
-    userHasVoted: json['user_has_voted'] as bool,
+    points: json['points'] as int? ?? 0,
+    userHasVoted: json['user_has_voted'] as bool? ?? false,
     userVoteValue: json['user_vote_value'] as int?,
-    voteScore: (json['vote_score'] as num?)?.toDouble() ?? 0.0,
   );
 
-  int get netVotes => upvotes - downvotes;
-  
-  String get displayText {
-    if (totalVotes == 0) return 'No votes';
-    if (totalVotes == 1) return '1 vote';
-    return '$totalVotes votes';
+  Color get scoreColor {
+    if (points > 5) return Colors.green;
+    if (points > 0) return Colors.orange;
+    return Colors.grey;
   }
 
-  Color get scoreColor {
-    if (voteScore > 0.6) return Colors.green;
-    if (voteScore > 0.3) return Colors.orange;
-    return Colors.red;
+  String get displayText {
+    if (points == 0) return 'No votes';
+    if (points == 1) return '1 vote';
+    return '$points votes';
   }
 }
 
@@ -110,10 +98,8 @@ class VotingRestrictions {
     isInvited: json['is_invited'] as bool? ?? true,
     isInTimeWindow: json['is_in_time_window'] as bool? ?? true,
     isInLocation: json['is_in_location'] as bool? ?? true,
-    voteStartTime: json['vote_start_time'] != null 
-        ? DateTime.parse(json['vote_start_time']) : null,
-    voteEndTime: json['vote_end_time'] != null 
-        ? DateTime.parse(json['vote_end_time']) : null,
+    voteStartTime: json['vote_start_time'] != null ? DateTime.parse(json['vote_start_time']) : null,
+    voteEndTime: json['vote_end_time'] != null ? DateTime.parse(json['vote_end_time']) : null,
     latitude: (json['latitude'] as num?)?.toDouble(),
     longitude: (json['longitude'] as num?)?.toDouble(),
     allowedRadiusMeters: json['allowed_radius_meters'] as int?,
@@ -121,18 +107,13 @@ class VotingRestrictions {
 
   VotingPermission get permission {
     if (licenseType == 'open') return VotingPermission.allowed;
-    
-    if (licenseType == 'invite_only') {
-      return isInvited ? VotingPermission.allowed : VotingPermission.notInvited;
-    }
-    
+    if (licenseType == 'invite_only') return isInvited ? VotingPermission.allowed : VotingPermission.notInvited;
     if (licenseType == 'location_time') {
       if (!isInvited) return VotingPermission.notInvited;
       if (!isInTimeWindow) return VotingPermission.outsideTimeWindow;
       if (!isInLocation) return VotingPermission.outsideLocation;
       return VotingPermission.allowed;
     }
-    
     return VotingPermission.noPermission;
   }
 
@@ -157,7 +138,11 @@ class PlaylistVotingInfo {
   final VotingRestrictions restrictions;
   final Map<String, VoteStats> trackVotes;
 
-  const PlaylistVotingInfo({ required this.playlistId, required this.restrictions, required this.trackVotes });
+  const PlaylistVotingInfo({
+    required this.playlistId,
+    required this.restrictions,
+    required this.trackVotes,
+  });
 
   factory PlaylistVotingInfo.fromJson(Map<String, dynamic> json) => PlaylistVotingInfo(
     playlistId: json['playlist_id'].toString(),
@@ -168,6 +153,6 @@ class PlaylistVotingInfo {
   );
 
   VoteStats? getTrackVotes(String trackId) => trackVotes[trackId];
-  
+
   bool get canVote => restrictions.permission == VotingPermission.allowed;
 }

@@ -28,7 +28,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.indexIsChanging) setState(() => _currentIndex = _tabController.index);
+      if (_tabController.indexIsChanging) {
+        setState(() => _currentIndex = _tabController.index);
+      }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
@@ -36,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
+    
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: _currentIndex == 0 ? AppBar(
@@ -58,7 +61,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [_buildDashboard(auth), _buildLibraryWithAppBar(), _buildSearchWithAppBar(),
+              children: [
+                _buildDashboard(auth), 
+                _buildLibraryWithAppBar(), 
+                _buildSearchWithAppBar(),
                 _buildFriendsWithAppBar(),
                 _buildProfileWithAppBar(),
               ],
@@ -189,7 +195,242 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildProfileWithAppBar() {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: const ProfileScreen(isEmbedded: true),
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: const Text('Profile'),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+          ),
+        ],
+      ),
+      body: _buildEmbeddedProfile(),
+    );
+  }
+
+  Widget _buildEmbeddedProfile() {
+    return Consumer2<ProfileProvider, AuthProvider>(
+      builder: (context, profileProvider, authProvider, _) {
+        if (profileProvider.isLoading) {
+          return AppWidgets.loading('Loading profile...');
+        }
+
+        if (profileProvider.hasError) {
+          return AppWidgets.errorState(
+            message: profileProvider.errorMessage ?? 'Failed to load profile',
+            onRetry: () => _loadProfile(),
+            retryText: 'Retry',
+          );
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppTheme.primary.withOpacity(0.2),
+                      ),
+                      child: profileProvider.avatarUrl != null
+                          ? ClipOval(
+                              child: Image.network(
+                                profileProvider.avatarUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.person, size: 40, color: Colors.white),
+                              ),
+                            )
+                          : const Icon(Icons.person, size: 40, color: Colors.white),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      authProvider.username ?? 'User',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (authProvider.currentUser?.email != null)
+                      Text(
+                        authProvider.currentUser!.email!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              if (profileProvider.name?.isNotEmpty == true ||
+                  profileProvider.bio?.isNotEmpty == true) ...[
+                AppWidgets.sectionTitle('About'),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (profileProvider.name?.isNotEmpty == true) ...[
+                        Text(
+                          'Name',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          profileProvider.name!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      if (profileProvider.bio?.isNotEmpty == true) ...[
+                        Text(
+                          'Bio',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          profileProvider.bio!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              AppWidgets.sectionTitle('Quick Actions'),
+              const SizedBox(height: 16),
+              _buildProfileQuickActions(),
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+                  icon: const Icon(Icons.person),
+                  label: const Text('View Full Profile'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileQuickActions() {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      childAspectRatio: 2.5,
+      children: [
+        _buildQuickActionTile(
+          title: 'Edit Profile',
+          icon: Icons.edit,
+          color: Colors.blue,
+          onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+        ),
+        _buildQuickActionTile(
+          title: 'Settings',
+          icon: Icons.settings,
+          color: Colors.grey,
+          onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+        ),
+        _buildQuickActionTile(
+          title: 'Change Password',
+          icon: Icons.lock,
+          color: Colors.orange,
+          onTap: () => Navigator.pushNamed(context, AppRoutes.userPasswordChange),
+        ),
+        _buildQuickActionTile(
+          title: 'Social Links',
+          icon: Icons.link,
+          color: Colors.green,
+          onTap: () => Navigator.pushNamed(context, AppRoutes.socialNetworkLink),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionTile({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      color: AppTheme.surface,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -199,6 +440,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (music.isLoading) {
           return AppWidgets.loading('Loading playlists...');
         }
+
         if (music.playlists.isEmpty) {
           return AppWidgets.emptyState(
             icon: Icons.playlist_play,
@@ -208,6 +450,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
           );
         }
+
         return RefreshIndicator(
           onRefresh: _loadData,
           color: AppTheme.primary,
@@ -221,9 +464,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 playlist: playlist,
                 onTap: () {
                   print('Navigating to playlist with ID: ${playlist.id}');
-                  if (playlist.id.isNotEmpty && playlist.id != 'null')
+                  if (playlist.id.isNotEmpty && playlist.id != 'null') {
                     Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
-                  else _showError('Invalid playlist ID');
+                  } else {
+                    _showError('Invalid playlist ID');
+                  }
                 },
                 onPlay: () => _playPlaylist(playlist),
                 showPlayButton: true,
@@ -238,8 +483,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildFriendsTab() {
     return Consumer<FriendProvider>(
       builder: (context, friendProvider, _) {
-        if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
+        if (friendProvider.isLoading) {
+          return AppWidgets.loading('Loading friends...');
+        }
+
         final pendingRequests = friendProvider.receivedInvitations;
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -251,6 +500,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 icon: Icons.people,
               ),
               const SizedBox(height: 16),
+
               if (pendingRequests.isNotEmpty) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -281,6 +531,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ],
+
               Row(
                 children: [
                   Expanded(
@@ -312,8 +563,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ],
               ),
               const SizedBox(height: 24),
+
               AppWidgets.sectionTitle('Recent Friends'),
               const SizedBox(height: 16),
+
               if (friendProvider.friends.isEmpty)
                 AppWidgets.emptyState(
                   icon: Icons.people_outline,
@@ -341,7 +594,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           'Friend #$friendId',
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                         ),
-                        subtitle: Text('User ID: $friendId',
+                        subtitle: Text(
+                          'User ID: $friendId',
                           style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         trailing: Icon(Icons.music_note, color: AppTheme.primary, size: 20),
@@ -350,12 +604,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     );
                   },
                 ),
+
               if (friendProvider.friends.length > 5) ...[
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
-                    child: Text('View all ${friendProvider.friends.length} friends', style: const TextStyle(color: AppTheme.primary)),
+                    child: Text(
+                      'View all ${friendProvider.friends.length} friends', 
+                      style: const TextStyle(color: AppTheme.primary),
+                    ),
                   ),
                 ),
               ],
@@ -382,6 +640,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     } catch (e) {
       _showError('Failed to load data: $e');
+    }
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+
+      if (auth.isLoggedIn && auth.token != null) {
+        await profileProvider.loadProfile(auth.token);
+      }
+    } catch (e) {
+      _showError('Failed to load profile: $e');
     }
   }
 

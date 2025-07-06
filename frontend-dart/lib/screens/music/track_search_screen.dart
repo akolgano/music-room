@@ -144,10 +144,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_isAddingToPlaylist) _buildPlaylistBanner(), 
-          _buildSearchRow(musicProvider)
-        ],
+        children: [if (_isAddingToPlaylist) _buildPlaylistBanner(), _buildSearchRow(musicProvider)],
       ),
     );
   }

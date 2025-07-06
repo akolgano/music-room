@@ -104,11 +104,8 @@ class AuthProvider extends BaseProvider {
     return await executeBool(
       () async {
         final result = await SocialLoginUtils.loginWithFacebook();
-        if (result.success) {
-          await _authService.facebookLogin(result.token!);
-        } else {
-          throw Exception(result.error ?? "Facebook login failed!");
-        }
+        if (result.success) await _authService.facebookLogin(result.token!);
+        else throw Exception(result.error ?? "Facebook login failed!");
       },
       successMessage: 'Facebook login successful!',
       errorMessage: 'Facebook login failed',
@@ -122,14 +119,10 @@ class AuthProvider extends BaseProvider {
           await SocialLoginUtils.initialize();
           await Future.delayed(const Duration(milliseconds: 500));
         }
-        
         if (SocialLoginUtils.googleSignInInstance == null) throw Exception('Google Sign-In is not properly configured');
         final result = await SocialLoginUtils.loginWithGoogle();
-        if (result.success && result.token != null) {
-          await _authService.googleLogin('app', result.token!);
-        } else {
-          throw Exception(result.error ?? "Google login failed");
-        }
+        if (result.success && result.token != null) await _authService.googleLogin('app', result.token!);
+        else throw Exception(result.error ?? "Google login failed");
       },
       successMessage: 'Google login successful!',
       errorMessage: 'Google login failed',

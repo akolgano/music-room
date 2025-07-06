@@ -5,30 +5,29 @@ import '../../providers/auth_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
-import 'signup_with_otp_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
-
   @override
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-// Facebook and Google login is MUST HAVE for project requirement.
 class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _otpController = TextEditingController();
+  
   bool _isLogin = true;
+  bool _showOtpField = false; 
+  bool _otpSent = false; 
   late AnimationController _rotationController;
 
   @override
   String get screenTitle => 'Authentication';
-
   @override
   bool get showBackButton => false;
-
   @override
   bool get showMiniPlayer => false;
 
@@ -44,6 +43,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
@@ -60,7 +60,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
               const SizedBox(height: 32),
               _buildForm(), 
               const SizedBox(height: 24),
-              _buildSocialButtons(), 
+              if (_isLogin) _buildSocialButtons(), 
               const SizedBox(height: 16), 
               _buildModeToggle(),
             ],
@@ -96,7 +96,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
               ),
               const SizedBox(width: 8),
               Text(
-                _isLogin ? 'Welcome Back' : 'Join Music Room',
+                _isLogin ? 'Welcome Back' : (_showOtpField ? 'Verify Email' : 'Join Music Room'),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -114,16 +114,16 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                 color: AppTheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(
-                Icons.music_note,
-                size: 40,
-                color: AppTheme.primary,
-              ),
+              child: const Icon(Icons.music_note, size: 40, color: AppTheme.primary),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            _isLogin ? 'Sign in to continue your musical journey' : 'Create an account to start sharing music',
+            _isLogin 
+              ? 'Sign in to continue your musical journey' 
+              : _showOtpField 
+                ? 'We sent a verification code to ${_emailController.text}'
+                : 'Create an account to start sharing music',
             style: const TextStyle(color: Colors.white70, fontSize: 16),
             textAlign: TextAlign.center,
           ),
@@ -133,45 +133,88 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   );
 
   Widget _buildForm() => AppTheme.buildFormCard(
-    title: _isLogin ? 'Sign In' : 'Create Account',
+    title: _isLogin ? 'Sign In' : (_showOtpField ? 'Enter Verification Code' : 'Create Account'),
     child: Form(
       key: _formKey,
       child: Column(
         children: [
-          AppWidgets.textField(
-            context: context,
-            controller: _usernameController, 
-            labelText: 'Username', 
-            prefixIcon: Icons.person, 
-            validator: AppValidators.username
-          ),
-          if (!_isLogin) ...[
+          if (!_showOtpField) ...[
+            AppWidgets.textField(context: context, controller: _usernameController, labelText: 'Username', prefixIcon: Icons.person, 
+              validator: AppValidators.username
+            ),
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              AppWidgets.textField(
+                context: context,
+                controller: _emailController,
+                labelText: 'Email',
+                prefixIcon: Icons.email,
+                validator: AppValidators.email,
+              ),
+            ],
             const SizedBox(height: 16),
             AppWidgets.textField(
               context: context,
-              controller: _emailController,
-              labelText: 'Email',
-              prefixIcon: Icons.email,
-              validator: AppValidators.email,
+              controller: _passwordController,
+              labelText: 'Password',
+              prefixIcon: Icons.lock,
+              obscureText: true,
+              validator: AppValidators.password,
             ),
           ],
-          const SizedBox(height: 16),
-          AppWidgets.textField(
-            context: context,
-            controller: _passwordController,
-            labelText: 'Password',
-            prefixIcon: Icons.lock,
-            obscureText: true,
-            validator: AppValidators.password,
-          ),
+          if (_showOtpField) ...[
+            AppWidgets.infoBanner(
+              title: 'Check Your Email',
+              message: 'We verified that your username and email are available, then sent a verification code to ${_emailController.text}',
+              icon: Icons.email,
+            ),
+            const SizedBox(height: 16),
+            AppWidgets.textField(
+              context: context,
+              controller: _otpController,
+              labelText: 'Verification Code',
+              prefixIcon: Icons.lock,
+              validator: (value) {
+                if (value?.isEmpty ?? true) return 'Please enter verification code';
+                if (!RegExp(r'^\d{6}$').hasMatch(value!)) return 'Code must be 6 digits';
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () => _resendOtp(),
+                  child: const Text('Resend Code', style: TextStyle(color: AppTheme.primary)),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _showOtpField = false;
+                    _otpSent = false;
+                    _otpController.clear();
+                  }),
+                  child: const Text('Change Info', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 24),
           Consumer<AuthProvider>(
             builder: (context, authProvider, _) => AppWidgets.primaryButton(
               context: context,
-              text: _isLogin ? 'Sign In' : 'Sign Up',
+              text: _isLogin 
+                ? 'Sign In' 
+                : _showOtpField 
+                  ? 'Verify & Create Account'
+                  : 'Check Availability & Send OTP',
               onPressed: authProvider.isLoading ? null : _submit,
               isLoading: authProvider.isLoading,
-              icon: _isLogin ? Icons.login : Icons.person_add,
+              icon: _isLogin 
+                ? Icons.login 
+                : _showOtpField 
+                  ? Icons.verified_user
+                  : Icons.check_circle,
             ),
           ),
         ],
@@ -252,17 +295,12 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   Widget _buildModeToggle() => TextButton(
     onPressed: () {
-      if (_isLogin) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SignupWithOtpScreen()),
-        );
-      } else {
-        setState(() {
-          _isLogin = true;
-          _clearForm();
-        });
-      }
+      setState(() {
+        _isLogin = !_isLogin;
+        _showOtpField = false;
+        _otpSent = false;
+        _clearForm();
+      });
     },
     child: RichText(
       text: TextSpan(
@@ -281,10 +319,19 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
     _usernameController.clear();
     _emailController.clear();
     _passwordController.clear();
+    _otpController.clear();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isLogin) await _performLogin();
+    else {
+      if (_showOtpField) await _verifyOtpAndSignup();
+      else await _initiateSignup();
+    }
+  }
+
+  Future<void> _performLogin() async {
     await runAsyncAction(
       () async {
         final authProvider = getProvider<AuthProvider>();
@@ -294,6 +341,64 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
       },
       successMessage: 'Login successful!',
       errorMessage: 'Authentication failed',
+    );
+  }
+
+  Future<void> _initiateSignup() async {
+    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (AppValidators.username(username) != null) {
+      showError('Please enter a valid username');
+      return;
+    }
+    if (AppValidators.email(email) != null) {
+      showError('Please enter a valid email address');
+      return;
+    }
+    if (AppValidators.password(password) != null) {
+      showError('Please enter a valid password');
+      return;
+    }
+    await runAsyncAction(
+      () async {
+        final authProvider = getProvider<AuthProvider>();
+        print('Sending OTP to email...');
+        await authProvider.sendSignupEmailOtp(email);
+        setState(() {
+          _showOtpField = true;
+          _otpSent = true;
+        });
+      },
+      successMessage: 'Verification code sent to your email!',
+      errorMessage: null,
+    );
+  }
+
+  Future<void> _verifyOtpAndSignup() async {
+    await runAsyncAction(
+      () async {
+        final authProvider = getProvider<AuthProvider>();
+        bool success = await authProvider.signupWithOtp(
+          _usernameController.text.trim(), _emailController.text.trim(), _passwordController.text, _otpController.text,
+        );
+        if (success) navigateToHome();
+        else throw Exception(authProvider.errorMessage ?? 'Signup failed');
+      },
+      successMessage: 'Account created successfully!',
+      errorMessage: 'Signup failed. Please check your verification code.',
+    );
+  }
+
+  Future<void> _resendOtp() async {
+    await runAsyncAction(
+      () async {
+        final authProvider = getProvider<AuthProvider>();
+        await authProvider.sendSignupEmailOtp(_emailController.text.trim());
+      },
+      successMessage: 'Verification code resent!',
+      errorMessage: 'Failed to resend verification code',
     );
   }
 

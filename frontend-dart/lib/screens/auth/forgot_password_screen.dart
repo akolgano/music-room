@@ -97,15 +97,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             children: [
                               Text(
                                 'Forgot Password',
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 24),
-                            
                               if (_isGetEmail)
                                 TextFormField(
                                   controller: _emailController,
@@ -114,7 +109,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     prefixIcon: Icon(Icons.email, color: AppTheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide.none,
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: AppTheme.primary, width: 2),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppTheme.error, width: 2),
                                     ),
                                     filled: true,
                                     fillColor: AppTheme.surfaceVariant,
@@ -122,50 +129,49 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   style: const TextStyle(color: Colors.white),
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) {
+                                    if (value == null || value.isEmpty)
                                       return 'Please enter an email';
-                                    }
-                                    if (value.trim() != value) {
+                                    if (value.trim() != value)
                                       return 'Email cannot have leading or trailing spaces';
-                                    }
-                                    if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value)) {
+                                    if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value))
                                       return 'Enter a valid email address';
-                                    }
                                     return null;
                                   },
                                 ),
-
                               if (_isGetOtp)
-                                  TextFormField(
+                                TextFormField(
                                   controller: _otpController,
                                   decoration: InputDecoration(
                                     labelText: 'One Time Passcode',
                                     prefixIcon: Icon(Icons.lock, color: AppTheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide.none,
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: AppTheme.primary, width: 2),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppTheme.error, width: 2),
                                     ),
                                     filled: true,
                                     fillColor: AppTheme.surfaceVariant,
                                   ),
                                   style: const TextStyle(color: Colors.white),
-                                  
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter OTP';
-                                    }
-                                    if (value.trim() != value) {
-                                      return 'OTP cannot have leading or trailing spaces';
-                                    }
-                                    if (!RegExp(r'^\d{6}$').hasMatch(value)) {
-                                      return 'OTP must be exactly 6 digits';
-                                    }
+                                    if (value == null || value.isEmpty) return 'Please enter OTP';
+                                    if (value.trim() != value) return 'OTP cannot have leading or trailing spaces';
+                                    if (!RegExp(r'^\d{6}$').hasMatch(value)) return 'OTP must be exactly 6 digits';
                                     return null;
                                   },
                                 ),
-                              
                               const SizedBox(height: 24),
-
                               if(_isGetOtp)
                                 TextFormField(
                                   controller: _passwordController,
@@ -174,7 +180,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     prefixIcon: Icon(Icons.lock, color: AppTheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide.none,
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: AppTheme.primary, width: 2),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppTheme.error, width: 2),
                                     ),
                                     filled: true,
                                     fillColor: AppTheme.surfaceVariant,
@@ -182,12 +200,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   style: const TextStyle(color: Colors.white),
                                   obscureText: true,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter a password';
-                                    }
-                                    if (value.length < 8) {
-                                      return 'Password must be at least 8 characters';
-                                    }
+                                    if (value == null || value.isEmpty) return 'Please enter a password';
+                                    if (value.length < 8) return 'Password must be at least 8 characters';
                                     return null;
                                   },
                                 ),

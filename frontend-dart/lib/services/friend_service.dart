@@ -32,11 +32,33 @@ class FriendService {
 
   Future<List<Map<String, dynamic>>> getReceivedInvitations(String token) async {
     final response = await _api.getReceivedInvitations(token);
-    return response.invitations;
+    return response.invitations.map((invitation) => {
+      'id': invitation.friendshipId,
+      'friend_id': invitation.friendId,
+      'friend_username': invitation.friendUsername,
+      'friendship_id': invitation.friendshipId,
+      'profile_picture_url': invitation.profilePictureUrl,
+      'status': invitation.status,
+      'from_user': invitation.friendId,
+      'to_user': invitation.friendId, 
+      'from_username': invitation.friendUsername,
+      'to_username': invitation.friendUsername, 
+    }).toList();
   }
 
   Future<List<Map<String, dynamic>>> getSentInvitations(String token) async {
     final response = await _api.getSentInvitations(token);
-    return response.invitations;
+    return response.invitations.map((invitation) => {
+      'id': invitation.friendshipId,
+      'friend_id': invitation.friendId,
+      'friend_username': invitation.friendUsername,
+      'friendship_id': invitation.friendshipId,
+      'profile_picture_url': invitation.profilePictureUrl,
+      'status': invitation.status,
+      'from_user': invitation.friendId,
+      'to_user': invitation.friendId, 
+      'from_username': invitation.friendUsername,
+      'to_username': invitation.friendUsername, 
+    }).toList();
   }
 }

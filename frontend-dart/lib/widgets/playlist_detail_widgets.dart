@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../providers/dynamic_theme_provider.dart';
-import '../../providers/voting_provider.dart';
-import '../../models/models.dart';
-import '../../core/core.dart';
-import '../../widgets/widgets.dart';
-import '../../core/theme_utils.dart';
+import '../providers/dynamic_theme_provider.dart';
+import '../providers/voting_provider.dart';
+import '../models/models.dart';
+import '../core/core.dart';
+import '../widgets/widgets.dart';
+import '../core/theme_utils.dart';
 
 class PlaylistDetailWidgets {
   static Widget buildThemedPlaylistHeader(BuildContext context, Playlist playlist) {
@@ -95,6 +95,8 @@ class PlaylistDetailWidgets {
 
   static Widget buildThemedPlaylistStats(BuildContext context, List<PlaylistTrack> tracks) {
     final totalDuration = tracks.length * 3;
+    final totalPoints = tracks.fold<int>(0, (sum, track) => sum + track.points);
+    
     return Card(
       color: ThemeUtils.getSurface(context),
       elevation: 4,
@@ -106,7 +108,7 @@ class PlaylistDetailWidgets {
           children: [
             buildThemedStatItem(context, icon: Icons.queue_music, label: 'Tracks', value: '${tracks.length}'),
             buildThemedStatItem(context, icon: Icons.access_time, label: 'Duration', value: '${totalDuration}m'),
-            buildThemedStatItem(context, icon: Icons.favorite, label: 'Votes', value: '0'),
+            buildThemedStatItem(context, icon: Icons.thumb_up, label: 'Points', value: '$totalPoints'),
           ],
         ),
       ),
@@ -232,11 +234,12 @@ class PlaylistDetailWidgets {
         final currentPoints = playlistTrack.points;
         final hasUserVoted = votingProvider.hasUserVotedByIndex(index);
         final canVote = votingProvider.canVote && !hasUserVoted;
-        
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           decoration: BoxDecoration(
-            color: getPointsColor(currentPoints).withOpacity(0.1), borderRadius: BorderRadius.circular(8),
+            color: getPointsColor(currentPoints).withOpacity(0.1), 
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: getPointsColor(currentPoints).withOpacity(0.3)),
           ),
           child: Column(
@@ -441,8 +444,7 @@ class PlaylistDetailWidgets {
             children: [
               Icon(Icons.music_note, color: Colors.white),
               SizedBox(
-                width: 20,
-                height: 20,
+                width: 20, height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
               ),
             ],

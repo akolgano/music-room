@@ -16,19 +16,15 @@ import '../models/models.dart';
 class AppValidators {
   static String? required(String? value, [String? fieldName]) =>
       ValidationBuilder().required('Please enter ${fieldName ?? 'this field'}').build()(value);
-  
   static String? email(String? value) =>
       ValidationBuilder().email('Please enter a valid email address').build()(value);
-  
   static String? password(String? value, [int minLength = 8]) =>
       ValidationBuilder().minLength(minLength, 'Password must be at least $minLength characters').build()(value);
-  
   static String? username(String? value) =>
       ValidationBuilder()
           .minLength(3, 'Username must be at least 3 characters')
           .maxLength(30, 'Username must be less than 30 characters')
           .regExp(RegExp(r'^[a-zA-Z0-9_]+$'), 'Username can only contain letters, numbers, and underscores').build()(value);
-
   static String? phoneNumber(String? value, [bool required = false]) {
     if (!required && (value?.isEmpty ?? true)) return null;
     if (value == null || value.trim().isEmpty) return required ? 'Please enter a phone number' : null;
@@ -40,10 +36,8 @@ class AppValidators {
       return 'Please enter a valid phone number';
     }
   }
-  
   static String? playlistName(String? value) =>
       ValidationBuilder().maxLength(100, 'Playlist name must be less than 100 characters').build()(value);
-  
   static String? description(String? value) =>
       value != null && value.length > 500 ? 'Description must be less than 500 characters' : null;
 }
@@ -111,7 +105,11 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -120,6 +118,14 @@ class AppTheme {
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: error, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: error, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
         ),
         labelStyle: const TextStyle(color: Colors.white70),
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
@@ -133,11 +139,7 @@ class AppTheme {
       ),
       iconTheme: IconThemeData(color: primary),
       primaryIconTheme: const IconThemeData(color: Colors.white),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: primary,
-        foregroundColor: Colors.black,
-        elevation: 6,
-      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(backgroundColor: primary, foregroundColor: Colors.black, elevation: 6),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: surface,
         selectedItemColor: primary,
@@ -204,24 +206,6 @@ class AppTheme {
 
   static ThemeData get darkTheme => _buildTheme();
 
-  static InputDecoration getInputDecoration({required String labelText, String? hintText, IconData? prefixIcon}) => InputDecoration(
-    labelText: labelText,
-    hintText: hintText,
-    prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: onSurfaceVariant) : null,
-    filled: true,
-    fillColor: surfaceVariant,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
-      borderSide: BorderSide.none
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
-      borderSide: const BorderSide(color: primary, width: 2)
-    ),
-    labelStyle: TextStyle(fontSize: kIsWeb ? 16 : 16.sp, color: onSurfaceVariant),
-    hintStyle: TextStyle(fontSize: kIsWeb ? 14 : 14.sp, color: onSurfaceVariant.withOpacity(0.7)),
-  );
-
   static Widget _buildCard({
     required Widget child, 
     EdgeInsets? margin, 
@@ -233,10 +217,7 @@ class AppTheme {
     elevation: elevation ?? 4,
     margin: margin ?? EdgeInsets.all(kIsWeb ? 16 : 16.w),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))),
-    child: Padding(
-      padding: padding ?? EdgeInsets.all(kIsWeb ? 24 : 24.w), 
-      child: child
-    ),
+    child: Padding(padding: padding ?? EdgeInsets.all(kIsWeb ? 24 : 24.w), child: child),
   );
 
   static Widget buildHeaderCard({required Widget child}) => _buildCard(child: child, elevation: 8);
@@ -288,7 +269,6 @@ class AppStrings {
   static const String unknownError = 'An unknown error occurred.';
 }
 
-
 class AppRoutes {
   static const String home = '/home';
   static const String auth = '/auth';
@@ -315,7 +295,6 @@ class SocialLoginUtils {
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
-    
     try {
       await _initializeFacebook();
       await _initializeGoogle();
@@ -351,7 +330,6 @@ class SocialLoginUtils {
   static Future<void> _initializeGoogle() async {
     try {
       final googleClientId = kIsWeb ? dotenv.env['GOOGLE_CLIENT_ID_WEB'] : dotenv.env['GOOGLE_CLIENT_ID_APP'];
-          
       if (googleClientId != null && googleClientId.isNotEmpty) {
         _googleSignIn = GoogleSignIn(
           scopes: <String>['email', 'profile', 'openid'],
@@ -377,25 +355,19 @@ class SocialLoginUtils {
         print('Social login not initialized, initializing now...');
         await initialize();
       }
-
       if (!_facebookInitialized) {
         return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.');
       }
-
       print('Attempting Facebook login...');
-      
       try {
         await FacebookAuth.instance.logOut();
       } catch (e) {
         print('Warning: Could not log out existing Facebook session: $e');
       }
-
       final result = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
       );
-
       print('Facebook login result status: ${result.status}');
-
       if (result.status == LoginStatus.success) {
         final accessToken = result.accessToken?.tokenString;
         if (accessToken != null && accessToken.isNotEmpty) {
@@ -417,13 +389,11 @@ class SocialLoginUtils {
       }
     } catch (e) {
       print('Facebook login error: $e');
-      
       if (e.toString().contains('MissingPluginException')) {
         return SocialLoginResult.error(
           'Facebook login is not properly configured. Please check your platform-specific setup.'
         );
       }
-      
       return SocialLoginResult.error('Facebook login error: $e');
     }
   }
@@ -433,24 +403,19 @@ class SocialLoginUtils {
       print('Google Sign-In not initialized, initializing now...');
       await initialize();
     }
-
     if (_googleSignIn == null) {
       print('Google Sign-In instance is null after initialization');
       return SocialLoginResult.error(
         'Google Sign-In not properly initialized. Please check your configuration.'
       );
     }
-
     try {
       await _googleSignIn!.signOut();
-      
       final GoogleSignInAccount? user = await _googleSignIn!.signIn();
-      
       if (user != null) {
         print('Google user signed in: ${user.email}');
         final GoogleSignInAuthentication auth = await user.authentication;
         print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
-        
         final idToken = auth.idToken;
         if (idToken != null && idToken.isNotEmpty) {
           print('Google login successful with idToken');
@@ -460,7 +425,6 @@ class SocialLoginUtils {
         print('Google sign-in was cancelled by user');
         return SocialLoginResult.error('Google sign-in was cancelled');
       }
-      
       print('Google login failed - no valid token received');
       return SocialLoginResult.error('Google login failed - no valid token received');
     } catch (e) {
@@ -496,8 +460,7 @@ class SocialLoginButton extends StatelessWidget {
     }
 
     return SizedBox(
-      width: double.infinity,
-      height: 50,
+      width: double.infinity, height: 50,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(

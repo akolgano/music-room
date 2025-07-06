@@ -10,19 +10,36 @@ import '../providers/friend_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../providers/voting_provider.dart';
+import '../providers/websocket_provider.dart'; 
 import '../services/music_player_service.dart';
+import '../services/websocket_service.dart'; 
 import '../models/models.dart';
 import '../screens/screens.dart';
 
 class AppBuilder {
   static List<SingleChildWidget> buildProviders() {
     return [
-      ChangeNotifierProvider<DynamicThemeProvider>(create: (_) => getIt<DynamicThemeProvider>()),
-      ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-      ChangeNotifierProvider<MusicProvider>(create: (_) => MusicProvider()),
-      ChangeNotifierProvider<FriendProvider>(create: (_) => FriendProvider()),
-      ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
-      ChangeNotifierProvider<VotingProvider>(create: (_) => VotingProvider()),
+      ChangeNotifierProvider<DynamicThemeProvider>(
+        create: (_) => getIt<DynamicThemeProvider>()
+      ),
+      ChangeNotifierProvider<AuthProvider>(
+        create: (_) => AuthProvider()
+      ),
+      ChangeNotifierProvider<ProfileProvider>(
+        create: (_) => ProfileProvider()
+      ),
+      ChangeNotifierProvider<MusicProvider>(
+        create: (_) => MusicProvider()
+      ),
+      ChangeNotifierProvider<FriendProvider>(
+        create: (_) => FriendProvider()
+      ),
+      ChangeNotifierProvider<VotingProvider>(
+        create: (_) => VotingProvider()
+      ),
+      ChangeNotifierProvider<WebSocketProvider>(
+        create: (_) => WebSocketProvider()
+      ),
     ];
   }
 
@@ -39,7 +56,8 @@ class AppBuilder {
   }
 
   static final Set<String> _protectedRoutes = {
-    AppRoutes.home, AppRoutes.profile,
+    AppRoutes.home, 
+    AppRoutes.profile,
     AppRoutes.playlistEditor,
     AppRoutes.playlistDetail,
     AppRoutes.trackDetail,
@@ -50,7 +68,8 @@ class AppBuilder {
     AppRoutes.friendRequests,
     AppRoutes.playlistSharing,
     AppRoutes.player,
-    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink,
+    AppRoutes.userPasswordChange, 
+    AppRoutes.socialNetworkLink,
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -61,7 +80,9 @@ class AppBuilder {
         settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) {
+              return const AuthScreen();
+            }
             return const HomeScreen();
           },
         ),
@@ -70,15 +91,8 @@ class AppBuilder {
 
     if (settings.name == AppRoutes.auth) {
       return MaterialPageRoute(
-        settings: settings,
-        builder: (context) => const AuthScreen(),
-      );
-    }
-
-    if (settings.name == '/signup_otp') {
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (context) => const SignupWithOtpScreen(),
+        settings: settings, 
+        builder: (context) => const AuthScreen()
       );
     }
 
@@ -87,7 +101,9 @@ class AppBuilder {
         settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) {
+              return const AuthScreen();
+            }
             return _buildProtectedRoute(settings);
           },
         ),
@@ -100,20 +116,25 @@ class AppBuilder {
         settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) {
+              return const AuthScreen();
+            }
             return PlaylistDetailScreen(playlistId: playlistId);
           },
         ),
       );
     }
 
-    if (settings.name?.startsWith('/track/') == true || settings.name?.startsWith('/deezer_track/') == true) {
+    if (settings.name?.startsWith('/track/') == true || 
+        settings.name?.startsWith('/deezer_track/') == true) {
       final trackId = settings.name!.split('/').last;
       return MaterialPageRoute(
         settings: settings,
         builder: (context) => Consumer<AuthProvider>(
           builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) {
+              return const AuthScreen();
+            }
             return TrackDetailScreen(trackId: trackId);
           },
         ),
@@ -133,7 +154,15 @@ class AppBuilder {
       case AppRoutes.home:
         return const HomeScreen();
       case AppRoutes.profile:
-        return const ProfileScreen();
+        return Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) {
+              print('Profile route: User not properly authenticated');
+              return const AuthScreen();
+            }
+            return const ProfileScreen();
+          },
+        );
       case AppRoutes.trackSearch:
         return const TrackSearchScreen();
       case AppRoutes.publicPlaylists:
@@ -149,7 +178,15 @@ class AppBuilder {
       case AppRoutes.socialNetworkLink:
         return const SocialNetworkLinkScreen();
       case '/profile_info':
-        return const ProfileScreen();
+        return Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) {
+              print('Profile info route: User not properly authenticated');
+              return const AuthScreen();
+            }
+            return const ProfileScreen();
+          },
+        );
       case AppRoutes.playlistEditor:
         return _buildPlaylistEditor(settings);
       case AppRoutes.playlistDetail:
@@ -205,14 +242,20 @@ class AppBuilder {
         track: args['track'] as Track?,
         playlistId: args['playlistId'] as String?,
       );
-    } else if (args is String) return TrackDetailScreen(trackId: args);
-    else if (args is Track) return TrackDetailScreen(track: args);
+    } else if (args is String) {
+      return TrackDetailScreen(trackId: args);
+    } else if (args is Track) {
+      return TrackDetailScreen(track: args);
+    }
+    
     return _buildErrorScreen('Invalid track data');
   }
 
   static Widget _buildPlaylistSharing(RouteSettings settings) {
     final args = settings.arguments;
-    if (args is Playlist) return PlaylistSharingScreen(playlist: args);
+    if (args is Playlist) {
+      return PlaylistSharingScreen(playlist: args);
+    }
     return _buildErrorScreen('Invalid playlist data');
   }
 
@@ -220,23 +263,89 @@ class AppBuilder {
     return Builder(
       builder: (context) => Scaffold(
         backgroundColor: AppTheme.background,
-        appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Error')),
+        appBar: AppBar(
+          backgroundColor: AppTheme.background, 
+          title: const Text('Error')
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.error, size: 64, color: AppTheme.error),
               const SizedBox(height: 16),
-              Text(message, style: const TextStyle(color: Colors.white, fontSize: 18), textAlign: TextAlign.center),
+              Text(
+                message, 
+                style: const TextStyle(color: Colors.white, fontSize: 18), 
+                textAlign: TextAlign.center
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary, 
+                  foregroundColor: Colors.black
+                ),
                 child: const Text('Go Back'),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+abstract class WebSocketAwareScreen<T extends StatefulWidget> extends State<T> {
+  WebSocketProvider? _webSocketProvider;
+  
+  String get screenTitle;
+  Widget buildContent();
+  bool get enableWebSocket => false;
+  String? get webSocketPlaylistId => null;
+  
+  void onPlaylistUpdate(PlaylistUpdateEvent event) {} 
+
+  @override
+  void initState() {
+    super.initState();
+    if (enableWebSocket) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeWebSocket();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    if (enableWebSocket && _webSocketProvider != null) {
+      _webSocketProvider!.disconnect();
+    }
+    super.dispose();
+  }
+
+  void _initializeWebSocket() {
+    if (!enableWebSocket || webSocketPlaylistId == null) return;
+    
+    _webSocketProvider = Provider.of<WebSocketProvider>(context, listen: false);
+    _webSocketProvider!.playlistUpdates.listen(onPlaylistUpdate);
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.isLoggedIn && authProvider.token != null) {
+      _webSocketProvider!.connectToPlaylist(webSocketPlaylistId!, authProvider.token!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        title: Text(screenTitle),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: buildContent(),
       ),
     );
   }

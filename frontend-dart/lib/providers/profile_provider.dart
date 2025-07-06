@@ -9,9 +9,11 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../core/core.dart';
 import '../core/base_provider.dart'; 
 import '../models/api_models.dart';
+import '../models/profile_models.dart';
 
 class ProfileProvider extends BaseProvider { 
   final ApiService _apiService;  
+
   String? _userId;
   String? _username;
   String? _userEmail;
@@ -20,20 +22,22 @@ class ProfileProvider extends BaseProvider {
   String? _socialType;
   String? _socialId;
   bool _isPasswordUsable = false;
+
   String? _avatar;
-  String? _gender;
+  String? _name;
   String? _location;
   String? _bio;
-  String? _firstName;
-  String? _lastName;
   String? _phone;
-  String? _street;
-  String? _country;
-  String? _postalCode;
-  DateTime? _dob;
-  List<String>? _hobbies;
   String? _friendInfo;
-  List<String>? _musicPreferences;
+  String _avatarVisibility = 'public';
+  String _nameVisibility = 'public';
+  String _locationVisibility = 'public';
+  String _bioVisibility = 'public';
+  String _phoneVisibility = 'private';
+  String _friendInfoVisibility = 'friends';
+  String _musicPreferencesVisibility = 'public';
+  List<String> _musicPreferences = [];
+  List<MusicPreference> _availableMusicPreferences = [];
   String? get userId => _userId;
   String? get username => _username;
   String? get userEmail => _userEmail;
@@ -42,20 +46,22 @@ class ProfileProvider extends BaseProvider {
   String? get socialType => _socialType;
   String? get socialId => _socialId;
   bool get isPasswordUsable => _isPasswordUsable;
+
   String? get avatar => _avatar;
-  String? get gender => _gender;
+  String? get name => _name;
   String? get location => _location;
   String? get bio => _bio;
-  String? get firstName => _firstName;
-  String? get lastName => _lastName;
   String? get phone => _phone;
-  String? get street => _street;
-  String? get country => _country;
-  String? get postalCode => _postalCode;
-  DateTime? get dob => _dob;
-  List<String>? get hobbies => _hobbies;
   String? get friendInfo => _friendInfo;
-  List<String>? get musicPreferences => _musicPreferences;
+  String get avatarVisibility => _avatarVisibility;
+  String get nameVisibility => _nameVisibility;
+  String get locationVisibility => _locationVisibility;
+  String get bioVisibility => _bioVisibility;
+  String get phoneVisibility => _phoneVisibility;
+  String get friendInfoVisibility => _friendInfoVisibility;
+  String get musicPreferencesVisibility => _musicPreferencesVisibility;
+  List<String> get musicPreferences => List.from(_musicPreferences);
+  List<MusicPreference> get availableMusicPreferences => List.from(_availableMusicPreferences);
 
   ProfileProvider() : _apiService = getIt<ApiService>();
 
@@ -69,57 +75,210 @@ class ProfileProvider extends BaseProvider {
     _socialName = null;
     _socialId = null;
     _avatar = null;
-    _gender = null;
+    _name = null;
     _location = null;
     _bio = null;
-    _firstName = null;
-    _lastName = null;
     _phone = null;
-    _street = null;
-    _country = null;
-    _postalCode = null;
-    _dob = null;
-    _hobbies = null;
     _friendInfo = null;
-    _musicPreferences = null;
+    _avatarVisibility = 'public';
+    _nameVisibility = 'public';
+    _locationVisibility = 'public';
+    _bioVisibility = 'public';
+    _phoneVisibility = 'private';
+    _friendInfoVisibility = 'friends';
+    _musicPreferencesVisibility = 'public';
+    _musicPreferences.clear();
+    _availableMusicPreferences.clear();
   }
 
   Future<bool> loadProfile(String? token) async {
+    if (token == null || token.isEmpty) {
+      setError('Authentication required. Please log in again.');
+      return false;
+    }
+
     return await executeBool(
       () async {
         resetValues();
-        final userData = await _apiService.getUserData(token);
-        _userId = userData['id'];
-        _username = userData['username'];
-        _userEmail = userData['email'];
-        _isPasswordUsable = userData['is_password_usable'] as bool;
-        final hasSocialAccount = userData['has_social_account'] as bool;
-        if (hasSocialAccount) {
-          final social = userData['social'] as Map<String, dynamic>;
-          _socialType = social['type'];
-          _socialEmail = social['social_email'];
-          _socialName = social['social_name'];
-          _socialId = social['social_id'];
+        try {
+          final userData = await _apiService.getUserData(token);
+          _userId = userData['id']?.toString();
+          _username = userData['username'] as String?;
+          _userEmail = userData['email'] as String?;
+          _isPasswordUsable = userData['is_password_usable'] as bool? ?? false;
+          
+          final hasSocialAccount = userData['has_social_account'] as bool? ?? false;
+          if (hasSocialAccount && userData['social'] != null) {
+            final social = userData['social'] as Map<String, dynamic>;
+            _socialType = social['type'] as String?;
+            _socialEmail = social['social_email'] as String?;
+            _socialName = social['social_name'] as String?;
+            _socialId = social['social_id'] as String?;
+          }
+        } catch (e) {
+          print('Failed to load user data: $e');
+          throw Exception('Failed to load user information: $e');
         }
-        final profileData = await _apiService.getProfileData(token!);
-        _avatar = profileData['avatar'];
-        _gender = profileData['gender'];
-        _location = profileData['location'];
-        _bio = profileData['bio'];
-        _firstName = profileData['first_name'];
-        _lastName = profileData['last_name'];
-        _phone = profileData['phone'];
-        _street = profileData['street'];
-        _country = profileData['country'];
-        _postalCode = profileData['postal_code'];
-        final dobString = profileData['dob'];
-        if (dobString != null) _dob = DateTime.parse(dobString);
-        _hobbies = (profileData['hobbies'] as List<dynamic>?)?.cast<String>();
-        _friendInfo = profileData['friend_info'];
-        _musicPreferences = (profileData['music_preferences'] as List<dynamic>?)?.cast<String>();
+
+        try {
+          final profile = await _apiService.getMyProfile(token);
+          _avatar = profile.avatar;
+          _name = profile.name;
+          _location = profile.location;
+          _bio = profile.bio;
+          _phone = profile.phone;
+          _friendInfo = profile.friendInfo;
+          _avatarVisibility = profile.avatarVisibility;
+          _nameVisibility = profile.nameVisibility;
+          _locationVisibility = profile.locationVisibility;
+          _bioVisibility = profile.bioVisibility;
+          _phoneVisibility = profile.phoneVisibility;
+          _friendInfoVisibility = profile.friendInfoVisibility;
+          _musicPreferencesVisibility = profile.musicPreferencesVisibility;
+          _musicPreferences = List.from(profile.musicPreferences);
+        } catch (e) {
+          print('Failed to load profile data: $e');
+          throw Exception('Failed to load profile information: $e');
+        }
+
+        try {
+          _availableMusicPreferences = await _apiService.getMusicPreferences(token);
+        } catch (e) {
+          print('Failed to load music preferences: $e');
+          _availableMusicPreferences = [];
+        }
       },
       successMessage: 'Profile loaded successfully',
       errorMessage: 'Failed to load profile',
+    );
+  }
+
+  Future<bool> updateProfile(String? token, {
+    String? avatar,
+    String? name,
+    String? location,
+    String? bio,
+    String? phone,
+    String? friendInfo,
+    String? avatarVisibility,
+    String? nameVisibility,
+    String? locationVisibility,
+    String? bioVisibility,
+    String? phoneVisibility,
+    String? friendInfoVisibility,
+    String? musicPreferencesVisibility,
+    List<int>? musicPreferencesIds,
+  }) async {
+    return await executeBool(
+      () async {
+        final request = ProfileUpdateRequest(
+          avatar: avatar,
+          name: name,
+          location: location,
+          bio: bio,
+          phone: phone,
+          friendInfo: friendInfo,
+          avatarVisibility: avatarVisibility,
+          nameVisibility: nameVisibility,
+          locationVisibility: locationVisibility,
+          bioVisibility: bioVisibility,
+          phoneVisibility: phoneVisibility,
+          friendInfoVisibility: friendInfoVisibility,
+          musicPreferencesVisibility: musicPreferencesVisibility,
+          musicPreferencesIds: musicPreferencesIds,
+        );
+
+        final updatedProfile = await _apiService.patchMyProfile(token!, request);
+        _avatar = updatedProfile.avatar;
+        _name = updatedProfile.name;
+        _location = updatedProfile.location;
+        _bio = updatedProfile.bio;
+        _phone = updatedProfile.phone;
+        _friendInfo = updatedProfile.friendInfo;
+        _avatarVisibility = updatedProfile.avatarVisibility;
+        _nameVisibility = updatedProfile.nameVisibility;
+        _locationVisibility = updatedProfile.locationVisibility;
+        _bioVisibility = updatedProfile.bioVisibility;
+        _phoneVisibility = updatedProfile.phoneVisibility;
+        _friendInfoVisibility = updatedProfile.friendInfoVisibility;
+        _musicPreferencesVisibility = updatedProfile.musicPreferencesVisibility;
+        _musicPreferences = List.from(updatedProfile.musicPreferences);
+      },
+      successMessage: 'Profile updated successfully',
+      errorMessage: 'Failed to update profile',
+    );
+  }
+
+  Future<bool> updateAvatar(String? token, String? avatarBase64) async {
+    return updateProfile(token, avatar: avatarBase64);
+  }
+
+  Future<bool> updateBasicInfo(String? token, {
+    String? name,
+    String? location,
+    String? bio,
+  }) async {
+    return updateProfile(
+      token,
+      name: name,
+      location: location,
+      bio: bio,
+    );
+  }
+
+  Future<bool> updateContactInfo(String? token, {
+    String? phone,
+    String? friendInfo,
+  }) async {
+    return updateProfile(
+      token,
+      phone: phone,
+      friendInfo: friendInfo,
+    );
+  }
+
+  Future<bool> updateMusicPreferences(String? token, List<int> musicPreferencesIds) async {
+    return updateProfile(token, musicPreferencesIds: musicPreferencesIds);
+  }
+
+  Future<bool> updateVisibilitySettings(String? token, {
+    String? avatarVisibility,
+    String? nameVisibility,
+    String? locationVisibility,
+    String? bioVisibility,
+    String? phoneVisibility,
+    String? friendInfoVisibility,
+    String? musicPreferencesVisibility,
+  }) async {
+    return updateProfile(
+      token,
+      avatarVisibility: avatarVisibility,
+      nameVisibility: nameVisibility,
+      locationVisibility: locationVisibility,
+      bioVisibility: bioVisibility,
+      phoneVisibility: phoneVisibility,
+      friendInfoVisibility: friendInfoVisibility,
+      musicPreferencesVisibility: musicPreferencesVisibility,
+    );
+  }
+
+  Future<bool> deleteAvatar(String? token) async {
+    return await executeBool(
+      () async {
+        await _apiService.deleteMyAvatar(token!);
+        _avatar = null;
+      },
+      successMessage: 'Avatar deleted successfully',
+      errorMessage: 'Failed to delete avatar',
+    );
+  }
+
+  Future<bool> loadMusicPreferences(String? token) async {
+    return await executeBool(
+      () async {
+        _availableMusicPreferences = await _apiService.getMusicPreferences(token!);
+      },
+      errorMessage: 'Failed to load music preferences',
     );
   }
 
@@ -155,78 +314,19 @@ class ProfileProvider extends BaseProvider {
       () async {
         final googleSignIn = SocialLoginUtils.googleSignInInstance;
         if (googleSignIn == null) throw Exception("Google Sign-In not initialized");
+
         final GoogleSignInAccount? user = await googleSignIn.signIn();
         if (user == null) throw Exception("Google login failed!");
+
         final GoogleSignInAuthentication auth = await user.authentication;
         final idToken = auth.idToken;
         if (idToken == null) throw Exception("Google login failed!");
+
         await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken, type: 'app'));
       },
       successMessage: 'Google account linked successfully',
       errorMessage: 'Failed to link Google account',
     );
-  }
-
-  Future<bool> updateProfile(String? token, {
-    String? avatarBase64,
-    String? mimeType,
-    String? gender,
-    String? location,
-    String? bio,
-    String? firstName,
-    String? lastName,
-    String? phone,
-    String? street,
-    String? country,
-    String? postalCode,
-    String? dob,
-    List<String>? hobbies,
-    String? friendInfo, 
-    List<String>? musicPreferences,
-  }) async {
-    return await executeBool(
-      () async {
-        final updateData = <String, dynamic>{};
-        if (avatarBase64 != null) updateData['avatar_base64'] = avatarBase64;
-        if (mimeType != null) updateData['mime_type'] = mimeType;
-        if (gender != null) updateData['gender'] = gender;
-        if (location != null) updateData['location'] = location;
-        if (bio != null) updateData['bio'] = bio;
-        if (firstName != null) updateData['first_name'] = firstName;
-        if (lastName != null) updateData['last_name'] = lastName;
-        if (phone != null) updateData['phone'] = phone;
-        if (street != null) updateData['street'] = street;
-        if (country != null) updateData['country'] = country;
-        if (postalCode != null) updateData['postal_code'] = postalCode;
-        if (dob != null) updateData['dob'] = dob;
-        if (hobbies != null) updateData['hobbies'] = hobbies;
-        if (friendInfo != null) updateData['friend_info'] = friendInfo;
-        if (musicPreferences != null) updateData['music_preferences'] = musicPreferences;
-
-        await _apiService.updateProfile(token!, updateData);
-
-        if (avatarBase64 != null) _avatar = avatarBase64;
-        if (gender != null) _gender = gender;
-        if (location != null) _location = location;
-        if (bio != null) _bio = bio;
-        if (firstName != null) _firstName = firstName;
-        if (lastName != null) _lastName = lastName;
-        if (phone != null) _phone = phone;
-        if (street != null) _street = street;
-        if (country != null) _country = country;
-        if (postalCode != null) _postalCode = postalCode;
-        if (dob != null) _dob = DateTime.parse(dob);
-        if (hobbies != null) _hobbies = hobbies;
-        if (friendInfo != null) _friendInfo = friendInfo;
-        if (musicPreferences != null) _musicPreferences = musicPreferences;
-      },
-      successMessage: 'Profile updated successfully',
-      errorMessage: 'Failed to update profile',
-    );
-  }
-
-  Future<bool> updateFriendInfo(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {
-    return updateProfile(token, dob: dob, hobbies: hobbies, friendInfo: friendInfo);
   }
 
   String? get avatarUrl {
@@ -236,5 +336,30 @@ class ProfileProvider extends BaseProvider {
       else return _avatar;
     }
     return null;
+  }
+
+  List<String> getMusicPreferenceNames(List<int> ids) {
+    return _availableMusicPreferences.where((pref) => ids.contains(pref.id)).map((pref) => pref.name).toList();
+  }
+
+  List<int> getMusicPreferenceIds(List<String> names) {
+    return _availableMusicPreferences.where((pref) => names.contains(pref.name)).map((pref) => pref.id).toList();
+  }
+
+  bool get hasBasicInfo => _name?.isNotEmpty == true || _location?.isNotEmpty == true || _bio?.isNotEmpty == true;
+
+  bool get hasContactInfo => _phone?.isNotEmpty == true || _friendInfo?.isNotEmpty == true;
+
+  bool get isProfileComplete => hasBasicInfo && _avatar?.isNotEmpty == true && _musicPreferences.isNotEmpty;
+
+  double get profileCompletionPercentage {
+    int completed = 0;
+    int total = 5; 
+    if (_avatar?.isNotEmpty == true) completed++;
+    if (_name?.isNotEmpty == true) completed++;
+    if (_location?.isNotEmpty == true) completed++;
+    if (_bio?.isNotEmpty == true) completed++;
+    if (_musicPreferences.isNotEmpty) completed++;
+    return completed / total;
   }
 }

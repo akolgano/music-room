@@ -1,7 +1,10 @@
 // lib/providers/dynamic_theme_provider.dart
 import 'package:flutter/material.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image/image.dart' as img;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'dart:async'; 
 import '../core/core.dart';
 
 class DynamicThemeProvider with ChangeNotifier {
@@ -11,7 +14,6 @@ class DynamicThemeProvider with ChangeNotifier {
   Color _onPrimaryColor = Colors.black;
   Color _onSurfaceColor = Colors.white;
   Color _accentColor = AppTheme.primary;
-  
   bool _isExtracting = false;
   String? _currentImageUrl;
   final Map<String, ColorScheme> _colorCache = {};
@@ -31,7 +33,6 @@ class DynamicThemeProvider with ChangeNotifier {
     primaryColor: _primaryColor,
     scaffoldBackgroundColor: _backgroundColor,
     cardColor: _surfaceColor,
-    
     colorScheme: ColorScheme.dark(
       primary: _primaryColor,
       secondary: _accentColor,
@@ -48,7 +49,6 @@ class DynamicThemeProvider with ChangeNotifier {
       surfaceVariant: _surfaceColor.withOpacity(0.8),
       outline: _primaryColor.withOpacity(0.5),
     ),
-
     appBarTheme: AppBarTheme(
       backgroundColor: _backgroundColor,
       foregroundColor: Colors.white,
@@ -62,7 +62,6 @@ class DynamicThemeProvider with ChangeNotifier {
         fontWeight: FontWeight.w600,
       ),
     ),
-
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: _primaryColor,
@@ -73,20 +72,17 @@ class DynamicThemeProvider with ChangeNotifier {
         shadowColor: _primaryColor.withOpacity(0.3),
       ),
     ),
-
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: _primaryColor,
       ),
     ),
-
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.white,
         side: BorderSide(color: _primaryColor),
       ),
     ),
-
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: _surfaceColor,
@@ -106,7 +102,6 @@ class DynamicThemeProvider with ChangeNotifier {
       labelStyle: const TextStyle(color: Colors.white70),
       hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
     ),
-
     cardTheme: CardThemeData(
       color: _surfaceColor,
       elevation: 4,
@@ -114,16 +109,13 @@ class DynamicThemeProvider with ChangeNotifier {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     ),
-
     iconTheme: IconThemeData(color: _primaryColor),
     primaryIconTheme: IconThemeData(color: _onPrimaryColor),
-
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: _primaryColor,
       foregroundColor: _onPrimaryColor,
       elevation: 6,
     ),
-
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: _surfaceColor,
       selectedItemColor: _primaryColor,
@@ -146,7 +138,6 @@ class DynamicThemeProvider with ChangeNotifier {
         return Colors.grey.withOpacity(0.3);
       }),
     ),
-
     checkboxTheme: CheckboxThemeData(
       fillColor: MaterialStateProperty.resolveWith((states) {
         if (states.contains(MaterialState.selected)) return _primaryColor;
@@ -154,25 +145,18 @@ class DynamicThemeProvider with ChangeNotifier {
       }),
       checkColor: MaterialStateProperty.all(_onPrimaryColor),
     ),
-
     sliderTheme: SliderThemeData(
       activeTrackColor: _primaryColor,
       inactiveTrackColor: _primaryColor.withOpacity(0.3),
       thumbColor: _primaryColor,
       overlayColor: _primaryColor.withOpacity(0.2),
     ),
-
     progressIndicatorTheme: ProgressIndicatorThemeData(
       color: _primaryColor,
       linearTrackColor: _primaryColor.withOpacity(0.3),
       circularTrackColor: _primaryColor.withOpacity(0.3),
     ),
-
-    dividerTheme: DividerThemeData(
-      color: _surfaceColor,
-      thickness: 1,
-    ),
-
+    dividerTheme: DividerThemeData(color: _surfaceColor, thickness: 1),
     listTileTheme: ListTileThemeData(
       textColor: Colors.white,
       iconColor: _primaryColor,
@@ -197,13 +181,8 @@ class DynamicThemeProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
-        CachedNetworkImageProvider(imageUrl),
-        size: const Size(100, 100),
-        maximumColorCount: 32, 
-      );
-
-      final colorScheme = _generateColorScheme(paletteGenerator);
+      final dominantColor = await _extractDominantColorFromUrl(imageUrl);
+      final colorScheme = _generateColorScheme(dominantColor);
       _colorCache[imageUrl] = colorScheme;
       _applyColorScheme(colorScheme);
     } catch (e) {
@@ -215,12 +194,72 @@ class DynamicThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  ColorScheme _generateColorScheme(PaletteGenerator paletteGenerator) {
-    Color primary = _selectBestColor(paletteGenerator);
-    primary = _adjustColorForDarkTheme(primary);
+  Future<Color> _extractDominantColorFromUrl(String imageUrl) async {
+    try {
+      final imageProvider = CachedNetworkImageProvider(imageUrl);
+      final imageStream = imageProvider.resolve(const ImageConfiguration());
+      final completer = Completer<ui.Image>();
+      
+      imageStream.addListener(ImageStreamListener((imageInfo, _) {
+        completer.complete(imageInfo.image);
+      }));
 
+      final uiImage = await completer.future;
+      final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) throw Exception('Failed to convert image to bytes');
+
+      final image = img.decodeImage(byteData.buffer.asUint8List());
+      if (image == null) throw Exception('Failed to decode image');
+
+      return _getDominantColor(image);
+    } catch (e) {
+      print('Error in color extraction: $e');
+      return AppTheme.primary;
+    }
+  }
+
+  Color _getDominantColor(img.Image image) {
+    final resized = img.copyResize(image, width: 50, height: 50);
+    final Map<int, int> colorCounts = {};
+
+    for (int y = 0; y < resized.height; y++) {
+      for (int x = 0; x < resized.width; x++) {
+        final pixel = resized.getPixel(x, y);
+        
+        final r = (pixel.r ~/ 32) * 32;
+        final g = (pixel.g ~/ 32) * 32;
+        final b = (pixel.b ~/ 32) * 32;
+        
+        final colorKey = (r << 16) | (g << 8) | b;
+        colorCounts[colorKey] = (colorCounts[colorKey] ?? 0) + 1;
+      }
+    }
+
+    int? dominantColorKey;
+    int maxCount = 0;
+
+    for (final entry in colorCounts.entries) {
+      final color = Color(0xFF000000 | entry.key);
+      final hsl = HSLColor.fromColor(color);
+
+      if (hsl.lightness < 0.2 || hsl.lightness > 0.8) continue;
+      if (hsl.saturation < 0.3) continue;
+
+      if (entry.value > maxCount) {
+        maxCount = entry.value;
+        dominantColorKey = entry.key;
+      }
+    }
+
+    if (dominantColorKey == null) return AppTheme.primary;
+
+    final dominantColor = Color(0xFF000000 | dominantColorKey);
+    return _adjustColorForDarkTheme(dominantColor);
+  }
+
+  ColorScheme _generateColorScheme(Color primary) {
+    primary = _adjustColorForDarkTheme(primary);
     final HSLColor hslPrimary = HSLColor.fromColor(primary);
-    
     final Color accent = _generateAccentColor(hslPrimary);
     final Color surface = _generateSurfaceColor(hslPrimary);
     final Color background = _generateBackgroundColor(hslPrimary);
@@ -248,33 +287,6 @@ class DynamicThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Color _selectBestColor(PaletteGenerator paletteGenerator) {
-    final colorCandidates = [
-      paletteGenerator.vibrantColor?.color,
-      paletteGenerator.lightVibrantColor?.color,
-      paletteGenerator.darkVibrantColor?.color,
-      paletteGenerator.dominantColor?.color,
-      paletteGenerator.mutedColor?.color,
-      paletteGenerator.lightMutedColor?.color,
-      paletteGenerator.darkMutedColor?.color,
-    ];
-
-    for (final color in colorCandidates) {
-      if (color != null && _isColorSuitable(color)) {
-        return color;
-      }
-    }
-
-    return AppTheme.primary; 
-  }
-
-  bool _isColorSuitable(Color color) {
-    final HSLColor hsl = HSLColor.fromColor(color);
-    return hsl.saturation >= 0.2 && 
-           hsl.lightness >= 0.2 && 
-           hsl.lightness <= 0.8;
-  }
-
   Color _adjustColorForDarkTheme(Color color) {
     final HSLColor hslColor = HSLColor.fromColor(color);
     
@@ -286,10 +298,7 @@ class DynamicThemeProvider with ChangeNotifier {
     if (lightness < 0.4) lightness = 0.5;
     else if (lightness > 0.7) lightness = 0.6;
 
-    return hslColor
-        .withSaturation(saturation)
-        .withLightness(lightness)
-        .toColor();
+    return hslColor.withSaturation(saturation).withLightness(lightness).toColor();
   }
 
   Color _generateAccentColor(HSLColor primaryHsl) {
@@ -336,6 +345,7 @@ class DynamicThemeProvider with ChangeNotifier {
     if (surface != null) _surfaceColor = surface;
     if (background != null) _backgroundColor = background;
     if (accent != null) _accentColor = accent;
+
     _onPrimaryColor = _getContrastColor(_primaryColor);
     _onSurfaceColor = _getContrastColor(_surfaceColor);
     notifyListeners();

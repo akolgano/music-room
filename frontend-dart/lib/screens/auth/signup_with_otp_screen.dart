@@ -19,7 +19,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _otpController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _otpSent = false;
   bool _canResendOtp = true;
@@ -78,10 +78,10 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
               const SizedBox(height: 24),
               AppWidgets.primaryButton(
                 context: context,
-                text: 'Send Verification Code',
+                text: 'Next',
                 onPressed: _isLoading ? null : _sendOtp,
                 isLoading: _isLoading,
-                icon: Icons.send,
+                icon: Icons.arrow_forward,
               ),
             ] else ...[
               AppWidgets.infoBanner(
@@ -139,12 +139,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   Future<void> _sendOtp() async {
     if (!_formKey.currentState!.validate() && !_otpSent) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.sendSignupEmailOtp(_emailController.text);
+      
       if (success) {
         setState(() {
           _otpSent = true;
@@ -152,8 +153,10 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
           _resendCountdown = 60;
         });
         _startResendCountdown();
-        _showSuccess('Verification code sent to ${_emailController.text}');
-      } else _showError('Failed to send verification code');
+        _showSuccess('Verification code sent successfully!');
+      } else {
+        _showError('Failed to send verification code');
+      }
     } catch (e) {
       _showError('Error: $e');
     } finally {
@@ -163,9 +166,9 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.signupWithOtp(
@@ -174,7 +177,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         _passwordController.text,
         _otpController.text,
       );
-      
+
       if (success) {
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       } else {
@@ -189,7 +192,6 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   void _startResendCountdown() {
     _stopCountdown(); 
-    
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {  
         setState(() {
@@ -199,9 +201,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
             timer.cancel();
           }
         });
-      } else {
-        timer.cancel();
-      }
+      } else timer.cancel();
     });
   }
 

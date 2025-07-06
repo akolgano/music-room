@@ -8,10 +8,13 @@ import '../models/models.dart';
 
 class VotingProvider extends BaseProvider {
   final VotingService _votingService = getIt<VotingService>();
+
   Map<String, VoteStats> _trackVotes = {};
   Map<String, VoteStats> get trackVotes => Map.unmodifiable(_trackVotes);
+
   bool _canVote = true;
   bool get canVote => _canVote;
+
   Map<int, int> _userVotesByIndex = {};
   Map<int, int> _trackPoints = {};
   Map<int, int> get trackPoints => Map.unmodifiable(_trackPoints);
@@ -50,11 +53,9 @@ class VotingProvider extends BaseProvider {
     _trackPoints[index] = points;
     final trackKey = 'track_$index';
     _trackVotes[trackKey] = VoteStats(
-      totalVotes: points,
-      upvotes: points,
-      downvotes: 0,
+      points: points,
       userHasVoted: _userVotesByIndex.containsKey(index),
-      userVoteValue: _userVotesByIndex[index], voteScore: points.toDouble(),
+      userVoteValue: _userVotesByIndex[index],
     );
     notifyListeners();
   }
@@ -68,12 +69,9 @@ class VotingProvider extends BaseProvider {
       _trackPoints[i] = points;
       final trackKey = 'track_$i';
       _trackVotes[trackKey] = VoteStats(
-        totalVotes: points,
-        upvotes: points,
-        downvotes: 0,
+        points: points,
         userHasVoted: _userVotesByIndex.containsKey(i),
         userVoteValue: _userVotesByIndex[i],
-        voteScore: points.toDouble(),
       );
       print('Track $i (${tracks[i].name}): ${points} points');
     }
@@ -95,10 +93,12 @@ class VotingProvider extends BaseProvider {
       setError('Voting not allowed');
       return false;
     }
+
     if (_userVotesByIndex.containsKey(trackIndex)) {
       setError('You have already voted for this track');
       return false;
     }
+
     print('Voting for track at index $trackIndex');
     return await executeBool(
       () async {
@@ -106,6 +106,7 @@ class VotingProvider extends BaseProvider {
         final currentPoints = _trackPoints[trackIndex] ?? 0;
         final newPoints = currentPoints + 1;
         updateTrackPoints(trackIndex, newPoints);
+
         try {
           final response = await _votingService.voteForTrack(
             playlistId: playlistId,
@@ -163,22 +164,16 @@ class VotingProvider extends BaseProvider {
             final userHasVoted = _userVotesByIndex.containsKey(j);
             final userVoteValue = _userVotesByIndex[j];
             _trackVotes[trackKey] = VoteStats(
-              totalVotes: points.abs(),
-              upvotes: points > 0 ? points : 0,
-              downvotes: 0,
+              points: points,
               userHasVoted: userHasVoted,
               userVoteValue: userVoteValue,
-              voteScore: points.toDouble(),
             );
             print('Updated track $j: $points points, voted: $userHasVoted');
           } else {
             _trackVotes[trackKey] = VoteStats(
-              totalVotes: 0,
-              upvotes: 0,
-              downvotes: 0,
+              points: 0,
               userHasVoted: _userVotesByIndex.containsKey(j),
               userVoteValue: _userVotesByIndex[j],
-              voteScore: 0.0,
             );
           }
         }
@@ -207,19 +202,18 @@ class VotingProvider extends BaseProvider {
       print('Invalid vote value: $voteValue');
       return;
     }
+
     _userVotesByIndex[trackIndex] = voteValue;
     final trackKey = 'track_$trackIndex';
     final currentPoints = _trackPoints[trackIndex] ?? 0;
     final newPoints = currentPoints + voteValue;
     _trackPoints[trackIndex] = newPoints;
+
     final currentStats = _trackVotes[trackKey];
     _trackVotes[trackKey] = VoteStats(
-      totalVotes: (currentStats?.totalVotes ?? 0) + 1,
-      upvotes: voteValue > 0 ? (currentStats?.upvotes ?? 0) + 1 : (currentStats?.upvotes ?? 0),
-      downvotes: 0, 
+      points: newPoints,
       userHasVoted: true,
       userVoteValue: voteValue,
-      voteScore: newPoints.toDouble(),
     );
     notifyListeners();
   }
@@ -229,10 +223,7 @@ class VotingProvider extends BaseProvider {
   }
 
   List<int> getVotedTrackIndices() {
-    return _trackPoints.entries
-        .where((entry) => entry.value > 0)
-        .map((entry) => entry.key)
-        .toList();
+    return _trackPoints.entries.where((entry) => entry.value > 0).map((entry) => entry.key).toList();
   }
 
   void refreshVotingData(List<PlaylistTrack> tracks) {

@@ -8,6 +8,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../services/api_service.dart';
+import '../../services/websocket_service.dart';
 import '../../core/service_locator.dart'; 
 import '../../models/models.dart';
 import '../../models/sort_models.dart';
@@ -26,16 +27,21 @@ class PlaylistDetailScreen extends StatefulWidget {
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
 
-// Voting is required as per PDF requirements
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   late final ApiService _apiService;
+  late final WebSocketService _webSocketService;
   final Set<String> _fetchingTrackDetails = {};
   final List<Completer> _pendingOperations = []; 
+  
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
   bool _isOwner = false;
   VotingProvider? _votingProvider;
   Timer? _autoRefreshTimer;
+  
+  bool _isWebSocketConnected = false;
+  StreamSubscription<PlaylistUpdateEvent>? _webSocketSubscription;
+  String? _lastWebSocketError;
 
   @override
   String get screenTitle => _playlist?.name ?? 'Playlist Details';
@@ -44,11 +50,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   void initState() {
     super.initState();
     _apiService = getIt<ApiService>();
+    _webSocketService = getIt<WebSocketService>();
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _votingProvider = getProvider<VotingProvider>(listen: false);
         _votingProvider?.setVotingPermission(true);
         _loadData();
+        _connectWebSocket();
         _startAutoRefresh();
       }
     });
@@ -56,6 +65,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   void dispose() {
+    _disconnectWebSocket();
     _cancelPendingOperations();
     _stopAutoRefresh();
     super.dispose();
@@ -63,9 +73,22 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   List<Widget> get actions => [
-    if (_isOwner) IconButton(icon: const Icon(Icons.settings), onPressed: _openPlaylistSettings, tooltip: 'Playlist Settings'),
-    IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
-    IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData, tooltip: 'Refresh'),
+    _buildWebSocketStatusIndicator(),
+    if (_isOwner) IconButton(
+      icon: const Icon(Icons.settings), 
+      onPressed: _openPlaylistSettings, 
+      tooltip: 'Playlist Settings'
+    ),
+    IconButton(
+      icon: const Icon(Icons.share), 
+      onPressed: _sharePlaylist, 
+      tooltip: 'Share Playlist'
+    ),
+    IconButton(
+      icon: const Icon(Icons.refresh), 
+      onPressed: _loadData, 
+      tooltip: 'Refresh'
+    ),
   ];
 
   @override
@@ -73,7 +96,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     if (!_isOwner) return null;
     return FloatingActionButton.extended(
       onPressed: () async {
-        final result = await Navigator.pushNamed(context, AppRoutes.trackSearch, arguments: widget.playlistId);
+        final result = await Navigator.pushNamed(
+          context, 
+          AppRoutes.trackSearch, 
+          arguments: widget.playlistId
+        );
         if (result == true && mounted) await _loadData();
       },
       backgroundColor: AppTheme.primary,
@@ -85,7 +112,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   Widget buildContent() {
-    if (_playlist == null) return buildLoadingState(message: 'Loading playlist...');
+    if (_playlist == null) {
+      return buildLoadingState(message: 'Loading playlist...');
+    }
 
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
@@ -96,11 +125,18 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                if (_lastWebSocketError != null) _buildWebSocketErrorBanner(),
+                if (_isWebSocketConnected) _buildWebSocketConnectedBanner(),
+                
                 PlaylistDetailWidgets.buildThemedPlaylistHeader(context, _playlist!),
                 const SizedBox(height: 16), 
                 PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
                 const SizedBox(height: 16), 
-                PlaylistDetailWidgets.buildThemedPlaylistActions(context, onPlayAll: _playPlaylist, onShuffle: _shufflePlaylist),
+                PlaylistDetailWidgets.buildThemedPlaylistActions(
+                  context, 
+                  onPlayAll: _playPlaylist, 
+                  onShuffle: _shufflePlaylist
+                ),
                 const SizedBox(height: 16), 
                 _buildTracksSection(),
               ],
@@ -109,6 +145,255 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         );
       },
     );
+  }
+
+  Widget _buildWebSocketStatusIndicator() {
+    Color statusColor;
+    IconData statusIcon;
+    String tooltip;
+
+    if (_isWebSocketConnected) {
+      statusColor = Colors.green;
+      statusIcon = Icons.wifi;
+      tooltip = 'Real-time updates active';
+    } else if (_webSocketService.isConnecting) {
+      statusColor = Colors.orange;
+      statusIcon = Icons.wifi_protected_setup;
+      tooltip = 'Connecting to real-time updates...';
+    } else {
+      statusColor = Colors.red;
+      statusIcon = Icons.wifi_off;
+      tooltip = 'Real-time updates disconnected';
+    }
+
+    return IconButton(
+      icon: Icon(statusIcon, color: statusColor, size: 20),
+      onPressed: _onWebSocketStatusTapped,
+      tooltip: tooltip,
+    );
+  }
+
+  Widget _buildWebSocketErrorBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: AppWidgets.errorBanner(
+        message: 'Real-time updates failed: $_lastWebSocketError',
+        onDismiss: () => setState(() => _lastWebSocketError = null),
+      ),
+    );
+  }
+
+  Widget _buildWebSocketConnectedBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: AppWidgets.infoBanner(
+        title: 'Live Updates Active',
+        message: 'Changes to this playlist will appear automatically',
+        icon: Icons.wifi,
+        color: Colors.green,
+      ),
+    );
+  }
+
+  Future<void> _connectWebSocket() async {
+    try {
+      print('Connecting to WebSocket for playlist ${widget.playlistId}');
+      
+      await _webSocketService.connectToPlaylist(
+        widget.playlistId, 
+        auth.token!
+      );
+
+      _webSocketSubscription?.cancel();
+      _webSocketSubscription = _webSocketService.playlistUpdates.listen(
+        _handleWebSocketUpdate,
+        onError: _handleWebSocketError,
+      );
+
+      _monitorWebSocketConnection();
+      
+      setState(() {
+        _isWebSocketConnected = true;
+        _lastWebSocketError = null;
+      });
+
+      print('WebSocket connected successfully');
+      
+    } catch (e) {
+      print('Failed to connect WebSocket: $e');
+      setState(() {
+        _isWebSocketConnected = false;
+        _lastWebSocketError = e.toString();
+      });
+    }
+  }
+
+  Future<void> _disconnectWebSocket() async {
+    print('Disconnecting WebSocket...');
+    
+    await _webSocketSubscription?.cancel();
+    _webSocketSubscription = null;
+    
+    await _webSocketService.disconnect();
+    
+    setState(() {
+      _isWebSocketConnected = false;
+      _lastWebSocketError = null;
+    });
+  }
+
+  void _monitorWebSocketConnection() {
+    Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      final isConnected = _webSocketService.isConnected;
+      if (_isWebSocketConnected != isConnected) {
+        setState(() => _isWebSocketConnected = isConnected);
+      }
+
+      if (!isConnected && !_webSocketService.isConnecting) {
+        timer.cancel();
+      }
+    });
+  }
+
+  void _handleWebSocketUpdate(PlaylistUpdateEvent event) {
+    print('Received WebSocket update: ${event.type}');
+    
+    if (!mounted) return;
+
+    try {
+      switch (event.type) {
+        case 'playlist_update':
+        case 'track_added':
+        case 'track_removed':
+        case 'track_reordered':
+          _handleTrackListUpdate(event);
+          break;
+        case 'vote_updated':
+          _handleVoteUpdate(event);
+          break;
+        default:
+          print('Unknown WebSocket event type: ${event.type}');
+      }
+
+      _showUpdateNotification(event.type);
+      
+    } catch (e) {
+      print('Error handling WebSocket update: $e');
+    }
+  }
+
+  void _handleTrackListUpdate(PlaylistUpdateEvent event) {
+    final updatedTracks = event.data.map((update) => update.toPlaylistTrack()).toList();
+    
+    setState(() {
+      _tracks = updatedTracks;
+    });
+
+    final musicProvider = getProvider<MusicProvider>(listen: false);
+    musicProvider.playlistTracks.clear();
+    musicProvider.playlistTracks.addAll(updatedTracks);
+    musicProvider.notifyListeners();
+
+    _votingProvider?.initializeTrackPoints(_tracks);
+
+    print('Track list updated via WebSocket: ${_tracks.length} tracks');
+  }
+
+  void _handleVoteUpdate(PlaylistUpdateEvent event) {
+    for (final update in event.data) {
+      final trackIndex = _tracks.indexWhere((track) => 
+        track.trackId == update.id.toString()
+      );
+      
+      if (trackIndex != -1) {
+        setState(() {
+          _tracks[trackIndex] = _tracks[trackIndex].copyWithPoints(update.points);
+        });
+        
+        _votingProvider?.updateTrackPoints(trackIndex, update.points);
+      }
+    }
+
+    print('Votes updated via WebSocket');
+  }
+
+  void _handleWebSocketError(dynamic error) {
+    print('WebSocket error: $error');
+    
+    if (mounted) {
+      setState(() {
+        _isWebSocketConnected = false;
+        _lastWebSocketError = error.toString();
+      });
+    }
+  }
+
+  void _showUpdateNotification(String eventType) {
+    String message;
+    switch (eventType) {
+      case 'track_added':
+        message = 'Track added';
+        break;
+      case 'track_removed':
+        message = 'Track removed';
+        break;
+      case 'track_reordered':
+        message = 'Tracks reordered';
+        break;
+      case 'vote_updated':
+        message = 'Votes updated';
+        break;
+      default:
+        message = 'Playlist updated';
+    }
+
+    showInfo('$message • Live update');
+  }
+
+  void _onWebSocketStatusTapped() {
+    if (_isWebSocketConnected) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppTheme.surface,
+          title: const Row(
+            children: [
+              Icon(Icons.wifi, color: Colors.green),
+              SizedBox(width: 8),
+              Text('Real-time Updates', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('✓ Connected to live updates', style: TextStyle(color: Colors.green)),
+              SizedBox(height: 8),
+              Text('Changes to this playlist will appear automatically:', 
+                style: TextStyle(color: Colors.white70)),
+              SizedBox(height: 4),
+              Text('• Track additions/removals', style: TextStyle(color: Colors.white70)),
+              Text('• Track reordering', style: TextStyle(color: Colors.white70)),
+              Text('• Vote updates', style: TextStyle(color: Colors.white70)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      _connectWebSocket();
+      showInfo('Attempting to reconnect...');
+    }
   }
 
   Widget _buildTracksSection() {
@@ -144,7 +429,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                             style: ThemeUtils.getCaptionStyle(context),
                           ),
                           const SizedBox(width: 8),
-                          SortButton(currentSort: currentSort, onPressed: _showSortOptions, showLabel: false),
+                          SortButton(
+                            currentSort: currentSort, 
+                            onPressed: _showSortOptions, 
+                            showLabel: false
+                          ),
                         ],
                       ),
                     ],
@@ -207,7 +496,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
     final canReorder = currentSort.field == TrackSortField.position && _isOwner;
     print('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}');
-    
+
     if (canReorder) {
       return ReorderableListView.builder(
         shrinkWrap: true, 
@@ -219,7 +508,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             final playlistTrack = tracks[index];
             final keyString = 'reorder_${playlistTrack.trackId}_${playlistTrack.position}_$index';
             final uniqueKey = ValueKey(keyString);
-            
             final widget = _buildTrackItem(playlistTrack, index, key: uniqueKey);
             return KeyedSubtree(key: uniqueKey, child: widget);
           } catch (e, stackTrace) {
@@ -326,6 +614,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         final themeProvider = getProvider<DynamicThemeProvider>();
         
         _playlist = await musicProvider.getPlaylistDetails(widget.playlistId, auth.token!);
+        
         if (_playlist != null) {
           setState(() {
             _isOwner = _playlist!.creator == auth.username;
@@ -376,6 +665,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         (track != null && track.artist.isNotEmpty && track.album.isNotEmpty)) return;
 
     _fetchingTrackDetails.add(deezerTrackId);
+    
     try {
       final trackDetails = await _apiService.getDeezerTrack(deezerTrackId, auth.token!);
       if (!mounted) return;
@@ -396,12 +686,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         final musicProvider = getProvider<MusicProvider>();
         final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
         final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
+        
         if (providerIndex != -1) {
           providerTracks[providerIndex] = PlaylistTrack(
             trackId: playlistTrack.trackId,
             name: playlistTrack.name,
             position: playlistTrack.position,
-            points: playlistTrack.points, track: trackDetails,
+            points: playlistTrack.points, 
+            track: trackDetails,
           );
           musicProvider.playlistTracks.clear();
           musicProvider.playlistTracks.addAll(providerTracks);
@@ -417,8 +709,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Future<void> _startBatchTrackDetailsFetch() async {
     if (!mounted) return;
-    final tracksNeedingDetails = <int>[];
     
+    final tracksNeedingDetails = <int>[];
     for (int i = 0; i < _tracks.length; i++) {
       final track = _tracks[i].track;
       if (track?.deezerTrackId != null && 
@@ -473,7 +765,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         playlistId: widget.playlistId,
       );
       playerService.toggleShuffle();
-      
       showInfo('Shuffling "${_playlist!.name}"');
     } catch (e) {
       showError('Failed to shuffle playlist: $e');
@@ -509,17 +800,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Future<void> _removeTrack(String trackId) async {
     if (!_isOwner) return;
     
-    final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
+    final confirmed = await showConfirmDialog(
+      'Remove Track', 
+      'Remove this track from the playlist?'
+    );
     
     if (confirmed) {
       await runAsyncAction(
         () async {
           final musicProvider = getProvider<MusicProvider>();
-          await musicProvider.removeTrackFromPlaylist(
-            playlistId: widget.playlistId, 
-            trackId: trackId, 
-            token: auth.token!
-          );
+          await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId, trackId: trackId, token: auth.token!);
           await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
           setState(() => _tracks = musicProvider.playlistTracks);
         },
