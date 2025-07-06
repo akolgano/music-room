@@ -12,11 +12,26 @@ class TrackSortingService {
     });
   }
 
-  static List<Track> sortTracksByField(List<Track> tracks, TrackSortOption sortOption) {
-    return tracks.sorted((a, b) {
-      final comparison = _getTrackComparison(a, b, sortOption.field);
+  static List<T> sortItems<T>(List<T> items, TrackSortOption sortOption) {
+    return items.sorted((a, b) {
+      final comparison = _getGenericComparison(a, b, sortOption.field);
       return sortOption.order == SortOrder.ascending ? comparison : -comparison;
     });
+  }
+
+  static int _getGenericComparison<T>(T a, T b, TrackSortField field) {
+    if (a is PlaylistTrack && b is PlaylistTrack) return _getComparison(a, b, field);
+    if (a is Track && b is Track) {
+      switch (field) {
+        case TrackSortField.position: return 0;
+        case TrackSortField.name: return compareAsciiLowerCase(a.name, b.name);
+        case TrackSortField.artist: return compareAsciiLowerCase(a.artist, b.artist);
+        case TrackSortField.album: return compareAsciiLowerCase(a.album, b.album);
+        case TrackSortField.dateAdded: return 0;
+      }
+    }
+    
+    return 0;
   }
 
   static int _getComparison(PlaylistTrack a, PlaylistTrack b, TrackSortField field) {
@@ -37,16 +52,6 @@ class TrackSortingService {
         return compareAsciiLowerCase(aAlbum, bAlbum);
       case TrackSortField.dateAdded:
         return a.position.compareTo(b.position);
-    }
-  }
-
-  static int _getTrackComparison(Track a, Track b, TrackSortField field) {
-    switch (field) {
-      case TrackSortField.position: return 0; 
-      case TrackSortField.name: return compareAsciiLowerCase(a.name, b.name);
-      case TrackSortField.artist: return compareAsciiLowerCase(a.artist, b.artist);
-      case TrackSortField.album: return compareAsciiLowerCase(a.album, b.album);
-      case TrackSortField.dateAdded: return 0; 
     }
   }
 

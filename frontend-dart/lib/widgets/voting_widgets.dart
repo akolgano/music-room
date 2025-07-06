@@ -50,12 +50,7 @@ class VoteCounter extends StatelessWidget {
   final bool showDetailed;
   final double fontSize;
 
-  const VoteCounter({
-    Key? key,
-    required this.stats,
-    this.showDetailed = false,
-    this.fontSize = 12,
-  }) : super(key: key);
+  const VoteCounter({Key? key, required this.stats, this.showDetailed = false, this.fontSize = 12}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -41,21 +41,6 @@ class AppValidators {
     }
   }
   
-  static String? phoneNumberWithCountry(String? value, String? countryCode, [bool required = false]) {
-    if (!required && (value?.isEmpty ?? true)) return null;
-    if (value == null || value.trim().isEmpty) return required ? 'Please enter a phone number' : null;
-    try {
-      final phoneNumber = PhoneNumber.parse(value.trim(), destinationCountry: IsoCode.values.firstWhere(
-        (code) => code.name.toUpperCase() == countryCode?.toUpperCase(),
-        orElse: () => IsoCode.US,
-      ));
-      if (phoneNumber.isValid()) return null;
-      else return 'Please enter a valid phone number for ${countryCode ?? 'the selected country'}';
-    } catch (e) {
-      return 'Please enter a valid phone number';
-    }
-  }
-  
   static String? playlistName(String? value) =>
       ValidationBuilder().maxLength(100, 'Playlist name must be less than 100 characters').build()(value);
   
@@ -115,15 +100,10 @@ class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primary,
-        ),
+        style: TextButton.styleFrom(foregroundColor: primary),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: BorderSide(color: primary),
-        ),
+        style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: BorderSide(color: primary)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -529,8 +509,7 @@ class SocialLoginButton extends StatelessWidget {
         ),
         child: isLoading 
           ? SizedBox(
-              width: 20, 
-              height: 20, 
+              width: 20, height: 20, 
               child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(color)),
             ) 
           : Row(
