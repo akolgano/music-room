@@ -105,18 +105,8 @@ class PlaylistDetailWidgets {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             buildThemedStatItem(context, icon: Icons.queue_music, label: 'Tracks', value: '${tracks.length}'),
-            buildThemedStatItem(
-              context,
-              icon: Icons.access_time,
-              label: 'Duration',
-              value: '${totalDuration}m',
-            ),
-            buildThemedStatItem(
-              context,
-              icon: Icons.favorite,
-              label: 'Likes',
-              value: '0',
-            ),
+            buildThemedStatItem(context, icon: Icons.access_time, label: 'Duration', value: '${totalDuration}m'),
+            buildThemedStatItem(context, icon: Icons.favorite, label: 'Votes', value: '0'),
           ],
         ),
       ),
@@ -176,6 +166,7 @@ class PlaylistDetailWidgets {
   }) {
     final track = playlistTrack.track;
     if (track == null) return buildErrorTrackItem(key, playlistTrack, index);
+
     return Container(
       key: key,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -191,13 +182,16 @@ class PlaylistDetailWidgets {
             buildTrackImage(track),
             const SizedBox(width: 12),
             Expanded(
-              flex: 3, 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     track.name,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.w600, 
+                      fontSize: 14
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -214,9 +208,18 @@ class PlaylistDetailWidgets {
                 ],
               ),
             ),
-            if (playlistId != null) 
-              Flexible(flex: 1, child: buildCompactVotingSection(context, index, playlistTrack)),
-            Flexible(flex: 1, child: buildActionButtons(context, onPlay, onRemove, isOwner)),
+            if (playlistId != null) ...[
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 60,
+                child: buildCompactVotingSection(context, index, playlistTrack),
+              ),
+            ],
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 32, 
+              child: buildActionButtons(context, onPlay, onRemove, isOwner),
+            ),
           ],
         ),
       ),
