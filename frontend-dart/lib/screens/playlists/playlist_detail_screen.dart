@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'playlist_licensing_screen.dart';
-import 'playlist_detail_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
@@ -14,15 +13,11 @@ import '../../models/models.dart';
 import '../../models/sort_models.dart';
 import '../../services/track_sorting_service.dart';
 import '../../core/core.dart';
-import '../../widgets/widgets.dart'; 
-import '../../widgets/app_widgets.dart';
-import '../../widgets/track_sort_bottom_sheet.dart';
-import '../../widgets/sort_button.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart';
-import '../../widgets/voting_widgets.dart';
 import '../../models/voting_models.dart';
 import '../../core/theme_utils.dart'; 
+import '../../widgets/widgets.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
@@ -149,11 +144,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                             style: ThemeUtils.getCaptionStyle(context),
                           ),
                           const SizedBox(width: 8),
-                          SortButton(
-                            currentSort: currentSort,
-                            onPressed: _showSortOptions,
-                            showLabel: false,
-                          ),
+                          SortButton(currentSort: currentSort, onPressed: _showSortOptions, showLabel: false),
                         ],
                       ),
                     ],

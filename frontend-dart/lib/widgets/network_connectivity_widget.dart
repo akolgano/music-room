@@ -43,10 +43,7 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        if (_showBanner) _buildConnectivityBanner(),
-        Expanded(child: widget.child),
-      ],
+      children: [if (_showBanner) _buildConnectivityBanner(), Expanded(child: widget.child)],
     );
   }
 

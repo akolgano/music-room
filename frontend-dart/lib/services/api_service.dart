@@ -17,6 +17,7 @@ class ApiService {
     final envBaseUrl = dotenv.env['API_BASE_URL'];
     if (envBaseUrl != null && envBaseUrl.isNotEmpty) baseUrl = envBaseUrl;
     else baseUrl = 'http://localhost:8000';
+
     if (baseUrl.endsWith('/')) baseUrl = baseUrl.substring(0, baseUrl.length - 1);
 
     dio.options.baseUrl = baseUrl;
@@ -247,9 +248,8 @@ class ApiService {
         await addTrackToPlaylist(playlistId, token, request);
         successCount++;
       } catch (e) {
-        if (e.toString().contains('already exists') || e.toString().contains('duplicate')) {
-          duplicateCount++;
-        } else {
+        if (e.toString().contains('already exists') || e.toString().contains('duplicate')) duplicateCount++;
+        else {
           failureCount++;
           errors.add(e.toString());
         }
@@ -259,18 +259,11 @@ class ApiService {
 
     return BatchAddResult(
       totalTracks: totalTracks,
-      successCount: successCount, duplicateCount: duplicateCount, failureCount: failureCount, errors: errors,
+      successCount: successCount, 
+      duplicateCount: duplicateCount, 
+      failureCount: failureCount, 
+      errors: errors,
     );
-  }
-
-  String _extractErrorMessage(DioException error) {
-    if (error.response?.data is Map<String, dynamic>) {
-      final data = error.response!.data as Map<String, dynamic>;
-      if (data.containsKey('error')) return data['error'].toString();
-      if (data.containsKey('detail')) return data['detail'].toString();
-      if (data.containsKey('message')) return data['message'].toString();
-    }
-    return error.message ?? 'Unknown error occurred';
   }
 
   String get baseUrl => _dio.options.baseUrl;

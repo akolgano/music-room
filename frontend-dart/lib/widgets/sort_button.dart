@@ -8,12 +8,7 @@ class SortButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool showLabel;
 
-  const SortButton({
-    Key? key,
-    required this.currentSort,
-    required this.onPressed,
-    this.showLabel = true,
-  }) : super(key: key);
+  const SortButton({Key? key, required this.currentSort, required this.onPressed, this.showLabel = true}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -15,7 +15,6 @@ import '../widgets/voting_widgets.dart';
 import '../models/voting_models.dart';
 export 'mini_player_widget.dart';
 
-// Complete AppWidgets class with all ScreenUtil fixes
 class AppWidgets {
   static ColorScheme _getColorScheme(BuildContext context) => Theme.of(context).colorScheme;
   static Color _getPrimary(BuildContext context) => _getColorScheme(context).primary;
@@ -25,14 +24,11 @@ class AppWidgets {
   static Color _getError(BuildContext context) => _getColorScheme(context).error;
   
   static TextStyle _primaryStyle(BuildContext context) => TextStyle(
-    color: _getOnSurface(context), 
-    fontSize: kIsWeb ? 16.0 : 16.sp.toDouble(), 
-    fontWeight: FontWeight.w600
+    color: _getOnSurface(context), fontSize: kIsWeb ? 16.0 : 16.sp.toDouble(), fontWeight: FontWeight.w600
   );
   
   static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
-    color: _getOnSurface(context).withOpacity(0.7), 
-    fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()
+    color: _getOnSurface(context).withOpacity(0.7), fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()
   );
 
   static Widget textField({
@@ -522,7 +518,7 @@ class AppWidgets {
     ));
   }
 
-  static Widget emptyState({
+static Widget emptyState({
     required IconData icon,
     required String title,
     String? subtitle,
@@ -535,12 +531,13 @@ class AppWidgets {
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
-          final iconSize = isConstrained ? (kIsWeb ? 32.0 : 32.sp.toDouble()) : (kIsWeb ? 64.0 : 64.sp.toDouble());
-          final titleSize = isConstrained ? (kIsWeb ? 14.0 : 14.sp.toDouble()) : (kIsWeb ? 18.0 : 18.sp.toDouble());
-          final spacing = isConstrained ? (kIsWeb ? 8.0 : 8.h.toDouble()) : (kIsWeb ? 16.0 : 16.h.toDouble());
+          final iconSize = isConstrained ? (kIsWeb ? 24.0 : 24.sp.toDouble()) : (kIsWeb ? 64.0 : 64.sp.toDouble());
+          final titleSize = isConstrained ? (kIsWeb ? 12.0 : 12.sp.toDouble()) : (kIsWeb ? 18.0 : 18.sp.toDouble());
+          final spacing = isConstrained ? (kIsWeb ? 6.0 : 6.h.toDouble()) : (kIsWeb ? 16.0 : 16.h.toDouble());
+          final padding = isConstrained ? (kIsWeb ? 8.0 : 8.w.toDouble()) : (kIsWeb ? 32.0 : 32.w.toDouble());
           
           Widget content = Padding(
-            padding: EdgeInsets.all(kIsWeb ? (isConstrained ? 16.0 : 32.0) : (isConstrained ? 16.w.toDouble() : 32.w.toDouble())),
+            padding: EdgeInsets.all(padding),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -558,33 +555,69 @@ class AppWidgets {
                   SizedBox(height: spacing / 2), 
                   Text(
                     subtitle, 
-                    style: _secondaryStyle(context), 
+                    style: _secondaryStyle(context).copyWith(
+                      fontSize: isConstrained ? (kIsWeb ? 10.0 : 10.sp.toDouble()) : null,
+                    ), 
                     textAlign: TextAlign.center,
                     maxLines: isConstrained ? 1 : null,
                     overflow: isConstrained ? TextOverflow.ellipsis : null,
                   )
                 ],
-                if (buttonText != null && onButtonPressed != null) ...[
+                if (buttonText != null && onButtonPressed != null && !isConstrained) ...[
                   SizedBox(height: spacing),
                   ElevatedButton(
                     onPressed: onButtonPressed, 
                     child: Text(
                       buttonText, 
-                      style: TextStyle(fontSize: kIsWeb ? (isConstrained ? 12.0 : 14.0) : (isConstrained ? 12.sp.toDouble() : 14.sp.toDouble())),
+                      style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     )
                   ),
                 ],
+                if (buttonText != null && onButtonPressed != null && isConstrained) ...[
+                  SizedBox(height: spacing / 2),
+                  TextButton(
+                    onPressed: onButtonPressed,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: kIsWeb ? 8.0 : 8.w.toDouble(),
+                        vertical: kIsWeb ? 4.0 : 4.h.toDouble(),
+                      ),
+                      minimumSize: Size.zero,
+                    ),
+                    child: Text(
+                      buttonText,
+                      style: TextStyle(
+                        fontSize: kIsWeb ? 10.0 : 10.sp.toDouble(),
+                        color: theme.colorScheme.primary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ],
             ),
           );
+          
           if (!hasFiniteHeight) {
             return Center(child: content);
           } else if (constraints.maxHeight > 0) {
             return SizedBox(
               height: constraints.maxHeight,
-              child: Center(child: content),
+              child: isConstrained
+                  ? SingleChildScrollView(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: IntrinsicHeight(child: content),
+                        ),
+                      ),
+                    )
+                  : Center(child: content),
             );
           } else {
             return Container(height: 200, child: Center(child: content));

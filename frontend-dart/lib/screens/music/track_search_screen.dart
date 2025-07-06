@@ -291,10 +291,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
             const SizedBox(width: 12),
             Text(
               'Adding ${_selectedTracks.length} tracks...',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -310,9 +307,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.black,
         icon: _isAddingTracks 
-          ? const SizedBox(
-              width: 20,
-              height: 20,
+          ? const SizedBox(width: 20, height: 20,
               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
             )
           : const Icon(Icons.playlist_add),
@@ -365,9 +360,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget _buildResults(List<Track> tracks) {
     if (tracks.isEmpty && _searchController.text.isEmpty) {
-      return AppWidgets.emptyState(
-        icon: Icons.search, 
-        title: 'Ready to find music?', 
+      return AppWidgets.emptyState(icon: Icons.search, title: 'Ready to find music?', 
         subtitle: 'Start typing to search Deezer tracks automatically!'
       );
     }
@@ -389,8 +382,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         );
       }
     }
-
-    final sortedTracks = TrackSortingService.sortTracksByField(tracks, _searchSortOption);
+    
+    final sortedTracks = TrackSortingService.sortItems<Track>(tracks, _searchSortOption);
 
     return Column(
       children: [

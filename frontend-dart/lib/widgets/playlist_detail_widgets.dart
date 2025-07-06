@@ -1,4 +1,4 @@
-// lib/screens/playlists/playlist_detail_widgets.dart
+// lib/widgets/playlist_detail_widgets.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -105,18 +105,8 @@ class PlaylistDetailWidgets {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             buildThemedStatItem(context, icon: Icons.queue_music, label: 'Tracks', value: '${tracks.length}'),
-            buildThemedStatItem(
-              context,
-              icon: Icons.access_time,
-              label: 'Duration',
-              value: '${totalDuration}m',
-            ),
-            buildThemedStatItem(
-              context,
-              icon: Icons.favorite,
-              label: 'Likes',
-              value: '0',
-            ),
+            buildThemedStatItem(context, icon: Icons.access_time, label: 'Duration', value: '${totalDuration}m'),
+            buildThemedStatItem(context, icon: Icons.favorite, label: 'Votes', value: '0'),
           ],
         ),
       ),
@@ -175,9 +165,7 @@ class PlaylistDetailWidgets {
     Key? key,
   }) {
     final track = playlistTrack.track;
-    if (track == null) {
-      return buildErrorTrackItem(key, playlistTrack, index);
-    }
+    if (track == null) return buildErrorTrackItem(key, playlistTrack, index);
 
     return Container(
       key: key,
@@ -220,32 +208,17 @@ class PlaylistDetailWidgets {
                 ],
               ),
             ),
-            if (playlistId != null) 
-              Container(
-                constraints: const BoxConstraints(maxWidth: 80),
-                child: buildVotingSection(context, index, playlistTrack),
+            if (playlistId != null) ...[
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 60,
+                child: buildCompactVotingSection(context, index, playlistTrack),
               ),
-            Container(
-              constraints: const BoxConstraints(maxWidth: 80),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 20),
-                    onPressed: onPlay, tooltip: 'Play track',
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
-                    padding: const EdgeInsets.all(4),
-                  ),
-                  if (isOwner && onRemove != null)
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 18),
-                      onPressed: onRemove,
-                      tooltip: 'Remove from playlist', 
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
-                      padding: const EdgeInsets.all(4),
-                    ),
-                ],
-              ),
+            ],
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 32, 
+              child: buildActionButtons(context, onPlay, onRemove, isOwner),
             ),
           ],
         ),
@@ -253,57 +226,77 @@ class PlaylistDetailWidgets {
     );
   }
 
-  static Widget buildVotingSection(BuildContext context, int index, PlaylistTrack playlistTrack) {
+  static Widget buildCompactVotingSection(BuildContext context, int index, PlaylistTrack playlistTrack) {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
         final currentPoints = playlistTrack.points;
         final hasUserVoted = votingProvider.hasUserVotedByIndex(index);
         final canVote = votingProvider.canVote && !hasUserVoted;
-
+        
         return Container(
-          constraints: const BoxConstraints(maxWidth: 80),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           decoration: BoxDecoration(
-            color: getPointsColor(currentPoints).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            color: getPointsColor(currentPoints).withOpacity(0.1), borderRadius: BorderRadius.circular(8),
             border: Border.all(color: getPointsColor(currentPoints).withOpacity(0.3)),
           ),
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: InkWell(
-                  onTap: canVote ? () {
-                  } : null,
-                  borderRadius: BorderRadius.circular(10),
-                  child: Icon(
-                    hasUserVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
-                    color: hasUserVoted 
-                      ? Colors.green 
-                      : (canVote ? getPointsColor(currentPoints) : Colors.grey),
-                    size: 14,
-                  ),
+              GestureDetector(
+                onTap: canVote ? () {
+                } : null,
+                child: Icon(
+                  hasUserVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
+                  color: hasUserVoted 
+                    ? Colors.green 
+                    : (canVote ? getPointsColor(currentPoints) : Colors.grey),
+                  size: 12,
                 ),
               ),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  '+$currentPoints',
-                  style: TextStyle(
-                    color: getPointsColor(currentPoints), 
-                    fontSize: 11, 
-                    fontWeight: FontWeight.w600
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
+              const SizedBox(height: 2),
+              Text(
+                '+$currentPoints',
+                style: TextStyle(color: getPointsColor(currentPoints), fontSize: 9, fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  static Widget buildActionButtons(BuildContext context, VoidCallback onPlay, VoidCallback? onRemove, bool isOwner) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: onPlay,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 16),
+          ),
+        ),
+        if (isOwner && onRemove != null) ...[
+          const SizedBox(height: 4),
+          GestureDetector(
+            onTap: onRemove,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 14),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -387,25 +380,22 @@ class PlaylistDetailWidgets {
 
   static Widget buildTrackImage(Track track) {
     return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.2), 
-        borderRadius: BorderRadius.circular(8)
-      ),
+      width: 48, 
+      height: 48,
+      decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
       child: track.imageUrl?.isNotEmpty == true
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
                 track.imageUrl!, 
                 fit: BoxFit.cover,
-                width: 56,
-                height: 56,
+                width: 48,
+                height: 48,
                 errorBuilder: (context, error, stackTrace) => 
-                  const Icon(Icons.music_note, color: Colors.white, size: 24),
+                  const Icon(Icons.music_note, color: Colors.white, size: 20),
               ),
             )
-          : const Icon(Icons.music_note, color: Colors.white, size: 24),
+          : const Icon(Icons.music_note, color: Colors.white, size: 20),
     );
   }
 
@@ -419,8 +409,8 @@ class PlaylistDetailWidgets {
       ),
       child: ListTile(
         leading: Container(
-          width: 56,
-          height: 56,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(color: Colors.red.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
           child: const Icon(Icons.music_off, color: Colors.white),
         ),
@@ -443,8 +433,8 @@ class PlaylistDetailWidgets {
       ),
       child: ListTile(
         leading: Container(
-          width: 56,
-          height: 56,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
           child: const Stack(
             alignment: Alignment.center,
