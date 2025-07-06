@@ -23,7 +23,7 @@ from .models import SignupOneTimePasscode
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from apps.remote_auth.models import SocialNetwork
-#from apps.profile.models import Profile
+from apps.profile.models import Profile
 from django.contrib.auth.hashers import check_password
 from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
@@ -190,7 +190,7 @@ def signup(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            #profile = Profile.objects.create(user = user)
+            profile = Profile.objects.create(user = user)
             token = Token.objects.create(user=user)
             response_data = {
                 'token': token.key,

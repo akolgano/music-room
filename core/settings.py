@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'apps.remote_auth',
-    #'apps.profile',
+    'apps.profile',
     'drf_yasg',
 ]
 

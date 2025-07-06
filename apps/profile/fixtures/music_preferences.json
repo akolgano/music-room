@@ -1,0 +1,17 @@
+[
+  { "model": "profile.musicpreference", "pk": 1, "fields": { "name": "rock" } },
+  { "model": "profile.musicpreference", "pk": 2, "fields": { "name": "pop" } },
+  { "model": "profile.musicpreference", "pk": 3, "fields": { "name": "hip hop" } },
+  { "model": "profile.musicpreference", "pk": 4, "fields": { "name": "jazz" } },
+  { "model": "profile.musicpreference", "pk": 5, "fields": { "name": "classical" } },
+  { "model": "profile.musicpreference", "pk": 6, "fields": { "name": "electronic" } },
+  { "model": "profile.musicpreference", "pk": 7, "fields": { "name": "blues" } },
+  { "model": "profile.musicpreference", "pk": 8, "fields": { "name": "country" } },
+  { "model": "profile.musicpreference", "pk": 9, "fields": { "name": "reggae" } },
+  { "model": "profile.musicpreference", "pk": 10, "fields": { "name": "indie" } },
+  { "model": "profile.musicpreference", "pk": 11, "fields": { "name": "metal" } },
+  { "model": "profile.musicpreference", "pk": 12, "fields": { "name": "techno" } },
+  { "model": "profile.musicpreference", "pk": 13, "fields": { "name": "lofi" } },
+  { "model": "profile.musicpreference", "pk": 14, "fields": { "name": "folk" } },
+  { "model": "profile.musicpreference", "pk": 15, "fields": { "name": "soul" } }
+]

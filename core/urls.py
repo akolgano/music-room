@@ -41,7 +41,7 @@ urlpatterns = [
     path('tracks/', include('apps.tracks.urls')),
     path('playlists/', include('apps.playlists.urls')),
     path('auth/', include('apps.remote_auth.urls')),
-    #path('profile/', include('apps.profile.urls')),
+    path('profile/', include('apps.profile.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
 

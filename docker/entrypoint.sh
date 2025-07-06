@@ -16,7 +16,6 @@ export PYTHONPATH=/app
 
 echo "Applying migrations..."
 python manage.py makemigrations
-python manage.py makemigrations profile
 python manage.py migrate
 echo "Loading data..."
 if [ -f "/app/sample.json" ]; then
@@ -26,7 +25,8 @@ elif [ -f "/app/apps/playlists/fixtures/sample.json" ]; then
 else
     echo "No sample.json found, skipping fixture cleaning"
 fi
-
+#python manage.py loaddata music_preferences
+python manage.py loaddata sample.json
 SUPERUSER_EXISTS=$(python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username='$DJANGO_SUPERUSER_USERNAME').exists())")
 if [ "$SUPERUSER_EXISTS" = "False" ]; then
   echo "Creating superuser..."
@@ -42,5 +42,5 @@ fi
 
 echo "Starting development server..."
 #exec python manage.py runserver 0.0.0.0:8000
-exec daphne -b 0.0.0.0 -p 8000 core.asgi:application
-#exec uvicorn core.asgi:application --reload --host 0.0.0.0 --port 8000
+#exec daphne -b 0.0.0.0 -p 8000 core.asgi:application
+exec uvicorn core.asgi:application --reload --host 0.0.0.0 --port 8000
