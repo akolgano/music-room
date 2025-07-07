@@ -84,7 +84,7 @@ class AuthService {
     await _api.sendSignupEmailOtp(request);
   }
 
-  Future<AuthResult> signupWithOtp(String username, String email, String password, int otp) async {
+  Future<AuthResult> signupWithOtp(String username, String email, String password, String otp) async {
     final request = SignupWithOtpRequest(username: username, email: email, password: password, otp: otp);
     final result = await _api.signupWithOtp(request);
     await _storeAuth(result.token, result.user);

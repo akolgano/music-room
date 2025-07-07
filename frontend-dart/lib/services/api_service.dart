@@ -89,17 +89,10 @@ class ApiService {
     );
   }
 
-  Future<AuthResult> login(LoginRequest request) => 
-      _post('/users/login/', request, AuthResult.fromJson);
-
-  Future<void> logout(String token, LogoutRequest request) => 
-      _postVoid('/users/logout/', request, token: token);
-
-  Future<AuthResult> facebookLogin(SocialLoginRequest request) => 
-      _post('/auth/facebook/login/', request, AuthResult.fromJson);
-
-  Future<AuthResult> googleLogin(SocialLoginRequest request) => 
-      _post('/auth/google/login/', request, AuthResult.fromJson);
+  Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
+  Future<void> logout(String token, LogoutRequest request) => _postVoid('/users/logout/', request, token: token);
+  Future<AuthResult> facebookLogin(SocialLoginRequest request) => _post('/auth/facebook/login/', request, AuthResult.fromJson);
+  Future<AuthResult> googleLogin(SocialLoginRequest request) => _post('/auth/google/login/', request, AuthResult.fromJson);
 
   Future<void> forgotPassword(ForgotPasswordRequest request) => 
       _postVoid('/users/forgot_password/', request);
@@ -150,10 +143,10 @@ class ApiService {
       _get('/users/invitations/sent/', FriendInvitationsResponse.fromJson, token: token);
 
   Future<Map<String, dynamic>> getProfileData(String token) => 
-      _get('/profile/profile/', (data) => data, token: token);
+      _get('/profile/me/', (data) => data, token: token);
 
   Future<void> updateProfile(String token, Map<String, dynamic> data) => 
-      _postVoid('/profile/profile/update/', data, token: token);
+      _patch('/profile/me/', data, (data) => data, token: token);
 
   Future<DeezerSearchResponse> searchDeezerTracks(String query) => 
       _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
@@ -168,6 +161,29 @@ class ApiService {
       return null;
     }
   }
+
+  Future<List<Track>> searchTracks(String query, String token) async {
+    final response = await _dio.get('/tracks/search/', 
+      queryParameters: {'query': query},
+      options: Options(headers: {'Authorization': token})
+    );
+    return (response.data['tracks'] as List<dynamic>)
+        .map((t) => Track.fromJson(t as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> addTrackFromDeezer(String trackId, String token) => 
+      _post('/tracks/add_from_deezer/$trackId/', {}, (data) => data, token: token);
+
+  Future<List<Map<String, dynamic>>> getMusicPreferences(String token) async {
+    final response = await _dio.get('/profile/music-preferences/',
+      options: Options(headers: {'Authorization': token})
+    );
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteAvatar(String token) => 
+      _delete('/profile/me/avatar/', token: token);
 
   Future<PlaylistsResponse> getSavedPlaylists(String token) => 
       _get('/playlists/saved_playlists/', PlaylistsResponse.fromJson, token: token);
@@ -212,28 +228,7 @@ class ApiService {
   Future<VoteResponse> voteForTrack(String playlistId, String token, VoteRequest request) => 
       _post('/playlists/$playlistId/tracks/vote/', request, VoteResponse.fromJson, token: token);
 
-  Future<DeviceResponse> registerDevice(String token, RegisterDeviceRequest request) => 
-      _post('/devices/register/', request, DeviceResponse.fromJson, token: token);
-
-  Future<DevicesResponse> getUserDevices(String token) => 
-      _get('/devices/', DevicesResponse.fromJson, token: token);
-
-  Future<DeviceResponse> getDeviceInfo(String deviceUuid, String token) => 
-      _get('/devices/$deviceUuid/', DeviceResponse.fromJson, token: token);
-
-  Future<void> updateDeviceStatus(String deviceUuid, String token, Map<String, dynamic> data) => 
-      _postVoid('/devices/$deviceUuid/status/', data, token: token);
-
-  Future<void> delegateDeviceControl(String token, DelegateControlRequest request) => 
-      _postVoid('/devices/delegate/', request, token: token);
-
-  Future<PermissionResponse> checkDevicePermission(String deviceUuid, String token) => 
-      _get('/devices/$deviceUuid/permission/', PermissionResponse.fromJson, token: token);
-
-  Future<BatchAddResult> addMultipleTracksToPlaylist({
-    required String playlistId,
-    required List<String> trackIds,
-    required String token,
+  Future<BatchAddResult> addMultipleTracksToPlaylist({required String playlistId, required List<String> trackIds, required String token,
     String? deviceUuid,
   }) async {
     int totalTracks = trackIds.length;
