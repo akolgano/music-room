@@ -67,4 +67,9 @@ class MusicService {
     final request = InviteUserRequest(userId: userId);
     await _api.inviteUserToPlaylist(playlistId, token, request); 
   }
+
+  Future<List<Track>> searchTracks(String query, String token) async {
+    final response = await _api.searchTracks(query, token);
+    return response;
+  }
 }

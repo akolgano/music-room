@@ -72,7 +72,7 @@ class AuthProvider extends BaseProvider {
   Future<bool> forgotChangePassword(String email, String otp, String password) async {
     return await executeBool(
       () async {
-        final request = ChangePasswordRequest(email: email, otp: int.parse(otp), password: password);
+        final request = ChangePasswordRequest(email: email, otp: otp, password: password);
         await _authService.api.forgotChangePassword(request);
       },
       successMessage: 'Password changed successfully',
@@ -92,9 +92,7 @@ class AuthProvider extends BaseProvider {
 
   Future<bool> signupWithOtp(String username, String email, String password, String otp) async {
     return await executeBool(
-      () async {
-        await _authService.signupWithOtp(username, email, password, int.parse(otp));
-      },
+      () async => await _authService.signupWithOtp(username, email, password, otp),
       successMessage: 'Account created successfully!',
       errorMessage: 'Signup failed',
     );
