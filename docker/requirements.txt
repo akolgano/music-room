@@ -16,5 +16,5 @@ uvicorn
 #uvicorn[standard]
 google-auth
 geopy
-drf_yasg
 pillow
+drf_spectacular

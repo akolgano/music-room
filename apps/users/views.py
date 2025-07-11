@@ -26,53 +26,15 @@ from apps.remote_auth.models import SocialNetwork
 from apps.profile.models import Profile
 from django.contrib.auth.hashers import check_password
 from django.db import transaction
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 import re
+from drf_spectacular.utils import extend_schema
+from .docs import *
 
 
 User = get_user_model()
 
 
-@swagger_auto_schema(
-    method='post',
-    operation_summary="User login",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['password', 'username'],
-        properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING),
-            'password': openapi.Schema(type=openapi.TYPE_STRING, format='password', description='User password'),
-        }
-    ),
-    responses={
-        201: openapi.Response(
-            description='Login successful, returns token and user info',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'token': openapi.Schema(type=openapi.TYPE_STRING),
-                    'user': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                            'username': openapi.Schema(type=openapi.TYPE_STRING),
-                            'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
-                        },
-                    ),
-                }
-            )
-        ),
-        404: openapi.Response(
-            description="User not found",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'detail': openapi.Schema(type=openapi.TYPE_STRING)},
-                example={'detail': 'User not found | Not found | Username or password not provided'}
-            )
-        )
-    }
-)
+@login_view_schema
 @api_view(['POST'])
 def login_view(request):
     username = request.data.get('username')
@@ -94,6 +56,7 @@ def login_view(request):
     return Response({'token': token.key, 'user': serializer.data})
 
 
+@logout_view_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -106,68 +69,12 @@ def logout_view(request):
     try:
         request.user.auth_token.delete()
         user.save()
-        return Response("Logout successfully")
+        return Response({"detail": "Logout successfully"}, status=status.HTTP_200_OK)
     except Exception:
         return Response({"detail": "Logout failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Signup new user",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['email', 'otp', 'password', 'username'],
-        properties={
-            'otp': openapi.Schema(type=openapi.TYPE_STRING, description='One-time passcode sent to email'),
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='User username'),
-            'email': openapi.Schema(type=openapi.TYPE_STRING, format='email', description='Email address used for signup'),
-            'password': openapi.Schema(type=openapi.TYPE_STRING, format='password', description='User password'),
-        }
-    ),
-    responses={
-        201: openapi.Response(
-            description='Signup successful, returns token and user info',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'token': openapi.Schema(type=openapi.TYPE_STRING),
-                    'user': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                            'username': openapi.Schema(type=openapi.TYPE_STRING),
-                            'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
-                        },
-                    ),
-                }
-            ),
-        ),
-        404: openapi.Response(
-            description='Signup failed due to error',
-            schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
-                    example={'error': 'Signup OTP not found or expired | Signup OTP not match | Email already in use'}
-                ),
-        ),
-        400: openapi.Response(
-            description='Signup failed due to serializer error',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                additional_properties=openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    items=openapi.Schema(type=openapi.TYPE_STRING)
-                ),
-                example={
-                    "username": ["Username is already taken."],
-                    "email": ["Email is already taken."],
-                    "password": ["Ensure this field has at least 8 characters."]
-                }
-            )
-        ),
-    }
-)
+@signup_schema
 @api_view(['POST'])
 def signup(request):
     otp_code = request.data.get('otp')
@@ -321,38 +228,7 @@ def reject_friend_request(request, friendship_id):
     }, status=200)
 
 
-
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Forgot password send otp",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['email'],
-        properties={
-            'email': openapi.Schema(type=openapi.TYPE_STRING, format='email', description='User email'),
-        }
-    ),
-    responses={
-        201: openapi.Response(
-            description='Forgot password sent otp to email successful, returns username and email',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'username': openapi.Schema(type=openapi.TYPE_STRING),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
-                }
-            )
-            ),
-        400: openapi.Response(
-            description='Forgot password sent otp to email failed due to error',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
-                example={'error': 'No email provided | User not found | User passwords cannot be reset | OTP creation failed | OTP email sending failed'}
-            ),
-        ),
-    }
-)
+@forgot_password_schema
 @api_view(['POST'])
 def forgot_password(request):
     email = request.data.get('email')
@@ -379,42 +255,7 @@ def forgot_password(request):
     return JsonResponse({'username': user.username, 'email': user.email}, status=status.HTTP_201_CREATED)
 
 
-
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Forgot password change password",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['email', 'otp', 'password'],
-        properties={
-            'otp': openapi.Schema(type=openapi.TYPE_STRING, description='One-time passcode sent to email'),
-            'email': openapi.Schema(type=openapi.TYPE_STRING, format='email', description='User email'),
-            'password': openapi.Schema(type=openapi.TYPE_STRING, format='password', description='User new password'),
-        }
-    ),
-    responses={
-        201: openapi.Response(
-            description='Forgot password change password successful, returns username and email',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'username': openapi.Schema(type=openapi.TYPE_STRING),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
-                }
-            )
-            ),
-        400: openapi.Response(
-            description='Forgot password change password failed due to error',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
-                example={'error': 'Invalid email, otp or password | User not found | User passwords cannot be reset | OTP not found or expired | OTP not match \
-                | [\'This password is too short. It must contain at least 8 characters.\', \'This password is too common.\', \'This password is entirely numeric.\', \
-                \'The password must not contain spaces.\']'}
-            )
-        ),
-    }
-)
+@forgot_change_password_schema
 @api_view(['POST'])
 def forgot_change_password(request):
     email = request.data.get('email')
@@ -450,49 +291,7 @@ def forgot_change_password(request):
         return JsonResponse({'error': 'OTP not match'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Login user change password",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['current_password', 'new_password'],
-        properties={
-            'current_password': openapi.Schema(type=openapi.TYPE_STRING, format='password', description='User current password'),
-            'new_password': openapi.Schema(type=openapi.TYPE_STRING, format='password', description='User new password'),
-        }
-    ),
-    responses={
-        201: openapi.Response(
-            description='Login user password change successful, returns username and email',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'username': openapi.Schema(type=openapi.TYPE_STRING),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
-                }
-            )
-            ),
-        401: openapi.Response(
-            description="Unauthorized",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'detail': openapi.Schema(type=openapi.TYPE_STRING)},
-                example={'detail': 'Authentication credentials were not provided'}
-            )
-        ),
-        400: openapi.Response(
-            description='Login user password change failed due to error',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
-                example={'error': 'User password cannot be change | Current password not match | No current password or new password provided \
-                | [\'This password is too short. It must contain at least 8 characters.\', \'This password is too common.\', \'This password is entirely numeric.\', \
-                \'The password must not contain spaces.\']'}
-
-            ),
-        ),
-    }
-)
+@user_password_change_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -520,50 +319,7 @@ def user_password_change(request):
     return JsonResponse({'username': user.username, 'email' : user.email}, status=status.HTTP_201_CREATED)
 
 
-
-@swagger_auto_schema(
-    method='get',
-    operation_summary="Get authenticated user details",
-    responses={
-        200: openapi.Response(
-            description="User info with social account if available",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'username': openapi.Schema(type=openapi.TYPE_STRING),
-                    'id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
-                    'has_social_account': openapi.Schema(type=openapi.TYPE_BOOLEAN),
-                    'is_password_usable': openapi.Schema(type=openapi.TYPE_BOOLEAN),
-                    'social': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'type': openapi.Schema(type=openapi.TYPE_STRING),
-                            'social_id': openapi.Schema(type=openapi.TYPE_STRING),
-                            'social_email': openapi.Schema(type=openapi.TYPE_STRING),
-                            'social_name': openapi.Schema(type=openapi.TYPE_STRING),
-                        },
-                    ),
-                }
-            )
-        ),
-        400: openapi.Response(
-            description="Get user info failed due to error",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
-            )
-        ),
-        401: openapi.Response(
-            description="Unauthorized",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'detail': openapi.Schema(type=openapi.TYPE_STRING)},
-                example={'detail': 'Authentication credentials were not provided'}
-            )
-        )
-    }
-)
+@get_user_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -594,38 +350,7 @@ def get_user(request):
         return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Send signup otp to email",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['email'],
-        properties={
-            'email': openapi.Schema(type=openapi.TYPE_STRING, format='email')
-        },
-    ),
-    responses={
-        201: openapi.Response(
-            description='Signup otp sent to email successful',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
-                }
-            )
-        ),
-        400: openapi.Response(
-            description='Signup otp sending failed due to error',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={'error': openapi.Schema(type=openapi.TYPE_STRING)},
-                example={'error': 'No email provided | Invalid email format | Signup OTP creation failed \
-                | Signup OTP email sending failed'}
-            )
-        ),
-    }
-)
+@signup_email_otp_schema
 @api_view(['POST'])
 def signup_email_otp(request):
     email = request.data.get('email')
