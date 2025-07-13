@@ -351,11 +351,11 @@ class SocialLoginUtils {
   static Future<void> _initializeGoogle() async {
     try {
       final googleClientId = kIsWeb ? dotenv.env['GOOGLE_CLIENT_ID_WEB'] : dotenv.env['GOOGLE_CLIENT_ID_APP'];
-          
       if (googleClientId != null && googleClientId.isNotEmpty) {
         _googleSignIn = GoogleSignIn(
           scopes: <String>['email', 'profile', 'openid'],
           clientId: googleClientId,
+          serverClientId: dotenv.env['GOOGLE_SERVER_CLIENT_ID'],
         );
         print('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...');
       } else {
@@ -378,9 +378,7 @@ class SocialLoginUtils {
         await initialize();
       }
 
-      if (!_facebookInitialized) {
-        return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.');
-      }
+      if (!_facebookInitialized) return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.');
 
       print('Attempting Facebook login...');
       

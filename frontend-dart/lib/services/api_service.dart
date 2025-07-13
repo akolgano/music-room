@@ -162,23 +162,11 @@ class ApiService {
     }
   }
 
-  Future<List<Track>> searchTracks(String query, String token) async {
-    final response = await _dio.get('/tracks/search/', 
-      queryParameters: {'query': query},
-      options: Options(headers: {'Authorization': token})
-    );
-    return (response.data['tracks'] as List<dynamic>)
-        .map((t) => Track.fromJson(t as Map<String, dynamic>))
-        .toList();
-  }
-
   Future<Map<String, dynamic>> addTrackFromDeezer(String trackId, String token) => 
       _post('/tracks/add_from_deezer/$trackId/', {}, (data) => data, token: token);
 
   Future<List<Map<String, dynamic>>> getMusicPreferences(String token) async {
-    final response = await _dio.get('/profile/music-preferences/',
-      options: Options(headers: {'Authorization': token})
-    );
+    final response = await _dio.get('/profile/music-preferences/', options: Options(headers: {'Authorization': token}));
     return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
   }
 

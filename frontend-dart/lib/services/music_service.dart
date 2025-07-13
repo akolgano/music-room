@@ -52,8 +52,7 @@ class MusicService {
     await _api.removeTrackFromPlaylist(playlistId, trackId, token); 
   }
 
-  Future<void> moveTrackInPlaylist({
-    required String playlistId, 
+  Future<void> moveTrackInPlaylist({required String playlistId, 
     required int rangeStart,
     required int insertBefore,
     int rangeLength = 1,
@@ -66,10 +65,5 @@ class MusicService {
   Future<void> inviteUserToPlaylist(String playlistId, int userId, String token) async {
     final request = InviteUserRequest(userId: userId);
     await _api.inviteUserToPlaylist(playlistId, token, request); 
-  }
-
-  Future<List<Track>> searchTracks(String query, String token) async {
-    final response = await _api.searchTracks(query, token);
-    return response;
   }
 }
