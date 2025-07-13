@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:duration/duration.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
@@ -280,6 +281,16 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     );
   }
 
+  String _formatDuration(Duration duration) {
+    return printDuration(duration, 
+      abbreviated: false,
+      spacer: '', 
+      delimiter: ':', 
+      conjugation: '',
+      tersity: duration.inHours > 0 ? DurationTersity.hour : DurationTersity.minute,
+    );
+  }
+
   Widget _buildProgressBar(MusicPlayerService playerService) {
     return Column(
       children: [
@@ -297,14 +308,15 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                DateTimeUtils.formatDuration(playerService.position),
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-              Text(
-                DateTimeUtils.formatDuration(playerService.duration),
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
+            Text(
+              _formatDuration(playerService.position),
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+
+            Text(
+              _formatDuration(playerService.duration),
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
             ],
           ),
         ),
@@ -583,10 +595,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context), 
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey))
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
         ],
       ),
     );

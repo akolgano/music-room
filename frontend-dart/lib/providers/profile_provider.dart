@@ -10,8 +10,37 @@ import '../core/core.dart';
 import '../core/base_provider.dart'; 
 import '../models/api_models.dart';
 
+enum VisibilityLevel { public, friends, private }
+
+extension VisibilityLevelExtension on VisibilityLevel {
+  String get value {
+    switch (this) {
+      case VisibilityLevel.public:
+        return 'public';
+      case VisibilityLevel.friends:
+        return 'friends';
+      case VisibilityLevel.private:
+        return 'private';
+    }
+  }
+
+  static VisibilityLevel fromString(String? value) {
+    switch (value) {
+      case 'public':
+        return VisibilityLevel.public;
+      case 'friends':
+        return VisibilityLevel.friends;
+      case 'private':
+        return VisibilityLevel.private;
+      default:
+        return VisibilityLevel.public;
+    }
+  }
+}
+
 class ProfileProvider extends BaseProvider { 
   final ApiService _apiService;  
+
   String? _userId;
   String? _username;
   String? _userEmail;
@@ -20,20 +49,24 @@ class ProfileProvider extends BaseProvider {
   String? _socialType;
   String? _socialId;
   bool _isPasswordUsable = false;
+
   String? _avatar;
-  String? _gender;
+  String? _name;
   String? _location;
   String? _bio;
-  String? _firstName;
-  String? _lastName;
   String? _phone;
-  String? _street;
-  String? _country;
-  String? _postalCode;
-  DateTime? _dob;
-  List<String>? _hobbies;
   String? _friendInfo;
   List<String>? _musicPreferences;
+  List<int>? _musicPreferenceIds;
+
+  VisibilityLevel? _avatarVisibility;
+  VisibilityLevel? _nameVisibility;
+  VisibilityLevel? _locationVisibility;
+  VisibilityLevel? _bioVisibility;
+  VisibilityLevel? _phoneVisibility;
+  VisibilityLevel? _friendInfoVisibility;
+  VisibilityLevel? _musicPreferencesVisibility;
+
   String? get userId => _userId;
   String? get username => _username;
   String? get userEmail => _userEmail;
@@ -42,20 +75,23 @@ class ProfileProvider extends BaseProvider {
   String? get socialType => _socialType;
   String? get socialId => _socialId;
   bool get isPasswordUsable => _isPasswordUsable;
+
   String? get avatar => _avatar;
-  String? get gender => _gender;
+  String? get name => _name;
   String? get location => _location;
   String? get bio => _bio;
-  String? get firstName => _firstName;
-  String? get lastName => _lastName;
   String? get phone => _phone;
-  String? get street => _street;
-  String? get country => _country;
-  String? get postalCode => _postalCode;
-  DateTime? get dob => _dob;
-  List<String>? get hobbies => _hobbies;
   String? get friendInfo => _friendInfo;
   List<String>? get musicPreferences => _musicPreferences;
+  List<int>? get musicPreferenceIds => _musicPreferenceIds;
+
+  VisibilityLevel? get avatarVisibility => _avatarVisibility;
+  VisibilityLevel? get nameVisibility => _nameVisibility;
+  VisibilityLevel? get locationVisibility => _locationVisibility;
+  VisibilityLevel? get bioVisibility => _bioVisibility;
+  VisibilityLevel? get phoneVisibility => _phoneVisibility;
+  VisibilityLevel? get friendInfoVisibility => _friendInfoVisibility;
+  VisibilityLevel? get musicPreferencesVisibility => _musicPreferencesVisibility;
 
   ProfileProvider() : _apiService = getIt<ApiService>();
 
@@ -69,30 +105,33 @@ class ProfileProvider extends BaseProvider {
     _socialName = null;
     _socialId = null;
     _avatar = null;
-    _gender = null;
+    _name = null;
     _location = null;
     _bio = null;
-    _firstName = null;
-    _lastName = null;
     _phone = null;
-    _street = null;
-    _country = null;
-    _postalCode = null;
-    _dob = null;
-    _hobbies = null;
     _friendInfo = null;
     _musicPreferences = null;
+    _musicPreferenceIds = null;
+    _avatarVisibility = null;
+    _nameVisibility = null;
+    _locationVisibility = null;
+    _bioVisibility = null;
+    _phoneVisibility = null;
+    _friendInfoVisibility = null;
+    _musicPreferencesVisibility = null;
   }
 
   Future<bool> loadProfile(String? token) async {
     return await executeBool(
       () async {
         resetValues();
+        
         final userData = await _apiService.getUserData(token);
         _userId = userData['id'];
         _username = userData['username'];
         _userEmail = userData['email'];
         _isPasswordUsable = userData['is_password_usable'] as bool;
+
         final hasSocialAccount = userData['has_social_account'] as bool;
         if (hasSocialAccount) {
           final social = userData['social'] as Map<String, dynamic>;
@@ -101,22 +140,29 @@ class ProfileProvider extends BaseProvider {
           _socialName = social['social_name'];
           _socialId = social['social_id'];
         }
+
         final profileData = await _apiService.getProfileData(token!);
         _avatar = profileData['avatar'];
-        _gender = profileData['gender'];
+        _name = profileData['name'];
         _location = profileData['location'];
         _bio = profileData['bio'];
-        _firstName = profileData['first_name'];
-        _lastName = profileData['last_name'];
         _phone = profileData['phone'];
-        _street = profileData['street'];
-        _country = profileData['country'];
-        _postalCode = profileData['postal_code'];
-        final dobString = profileData['dob'];
-        if (dobString != null) _dob = DateTime.parse(dobString);
-        _hobbies = (profileData['hobbies'] as List<dynamic>?)?.cast<String>();
         _friendInfo = profileData['friend_info'];
-        _musicPreferences = (profileData['music_preferences'] as List<dynamic>?)?.cast<String>();
+
+        if (profileData['music_preferences'] != null) {
+          _musicPreferences = (profileData['music_preferences'] as List<dynamic>?)?.cast<String>();
+        }
+        if (profileData['music_preferences_ids'] != null) {
+          _musicPreferenceIds = (profileData['music_preferences_ids'] as List<dynamic>?)?.cast<int>();
+        }
+
+        _avatarVisibility = VisibilityLevelExtension.fromString(profileData['avatar_visibility']);
+        _nameVisibility = VisibilityLevelExtension.fromString(profileData['name_visibility']);
+        _locationVisibility = VisibilityLevelExtension.fromString(profileData['location_visibility']);
+        _bioVisibility = VisibilityLevelExtension.fromString(profileData['bio_visibility']);
+        _phoneVisibility = VisibilityLevelExtension.fromString(profileData['phone_visibility']);
+        _friendInfoVisibility = VisibilityLevelExtension.fromString(profileData['friend_info_visibility']);
+        _musicPreferencesVisibility = VisibilityLevelExtension.fromString(profileData['music_preferences_visibility']);
       },
       successMessage: 'Profile loaded successfully',
       errorMessage: 'Failed to load profile',
@@ -170,63 +216,93 @@ class ProfileProvider extends BaseProvider {
   Future<bool> updateProfile(String? token, {
     String? avatarBase64,
     String? mimeType,
-    String? gender,
+    String? name,
     String? location,
     String? bio,
-    String? firstName,
-    String? lastName,
     String? phone,
-    String? street,
-    String? country,
-    String? postalCode,
-    String? dob,
-    List<String>? hobbies,
     String? friendInfo, 
-    List<String>? musicPreferences,
+    List<int>? musicPreferencesIds,
   }) async {
     return await executeBool(
       () async {
         final updateData = <String, dynamic>{};
-        if (avatarBase64 != null) updateData['avatar_base64'] = avatarBase64;
+        if (avatarBase64 != null) updateData['avatar'] = avatarBase64;
         if (mimeType != null) updateData['mime_type'] = mimeType;
-        if (gender != null) updateData['gender'] = gender;
+        if (name != null) updateData['name'] = name;
         if (location != null) updateData['location'] = location;
         if (bio != null) updateData['bio'] = bio;
-        if (firstName != null) updateData['first_name'] = firstName;
-        if (lastName != null) updateData['last_name'] = lastName;
         if (phone != null) updateData['phone'] = phone;
-        if (street != null) updateData['street'] = street;
-        if (country != null) updateData['country'] = country;
-        if (postalCode != null) updateData['postal_code'] = postalCode;
-        if (dob != null) updateData['dob'] = dob;
-        if (hobbies != null) updateData['hobbies'] = hobbies;
         if (friendInfo != null) updateData['friend_info'] = friendInfo;
-        if (musicPreferences != null) updateData['music_preferences'] = musicPreferences;
+        if (musicPreferencesIds != null) updateData['music_preferences_ids'] = musicPreferencesIds;
 
         await _apiService.updateProfile(token!, updateData);
 
         if (avatarBase64 != null) _avatar = avatarBase64;
-        if (gender != null) _gender = gender;
+        if (name != null) _name = name;
         if (location != null) _location = location;
         if (bio != null) _bio = bio;
-        if (firstName != null) _firstName = firstName;
-        if (lastName != null) _lastName = lastName;
         if (phone != null) _phone = phone;
-        if (street != null) _street = street;
-        if (country != null) _country = country;
-        if (postalCode != null) _postalCode = postalCode;
-        if (dob != null) _dob = DateTime.parse(dob);
-        if (hobbies != null) _hobbies = hobbies;
         if (friendInfo != null) _friendInfo = friendInfo;
-        if (musicPreferences != null) _musicPreferences = musicPreferences;
+        if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
       },
       successMessage: 'Profile updated successfully',
       errorMessage: 'Failed to update profile',
     );
   }
 
-  Future<bool> updateFriendInfo(String? token, String? dob, List<String>? hobbies, String? friendInfo) async {
-    return updateProfile(token, dob: dob, hobbies: hobbies, friendInfo: friendInfo);
+  Future<bool> updateVisibility(String? token, {
+    VisibilityLevel? avatarVisibility,
+    VisibilityLevel? nameVisibility,
+    VisibilityLevel? locationVisibility,
+    VisibilityLevel? bioVisibility,
+    VisibilityLevel? phoneVisibility,
+    VisibilityLevel? friendInfoVisibility,
+    VisibilityLevel? musicPreferencesVisibility,
+  }) async {
+    return await executeBool(
+      () async {
+        final updateData = <String, dynamic>{};
+        if (avatarVisibility != null) updateData['avatar_visibility'] = avatarVisibility.value;
+        if (nameVisibility != null) updateData['name_visibility'] = nameVisibility.value;
+        if (locationVisibility != null) updateData['location_visibility'] = locationVisibility.value;
+        if (bioVisibility != null) updateData['bio_visibility'] = bioVisibility.value;
+        if (phoneVisibility != null) updateData['phone_visibility'] = phoneVisibility.value;
+        if (friendInfoVisibility != null) updateData['friend_info_visibility'] = friendInfoVisibility.value;
+        if (musicPreferencesVisibility != null) updateData['music_preferences_visibility'] = musicPreferencesVisibility.value;
+
+        await _apiService.updateProfile(token!, updateData);
+
+        if (avatarVisibility != null) _avatarVisibility = avatarVisibility;
+        if (nameVisibility != null) _nameVisibility = nameVisibility;
+        if (locationVisibility != null) _locationVisibility = locationVisibility;
+        if (bioVisibility != null) _bioVisibility = bioVisibility;
+        if (phoneVisibility != null) _phoneVisibility = phoneVisibility;
+        if (friendInfoVisibility != null) _friendInfoVisibility = friendInfoVisibility;
+        if (musicPreferencesVisibility != null) _musicPreferencesVisibility = musicPreferencesVisibility;
+      },
+      successMessage: 'Visibility settings updated successfully',
+      errorMessage: 'Failed to update visibility settings',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getMusicPreferences(String token) async {
+    try {
+      return await _apiService.getMusicPreferences(token);
+    } catch (e) {
+      print('Error getting music preferences: $e');
+      return [];
+    }
+  }
+
+  Future<bool> deleteAvatar(String? token) async {
+    return await executeBool(
+      () async {
+        await _apiService.deleteAvatar(token!);
+        _avatar = null;
+      },
+      successMessage: 'Avatar deleted successfully',
+      errorMessage: 'Failed to delete avatar',
+    );
   }
 
   String? get avatarUrl {

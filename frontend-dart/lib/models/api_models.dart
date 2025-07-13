@@ -81,59 +81,124 @@ class SocialLinkRequest {
 }
 
 class ProfileUpdateRequest {
-  final String? avatarBase64;
+  final String? avatar;
   final String? mimeType;
-  final String? gender;
+  final String? name;
   final String? location;
   final String? bio;
-  final String? firstName;
-  final String? lastName;
   final String? phone;
-  final String? street;
-  final String? country;
-  final String? postalCode;
-  final String? dob;
-  final List<String>? hobbies;
   final String? friendInfo;
-  final List<String>? musicPreferences;
-  
-  const ProfileUpdateRequest({
-    this.avatarBase64,
-    this.mimeType,
-    this.gender,
-    this.location,
-    this.bio,
-    this.firstName,
-    this.lastName,
-    this.phone,
-    this.street,
-    this.country,
-    this.postalCode,
-    this.dob,
-    this.hobbies,
-    this.friendInfo,
-    this.musicPreferences,
+  final List<int>? musicPreferencesIds;
+  final String? avatarVisibility;
+  final String? nameVisibility;
+  final String? locationVisibility;
+  final String? bioVisibility;
+  final String? phoneVisibility;
+  final String? friendInfoVisibility;
+  final String? musicPreferencesVisibility;
+
+  const ProfileUpdateRequest({this.avatar, this.mimeType, this.name, this.location, this.bio, this.phone, this.friendInfo,
+    this.musicPreferencesIds,
+    this.avatarVisibility,
+    this.nameVisibility,
+    this.locationVisibility,
+    this.bioVisibility,
+    this.phoneVisibility,
+    this.friendInfoVisibility,
+    this.musicPreferencesVisibility,
   });
-  
+
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (avatarBase64 != null) json['avatar_base64'] = avatarBase64;
+    if (avatar != null) json['avatar'] = avatar;
     if (mimeType != null) json['mime_type'] = mimeType;
-    if (gender != null) json['gender'] = gender;
+    if (name != null) json['name'] = name;
     if (location != null) json['location'] = location;
     if (bio != null) json['bio'] = bio;
-    if (firstName != null) json['first_name'] = firstName;
-    if (lastName != null) json['last_name'] = lastName;
     if (phone != null) json['phone'] = phone;
-    if (street != null) json['street'] = street;
-    if (country != null) json['country'] = country;
-    if (postalCode != null) json['postal_code'] = postalCode;
-    if (dob != null) json['dob'] = dob;
-    if (hobbies != null) json['hobbies'] = hobbies;
     if (friendInfo != null) json['friend_info'] = friendInfo;
-    if (musicPreferences != null) json['music_preferences'] = musicPreferences;
+    if (musicPreferencesIds != null) json['music_preferences_ids'] = musicPreferencesIds;
+    if (avatarVisibility != null) json['avatar_visibility'] = avatarVisibility;
+    if (nameVisibility != null) json['name_visibility'] = nameVisibility;
+    if (locationVisibility != null) json['location_visibility'] = locationVisibility;
+    if (bioVisibility != null) json['bio_visibility'] = bioVisibility;
+    if (phoneVisibility != null) json['phone_visibility'] = phoneVisibility;
+    if (friendInfoVisibility != null) json['friend_info_visibility'] = friendInfoVisibility;
+    if (musicPreferencesVisibility != null) json['music_preferences_visibility'] = musicPreferencesVisibility;
     return json;
   }
+}
+
+class ProfileResponse {
+  final String? avatar;
+  final String? name;
+  final String? location;
+  final String? bio;
+  final String? phone;
+  final String? friendInfo;
+  final List<String>? musicPreferences;
+  final List<int>? musicPreferencesIds;
+  final String? avatarVisibility;
+  final String? nameVisibility;
+  final String? locationVisibility;
+  final String? bioVisibility;
+  final String? phoneVisibility;
+  final String? friendInfoVisibility;
+  final String? musicPreferencesVisibility;
+
+  const ProfileResponse({
+    this.avatar,
+    this.name,
+    this.location,
+    this.bio,
+    this.phone,
+    this.friendInfo,
+    this.musicPreferences,
+    this.musicPreferencesIds,
+    this.avatarVisibility,
+    this.nameVisibility,
+    this.locationVisibility,
+    this.bioVisibility,
+    this.phoneVisibility,
+    this.friendInfoVisibility,
+    this.musicPreferencesVisibility,
+  });
+
+  factory ProfileResponse.fromJson(Map<String, dynamic> json) => ProfileResponse(
+    avatar: json['avatar'] as String?,
+    name: json['name'] as String?,
+    location: json['location'] as String?,
+    bio: json['bio'] as String?,
+    phone: json['phone'] as String?,
+    friendInfo: json['friend_info'] as String?,
+    musicPreferences: (json['music_preferences'] as List<dynamic>?)?.cast<String>(),
+    musicPreferencesIds: (json['music_preferences_ids'] as List<dynamic>?)?.cast<int>(),
+    avatarVisibility: json['avatar_visibility'] as String?,
+    nameVisibility: json['name_visibility'] as String?,
+    locationVisibility: json['location_visibility'] as String?,
+    bioVisibility: json['bio_visibility'] as String?,
+    phoneVisibility: json['phone_visibility'] as String?,
+    friendInfoVisibility: json['friend_info_visibility'] as String?,
+    musicPreferencesVisibility: json['music_preferences_visibility'] as String?,
+  );
+
+  Map<String, dynamic> toJson() => {
+    if (avatar != null) 'avatar': avatar,
+    if (name != null) 'name': name,
+    if (location != null) 'location': location,
+    if (bio != null) 'bio': bio,
+    if (phone != null) 'phone': phone,
+    if (friendInfo != null) 'friend_info': friendInfo,
+    if (musicPreferences != null) 'music_preferences': musicPreferences,
+    if (musicPreferencesIds != null) 'music_preferences_ids': musicPreferencesIds,
+    if (avatarVisibility != null) 'avatar_visibility': avatarVisibility,
+    if (nameVisibility != null) 'name_visibility': nameVisibility,
+    if (locationVisibility != null) 'location_visibility': locationVisibility,
+    if (bioVisibility != null) 'bio_visibility': bioVisibility,
+    if (phoneVisibility != null) 'phone_visibility': phoneVisibility,
+    if (friendInfoVisibility != null) 'friend_info_visibility': friendInfoVisibility,
+    if (musicPreferencesVisibility != null) 'music_preferences_visibility': musicPreferencesVisibility,
+  };
 }
 
 class PublicInfoUpdateRequest {
@@ -143,13 +208,7 @@ class PublicInfoUpdateRequest {
   final String? location;
   final String? bio;
   
-  const PublicInfoUpdateRequest({
-    this.avatarBase64,
-    this.mimeType,
-    this.gender,
-    this.location,
-    this.bio,
-  });
+  const PublicInfoUpdateRequest({this.avatarBase64, this.mimeType, this.gender, this.location, this.bio});
   
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -194,11 +253,7 @@ class FriendInfoUpdateRequest {
   final List<String>? hobbies;
   final String? friendInfo;
   
-  const FriendInfoUpdateRequest({
-    this.dob,
-    this.hobbies,
-    this.friendInfo,
-  });
+  const FriendInfoUpdateRequest({this.dob, this.hobbies, this.friendInfo});
   
   Map<String, dynamic> toJson() => {
     if (dob != null) 'dob': dob,
@@ -207,10 +262,70 @@ class FriendInfoUpdateRequest {
   };
 }
 
-class MusicPreferencesUpdateRequest {
-  final List<String>? musicPreferences;
-  const MusicPreferencesUpdateRequest({this.musicPreferences});
+class MusicPreference {
+  final int id;
+  final String name;
+
+  const MusicPreference({
+    required this.id,
+    required this.name,
+  });
+
+  factory MusicPreference.fromJson(Map<String, dynamic> json) => MusicPreference(
+    id: json['id'] as int,
+    name: json['name'] as String,
+  );
+
   Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+  };
+}
+
+class ProfileByIdResponse {
+  final int id;
+  final String user;
+  final String? avatar;
+  final String? name;
+  final String? location;
+  final String? bio;
+  final String? phone;
+  final String? friendInfo;
+  final List<String>? musicPreferences;
+
+  const ProfileByIdResponse({
+    required this.id,
+    required this.user,
+    this.avatar,
+    this.name,
+    this.location,
+    this.bio,
+    this.phone,
+    this.friendInfo,
+    this.musicPreferences,
+  });
+
+  factory ProfileByIdResponse.fromJson(Map<String, dynamic> json) => ProfileByIdResponse(
+    id: json['id'] as int,
+    user: json['user'] as String,
+    avatar: json['avatar'] as String?,
+    name: json['name'] as String?,
+    location: json['location'] as String?,
+    bio: json['bio'] as String?,
+    phone: json['phone'] as String?,
+    friendInfo: json['friend_info'] as String?,
+    musicPreferences: (json['music_preferences'] as List<dynamic>?)?.cast<String>(),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'user': user,
+    if (avatar != null) 'avatar': avatar,
+    if (name != null) 'name': name,
+    if (location != null) 'location': location,
+    if (bio != null) 'bio': bio,
+    if (phone != null) 'phone': phone,
+    if (friendInfo != null) 'friend_info': friendInfo,
     if (musicPreferences != null) 'music_preferences': musicPreferences,
   };
 }
@@ -257,11 +372,7 @@ class CreatePlaylistRequest {
   });
   
   Map<String, dynamic> toJson() {
-    final json = { 
-      'name': name, 
-      'description': description, 
-      'public': public 
-    };
+    final json = { 'name': name, 'description': description, 'public': public };
     if (deviceUuid != null) json['device_uuid'] = deviceUuid!;
     return json;
   }
@@ -637,3 +748,5 @@ class FriendInvitationsResponse {
   factory FriendInvitationsResponse.fromJson(Map<String, dynamic> json) => 
       FriendInvitationsResponse(invitations: (json['invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? []);
 }
+
+

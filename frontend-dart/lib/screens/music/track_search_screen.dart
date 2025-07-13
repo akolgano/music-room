@@ -373,17 +373,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
           subtitle: 'Type at least $_minSearchLength characters to start searching',
         );
       } else {
-        return AppWidgets.emptyState(
-          icon: Icons.search_off,
-          title: 'No tracks found',
-          subtitle: 'Try different keywords',
+        return AppWidgets.emptyState(icon: Icons.search_off, title: 'No tracks found', subtitle: 'Try different keywords',
           buttonText: 'Clear Search',
           onButtonPressed: _clearSearch,
         );
       }
     }
-    
-    final sortedTracks = TrackSortingService.sortItems<Track>(tracks, _searchSortOption);
+   
+    final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
 
     return Column(
       children: [

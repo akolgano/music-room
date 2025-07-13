@@ -31,8 +31,7 @@ class AppWidgets {
     color: _getOnSurface(context).withOpacity(0.7), fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()
   );
 
-  static Widget textField({
-    required BuildContext context, 
+  static Widget textField({required BuildContext context, 
     required TextEditingController controller,
     required String labelText,
     String? hintText,
@@ -44,9 +43,8 @@ class AppWidgets {
     int maxLines = 1
   }) {
     final theme = Theme.of(context);
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText, validator: validator, onChanged: onChanged, minLines: minLines, maxLines: maxLines,
+    return TextFormField(controller: controller, obscureText: obscureText, validator: validator, onChanged: onChanged, minLines: minLines, 
+      maxLines: maxLines,
       style: _primaryStyle(context),
       decoration: InputDecoration(
         labelText: labelText,
@@ -54,9 +52,29 @@ class AppWidgets {
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: _getPrimary(context)) : null,
         filled: true,
         fillColor: _getSurface(context),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8), 
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8), 
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: _getPrimary(context), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _getError(context), width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _getError(context), width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
         ),
         labelStyle: TextStyle(fontSize: 16, color: _getOnSurface(context).withOpacity(0.7)),
         hintStyle: TextStyle(fontSize: 14, color: _getOnSurface(context).withOpacity(0.5)),
@@ -68,8 +86,7 @@ class AppWidgets {
     );
   }
 
-  static Widget trackCard({
-    Key? key,
+  static Widget trackCard({Key? key,
     required BuildContext context,
     required Track track,
     bool isSelected = false,

@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:duration/duration.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
@@ -46,15 +45,6 @@ class AppValidators {
   
   static String? description(String? value) =>
       value != null && value.length > 500 ? 'Description must be less than 500 characters' : null;
-}
-
-class DateTimeUtils {
-  static String formatDuration(Duration duration) {
-    return printDuration(duration, abbreviated: false,
-      spacer: '', delimiter: ':', conjugation: '',
-      tersity: duration.inHours > 0 ? DurationTersity.hour : DurationTersity.minute,
-    );
-  }
 }
 
 class AppTheme {
@@ -99,9 +89,7 @@ class AppTheme {
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(foregroundColor: primary),
-      ),
+      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: primary)),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: BorderSide(color: primary)),
       ),
@@ -109,9 +97,12 @@ class AppTheme {
         filled: true,
         fillColor: surfaceVariant,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8), 
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -121,11 +112,18 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: error, width: 2),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: error, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
+        ),
         labelStyle: const TextStyle(color: Colors.white70),
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
       ),
-      cardTheme: CardThemeData(
-        color: surface,
+      cardTheme: CardThemeData(color: surface,
         elevation: 4,
         shadowColor: primary.withOpacity(0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -210,12 +208,13 @@ class AppTheme {
     prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: onSurfaceVariant) : null,
     filled: true,
     fillColor: surfaceVariant,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
-      borderSide: BorderSide.none
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r),
+      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
     ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
+      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+    ),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
       borderSide: const BorderSide(color: primary, width: 2)
     ),
     labelStyle: TextStyle(fontSize: kIsWeb ? 16 : 16.sp, color: onSurfaceVariant),
@@ -226,26 +225,20 @@ class AppTheme {
     required Widget child, 
     EdgeInsets? margin, 
     EdgeInsets? padding, 
-    double? elevation, 
-    double? borderRadius,
+    double? elevation, double? borderRadius
   }) => Card(
     color: surface,
     elevation: elevation ?? 4,
     margin: margin ?? EdgeInsets.all(kIsWeb ? 16 : 16.w),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))),
-    child: Padding(
-      padding: padding ?? EdgeInsets.all(kIsWeb ? 24 : 24.w), 
-      child: child
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))  // Fixed: now uses the correct parameter name
     ),
+    child: Padding(padding: padding ?? EdgeInsets.all(kIsWeb ? 24 : 24.w), child: child),
   );
 
   static Widget buildHeaderCard({required Widget child}) => _buildCard(child: child, elevation: 8);
 
-  static Widget buildFormCard({
-    required String title, 
-    IconData? titleIcon, 
-    required Widget child
-  }) => _buildCard(
+  static Widget buildFormCard({required String title, IconData? titleIcon, required Widget child}) => _buildCard(
     borderRadius: kIsWeb ? 12 : 12.r,
     padding: EdgeInsets.all(kIsWeb ? 20 : 20.w),
     margin: EdgeInsets.zero,
@@ -288,7 +281,6 @@ class AppStrings {
   static const String unknownError = 'An unknown error occurred.';
 }
 
-
 class AppRoutes {
   static const String home = '/home';
   static const String auth = '/auth';
@@ -314,8 +306,7 @@ class SocialLoginUtils {
   static bool _facebookInitialized = false;
 
   static Future<void> initialize() async {
-    if (_isInitialized) return;
-    
+    if (_isInitialized) return;    
     try {
       await _initializeFacebook();
       await _initializeGoogle();
