@@ -145,8 +145,83 @@ class ApiService {
   Future<Map<String, dynamic>> getProfileData(String token) => 
       _get('/profile/me/', (data) => data, token: token);
 
+  Future<ProfileResponse> getProfile(String token) => 
+      _get('/profile/me/', ProfileResponse.fromJson, token: token);
+
+  Future<ProfileByIdResponse> getProfileById(int userId, String token) => 
+      _get('/profile/$userId/', ProfileByIdResponse.fromJson, token: token);
+
   Future<void> updateProfile(String token, Map<String, dynamic> data) => 
       _patch('/profile/me/', data, (data) => data, token: token);
+
+  Future<ProfileResponse> updateProfileFull(String token, ProfileUpdateRequest request) => 
+      _patch('/profile/me/', request, ProfileResponse.fromJson, token: token);
+
+  Future<List<Map<String, dynamic>>> getMusicPreferences(String token) async {
+    final response = await _dio.get('/profile/music-preferences/', 
+      options: Options(headers: {'Authorization': token}));
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteAvatar(String token) => 
+      _delete('/profile/me/avatar/', token: token);
+
+  Future<ProfileResponse> updateProfileWithFile(String token, {
+    String? avatarPath,
+    String? name,
+    String? location,
+    String? bio,
+    String? phone,
+    String? friendInfo,
+    List<int>? musicPreferencesIds,
+    String? avatarVisibility,
+    String? nameVisibility,
+    String? locationVisibility,
+    String? bioVisibility,
+    String? phoneVisibility,
+    String? friendInfoVisibility,
+    String? musicPreferencesVisibility,
+  }) async {
+    final formData = FormData();
+    
+    if (avatarPath != null) {
+      formData.files.add(MapEntry(
+        'avatar',
+        await MultipartFile.fromFile(avatarPath),
+      ));
+    }
+    
+    if (name != null) formData.fields.add(MapEntry('name', name));
+    if (location != null) formData.fields.add(MapEntry('location', location));
+    if (bio != null) formData.fields.add(MapEntry('bio', bio));
+    if (phone != null) formData.fields.add(MapEntry('phone', phone));
+    if (friendInfo != null) formData.fields.add(MapEntry('friend_info', friendInfo));
+    
+    if (musicPreferencesIds != null) {
+      for (int i = 0; i < musicPreferencesIds.length; i++) {
+        formData.fields.add(MapEntry('music_preferences_ids', musicPreferencesIds[i].toString()));
+      }
+    }
+    
+    if (avatarVisibility != null) formData.fields.add(MapEntry('avatar_visibility', avatarVisibility));
+    if (nameVisibility != null) formData.fields.add(MapEntry('name_visibility', nameVisibility));
+    if (locationVisibility != null) formData.fields.add(MapEntry('location_visibility', locationVisibility));
+    if (bioVisibility != null) formData.fields.add(MapEntry('bio_visibility', bioVisibility));
+    if (phoneVisibility != null) formData.fields.add(MapEntry('phone_visibility', phoneVisibility));
+    if (friendInfoVisibility != null) formData.fields.add(MapEntry('friend_info_visibility', friendInfoVisibility));
+    if (musicPreferencesVisibility != null) formData.fields.add(MapEntry('music_preferences_visibility', musicPreferencesVisibility));
+
+    final response = await _dio.put(
+      '/profile/me/',
+      data: formData,
+      options: Options(
+        headers: {'Authorization': token},
+        contentType: 'multipart/form-data',
+      ),
+    );
+    
+    return ProfileResponse.fromJson(response.data);
+  }
 
   Future<DeezerSearchResponse> searchDeezerTracks(String query) => 
       _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
@@ -162,28 +237,8 @@ class ApiService {
     }
   }
 
-  Future<List<Track>> searchTracks(String query, String token) async {
-    final response = await _dio.get('/tracks/search/', 
-      queryParameters: {'query': query},
-      options: Options(headers: {'Authorization': token})
-    );
-    return (response.data['tracks'] as List<dynamic>)
-        .map((t) => Track.fromJson(t as Map<String, dynamic>))
-        .toList();
-  }
-
   Future<Map<String, dynamic>> addTrackFromDeezer(String trackId, String token) => 
       _post('/tracks/add_from_deezer/$trackId/', {}, (data) => data, token: token);
-
-  Future<List<Map<String, dynamic>>> getMusicPreferences(String token) async {
-    final response = await _dio.get('/profile/music-preferences/',
-      options: Options(headers: {'Authorization': token})
-    );
-    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
-  }
-
-  Future<void> deleteAvatar(String token) => 
-      _delete('/profile/me/avatar/', token: token);
 
   Future<PlaylistsResponse> getSavedPlaylists(String token) => 
       _get('/playlists/saved_playlists/', PlaylistsResponse.fromJson, token: token);

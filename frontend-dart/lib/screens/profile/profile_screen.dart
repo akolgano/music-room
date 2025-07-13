@@ -17,18 +17,17 @@ import 'social_network_link_screen.dart';
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
   const ProfileScreen({Key? key, this.isEmbedded = false}) : super(key: key);
-
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends BaseScreen<ProfileScreen> {
+  List<Map<String, dynamic>> _musicPreferences = [];
+
   @override
   String get screenTitle => 'Profile';
-
   @override
   bool get showBackButton => !widget.isEmbedded;
-
   @override
   bool get showMiniPlayer => !widget.isEmbedded;
 
@@ -38,7 +37,20 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final profileProvider = getProvider<ProfileProvider>();
       profileProvider.loadProfile(auth.token);
+      _loadMusicPreferences();
     });
+  }
+
+  Future<void> _loadMusicPreferences() async {
+    try {
+      final profileProvider = getProvider<ProfileProvider>();
+      final preferences = await profileProvider.getMusicPreferences(auth.token!);
+      setState(() {
+        _musicPreferences = preferences;
+      });
+    } catch (e) {
+      print('Error loading music preferences: $e');
+    }
   }
 
   @override
@@ -46,21 +58,28 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, _) {
         if (profileProvider.isLoading) return buildLoadingState(message: 'Loading profile...');
-
         return RefreshIndicator(
           onRefresh: () => profileProvider.loadProfile(auth.token),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildProfileHeader(profileProvider), const SizedBox(height: 16),
-                _buildAccountInfoSection(profileProvider), const SizedBox(height: 16),
-                _buildPublicInfoSection(profileProvider), const SizedBox(height: 16),
-                _buildPrivateInfoSection(profileProvider), const SizedBox(height: 16),
-                _buildFriendInfoSection(profileProvider), const SizedBox(height: 16),
-                _buildMusicPreferencesSection(profileProvider), const SizedBox(height: 16),
-                _buildSocialAccountsSection(profileProvider), const SizedBox(height: 16), 
-                _buildSecuritySection(profileProvider), const SizedBox(height: 16), 
+                _buildProfileHeader(profileProvider), 
+                const SizedBox(height: 16),
+                _buildAccountInfoSection(profileProvider), 
+                const SizedBox(height: 16),
+                _buildPublicInfoSection(profileProvider), 
+                const SizedBox(height: 16),
+                _buildContactInfoSection(profileProvider), 
+                const SizedBox(height: 16),
+                _buildFriendInfoSection(profileProvider), 
+                const SizedBox(height: 16),
+                _buildMusicPreferencesSection(profileProvider), 
+                const SizedBox(height: 16),
+                _buildSocialAccountsSection(profileProvider), 
+                const SizedBox(height: 16), 
+                _buildSecuritySection(profileProvider), 
+                const SizedBox(height: 16), 
                 _buildAccountActionsSection(),
               ],
             ),
@@ -83,8 +102,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                   shape: BoxShape.circle,
                   gradient: profileProvider.avatarUrl?.isNotEmpty == true
                       ? null
-                      : LinearGradient(
-                          begin: Alignment.topLeft,
+                      : LinearGradient(begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [AppTheme.primary, AppTheme.primary.withOpacity(0.7)],
                         ),
@@ -146,13 +164,23 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            profileProvider.username ?? auth.displayName,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  profileProvider.name ?? profileProvider.username ?? auth.displayName,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildVisibilityIcon(profileProvider.avatarVisibility),
+            ],
           ),
           const SizedBox(height: 8),
           Container(
@@ -178,6 +206,299 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
   }
 
+  Widget _buildAccountInfoSection(ProfileProvider profileProvider) {
+    return AppWidgets.settingsSection(
+      title: 'Account Information',
+      items: [
+        _buildInfoItem(
+          icon: Icons.person,
+          title: 'Username',
+          value: profileProvider.username ?? 'Not set',
+          isEditable: false,
+        ),
+        _buildInfoItem(
+          icon: Icons.email,
+          title: 'Email',
+          value: profileProvider.userEmail ?? 'Not set',
+          isEditable: false,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPublicInfoSection(ProfileProvider profileProvider) {
+    return AppWidgets.settingsSection(
+      title: 'Public Information',
+      items: [
+        _buildInfoItemWithVisibility(
+          icon: Icons.person_outline,
+          title: 'Display Name',
+          value: profileProvider.name ?? 'Not set',
+          visibility: profileProvider.nameVisibility,
+          onEdit: () => _editName(profileProvider),
+          onVisibilityChanged: (visibility) => _updateNameVisibility(profileProvider, visibility),
+        ),
+        _buildInfoItemWithVisibility(
+          icon: Icons.location_on,
+          title: 'Location',
+          value: profileProvider.location ?? 'Not specified',
+          visibility: profileProvider.locationVisibility,
+          onEdit: () => _editLocation(profileProvider),
+          onVisibilityChanged: (visibility) => _updateLocationVisibility(profileProvider, visibility),
+        ),
+        _buildInfoItemWithVisibility(
+          icon: Icons.info,
+          title: 'Bio',
+          value: profileProvider.bio ?? 'No bio yet',
+          visibility: profileProvider.bioVisibility,
+          onEdit: () => _editBio(profileProvider),
+          onVisibilityChanged: (visibility) => _updateBioVisibility(profileProvider, visibility),
+          maxLines: 3,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContactInfoSection(ProfileProvider profileProvider) {
+    return AppWidgets.settingsSection(
+      title: 'Contact Information',
+      items: [
+        _buildInfoItemWithVisibility(
+          icon: Icons.phone,
+          title: 'Phone',
+          value: profileProvider.phone ?? 'Not set',
+          visibility: profileProvider.phoneVisibility,
+          onEdit: () => _editPhone(profileProvider),
+          onVisibilityChanged: (visibility) => _updatePhoneVisibility(profileProvider, visibility),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFriendInfoSection(ProfileProvider profileProvider) {
+    return AppWidgets.settingsSection(
+      title: 'Friend Information',
+      items: [
+        _buildInfoItemWithVisibility(
+          icon: Icons.people,
+          title: 'Friend Info',
+          value: profileProvider.friendInfo ?? 'No friend info',
+          visibility: profileProvider.friendInfoVisibility,
+          onEdit: () => _editFriendInfo(profileProvider),
+          onVisibilityChanged: (visibility) => _updateFriendInfoVisibility(profileProvider, visibility),
+          maxLines: 3,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMusicPreferencesSection(ProfileProvider profileProvider) {
+    return AppWidgets.settingsSection(
+      title: 'Music Preferences',
+      items: [
+        _buildInfoItemWithVisibility(
+          icon: Icons.music_note, 
+          title: 'Music Genres',
+          value: profileProvider.musicPreferences?.isNotEmpty == true
+              ? profileProvider.musicPreferences!.join(', ')
+              : 'No preferences set',
+          visibility: profileProvider.musicPreferencesVisibility,
+          onEdit: () => _editMusicPreferences(profileProvider),
+          onVisibilityChanged: (visibility) => _updateMusicPreferencesVisibility(profileProvider, visibility),
+          maxLines: 2,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialAccountsSection(ProfileProvider profileProvider) {
+    return AppWidgets.settingsSection(
+      title: 'Social Accounts',
+      items: [
+        if (profileProvider.socialType != null) ...[
+          _buildInfoItem(
+            icon: profileProvider.socialType == 'facebook' ? Icons.facebook : Icons.g_mobiledata,
+            title: '${profileProvider.socialType} Account',
+            value: profileProvider.socialName ?? profileProvider.socialEmail ?? 'Connected',
+            isEditable: false,
+          ),
+        ] else
+          AppWidgets.settingsItem(
+            icon: Icons.link,
+            title: 'Link Social Account',
+            subtitle: 'Connect Facebook or Google account',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SocialNetworkLinkScreen()),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSecuritySection(ProfileProvider profileProvider) {
+    if (!profileProvider.isPasswordUsable) {
+      return const SizedBox.shrink();
+    }
+    return AppWidgets.settingsSection(
+      title: 'Security',
+      items: [
+        AppWidgets.settingsItem(
+          icon: Icons.password,
+          title: 'Change Password',
+          subtitle: 'Change your account password',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const UserPasswordChangeScreen()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccountActionsSection() {
+    return AppWidgets.settingsSection(
+      title: 'Account',
+      items: [
+        AppWidgets.settingsItem(
+          icon: Icons.logout,
+          title: 'Sign Out',
+          subtitle: 'Sign out of your account',
+          onTap: _showSignOutDialog,
+          color: Colors.orange,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String title,
+    required String value,
+    VoidCallback? onEdit,
+    bool isEditable = true,
+    int maxLines = 1,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppTheme.primary),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        value,
+        style: const TextStyle(color: Colors.white70),
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: isEditable && onEdit != null
+          ? IconButton(
+              icon: const Icon(Icons.edit, color: AppTheme.primary, size: 20), 
+              onPressed: onEdit
+            ) 
+          : null,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    );
+  }
+
+  Widget _buildInfoItemWithVisibility({
+    required IconData icon,
+    required String title,
+    required String value,
+    required VisibilityLevel? visibility,
+    VoidCallback? onEdit,
+    Function(VisibilityLevel)? onVisibilityChanged,
+    int maxLines = 1,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppTheme.primary),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          _buildVisibilityIcon(visibility),
+        ],
+      ),
+      subtitle: Text(
+        value,
+        style: const TextStyle(color: Colors.white70),
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (onVisibilityChanged != null)
+            PopupMenuButton<VisibilityLevel>(
+              icon: const Icon(Icons.visibility, color: Colors.grey, size: 20),
+              onSelected: onVisibilityChanged,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: VisibilityLevel.public,
+                  child: Row(
+                    children: [
+                      Icon(Icons.public, color: Colors.green, size: 16),
+                      SizedBox(width: 8),
+                      Text('Public'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: VisibilityLevel.friends,
+                  child: Row(
+                    children: [
+                      Icon(Icons.people, color: Colors.blue, size: 16),
+                      SizedBox(width: 8),
+                      Text('Friends Only'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: VisibilityLevel.private,
+                  child: Row(
+                    children: [
+                      Icon(Icons.lock, color: Colors.orange, size: 16),
+                      SizedBox(width: 8),
+                      Text('Private'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          if (onEdit != null)
+            IconButton(
+              icon: const Icon(Icons.edit, color: AppTheme.primary, size: 20), 
+              onPressed: onEdit
+            ),
+        ],
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    );
+  }
+
+  Widget _buildVisibilityIcon(VisibilityLevel? visibility) {
+    switch (visibility) {
+      case VisibilityLevel.public:
+        return const Icon(Icons.public, color: Colors.green, size: 16);
+      case VisibilityLevel.friends:
+        return const Icon(Icons.people, color: Colors.blue, size: 16);
+      case VisibilityLevel.private:
+        return const Icon(Icons.lock, color: Colors.orange, size: 16);
+      default:
+        return const Icon(Icons.help_outline, color: Colors.grey, size: 16);
+    }
+  }
+
   Future<void> _editAvatar(ProfileProvider profileProvider) async {
     try {
       final ImageSource? source = await _showImageSourceDialog();
@@ -190,7 +511,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         maxHeight: 512, 
         imageQuality: 80
       );
-      
       if (image == null) return;
 
       Uint8List imageBytes;
@@ -264,255 +584,20 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
   }
 
-  Widget _buildAccountInfoSection(ProfileProvider profileProvider) {
-    return AppWidgets.settingsSection(
-      title: 'Account Information',
-      items: [
-        _buildInfoItem(
-          icon: Icons.person,
-          title: 'Username',
-          value: profileProvider.username ?? 'Not set',
-          isEditable: false,
-        ),
-        _buildInfoItem(
-          icon: Icons.email,
-          title: 'Email',
-          value: profileProvider.userEmail ?? 'Not set',
-          isEditable: false,
-        ),
-      ],
+  Future<void> _editName(ProfileProvider profileProvider) async {
+    final name = await AppWidgets.showTextInputDialog(
+      context,
+      title: 'Edit Display Name',
+      initialValue: profileProvider.name,
+      hintText: 'Enter your display name',
     );
-  }
-
-  Widget _buildPublicInfoSection(ProfileProvider profileProvider) {
-    return AppWidgets.settingsSection(
-      title: 'Public Information',
-      items: [
-        _buildInfoItem(
-          icon: Icons.person_outline,
-          title: 'Gender',
-          value: profileProvider.gender ?? 'Not specified',
-          onEdit: () => _editGender(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.location_on,
-          title: 'Location',
-          value: profileProvider.location ?? 'Not specified',
-          onEdit: () => _editLocation(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.info,
-          title: 'Bio',
-          value: profileProvider.bio ?? 'No bio yet',
-          onEdit: () => _editBio(profileProvider),
-          maxLines: 3,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPrivateInfoSection(ProfileProvider profileProvider) {
-    return AppWidgets.settingsSection(
-      title: 'Private Information',
-      items: [
-        _buildInfoItem(
-          icon: Icons.badge,
-          title: 'First Name',
-          value: profileProvider.firstName ?? 'Not set',
-          onEdit: () => _editFirstName(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.badge,
-          title: 'Last Name',
-          value: profileProvider.lastName ?? 'Not set',
-          onEdit: () => _editLastName(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.phone,
-          title: 'Phone',
-          value: profileProvider.phone ?? 'Not set',
-          onEdit: () => _editPhone(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.home,
-          title: 'Street Address',
-          value: profileProvider.street ?? 'Not set',
-          onEdit: () => _editStreet(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.public,
-          title: 'Country',
-          value: profileProvider.country ?? 'Not set',
-          onEdit: () => _editCountry(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.mail,
-          title: 'Postal Code',
-          value: profileProvider.postalCode ?? 'Not set',
-          onEdit: () => _editPostalCode(profileProvider),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFriendInfoSection(ProfileProvider profileProvider) {
-    return AppWidgets.settingsSection(
-      title: 'Friend Information',
-      items: [
-        _buildInfoItem(
-          icon: Icons.cake,
-          title: 'Date of Birth',
-          value: profileProvider.dob != null ? DateFormat('yyyy-MM-dd').format(profileProvider.dob!) : 'Not set',
-          onEdit: () => _editDateOfBirth(profileProvider),
-        ),
-        _buildInfoItem(
-          icon: Icons.interests,
-          title: 'Hobbies',
-          value: profileProvider.hobbies?.isNotEmpty == true
-              ? profileProvider.hobbies!.join(', ')
-              : 'No hobbies listed',
-          onEdit: () => _editHobbies(profileProvider),
-          maxLines: 2,
-        ),
-        _buildInfoItem(
-          icon: Icons.people,
-          title: 'Friend Info',
-          value: profileProvider.friendInfo ?? 'No friend info',
-          onEdit: () => _editFriendInfo(profileProvider),
-          maxLines: 3,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMusicPreferencesSection(ProfileProvider profileProvider) {
-    return AppWidgets.settingsSection(
-      title: 'Music Preferences',
-      items: [
-        _buildInfoItem(
-          icon: Icons.music_note, 
-          title: 'Music Genres',
-          value: profileProvider.musicPreferences?.isNotEmpty == true
-              ? profileProvider.musicPreferences!.join(', ')
-              : 'No preferences set',
-          onEdit: () => _editMusicPreferences(profileProvider),
-          maxLines: 2,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialAccountsSection(ProfileProvider profileProvider) {
-    return AppWidgets.settingsSection(
-      title: 'Social Accounts',
-      items: [
-        if (profileProvider.socialType != null) ...[
-          _buildInfoItem(
-            icon: profileProvider.socialType == 'facebook' ? Icons.facebook : Icons.g_mobiledata,
-            title: '${profileProvider.socialType} Account',
-            value: profileProvider.socialName ?? profileProvider.socialEmail ?? 'Connected',
-            isEditable: false,
-          ),
-        ] else
-          AppWidgets.settingsItem(
-            icon: Icons.link,
-            title: 'Link Social Account',
-            subtitle: 'Connect Facebook or Google account',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SocialNetworkLinkScreen()),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSecuritySection(ProfileProvider profileProvider) {
-    if (!profileProvider.isPasswordUsable) {
-      return const SizedBox.shrink();
-    }
-
-    return AppWidgets.settingsSection(
-      title: 'Security',
-      items: [
-        AppWidgets.settingsItem(
-          icon: Icons.password,
-          title: 'Change Password',
-          subtitle: 'Change your account password',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const UserPasswordChangeScreen()),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAccountActionsSection() {
-    return AppWidgets.settingsSection(
-      title: 'Account',
-      items: [
-        AppWidgets.settingsItem(
-          icon: Icons.logout,
-          title: 'Sign Out',
-          subtitle: 'Sign out of your account',
-          onTap: _showSignOutDialog,
-          color: Colors.orange,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoItem({
-    required IconData icon,
-    required String title,
-    required String value,
-    VoidCallback? onEdit,
-    bool isEditable = true,
-    int maxLines = 1,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: AppTheme.primary),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        value,
-        style: const TextStyle(color: Colors.white70),
-        maxLines: maxLines,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: isEditable && onEdit != null
-          ? IconButton(
-              icon: const Icon(Icons.edit, color: AppTheme.primary, size: 20), 
-              onPressed: onEdit
-            ) 
-          : null,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    );
-  }
-
-  Future<void> _editGender(ProfileProvider profileProvider) async {
-    final genders = ['male', 'female'];
-    final selectedIndex = await AppWidgets.showSelectionDialog<String>(
-      context: context,
-      title: 'Select Gender', 
-      items: genders,
-      itemTitle: (gender) => gender.substring(0, 1).toUpperCase() + gender.substring(1),
-    );
-
-    if (selectedIndex != null) {
+    if (name != null) {
       final success = await profileProvider.updateProfile(
-        auth.token, 
-        gender: genders[selectedIndex], 
-        location: profileProvider.location
+        auth.token,
+        name: name.trim(),
       );
       if (success) {
-        showSuccess('Gender updated successfully');
+        showSuccess('Display name updated successfully');
         profileProvider.loadProfile(auth.token);
       }
     }
@@ -525,11 +610,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       initialValue: profileProvider.location,
       hintText: 'Enter your location',
     );
-
     if (location != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
-        gender: profileProvider.gender,
         location: location.trim(),
       );
       if (success) {
@@ -547,7 +630,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       hintText: 'Tell us about yourself...',
       maxLines: 3,
     );
-
     if (bio != null) {
       final success = await profileProvider.updateProfile(
         auth.token, 
@@ -555,46 +637,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       );
       if (success) {
         showSuccess('Bio updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
-
-  Future<void> _editFirstName(ProfileProvider profileProvider) async {
-    final firstName = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit First Name',
-      initialValue: profileProvider.firstName,
-      hintText: 'Enter your first name',
-    );
-
-    if (firstName != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        firstName: firstName.trim(),
-      );
-      if (success) {
-        showSuccess('First name updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
-
-  Future<void> _editLastName(ProfileProvider profileProvider) async {
-    final lastName = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit Last Name',
-      initialValue: profileProvider.lastName,
-      hintText: 'Enter your last name',
-    );
-
-    if (lastName != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        lastName: lastName.trim(),
-      );
-      if (success) {
-        showSuccess('Last name updated successfully');
         profileProvider.loadProfile(auth.token);
       }
     }
@@ -608,7 +650,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       hintText: 'Enter your phone number',
       validator: (value) => AppValidators.phoneNumber(value, false),
     );
-
     if (phone != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -616,134 +657,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       );
       if (success) {
         showSuccess('Phone number updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
-
-  Future<void> _editStreet(ProfileProvider profileProvider) async {
-    final street = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit Street Address',
-      initialValue: profileProvider.street,
-      hintText: 'Enter your street address',
-    );
-
-    if (street != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        street: street.trim(),
-      );
-      if (success) {
-        showSuccess('Street address updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
-
-  Future<void> _editCountry(ProfileProvider profileProvider) async {
-    final countries = [
-      'Singapore',
-      'Malaysia', 
-      'Indonesia',
-      'Thailand',
-      'United States',
-      'Canada',
-      'United Kingdom',
-      'Australia'
-    ];
-
-    final selectedIndex = await AppWidgets.showSelectionDialog<String>(
-      context: context,
-      title: 'Select Country',
-      items: countries,
-      itemTitle: (country) => country,
-    );
-
-    if (selectedIndex != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        country: countries[selectedIndex],
-      );
-      if (success) {
-        showSuccess('Country updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
-
-  Future<void> _editPostalCode(ProfileProvider profileProvider) async {
-    final postalCode = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit Postal Code',
-      initialValue: profileProvider.postalCode,
-      hintText: 'Enter your postal code',
-    );
-
-    if (postalCode != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        postalCode: postalCode.trim(),
-      );
-      if (success) {
-        showSuccess('Postal code updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
-
-  Future<void> _editDateOfBirth(ProfileProvider profileProvider) async {
-    final currentDate = profileProvider.dob ?? DateTime.now().subtract(const Duration(days: 6570)); 
-
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: currentDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppTheme.primary,
-              surface: AppTheme.surface,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (selectedDate != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        dob: DateFormat('yyyy-MM-dd').format(selectedDate),
-      );
-      if (success) {
-        showSuccess('Date of birth updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
-
-  Future<void> _editHobbies(ProfileProvider profileProvider) async {
-    final availableHobbies = ['Sport', 'Movie', 'Music', 'Travel'];
-    final currentHobbies = profileProvider.hobbies ?? [];
-
-    final selectedHobbies = await showDialog<List<String>>(
-      context: context,
-      builder: (context) => _HobbySelectionDialog(
-        availableHobbies: availableHobbies,
-        selectedHobbies: currentHobbies,
-      ),
-    );
-
-    if (selectedHobbies != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        hobbies: selectedHobbies,
-      );
-      if (success) {
-        showSuccess('Hobbies updated successfully');
         profileProvider.loadProfile(auth.token);
       }
     }
@@ -757,7 +670,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       hintText: 'Share something about yourself with friends...',
       maxLines: 3,
     );
-
     if (friendInfo != null) {
       final success = await profileProvider.updateProfile(
         auth.token,
@@ -771,26 +683,95 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editMusicPreferences(ProfileProvider profileProvider) async {
-    final availableGenres = ['Classical', 'Jazz', 'Pop', 'Rock', 'Rap', 'R&B', 'Techno'];
-    final currentPreferences = profileProvider.musicPreferences ?? [];
+    if (_musicPreferences.isEmpty) {
+      showError('Music preferences not loaded');
+      return;
+    }
 
-    final selectedPreferences = await showDialog<List<String>>(
+    final currentPreferenceIds = profileProvider.musicPreferenceIds ?? [];
+    final selectedIds = await showDialog<List<int>>(
       context: context,
       builder: (context) => _MusicPreferenceDialog(
-        availableGenres: availableGenres,
-        selectedGenres: currentPreferences,
+        availablePreferences: _musicPreferences,
+        selectedIds: currentPreferenceIds,
       ),
     );
 
-    if (selectedPreferences != null) {
+    if (selectedIds != null) {
       final success = await profileProvider.updateProfile(
         auth.token, 
-        musicPreferences: selectedPreferences
+        musicPreferencesIds: selectedIds
       );
       if (success) {
         showSuccess('Music preferences updated successfully');
         profileProvider.loadProfile(auth.token);
       }
+    }
+  }
+
+  Future<void> _updateNameVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
+    final success = await profileProvider.updateVisibility(
+      auth.token,
+      nameVisibility: visibility,
+    );
+    if (success) {
+      showSuccess('Name visibility updated');
+      profileProvider.loadProfile(auth.token);
+    }
+  }
+
+  Future<void> _updateLocationVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
+    final success = await profileProvider.updateVisibility(
+      auth.token,
+      locationVisibility: visibility,
+    );
+    if (success) {
+      showSuccess('Location visibility updated');
+      profileProvider.loadProfile(auth.token);
+    }
+  }
+
+  Future<void> _updateBioVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
+    final success = await profileProvider.updateVisibility(
+      auth.token,
+      bioVisibility: visibility,
+    );
+    if (success) {
+      showSuccess('Bio visibility updated');
+      profileProvider.loadProfile(auth.token);
+    }
+  }
+
+  Future<void> _updatePhoneVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
+    final success = await profileProvider.updateVisibility(
+      auth.token,
+      phoneVisibility: visibility,
+    );
+    if (success) {
+      showSuccess('Phone visibility updated');
+      profileProvider.loadProfile(auth.token);
+    }
+  }
+
+  Future<void> _updateFriendInfoVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
+    final success = await profileProvider.updateVisibility(
+      auth.token,
+      friendInfoVisibility: visibility,
+    );
+    if (success) {
+      showSuccess('Friend info visibility updated');
+      profileProvider.loadProfile(auth.token);
+    }
+  }
+
+  Future<void> _updateMusicPreferencesVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
+    final success = await profileProvider.updateVisibility(
+      auth.token,
+      musicPreferencesVisibility: visibility,
+    );
+    if (success) {
+      showSuccess('Music preferences visibility updated');
+      profileProvider.loadProfile(auth.token);
     }
   }
 
@@ -806,83 +787,13 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 }
 
-class _HobbySelectionDialog extends StatefulWidget {
-  final List<String> availableHobbies;
-  final List<String> selectedHobbies;
-
-  const _HobbySelectionDialog({
-    required this.availableHobbies,
-    required this.selectedHobbies,
-  });
-
-  @override
-  State<_HobbySelectionDialog> createState() => _HobbySelectionDialogState();
-}
-
-class _HobbySelectionDialogState extends State<_HobbySelectionDialog> {
-  late List<String> _selectedHobbies;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedHobbies = List.from(widget.selectedHobbies);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppTheme.surface,
-      title: const Text('Select Hobbies', style: TextStyle(color: Colors.white)),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: widget.availableHobbies.length,
-          itemBuilder: (context, index) {
-            final hobby = widget.availableHobbies[index];
-            final isSelected = _selectedHobbies.contains(hobby);
-            return CheckboxListTile(
-              value: isSelected,
-              onChanged: (value) {
-                setState(() {
-                  if (value == true) {
-                    _selectedHobbies.add(hobby);
-                  } else {
-                    _selectedHobbies.remove(hobby);
-                  }
-                });
-              },
-              title: Text(hobby, style: const TextStyle(color: Colors.white)),
-              activeColor: AppTheme.primary,
-            );
-          },
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, _selectedHobbies),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primary, 
-            foregroundColor: Colors.black
-          ),
-          child: const Text('Save'),
-        ),
-      ],
-    );
-  }
-}
-
 class _MusicPreferenceDialog extends StatefulWidget {
-  final List<String> availableGenres;
-  final List<String> selectedGenres;
+  final List<Map<String, dynamic>> availablePreferences;
+  final List<int> selectedIds;
 
   const _MusicPreferenceDialog({
-    required this.availableGenres, 
-    required this.selectedGenres
+    required this.availablePreferences, 
+    required this.selectedIds
   });
 
   @override
@@ -890,12 +801,12 @@ class _MusicPreferenceDialog extends StatefulWidget {
 }
 
 class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
-  late List<String> _selectedGenres;
+  late List<int> _selectedIds;
 
   @override
   void initState() {
     super.initState();
-    _selectedGenres = List.from(widget.selectedGenres);
+    _selectedIds = List.from(widget.selectedIds);
   }
 
   @override
@@ -907,19 +818,22 @@ class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
         width: double.maxFinite,
         child: ListView.builder(
           shrinkWrap: true,
-          itemCount: widget.availableGenres.length,
+          itemCount: widget.availablePreferences.length,
           itemBuilder: (context, index) {
-            final genre = widget.availableGenres[index];
-            final isSelected = _selectedGenres.contains(genre);
+            final preference = widget.availablePreferences[index];
+            final id = preference['id'] as int;
+            final name = preference['name'] as String;
+            final isSelected = _selectedIds.contains(id);
+
             return CheckboxListTile(
               value: isSelected,
               onChanged: (value) {
                 setState(() {
-                  if (value == true) _selectedGenres.add(genre);
-                  else _selectedGenres.remove(genre);
+                  if (value == true) _selectedIds.add(id);
+                  else _selectedIds.remove(id);
                 });
               },
-              title: Text(genre, style: const TextStyle(color: Colors.white)),
+              title: Text(name, style: const TextStyle(color: Colors.white)),
               activeColor: AppTheme.primary,
             );
           },
@@ -931,7 +845,7 @@ class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
           child: const Text('Cancel', style: TextStyle(color: Colors.grey))
         ),
         ElevatedButton(
-          onPressed: () => Navigator.pop(context, _selectedGenres),
+          onPressed: () => Navigator.pop(context, _selectedIds),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primary, 
             foregroundColor: Colors.black

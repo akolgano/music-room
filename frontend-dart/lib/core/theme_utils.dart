@@ -86,12 +86,6 @@ class ThemeUtils {
     );
   }
 
-  static void animateThemeChange(DynamicThemeProvider themeProvider, String? imageUrl) {
-    if (imageUrl != null) {
-      themeProvider.extractAndApplyDominantColor(imageUrl);
-    }
-  }
-
   static LinearGradient createThemeGradient(BuildContext context, {bool reverse = false}) {
     final background = getBackground(context);
     return LinearGradient(
@@ -118,28 +112,18 @@ class ThemeUtils {
       elevation: elevation ?? 4,
       margin: margin ?? const EdgeInsets.all(16),
       shadowColor: AppTheme.primary.withOpacity(0.2), 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius ?? 16)
-      ),
-      child: Padding(
-        padding: padding ?? const EdgeInsets.all(24), 
-        child: child
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? 16)),
+      child: Padding(padding: padding ?? const EdgeInsets.all(24), child: child),
     );
   }
 
-  static Widget buildThemedHeaderCard({
-    required BuildContext context,
-    required Widget child
-  }) => buildThemedCard(
+  static Widget buildThemedHeaderCard({required BuildContext context, required Widget child}) => buildThemedCard(
     context: context,
     child: child, 
     elevation: 8
   );
 
-  static InputDecoration getThemedInputDecoration(
-    BuildContext context, {
-    required String labelText, 
+  static InputDecoration getThemedInputDecoration(BuildContext context, {required String labelText, 
     String? hintText, 
     IconData? prefixIcon
   }) {
@@ -150,8 +134,29 @@ class ThemeUtils {
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppTheme.primary) : null, 
       filled: true,
       fillColor: getSurface(context),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppTheme.primary, width: 2)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), 
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8), 
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8), 
+        borderSide: BorderSide(color: AppTheme.primary, width: 2)
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: getError(context), width: 2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: getError(context), width: 2),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
+      ),
       labelStyle: TextStyle(fontSize: 16, color: getOnSurface(context).withOpacity(0.7)),
       hintStyle: TextStyle(fontSize: 14, color: getOnSurface(context).withOpacity(0.5)),
     );
