@@ -26,7 +26,7 @@ class ThemeUtils {
   );
 
   static TextStyle getCaptionStyle(BuildContext context) => TextStyle(
-    color: getOnSurface(context).withOpacity(0.7),
+    color: getOnSurface(context).withValues(alpha: 0.7),
     fontSize: 14,
   );
 
@@ -35,7 +35,7 @@ class ThemeUtils {
     borderRadius: BorderRadius.circular(borderRadius ?? 12),
     boxShadow: [
       BoxShadow(
-        color: AppTheme.primary.withOpacity(0.1), 
+        color: AppTheme.primary.withValues(alpha: 0.1), 
         blurRadius: 8,
         offset: const Offset(0, 2),
       ),
@@ -46,7 +46,7 @@ class ThemeUtils {
     backgroundColor: AppTheme.primary, 
     foregroundColor: getOnPrimary(context),
     elevation: 4,
-    shadowColor: AppTheme.primary.withOpacity(0.3), 
+    shadowColor: AppTheme.primary.withValues(alpha: 0.3), 
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
   );
 
@@ -92,8 +92,8 @@ class ThemeUtils {
       begin: reverse ? Alignment.bottomCenter : Alignment.topCenter,
       end: reverse ? Alignment.topCenter : Alignment.bottomCenter,
       colors: [
-        AppTheme.primary.withOpacity(0.8), 
-        AppTheme.primary.withOpacity(0.4), 
+        AppTheme.primary.withValues(alpha: 0.8), 
+        AppTheme.primary.withValues(alpha: 0.4), 
         background,
       ],
     );
@@ -111,7 +111,7 @@ class ThemeUtils {
       color: getSurface(context),
       elevation: elevation ?? 4,
       margin: margin ?? const EdgeInsets.all(16),
-      shadowColor: AppTheme.primary.withOpacity(0.2), 
+      shadowColor: AppTheme.primary.withValues(alpha: 0.2), 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? 16)),
       child: Padding(padding: padding ?? const EdgeInsets.all(24), child: child),
     );
@@ -135,11 +135,11 @@ class ThemeUtils {
       filled: true,
       fillColor: getSurface(context),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), 
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8), 
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8), 
@@ -155,10 +155,10 @@ class ThemeUtils {
       ),
       disabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
       ),
-      labelStyle: TextStyle(fontSize: 16, color: getOnSurface(context).withOpacity(0.7)),
-      hintStyle: TextStyle(fontSize: 14, color: getOnSurface(context).withOpacity(0.5)),
+      labelStyle: TextStyle(fontSize: 16, color: getOnSurface(context).withValues(alpha: 0.7)),
+      hintStyle: TextStyle(fontSize: 14, color: getOnSurface(context).withValues(alpha: 0.5)),
     );
   }
 }

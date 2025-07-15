@@ -1,5 +1,7 @@
 // lib/providers/voting_provider.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/voting_service.dart';
@@ -46,7 +48,9 @@ class VotingProvider extends BaseProvider {
   }
 
   void updateTrackPoints(int index, int points) {
-    print('Updating track $index points to $points');
+    if (kDebugMode) {
+      developer.log('Updating track $index points to $points', name: 'VotingProvider');
+    }
     _trackPoints[index] = points;
     final trackKey = 'track_$index';
     _trackVotes[trackKey] = VoteStats(
@@ -60,7 +64,9 @@ class VotingProvider extends BaseProvider {
   }
 
   void initializeTrackPoints(List<PlaylistTrack> tracks) {
-    print('Initializing track points for ${tracks.length} tracks');
+    if (kDebugMode) {
+      developer.log('Initializing track points for ${tracks.length} tracks', name: 'VotingProvider');
+    }
     _trackPoints.clear();
     _trackVotes.clear();
     for (int i = 0; i < tracks.length; i++) {
@@ -75,13 +81,17 @@ class VotingProvider extends BaseProvider {
         userVoteValue: _userVotesByIndex[i],
         voteScore: points.toDouble(),
       );
-      print('Track $i (${tracks[i].name}): ${points} points');
+      if (kDebugMode) {
+        developer.log('Track $i (${tracks[i].name}): ${points} points', name: 'VotingProvider');
+      }
     }
     notifyListeners();
   }
 
   void setVotingPermission(bool canVote) {
-    print('Setting voting permission to: $canVote');
+    if (kDebugMode) {
+      developer.log('Setting voting permission to: $canVote', name: 'VotingProvider');
+    }
     _canVote = canVote;
     notifyListeners();
   }
@@ -99,7 +109,9 @@ class VotingProvider extends BaseProvider {
       setError('You have already voted for this track');
       return false;
     }
-    print('Voting for track at index $trackIndex');
+    if (kDebugMode) {
+      developer.log('Voting for track at index $trackIndex', name: 'VotingProvider');
+    }
     return await executeBool(
       () async {
         _userVotesByIndex[trackIndex] = 1;
@@ -115,9 +127,13 @@ class VotingProvider extends BaseProvider {
           if (response.playlist.isNotEmpty) {
             _updateVotingDataFromPlaylist(response.playlist);
           }
-          print('Vote successful for track $trackIndex, new points: $newPoints');
+          if (kDebugMode) {
+            developer.log('Vote successful for track $trackIndex, new points: $newPoints', name: 'VotingProvider');
+          }
         } catch (e) {
-          print('Vote failed, reverting: $e');
+          if (kDebugMode) {
+            developer.log('Vote failed, reverting: $e', name: 'VotingProvider');
+          }
           _userVotesByIndex.remove(trackIndex);
           updateTrackPoints(trackIndex, currentPoints);
           rethrow;
@@ -149,7 +165,9 @@ class VotingProvider extends BaseProvider {
   }
 
   void _updateVotingDataFromPlaylist(List<PlaylistInfoWithVotes> playlistData) {
-    print('Updating voting data from ${playlistData.length} playlist(s)');
+    if (kDebugMode) {
+      developer.log('Updating voting data from ${playlistData.length} playlist(s)', name: 'VotingProvider');
+    }
     try {
       _trackVotes.clear();
       for (int i = 0; i < playlistData.length; i++) {
@@ -170,7 +188,9 @@ class VotingProvider extends BaseProvider {
               userVoteValue: userVoteValue,
               voteScore: points.toDouble(),
             );
-            print('Updated track $j: $points points, voted: $userHasVoted');
+            if (kDebugMode) {
+              developer.log('Updated track $j: $points points, voted: $userHasVoted', name: 'VotingProvider');
+            }
           } else {
             _trackVotes[trackKey] = VoteStats(
               totalVotes: 0,
@@ -185,12 +205,16 @@ class VotingProvider extends BaseProvider {
       }
       notifyListeners();
     } catch (e) {
-      print('Error updating voting data: $e');
+      if (kDebugMode) {
+        developer.log('Error updating voting data: $e', name: 'VotingProvider');
+      }
     }
   }
 
   void clearVotingData() {
-    print('Clearing all voting data');
+    if (kDebugMode) {
+      developer.log('Clearing all voting data', name: 'VotingProvider');
+    }
     _trackVotes.clear();
     _userVotesByIndex.clear();
     _trackPoints.clear();
@@ -202,9 +226,13 @@ class VotingProvider extends BaseProvider {
   }
 
   void setUserVote(int trackIndex, int voteValue) {
-    print('Setting user vote for track $trackIndex: $voteValue');
+    if (kDebugMode) {
+      developer.log('Setting user vote for track $trackIndex: $voteValue', name: 'VotingProvider');
+    }
     if (voteValue <= 0) {
-      print('Invalid vote value: $voteValue');
+      if (kDebugMode) {
+        developer.log('Invalid vote value: $voteValue', name: 'VotingProvider');
+      }
       return;
     }
     _userVotesByIndex[trackIndex] = voteValue;
@@ -236,11 +264,15 @@ class VotingProvider extends BaseProvider {
   }
 
   void refreshVotingData(List<PlaylistTrack> tracks) {
-    print('Refreshing voting data for ${tracks.length} tracks');
+    if (kDebugMode) {
+      developer.log('Refreshing voting data for ${tracks.length} tracks', name: 'VotingProvider');
+    }
     for (int i = 0; i < tracks.length; i++) {
       final points = tracks[i].points;
       if (_trackPoints[i] != points) {
-        print('Track $i points changed from ${_trackPoints[i]} to $points');
+        if (kDebugMode) {
+          developer.log('Track $i points changed from ${_trackPoints[i]} to $points', name: 'VotingProvider');
+        }
         updateTrackPoints(i, points);
       }
     }

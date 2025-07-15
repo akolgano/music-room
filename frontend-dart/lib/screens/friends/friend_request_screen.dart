@@ -8,7 +8,7 @@ import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 
 class FriendRequestScreen extends StatefulWidget {
-  const FriendRequestScreen({Key? key}) : super(key: key);
+  const FriendRequestScreen({super.key});
 
   @override
   State<FriendRequestScreen> createState() => _FriendRequestScreenState();
@@ -175,7 +175,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(status).withOpacity(0.2),
+                  color: _getStatusColor(status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: _getStatusColor(status)),
                 ),
@@ -251,7 +251,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _getStatusColor(status).withOpacity(0.2),
+                color: _getStatusColor(status).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: _getStatusColor(status)),
               ),

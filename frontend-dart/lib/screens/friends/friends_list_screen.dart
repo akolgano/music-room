@@ -7,7 +7,7 @@ import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 
 class FriendsListScreen extends StatefulWidget {
-  const FriendsListScreen({Key? key}) : super(key: key);
+  const FriendsListScreen({super.key});
 
   @override
   State<FriendsListScreen> createState() => _FriendsListScreenState();

@@ -1,4 +1,6 @@
 // lib/services/auth_service.dart
+import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../models/models.dart';
@@ -24,9 +26,11 @@ class AuthService {
     try {
       _currentToken = _storage.get<String>('auth_token');
       final userData = _storage.getMap('current_user');
-      if (userData != null) _currentUser = User.fromJson(userData);
+      if (userData != null) { _currentUser = User.fromJson(userData); }
     } catch (e) {
-      print('Error loading stored auth: $e');
+      if (kDebugMode) {
+        developer.log('Error loading stored auth: $e', name: 'AuthService');
+      }
       await _clearAuth();
     }
   }
@@ -44,7 +48,9 @@ class AuthService {
         final request = LogoutRequest(username: _currentUser!.username);
         await _api.logout('Token $_currentToken', request);
       } catch (e) {
-        print('Error during logout API call: $e');
+        if (kDebugMode) {
+          developer.log('Error during logout API call: $e', name: 'AuthService');
+        }
       }
     }
     await _clearAuth();

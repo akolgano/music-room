@@ -6,7 +6,7 @@ import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 
 class AddFriendScreen extends StatefulWidget {
-  const AddFriendScreen({Key? key}) : super(key: key);
+  const AddFriendScreen({super.key});
 
   @override
   State<AddFriendScreen> createState() => _AddFriendScreenState();

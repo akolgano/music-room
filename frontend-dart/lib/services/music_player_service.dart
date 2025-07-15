@@ -1,5 +1,7 @@
 // lib/services/music_player_service.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/models.dart';
 import '../providers/dynamic_theme_provider.dart';
@@ -71,9 +73,13 @@ class MusicPlayerService with ChangeNotifier {
       _currentIndex = startIndex.clamp(0, _playlist.length - 1);
       
       await _playCurrentTrack();
-      print('Playlist set with ${_playlist.length} tracks, starting at index $_currentIndex');
+      if (kDebugMode) {
+        developer.log('Playlist set with ${_playlist.length} tracks, starting at index $_currentIndex', name: 'MusicPlayerService');
+      }
     } catch (e) {
-      print('Error setting playlist: $e');
+      if (kDebugMode) {
+        developer.log('Error setting playlist: $e', name: 'MusicPlayerService');
+      }
       rethrow;
     }
   }
@@ -92,10 +98,14 @@ class MusicPlayerService with ChangeNotifier {
         themeProvider.extractAndApplyDominantColor(track.imageUrl);
       }
       
-      print('Successfully started playing: ${track.name}');
+      if (kDebugMode) {
+        developer.log('Successfully started playing: ${track.name}', name: 'MusicPlayerService');
+      }
       notifyListeners();
     } catch (e) {
-      print('Error playing track "${track.name}": $e');
+      if (kDebugMode) {
+        developer.log('Error playing track "${track.name}": $e', name: 'MusicPlayerService');
+      }
       _currentTrack = null;
       _isPlaying = false;
       _position = Duration.zero;
@@ -129,7 +139,9 @@ class MusicPlayerService with ChangeNotifier {
     
     _currentIndex++;
     await _playCurrentTrack();
-    print('Playing next track: ${_currentTrack?.name}');
+    if (kDebugMode) {
+      developer.log('Playing next track: ${_currentTrack?.name}', name: 'MusicPlayerService');
+    }
   }
 
   Future<void> playPrevious() async {
@@ -143,7 +155,9 @@ class MusicPlayerService with ChangeNotifier {
     
     _currentIndex--;
     await _playCurrentTrack();
-    print('Playing previous track: ${_currentTrack?.name}');
+    if (kDebugMode) {
+      developer.log('Playing previous track: ${_currentTrack?.name}', name: 'MusicPlayerService');
+    }
   }
 
   Future<void> playTrackAtIndex(int index) async {
@@ -151,7 +165,9 @@ class MusicPlayerService with ChangeNotifier {
     
     _currentIndex = index;
     await _playCurrentTrack();
-    print('Playing track at index $index: ${_currentTrack?.name}');
+    if (kDebugMode) {
+      developer.log('Playing track at index $index: ${_currentTrack?.name}', name: 'MusicPlayerService');
+    }
   }
 
   void _onTrackCompleted() {
@@ -165,20 +181,26 @@ class MusicPlayerService with ChangeNotifier {
   void toggleShuffle() {
     _isShuffleMode = !_isShuffleMode;
     notifyListeners();
-    print('Shuffle mode: $_isShuffleMode');
+    if (kDebugMode) {
+      developer.log('Shuffle mode: $_isShuffleMode', name: 'MusicPlayerService');
+    }
   }
 
   void toggleRepeat() {
     _isRepeatMode = !_isRepeatMode;
     notifyListeners();
-    print('Repeat mode: $_isRepeatMode');
+    if (kDebugMode) {
+      developer.log('Repeat mode: $_isRepeatMode', name: 'MusicPlayerService');
+    }
   }
 
   Future<void> play() async {
     try {
       await _audioPlayer.play();
     } catch (e) {
-      print('Error resuming playback: $e');
+      if (kDebugMode) {
+        developer.log('Error resuming playback: $e', name: 'MusicPlayerService');
+      }
       rethrow;
     }
   }
@@ -187,7 +209,9 @@ class MusicPlayerService with ChangeNotifier {
     try {
       await _audioPlayer.pause();
     } catch (e) {
-      print('Error pausing playback: $e');
+      if (kDebugMode) {
+        developer.log('Error pausing playback: $e', name: 'MusicPlayerService');
+      }
       rethrow;
     }
   }
@@ -200,17 +224,24 @@ class MusicPlayerService with ChangeNotifier {
       _duration = Duration.zero;
       notifyListeners();
     } catch (e) {
-      print('Error stopping playback: $e');
+      if (kDebugMode) {
+        developer.log('Error stopping playback: $e', name: 'MusicPlayerService');
+      }
       rethrow;
     }
   }
 
   Future<void> togglePlay() async {
     try {
-      if (_isPlaying) await pause();
-      else await play();
+      if (_isPlaying) {
+        await pause();
+      } else {
+        await play();
+      }
     } catch (e) {
-      print('Error toggling playback: $e');
+      if (kDebugMode) {
+        developer.log('Error toggling playback: $e', name: 'MusicPlayerService');
+      }
       rethrow;
     }
   }
@@ -219,7 +250,9 @@ class MusicPlayerService with ChangeNotifier {
     try {
       await _audioPlayer.seek(position);
     } catch (e) {
-      print('Error seeking to position: $e');
+      if (kDebugMode) {
+        developer.log('Error seeking to position: $e', name: 'MusicPlayerService');
+      }
       rethrow;
     }
   }
@@ -229,7 +262,9 @@ class MusicPlayerService with ChangeNotifier {
     _currentIndex = -1;
     _playlistId = null;
     notifyListeners();
-    print('Playlist cleared');
+    if (kDebugMode) {
+      developer.log('Playlist cleared', name: 'MusicPlayerService');
+    }
   }
 
   @override

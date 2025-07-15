@@ -1,5 +1,7 @@
 // lib/widgets/voting_widgets.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../core/core.dart';
 import '../models/voting_models.dart';
@@ -14,19 +16,19 @@ class VoteButton extends StatelessWidget {
   final double size;
 
   const VoteButton({
-    Key? key, 
+    super.key, 
     required this.voteType, 
     required this.isSelected,
     this.onPressed,
     this.isEnabled = true,
     this.size = 24,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final color = isSelected 
         ? (voteType == VoteType.upvote ? Colors.green : Colors.grey)
-        : (isEnabled ? Colors.grey : Colors.grey.withOpacity(0.5));
+        : (isEnabled ? Colors.grey : Colors.grey.withValues(alpha: 0.5));
     
     final icon = voteType == VoteType.upvote 
         ? (isSelected ? Icons.thumb_up : Icons.thumb_up_outlined)
@@ -50,7 +52,7 @@ class VoteCounter extends StatelessWidget {
   final bool showDetailed;
   final double fontSize;
 
-  const VoteCounter({Key? key, required this.stats, this.showDetailed = false, this.fontSize = 12}) : super(key: key);
+  const VoteCounter({super.key, required this.stats, this.showDetailed = false, this.fontSize = 12});
 
   @override
   Widget build(BuildContext context) {
@@ -88,9 +90,9 @@ class VoteCounter extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: stats.scoreColor.withOpacity(0.1),
+        color: stats.scoreColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: stats.scoreColor.withOpacity(0.3)),
+        border: Border.all(color: stats.scoreColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -124,14 +126,14 @@ class TrackVotingControls extends StatelessWidget {
   final VoidCallback? onVoteSubmitted;
 
   const TrackVotingControls({
-    Key? key,
+    super.key,
     required this.playlistId,
     required this.trackId,
     this.trackIndex,
     this.stats,
     this.isCompact = false,
     this.onVoteSubmitted,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +189,7 @@ class TrackVotingControls extends StatelessWidget {
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth > 0 ? constraints.maxWidth : 80.0;
         
-        return Container(
+        return SizedBox(
           width: maxWidth,
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -216,9 +218,9 @@ class TrackVotingControls extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
-                    color: _getPointsColor(currentPoints).withOpacity(0.2),
+                    color: _getPointsColor(currentPoints).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: _getPointsColor(currentPoints).withOpacity(0.5)),
+                    border: Border.all(color: _getPointsColor(currentPoints).withValues(alpha: 0.5)),
                   ),
                   child: Text(
                     '+$currentPoints', 
@@ -255,7 +257,7 @@ class TrackVotingControls extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -263,9 +265,9 @@ class TrackVotingControls extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: _getPointsColor(currentPoints).withOpacity(0.2),
+              color: _getPointsColor(currentPoints).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _getPointsColor(currentPoints).withOpacity(0.3)),
+              border: Border.all(color: _getPointsColor(currentPoints).withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -345,7 +347,9 @@ class TrackVotingControls extends StatelessWidget {
       votingProvider.setUserVote(trackIndex, voteValue);
       final success = await votingProvider.upvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
       if (success && onVoteSubmitted != null) onVoteSubmitted!();
-      if (!success) print('Vote failed, should revert UI state');
+      if (!success && kDebugMode) {
+        developer.log('Vote failed, should revert UI state', name: 'VotingWidgets');
+      }
     }
   }
 }
@@ -354,9 +358,9 @@ class PlaylistVotingBanner extends StatelessWidget {
   final String playlistId;
 
   const PlaylistVotingBanner({
-    Key? key,
+    super.key,
     required this.playlistId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -366,9 +370,9 @@ class PlaylistVotingBanner extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
+            color: Colors.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -396,9 +400,9 @@ class VotingStatsCard extends StatelessWidget {
   final Map<String, VoteStats> trackVotes;
 
   const VotingStatsCard({
-    Key? key,
+    super.key,
     required this.trackVotes,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -420,7 +424,7 @@ class VotingStatsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

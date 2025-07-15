@@ -14,7 +14,7 @@ import '../base_screen.dart';
 class PlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
 
-  const PlaylistEditorScreen({Key? key, this.playlistId}) : super(key: key);
+  const PlaylistEditorScreen({super.key, this.playlistId});
 
   @override
   State<PlaylistEditorScreen> createState() => _PlaylistEditorScreenState();

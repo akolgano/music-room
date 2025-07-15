@@ -7,7 +7,7 @@ import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 
 class SignupWithOtpScreen extends StatefulWidget {
-  const SignupWithOtpScreen({Key? key}) : super(key: key);
+  const SignupWithOtpScreen({super.key});
 
   @override
   State<SignupWithOtpScreen> createState() => _SignupWithOtpScreenState();

@@ -1,5 +1,7 @@
 // lib/services/api_service.dart
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/models.dart';
@@ -14,8 +16,11 @@ class ApiService {
     final dio = Dio();
     String baseUrl;
     final envBaseUrl = dotenv.env['API_BASE_URL'];
-    if (envBaseUrl != null && envBaseUrl.isNotEmpty) baseUrl = envBaseUrl;
-    else baseUrl = 'http://localhost:8000';
+    if (envBaseUrl != null && envBaseUrl.isNotEmpty) {
+      baseUrl = envBaseUrl;
+    } else {
+      baseUrl = 'http://localhost:8000';
+    }
 
     if (baseUrl.endsWith('/')) baseUrl = baseUrl.substring(0, baseUrl.length - 1);
 
@@ -41,7 +46,9 @@ class ApiService {
       },
       onError: (error, handler) {
         if (error.response?.statusCode == 401) {
-          print('Unauthorized request detected - should trigger logout');
+          if (kDebugMode) {
+            developer.log('Unauthorized request detected - should trigger logout', name: 'ApiService');
+          }
         }
         handler.next(error);
       },
@@ -297,8 +304,9 @@ class ApiService {
         await addTrackToPlaylist(playlistId, token, request);
         successCount++;
       } catch (e) {
-        if (e.toString().contains('already exists') || e.toString().contains('duplicate')) duplicateCount++;
-        else {
+        if (e.toString().contains('already exists') || e.toString().contains('duplicate')) {
+          duplicateCount++;
+        } else {
           failureCount++;
           errors.add(e.toString());
         }

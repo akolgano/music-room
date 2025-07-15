@@ -9,7 +9,7 @@ import '../../models/models.dart';
 import '../base_screen.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {
-  const SocialNetworkLinkScreen({Key? key}) : super(key: key);
+  const SocialNetworkLinkScreen({super.key});
 
   @override 
   State<SocialNetworkLinkScreen> createState() => _SocialNetworkLinkScreenState();

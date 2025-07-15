@@ -1,6 +1,8 @@
 // lib/screens/playlists/playlist_detail_screen.dart
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'playlist_licensing_screen.dart';
 import '../../providers/auth_provider.dart';
@@ -21,7 +23,7 @@ import '../../widgets/widgets.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
-  const PlaylistDetailScreen({Key? key, required this.playlistId}) : super(key: key);
+  const PlaylistDetailScreen({super.key, required this.playlistId});
   @override
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
@@ -121,7 +123,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           return Card(
             color: ThemeUtils.getSurface(context),
             elevation: 4,
-            shadowColor: ThemeUtils.getPrimary(context).withOpacity(0.1),
+            shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -154,9 +156,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.1),
+                        color: AppTheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -196,8 +198,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             ),
           );
         } catch (e, stackTrace) {
-          print('ERROR building tracks section: $e');
-          print('Stack trace: $stackTrace');
+          if (kDebugMode) {
+            developer.log('ERROR building tracks section: $e', name: 'PlaylistDetailScreen');
+          }
+          if (kDebugMode) {
+            developer.log('Stack trace: $stackTrace', name: 'PlaylistDetailScreen');
+          }
           return _buildErrorState(e.toString());
         }
       },
@@ -206,7 +212,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
     final canReorder = currentSort.field == TrackSortField.position && _isOwner;
-    print('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}');
+    if (kDebugMode) {
+      developer.log('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}', name: 'PlaylistDetailScreen');
+    }
     
     if (canReorder) {
       return ReorderableListView.builder(
@@ -223,7 +231,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             final widget = _buildTrackItem(playlistTrack, index, key: uniqueKey);
             return KeyedSubtree(key: uniqueKey, child: widget);
           } catch (e, stackTrace) {
-            print('ERROR building reorderable track item at index $index: $e');
+            if (kDebugMode) {
+              developer.log('ERROR building reorderable track item at index $index: $e', name: 'PlaylistDetailScreen');
+            }
             return Container(
               key: ValueKey('error_$index'),
               padding: const EdgeInsets.all(16),
@@ -245,7 +255,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             final playlistTrack = tracks[index];
             return _buildTrackItem(playlistTrack, index);
           } catch (e, stackTrace) {
-            print('ERROR building track item at index $index: $e');
+            if (kDebugMode) {
+              developer.log('ERROR building track item at index $index: $e', name: 'PlaylistDetailScreen');
+            }
             return Container(
               padding: const EdgeInsets.all(16),
               child: Text(
@@ -362,7 +374,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         if (_votingProvider != null) _votingProvider!.initializeTrackPoints(_tracks);
       }
     } catch (e) {
-      print('Error refreshing playlist data: $e');
+      if (kDebugMode) {
+        developer.log('Error refreshing playlist data: $e', name: 'PlaylistDetailScreen');
+      }
     }
   }
 
@@ -409,7 +423,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         }
       }
     } catch (e) {
-      print('ERROR fetching track details for $deezerTrackId: $e');
+      if (kDebugMode) {
+        developer.log('ERROR fetching track details for $deezerTrackId: $e', name: 'PlaylistDetailScreen');
+      }
     } finally {
       if (mounted) _fetchingTrackDetails.remove(deezerTrackId);
     }
@@ -552,7 +568,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       });
       _updateTrackOrder(oldIndex, newIndex);
     } catch (e, stackTrace) {
-      print('ERROR reordering tracks: $e');
+      if (kDebugMode) {
+        developer.log('ERROR reordering tracks: $e', name: 'PlaylistDetailScreen');
+      }
       if (mounted) showError('Failed to reorder tracks: $e');
     }
   }
@@ -573,7 +591,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         if (_votingProvider != null) _votingProvider!.initializeTrackPoints(_tracks);
       }
     } catch (e, stackTrace) {
-      print('ERROR updating track order: $e');
+      if (kDebugMode) {
+        developer.log('ERROR updating track order: $e', name: 'PlaylistDetailScreen');
+      }
       if (mounted) {
         showError('Failed to update track order: $e');
         await _loadData();

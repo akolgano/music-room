@@ -14,15 +14,15 @@ class StorageService {
 
   T? get<T>(String key) {
     final value = _box.get(key);
-    if (value == null) return null;
+    if (value == null) { return null; }
     return value as T?;
   }
 
   Map<String, dynamic>? getMap(String key) {
     final value = _box.get(key);
-    if (value == null) return null;
-    if (value is Map<String, dynamic>) return value;
-    if (value is Map) return Map<String, dynamic>.from(value);
+    if (value == null) { return null; }
+    if (value is Map<String, dynamic>) { return value; }
+    if (value is Map) { return Map<String, dynamic>.from(value); }
     return null;
   }
 

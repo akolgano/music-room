@@ -28,7 +28,7 @@ class AppWidgets {
   );
   
   static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
-    color: _getOnSurface(context).withOpacity(0.7), fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()
+    color: _getOnSurface(context).withValues(alpha: 0.7), fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()
   );
 
   static Widget textField({required BuildContext context, 
@@ -54,11 +54,11 @@ class AppWidgets {
         fillColor: _getSurface(context),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8), 
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8), 
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -74,10 +74,10 @@ class AppWidgets {
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
+          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
         ),
-        labelStyle: TextStyle(fontSize: 16, color: _getOnSurface(context).withOpacity(0.7)),
-        hintStyle: TextStyle(fontSize: 14, color: _getOnSurface(context).withOpacity(0.5)),
+        labelStyle: TextStyle(fontSize: 16, color: _getOnSurface(context).withValues(alpha: 0.7)),
+        hintStyle: TextStyle(fontSize: 14, color: _getOnSurface(context).withValues(alpha: 0.5)),
         contentPadding: EdgeInsets.symmetric(
           horizontal: kIsWeb ? 16.0 : 16.w.toDouble(), 
           vertical: kIsWeb ? 12.0 : 12.h.toDouble()
@@ -129,8 +129,8 @@ class AppWidgets {
                 vertical: kIsWeb ? 4.0 : 4.h.toDouble()
               ),
               decoration: BoxDecoration(
-                color: isSelected ? colorScheme.primary.withOpacity(0.2) : 
-                       isCurrentTrack ? colorScheme.primary.withOpacity(0.1) : 
+                color: isSelected ? colorScheme.primary.withValues(alpha: 0.2) : 
+                       isCurrentTrack ? colorScheme.primary.withValues(alpha: 0.1) : 
                        colorScheme.surface,
                 borderRadius: BorderRadius.circular(kIsWeb ? 12.0 : 12.r.toDouble()),
                 border: isCurrentTrack ? Border.all(color: colorScheme.primary, width: 2) : null,
@@ -428,9 +428,9 @@ class AppWidgets {
         ),
         padding: EdgeInsets.all(kIsWeb ? 16.0 : 16.w.toDouble()),
         decoration: BoxDecoration(
-          color: bannerColor.withOpacity(0.1),
+          color: bannerColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(kIsWeb ? 12.0 : 12.r.toDouble()),
-          border: Border.all(color: bannerColor.withOpacity(0.3)),
+          border: Border.all(color: bannerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,9 +492,9 @@ class AppWidgets {
         ),
         padding: EdgeInsets.all(kIsWeb ? 16.0 : 16.w.toDouble()),
         decoration: BoxDecoration(
-          color: errorColor.withOpacity(0.1),
+          color: errorColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(kIsWeb ? 12.0 : 12.r.toDouble()),
-          border: Border.all(color: errorColor.withOpacity(0.3)),
+          border: Border.all(color: errorColor.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -559,7 +559,7 @@ static Widget emptyState({
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                 SizedBox(height: spacing),
                 Text(
                   title, 
@@ -784,7 +784,7 @@ static Widget emptyState({
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: _getPrimary(context).withOpacity(0.2),
+              color: _getPrimary(context).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.library_music),
@@ -836,7 +836,7 @@ static Widget emptyState({
         title: Text(title, style: TextStyle(color: itemColor)),
         subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle(context)) : null,
         onTap: onTap,
-        trailing: Icon(Icons.chevron_right, color: itemColor.withOpacity(0.5)),
+        trailing: Icon(Icons.chevron_right, color: itemColor.withValues(alpha: 0.5)),
       );
     });
   }
@@ -882,7 +882,7 @@ static Widget emptyState({
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withOpacity(0.7))),
+            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
           ),
           ElevatedButton(
             onPressed: () {
@@ -914,7 +914,7 @@ static Widget emptyState({
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(cancelText, style: TextStyle(color: _getOnSurface(context).withOpacity(0.7))),
+            child: Text(cancelText, style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -955,7 +955,7 @@ static Widget emptyState({
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withOpacity(0.7))),
+            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
           ),
         ],
       ),

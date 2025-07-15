@@ -1,15 +1,14 @@
 // lib/core/core.dart
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
-import '../services/api_service.dart';
 import '../models/models.dart';
 
 class AppValidators {
@@ -29,12 +28,12 @@ class AppValidators {
           .regExp(RegExp(r'^[a-zA-Z0-9_]+$'), 'Username can only contain letters, numbers, and underscores').build()(value);
 
   static String? phoneNumber(String? value, [bool required = false]) {
-    if (!required && (value?.isEmpty ?? true)) return null;
-    if (value == null || value.trim().isEmpty) return required ? 'Please enter a phone number' : null;
+    if (!required && (value?.isEmpty ?? true)) { return null; }
+    if (value == null || value.trim().isEmpty) { return required ? 'Please enter a phone number' : null; }
     try {
       final phoneNumber = PhoneNumber.parse(value.trim());
-      if (phoneNumber.isValid()) return null;
-      else return 'Please enter a valid phone number';
+      if (phoneNumber.isValid()) { return null; }
+      else { return 'Please enter a valid phone number'; }
     } catch (e) {
       return 'Please enter a valid phone number';
     }
@@ -67,12 +66,10 @@ class AppTheme {
       cardColor: surface,
       colorScheme: const ColorScheme.dark(
         primary: primary,
-        surface: surface,
-        background: background,
+        surface: background,
         error: error,
         onPrimary: Colors.white,
-        onSurface: onSurface,
-        onBackground: Colors.white,
+        onSurface: Colors.white,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: background, 
@@ -98,11 +95,11 @@ class AppTheme {
         fillColor: surfaceVariant,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8), 
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -118,14 +115,14 @@ class AppTheme {
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
+          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
         ),
         labelStyle: const TextStyle(color: Colors.white70),
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
       ),
       cardTheme: CardThemeData(color: surface,
         elevation: 4,
-        shadowColor: primary.withOpacity(0.1),
+        shadowColor: primary.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -149,36 +146,36 @@ class AppTheme {
         indicatorSize: TabBarIndicatorSize.tab,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) return primary;
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return primary;
           return Colors.grey;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) return primary.withOpacity(0.5);
-          return Colors.grey.withOpacity(0.3);
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return primary.withValues(alpha: 0.5);
+          return Colors.grey.withValues(alpha: 0.3);
         }),
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) return primary;
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return primary;
           return Colors.transparent;
         }),
-        checkColor: const MaterialStatePropertyAll(Colors.black),
+        checkColor: const WidgetStatePropertyAll(Colors.black),
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: primary,
-        inactiveTrackColor: primary.withOpacity(0.3),
+        inactiveTrackColor: primary.withValues(alpha: 0.3),
         thumbColor: primary,
-        overlayColor: primary.withOpacity(0.2),
+        overlayColor: primary.withValues(alpha: 0.2),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: primary,
-        linearTrackColor: primary.withOpacity(0.3),
-        circularTrackColor: primary.withOpacity(0.3),
+        linearTrackColor: primary.withValues(alpha: 0.3),
+        circularTrackColor: primary.withValues(alpha: 0.3),
       ),
       dividerTheme: DividerThemeData(color: surface, thickness: 1),
       listTileTheme: ListTileThemeData(textColor: Colors.white, iconColor: primary, selectedColor: primary,
-        selectedTileColor: primary.withOpacity(0.1),
+        selectedTileColor: primary.withValues(alpha: 0.1),
       ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
@@ -209,16 +206,16 @@ class AppTheme {
     filled: true,
     fillColor: surfaceVariant,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r),
-      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
     ),
     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
-      borderSide: BorderSide(color: Colors.white.withOpacity(0.3), width: 1)
+      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
     ),
     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
       borderSide: const BorderSide(color: primary, width: 2)
     ),
     labelStyle: TextStyle(fontSize: kIsWeb ? 16 : 16.sp, color: onSurfaceVariant),
-    hintStyle: TextStyle(fontSize: kIsWeb ? 14 : 14.sp, color: onSurfaceVariant.withOpacity(0.7)),
+    hintStyle: TextStyle(fontSize: kIsWeb ? 14 : 14.sp, color: onSurfaceVariant.withValues(alpha: 0.7)),
   );
 
   static Widget _buildCard({
@@ -306,14 +303,18 @@ class SocialLoginUtils {
   static bool _facebookInitialized = false;
 
   static Future<void> initialize() async {
-    if (_isInitialized) return;    
+    if (_isInitialized) { return; }    
     try {
       await _initializeFacebook();
       await _initializeGoogle();
       _isInitialized = true;
-      print('Social login initialization completed successfully');
+      if (kDebugMode) {
+        developer.log('Social login initialization completed successfully', name: 'SocialLoginUtils');
+      }
     } catch (e) {
-      print('Social login initialization error: $e');
+      if (kDebugMode) {
+        developer.log('Social login initialization error: $e', name: 'SocialLoginUtils');
+      }
       rethrow;
     }
   }
@@ -322,18 +323,26 @@ class SocialLoginUtils {
     try {
       final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
       if (fbAppId == null || fbAppId.isEmpty) {
-        print('Warning: FACEBOOK_APP_ID not found in environment variables');
+        if (kDebugMode) {
+          developer.log('Warning: FACEBOOK_APP_ID not found in environment variables', name: 'SocialLoginUtils');
+        }
         return;
       }
       if (kIsWeb) {
         await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v18.0");
-        print('Facebook initialized for web');
+        if (kDebugMode) {
+          developer.log('Facebook initialized for web', name: 'SocialLoginUtils');
+        }
       } else {
-        print('Facebook SDK configured for mobile platform');
+        if (kDebugMode) {
+          developer.log('Facebook SDK configured for mobile platform', name: 'SocialLoginUtils');
+        }
       }
       _facebookInitialized = true;
     } catch (e) {
-      print('Facebook initialization error: $e');
+      if (kDebugMode) {
+        developer.log('Facebook initialization error: $e', name: 'SocialLoginUtils');
+      }
       _facebookInitialized = false;
       rethrow;
     }
@@ -348,12 +357,18 @@ class SocialLoginUtils {
           clientId: googleClientId,
           serverClientId: dotenv.env['GOOGLE_SERVER_CLIENT_ID'],
         );
-        print('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...');
+        if (kDebugMode) {
+          developer.log('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...', name: 'SocialLoginUtils');
+        }
       } else {
-        print('Warning: Google Client ID not found in environment variables');
+        if (kDebugMode) {
+          developer.log('Warning: Google Client ID not found in environment variables', name: 'SocialLoginUtils');
+        }
       }
     } catch (e) {
-      print('Google initialization error: $e');
+      if (kDebugMode) {
+        developer.log('Google initialization error: $e', name: 'SocialLoginUtils');
+      }
       rethrow;
     }
   }
@@ -365,47 +380,67 @@ class SocialLoginUtils {
   static Future<SocialLoginResult> loginWithFacebook() async {
     try {
       if (!_isInitialized) {
-        print('Social login not initialized, initializing now...');
+        if (kDebugMode) {
+          developer.log('Social login not initialized, initializing now...', name: 'SocialLoginUtils');
+        }
         await initialize();
       }
 
-      if (!_facebookInitialized) return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.');
+      if (!_facebookInitialized) { return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.'); }
 
-      print('Attempting Facebook login...');
+      if (kDebugMode) {
+        developer.log('Attempting Facebook login...', name: 'SocialLoginUtils');
+      }
       
       try {
         await FacebookAuth.instance.logOut();
       } catch (e) {
-        print('Warning: Could not log out existing Facebook session: $e');
+        if (kDebugMode) {
+          developer.log('Warning: Could not log out existing Facebook session: $e', name: 'SocialLoginUtils');
+        }
       }
 
       final result = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
       );
 
-      print('Facebook login result status: ${result.status}');
+      if (kDebugMode) {
+        developer.log('Facebook login result status: ${result.status}', name: 'SocialLoginUtils');
+      }
 
       if (result.status == LoginStatus.success) {
         final accessToken = result.accessToken?.tokenString;
         if (accessToken != null && accessToken.isNotEmpty) {
-          print('Facebook login successful with access token');
+          if (kDebugMode) {
+            developer.log('Facebook login successful with access token', name: 'SocialLoginUtils');
+          }
           return SocialLoginResult.success(accessToken, 'facebook');
         } else {
-          print('Facebook login failed - no valid token received');
+          if (kDebugMode) {
+            developer.log('Facebook login failed - no valid token received', name: 'SocialLoginUtils');
+          }
           return SocialLoginResult.error('Facebook login failed - no access token received');
         }
       } else if (result.status == LoginStatus.cancelled) {
-        print('Facebook login was cancelled by user');
+        if (kDebugMode) {
+          developer.log('Facebook login was cancelled by user', name: 'SocialLoginUtils');
+        }
         return SocialLoginResult.error('Facebook login was cancelled');
       } else if (result.status == LoginStatus.failed) {
-        print('Facebook login failed: ${result.message}');
+        if (kDebugMode) {
+          developer.log('Facebook login failed: ${result.message}', name: 'SocialLoginUtils');
+        }
         return SocialLoginResult.error('Facebook login failed: ${result.message ?? "Unknown error"}');
       } else {
-        print('Facebook login failed with status: ${result.status}');
+        if (kDebugMode) {
+          developer.log('Facebook login failed with status: ${result.status}', name: 'SocialLoginUtils');
+        }
         return SocialLoginResult.error('Facebook login failed with unexpected status');
       }
     } catch (e) {
-      print('Facebook login error: $e');
+      if (kDebugMode) {
+        developer.log('Facebook login error: $e', name: 'SocialLoginUtils');
+      }
       
       if (e.toString().contains('MissingPluginException')) {
         return SocialLoginResult.error(
@@ -419,12 +454,16 @@ class SocialLoginUtils {
 
   static Future<SocialLoginResult> loginWithGoogle() async {
     if (!_isInitialized) {
-      print('Google Sign-In not initialized, initializing now...');
+      if (kDebugMode) {
+        developer.log('Google Sign-In not initialized, initializing now...', name: 'SocialLoginUtils');
+      }
       await initialize();
     }
 
     if (_googleSignIn == null) {
-      print('Google Sign-In instance is null after initialization');
+      if (kDebugMode) {
+        developer.log('Google Sign-In instance is null after initialization', name: 'SocialLoginUtils');
+      }
       return SocialLoginResult.error(
         'Google Sign-In not properly initialized. Please check your configuration.'
       );
@@ -436,24 +475,36 @@ class SocialLoginUtils {
       final GoogleSignInAccount? user = await _googleSignIn!.signIn();
       
       if (user != null) {
-        print('Google user signed in: ${user.email}');
+        if (kDebugMode) {
+          developer.log('Google user signed in: ${user.email}', name: 'SocialLoginUtils');
+        }
         final GoogleSignInAuthentication auth = await user.authentication;
-        print('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}');
+        if (kDebugMode) {
+          developer.log('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}', name: 'SocialLoginUtils');
+        }
         
         final idToken = auth.idToken;
         if (idToken != null && idToken.isNotEmpty) {
-          print('Google login successful with idToken');
+          if (kDebugMode) {
+            developer.log('Google login successful with idToken', name: 'SocialLoginUtils');
+          }
           return SocialLoginResult.success(idToken, 'google');
         }
       } else {
-        print('Google sign-in was cancelled by user');
+        if (kDebugMode) {
+          developer.log('Google sign-in was cancelled by user', name: 'SocialLoginUtils');
+        }
         return SocialLoginResult.error('Google sign-in was cancelled');
       }
       
-      print('Google login failed - no valid token received');
+      if (kDebugMode) {
+        developer.log('Google login failed - no valid token received', name: 'SocialLoginUtils');
+      }
       return SocialLoginResult.error('Google login failed - no valid token received');
     } catch (e) {
-      print('Google login error: $e');
+      if (kDebugMode) {
+        developer.log('Google login error: $e', name: 'SocialLoginUtils');
+      }
       return SocialLoginResult.error('Google login error: $e');
     }
   }
@@ -464,7 +515,7 @@ class SocialLoginButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  const SocialLoginButton({Key? key, required this.provider, this.onPressed, this.isLoading = false}) : super(key: key);
+  const SocialLoginButton({super.key, required this.provider, this.onPressed, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
