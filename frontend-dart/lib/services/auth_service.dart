@@ -50,6 +50,7 @@ class AuthService {
     await _clearAuth();
   }
 
+
   // Facebook and google login is project requirement, they must be implemented
   Future<AuthResult> facebookLogin(String accessToken) async {
     final request = SocialLoginRequest(fbAccessToken: accessToken);

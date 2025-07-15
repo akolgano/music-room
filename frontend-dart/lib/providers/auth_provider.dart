@@ -5,7 +5,11 @@ import '../core/service_locator.dart';
 import '../services/auth_service.dart';
 import '../models/models.dart';
 import '../models/api_models.dart';
-import '../core/core.dart' hide BaseProvider; 
+import '../core/core.dart' hide BaseProvider;
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthProvider extends BaseProvider {
   late final AuthService _authService;
@@ -28,6 +32,12 @@ class AuthProvider extends BaseProvider {
   User? get currentUser => _authService.currentUser;
 
   String? get token => _authService.currentToken;
+
+  final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile', 'openid'],
+        serverClientId: dotenv.env['FIREBASE_WEB_CLIENT_ID'],
+  );
+
 
   Map<String, String> get authHeaders => {
     'Content-Type': 'application/json',
@@ -98,14 +108,55 @@ class AuthProvider extends BaseProvider {
     );
   }
 
+  Future<bool> googleLoginApp() async {
+    return await executeBool(
+      () async {
+        final user = await googleSignIn.signIn();
+        if (user == null) throw Exception("Google login failed!");
+        
+        final auth = await user.authentication;
+        final idToken = auth.idToken;
+
+        if (idToken != null) {
+          await _authService.googleLogin('app', idToken);
+        }
+        else {
+          throw Exception("Google login failed!");
+        }
+      
+      },
+      successMessage: 'Google login successful!',
+      errorMessage: 'Google login failed',
+    );
+  }
+
+  Future<bool> googleLoginWeb(GoogleSignInUserData? account) async {
+    return await executeBool(
+      () async {
+        
+        var idToken = account?.idToken;
+
+        if (idToken != null) {
+          await _authService.googleLogin('web', idToken);
+        }
+        else {
+          throw Exception("Google login failed!");
+        }
+      },
+      successMessage: 'Google login successful!',
+      errorMessage: 'Google login failed',
+    );
+  }
+
   Future<bool> facebookLogin() async {
     return await executeBool(
       () async {
-        final result = await SocialLoginUtils.loginWithFacebook();
-        if (result.success) {
-          await _authService.facebookLogin(result.token!);
+        final LoginResult result = await FacebookAuth.instance.login();
+        if (result.status == LoginStatus.success) {
+          final fbAccessToken = result.accessToken!.tokenString;
+          await _authService.facebookLogin(fbAccessToken);
         } else {
-          throw Exception(result.error ?? "Facebook login failed!");
+          throw Exception(result.message ?? "Facebook login failed!");
         }
       },
       successMessage: 'Facebook login successful!',
@@ -113,24 +164,4 @@ class AuthProvider extends BaseProvider {
     );
   }
 
-  Future<bool> googleLoginApp() async {
-    return await executeBool(
-      () async {
-        if (!SocialLoginUtils.isInitialized) {
-          await SocialLoginUtils.initialize();
-          await Future.delayed(const Duration(milliseconds: 500));
-        }
-        
-        if (SocialLoginUtils.googleSignInInstance == null) throw Exception('Google Sign-In is not properly configured');
-        final result = await SocialLoginUtils.loginWithGoogle();
-        if (result.success && result.token != null) {
-          await _authService.googleLogin('app', result.token!);
-        } else {
-          throw Exception(result.error ?? "Google login failed");
-        }
-      },
-      successMessage: 'Google login successful!',
-      errorMessage: 'Google login failed',
-    );
-  }
 }

@@ -185,35 +185,35 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
       builder: (context, authProvider, _) {
         return Column(
           children: [
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: authProvider.isLoading ? null : () => _socialLogin('Google'),
-                icon: authProvider.isLoading 
-                  ? const SizedBox(
-                      width: 16, 
-                      height: 16, 
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2, 
-                        color: Colors.red,
-                      ),
-                    )
-                  : const Icon(Icons.g_mobiledata, color: Colors.red, size: 20),
-                label: Text(
-                  authProvider.isLoading ? 'Signing in...' : 'Continue with Google',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                  overflow: TextOverflow.visible,
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.surface,
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  elevation: 2,
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: authProvider.isLoading ? null : () => _socialLogin('Google'),
+                  icon: authProvider.isLoading 
+                    ? const SizedBox(
+                        width: 16, 
+                        height: 16, 
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2, 
+                          color: Colors.red,
+                        ),
+                      )
+                    : const Icon(Icons.g_mobiledata, color: Colors.red, size: 20),
+                  label: Text(
+                    authProvider.isLoading ? 'Signing in...' : 'Continue with Google',
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    overflow: TextOverflow.visible,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.surface,
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.red),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 2,
+                  ),
                 ),
               ),
-            ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -289,8 +289,12 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
       () async {
         final authProvider = getProvider<AuthProvider>();
         bool success = await authProvider.login(_usernameController.text, _passwordController.text);
-        if (success) navigateToHome();
-        else throw Exception(authProvider.errorMessage ?? 'Login failed');
+        if (success) {
+          navigateToHome();
+        }
+        else {
+          throw Exception(authProvider.errorMessage ?? 'Login failed');
+        }
       },
       successMessage: 'Login successful!',
       errorMessage: 'Authentication failed',
@@ -300,28 +304,22 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   Future<void> _socialLogin(String provider) async {
     await runAsyncAction(
       () async {
-        print('Starting $provider login process...');
         final authProvider = getProvider<AuthProvider>();
-        if (provider == 'Google') {
-          print('Checking Google Sign-In initialization...');
-          if (!SocialLoginUtils.isInitialized) {
-            print('Re-initializing SocialLoginUtils...');
-            await SocialLoginUtils.initialize();
-            await Future.delayed(const Duration(milliseconds: 1000)); 
-          }
-          if (SocialLoginUtils.googleSignInInstance == null)
-            throw Exception('Google Sign-In is not available. Please check your configuration.');
-          print('Google Sign-In instance is available, proceeding...');
-        }
         bool success;
-        if (provider == 'Google') success = await authProvider.googleLoginApp();
-        else success = await authProvider.facebookLogin();
+        if (provider == 'Google') {
+          success = await authProvider.googleLoginApp();
+        }
+        else {
+          success = await authProvider.facebookLogin();
+        }
         if (success) {
-          print('$provider login successful, navigating to home...');
           Navigator.pushReplacementNamed(context, AppRoutes.home);
-        } else throw Exception(authProvider.errorMessage ?? '$provider authentication failed');
+        } else {
+          throw Exception(authProvider.errorMessage ?? '$provider authentication failed');
+        }
       },
       errorMessage: '$provider authentication failed',
     );
   }
+
 }

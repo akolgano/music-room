@@ -24,12 +24,15 @@ FACEBOOK_APP_ID = os.environ.get('FACEBOOK_APP_ID')
 FACEBOOK_APP_SECRET = os.environ.get('FACEBOOK_APP_SECRET')
 GOOGLE_CLIENT_ID_WEB = os.environ.get('GOOGLE_CLIENT_ID_WEB')
 GOOGLE_CLIENT_ID_APP = os.environ.get('GOOGLE_CLIENT_ID_APP')
+FIREBASE_WEB_CLIENT_ID = os.environ.get('FIREBASE_WEB_CLIENT_ID')
 
 
 @api_view(['POST'])
 def facebook_login(request):
 
     fb_access_token = request.data.get('fbAccessToken')
+
+    print("fb_access_token: ", fb_access_token)
 
     if not fb_access_token:
         return JsonResponse({'error': 'Access token not provided'}, status=status.HTTP_400_BAD_REQUEST)
@@ -69,7 +72,7 @@ def google_login(request):
     if type == 'web':
         google_client_id = GOOGLE_CLIENT_ID_WEB
     if type == 'app':
-        google_client_id = GOOGLE_CLIENT_ID_APP
+        google_client_id = FIREBASE_WEB_CLIENT_ID
     
     try:
         id_info = google_id_token.verify_oauth2_token(id_token, google_requests.Request(), google_client_id)
@@ -180,7 +183,7 @@ def google_link(request):
     if type == 'web':
         google_client_id = GOOGLE_CLIENT_ID_WEB
     if type == 'app':
-        google_client_id = GOOGLE_CLIENT_ID_APP
+        google_client_id = FIREBASE_WEB_CLIENT_ID
 
     try:
         id_info = google_id_token.verify_oauth2_token(id_token, google_requests.Request(), google_client_id)
