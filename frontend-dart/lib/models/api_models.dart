@@ -54,6 +54,7 @@ class EmailOtpRequest {
   Map<String, dynamic> toJson() => {'email': email};
 }
 
+
 class SocialLoginRequest {
   final String? fbAccessToken; 
   final String? idToken;       
