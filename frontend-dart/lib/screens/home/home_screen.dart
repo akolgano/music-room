@@ -1,5 +1,7 @@
 // lib/screens/home/home_screen.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
@@ -13,7 +15,7 @@ import '../music/track_search_screen.dart';
 import '../friends/friends_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -68,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               color: AppTheme.surface,
               border: Border(
-                top: BorderSide(color: AppTheme.primary.withOpacity(0.3), width: 1),
+                top: BorderSide(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
               ),
             ),
             child: TabBar(
@@ -216,11 +218,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             itemCount: music.playlists.length,
             itemBuilder: (context, index) {
               final playlist = music.playlists[index];
-              print('Playlist ID: ${playlist.id}, Name: ${playlist.name}');
+              if (kDebugMode) {
+                developer.log('Playlist ID: ${playlist.id}, Name: ${playlist.name}', name: 'HomeScreen');
+              }
               return AppWidgets.playlistCard(
                 playlist: playlist,
                 onTap: () {
-                  print('Navigating to playlist with ID: ${playlist.id}');
+                  if (kDebugMode) {
+                    developer.log('Navigating to playlist with ID: ${playlist.id}', name: 'HomeScreen');
+                  }
                   if (playlist.id.isNotEmpty && playlist.id != 'null')
                     Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
                   else _showError('Invalid playlist ID');
@@ -256,9 +262,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(16),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [

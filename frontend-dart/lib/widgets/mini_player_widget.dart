@@ -7,7 +7,7 @@ import '../core/core.dart';
 import '../models/models.dart';
 
 class MiniPlayerWidget extends StatelessWidget {
-  const MiniPlayerWidget({Key? key}) : super(key: key);
+  const MiniPlayerWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +22,13 @@ class MiniPlayerWidget extends StatelessWidget {
             color: AppTheme.surface,
             border: Border(
               top: BorderSide(
-                color: AppTheme.primary.withOpacity(0.3),
+                color: AppTheme.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 8,
                 offset: const Offset(0, -2),
               ),
@@ -141,8 +141,8 @@ class MiniPlayerWidget extends StatelessWidget {
                             height: 32,
                             decoration: BoxDecoration(
                               color: playerService.hasPreviousTrack 
-                                  ? Colors.grey.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.1),
+                                  ? Colors.grey.withValues(alpha: 0.3)
+                                  : Colors.grey.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
@@ -189,8 +189,8 @@ class MiniPlayerWidget extends StatelessWidget {
                             height: 32,
                             decoration: BoxDecoration(
                               color: playerService.hasNextTrack 
-                                  ? Colors.grey.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.1),
+                                  ? Colors.grey.withValues(alpha: 0.3)
+                                  : Colors.grey.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
@@ -216,7 +216,7 @@ class MiniPlayerWidget extends StatelessWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.3),
+                          color: Colors.grey.withValues(alpha: 0.3),
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
@@ -244,7 +244,7 @@ class MiniPlayerWidget extends StatelessWidget {
     if (duration.inSeconds == 0) {
       return Container(
         height: 3,
-        color: AppTheme.primary.withOpacity(0.2),
+        color: AppTheme.primary.withValues(alpha: 0.2),
       );
     }
 
@@ -256,7 +256,7 @@ class MiniPlayerWidget extends StatelessWidget {
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 0),
           overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
           activeTrackColor: AppTheme.primary,
-          inactiveTrackColor: AppTheme.primary.withOpacity(0.2),
+          inactiveTrackColor: AppTheme.primary.withValues(alpha: 0.2),
         ),
         child: Slider(
           value: position.inSeconds.toDouble(),

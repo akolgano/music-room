@@ -6,7 +6,7 @@ import '../core/core.dart';
 class NetworkConnectivityWidget extends StatefulWidget {
   final Widget child;
   
-  const NetworkConnectivityWidget({Key? key, required this.child}) : super(key: key);
+  const NetworkConnectivityWidget({super.key, required this.child});
 
   @override
   State<NetworkConnectivityWidget> createState() => _NetworkConnectivityWidgetState();
@@ -34,8 +34,11 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
     
     if (mounted) {
       setState(() {
-        if (!_isConnected) _showBanner = true;
-        else if (wasConnected != _isConnected) _showBanner = false;
+        if (!_isConnected) {
+          _showBanner = true;
+        } else if (wasConnected != _isConnected) {
+          _showBanner = false;
+        }
       });
     }
   }

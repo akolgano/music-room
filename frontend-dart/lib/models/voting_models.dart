@@ -62,14 +62,14 @@ class VoteStats {
   int get netVotes => upvotes - downvotes;
   
   String get displayText {
-    if (totalVotes == 0) return 'No votes';
-    if (totalVotes == 1) return '1 vote';
+    if (totalVotes == 0) { return 'No votes'; }
+    if (totalVotes == 1) { return '1 vote'; }
     return '$totalVotes votes';
   }
 
   Color get scoreColor {
-    if (voteScore > 0.6) return Colors.green;
-    if (voteScore > 0.3) return Colors.orange;
+    if (voteScore > 0.6) { return Colors.green; }
+    if (voteScore > 0.3) { return Colors.orange; }
     return Colors.red;
   }
 }
@@ -120,16 +120,16 @@ class VotingRestrictions {
   );
 
   VotingPermission get permission {
-    if (licenseType == 'open') return VotingPermission.allowed;
+    if (licenseType == 'open') { return VotingPermission.allowed; }
     
     if (licenseType == 'invite_only') {
       return isInvited ? VotingPermission.allowed : VotingPermission.notInvited;
     }
     
     if (licenseType == 'location_time') {
-      if (!isInvited) return VotingPermission.notInvited;
-      if (!isInTimeWindow) return VotingPermission.outsideTimeWindow;
-      if (!isInLocation) return VotingPermission.outsideLocation;
+      if (!isInvited) { return VotingPermission.notInvited; }
+      if (!isInTimeWindow) { return VotingPermission.outsideTimeWindow; }
+      if (!isInLocation) { return VotingPermission.outsideLocation; }
       return VotingPermission.allowed;
     }
     

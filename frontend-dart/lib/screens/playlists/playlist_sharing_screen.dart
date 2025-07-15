@@ -11,7 +11,7 @@ import '../base_screen.dart';
 class PlaylistSharingScreen extends StatefulWidget {
   final Playlist playlist;
 
-  const PlaylistSharingScreen({Key? key, required this.playlist}) : super(key: key);
+  const PlaylistSharingScreen({super.key, required this.playlist});
 
   @override
   State<PlaylistSharingScreen> createState() => _PlaylistSharingScreenState();
@@ -57,7 +57,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.primary.withOpacity(0.2)),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.primary.withValues(alpha: 0.2)),
             child: const Icon(Icons.library_music, size: 40, color: Colors.white),
           ),
           const SizedBox(height: 16),
@@ -75,7 +75,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: widget.playlist.isPublic ? Colors.green.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
+              color: widget.playlist.isPublic ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(

@@ -1,5 +1,7 @@
 // lib/screens/playlists/playlist_licensing_screen.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
@@ -14,10 +16,10 @@ class PlaylistLicensingScreen extends StatefulWidget {
   final String playlistId;
   final String playlistName;
 
-  const PlaylistLicensingScreen({Key? key, 
+  const PlaylistLicensingScreen({super.key, 
     required this.playlistId, 
     required this.playlistName
-  }) : super(key: key);
+  });
 
   @override
   State<PlaylistLicensingScreen> createState() => _PlaylistLicensingScreenState();
@@ -139,7 +141,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : AppTheme.surfaceVariant,
+          color: isSelected ? color.withValues(alpha: 0.1) : AppTheme.surfaceVariant,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? color : Colors.transparent,
@@ -151,7 +153,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isSelected ? color : Colors.grey.withOpacity(0.3),
+                color: isSelected ? color : Colors.grey.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -391,7 +393,9 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   Future<void> _loadData() async {
     await runAsyncAction(
       () async {
-        print('Loading playlist licensing data for ${widget.playlistId}');
+        if (kDebugMode) {
+          developer.log('Loading playlist licensing data for ${widget.playlistId}', name: 'PlaylistLicensingScreen');
+        }
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.fetchFriends(auth.token!);
         setState(() {
@@ -403,7 +407,9 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             widget.playlistId,
             'Token ${auth.token!}',
           );
-          print('Loaded existing license settings: ${license.licenseType}');
+          if (kDebugMode) {
+            developer.log('Loaded existing license settings: ${license.licenseType}', name: 'PlaylistLicensingScreen');
+          }
           setState(() {
             _licenseType = license.licenseType;
             _invitedUsers = license.invitedUsers;
@@ -426,7 +432,9 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             _allowedRadiusMeters = license.allowedRadiusMeters;
           });
         } catch (e) {
-          print('No existing license found, using defaults: $e');
+          if (kDebugMode) {
+            developer.log('No existing license found, using defaults: $e', name: 'PlaylistLicensingScreen');
+          }
         }
       },
       errorMessage: 'Failed to load playlist settings',
@@ -476,7 +484,9 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     setState(() => _isLoading = true);
     
     try {
-      print('Saving playlist license settings: $_licenseType');
+      if (kDebugMode) {
+        developer.log('Saving playlist license settings: $_licenseType', name: 'PlaylistLicensingScreen');
+      }
       
       String? voteStartTimeStr;
       String? voteEndTimeStr;

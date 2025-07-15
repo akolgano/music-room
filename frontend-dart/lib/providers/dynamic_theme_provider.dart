@@ -1,5 +1,7 @@
 // lib/providers/dynamic_theme_provider.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../core/core.dart';
@@ -43,10 +45,10 @@ class DynamicThemeProvider with ChangeNotifier {
       onSurface: _onSurfaceColor,
       onBackground: Colors.white,
       onError: Colors.white,
-      primaryContainer: _primaryColor.withOpacity(0.3),
-      secondaryContainer: _accentColor.withOpacity(0.3),
-      surfaceVariant: _surfaceColor.withOpacity(0.8),
-      outline: _primaryColor.withOpacity(0.5),
+      primaryContainer: _primaryColor.withValues(alpha: 0.3),
+      secondaryContainer: _accentColor.withValues(alpha: 0.3),
+      surfaceVariant: _surfaceColor.withValues(alpha: 0.8),
+      outline: _primaryColor.withValues(alpha: 0.5),
     ),
 
     appBarTheme: AppBarTheme(
@@ -70,7 +72,7 @@ class DynamicThemeProvider with ChangeNotifier {
         minimumSize: const Size(88, 50),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
         elevation: 4,
-        shadowColor: _primaryColor.withOpacity(0.3),
+        shadowColor: _primaryColor.withValues(alpha: 0.3),
       ),
     ),
 
@@ -104,13 +106,13 @@ class DynamicThemeProvider with ChangeNotifier {
         borderSide: const BorderSide(color: AppTheme.error, width: 2),
       ),
       labelStyle: const TextStyle(color: Colors.white70),
-      hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
     ),
 
     cardTheme: CardThemeData(
       color: _surfaceColor,
       elevation: 4,
-      shadowColor: _primaryColor.withOpacity(0.1),
+      shadowColor: _primaryColor.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     ),
@@ -137,35 +139,35 @@ class DynamicThemeProvider with ChangeNotifier {
       indicatorSize: TabBarIndicatorSize.tab,
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) return _primaryColor;
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return _primaryColor;
         return Colors.grey;
       }),
-      trackColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) return _primaryColor.withOpacity(0.5);
-        return Colors.grey.withOpacity(0.3);
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return _primaryColor.withValues(alpha: 0.5);
+        return Colors.grey.withValues(alpha: 0.3);
       }),
     ),
 
     checkboxTheme: CheckboxThemeData(
-      fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) return _primaryColor;
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return _primaryColor;
         return Colors.transparent;
       }),
-      checkColor: MaterialStateProperty.all(_onPrimaryColor),
+      checkColor: WidgetStateProperty.all(_onPrimaryColor),
     ),
 
     sliderTheme: SliderThemeData(
       activeTrackColor: _primaryColor,
-      inactiveTrackColor: _primaryColor.withOpacity(0.3),
+      inactiveTrackColor: _primaryColor.withValues(alpha: 0.3),
       thumbColor: _primaryColor,
-      overlayColor: _primaryColor.withOpacity(0.2),
+      overlayColor: _primaryColor.withValues(alpha: 0.2),
     ),
 
     progressIndicatorTheme: ProgressIndicatorThemeData(
       color: _primaryColor,
-      linearTrackColor: _primaryColor.withOpacity(0.3),
-      circularTrackColor: _primaryColor.withOpacity(0.3),
+      linearTrackColor: _primaryColor.withValues(alpha: 0.3),
+      circularTrackColor: _primaryColor.withValues(alpha: 0.3),
     ),
 
     dividerTheme: DividerThemeData(
@@ -177,7 +179,7 @@ class DynamicThemeProvider with ChangeNotifier {
       textColor: Colors.white,
       iconColor: _primaryColor,
       selectedColor: _primaryColor,
-      selectedTileColor: _primaryColor.withOpacity(0.1),
+      selectedTileColor: _primaryColor.withValues(alpha: 0.1),
     ),
   );
 
@@ -207,7 +209,9 @@ class DynamicThemeProvider with ChangeNotifier {
       _colorCache[imageUrl] = colorScheme;
       _applyColorScheme(colorScheme);
     } catch (e) {
-      print('Error extracting color from image: $e');
+      if (kDebugMode) {
+        developer.log('Error extracting color from image: $e', name: 'DynamicThemeProvider');
+      }
       _resetToDefaultTheme();
     }
 

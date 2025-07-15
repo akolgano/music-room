@@ -20,7 +20,7 @@ class TrackDetailScreen extends StatefulWidget {
   final Track? track;
   final String? playlistId; 
   
-  const TrackDetailScreen({Key? key, this.trackId, this.track, this.playlistId}) : super(key: key);
+  const TrackDetailScreen({super.key, this.trackId, this.track, this.playlistId});
   
   @override
   State<TrackDetailScreen> createState() => _TrackDetailScreenState();
@@ -107,7 +107,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: themeProvider.primaryColor.withOpacity(0.3),
+                  color: themeProvider.primaryColor.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -149,14 +149,14 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           const SizedBox(height: 8),
           Text(
             _track!.artist,
-            style: TextStyle(fontSize: 18, color: Colors.white.withOpacity(0.8)),
+            style: TextStyle(fontSize: 18, color: Colors.white.withValues(alpha: 0.8)),
             textAlign: TextAlign.center,
           ),
           if (_track!.album.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               _track!.album,
-              style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.6)),
+              style: TextStyle(fontSize: 16, color: Colors.white.withValues(alpha: 0.6)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -256,7 +256,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             boxShadow: [
               if (isPrimary) 
                 BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3), 
+                  color: AppTheme.primary.withValues(alpha: 0.3), 
                   blurRadius: 10, 
                   offset: const Offset(0, 4)
                 ),
@@ -581,7 +581,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
               return ListTile(
                 leading: Container(
                   width: 40, height: 40,
-                  decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.library_music, color: AppTheme.primary),
                 ),
                 title: Text(playlist.name, style: const TextStyle(color: Colors.white)),

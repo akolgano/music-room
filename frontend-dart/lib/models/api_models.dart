@@ -62,9 +62,9 @@ class SocialLoginRequest {
   const SocialLoginRequest({ this.fbAccessToken, this.idToken, this.type });
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (fbAccessToken != null) json['fbAccessToken'] = fbAccessToken;
-    if (idToken != null) json['idToken'] = idToken;
-    if (type != null) json['type'] = type;
+    if (fbAccessToken != null) { json['fbAccessToken'] = fbAccessToken; }
+    if (idToken != null) { json['idToken'] = idToken; }
+    if (type != null) { json['type'] = type; }
     return json;
   }
 }
@@ -111,21 +111,21 @@ class ProfileUpdateRequest {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (avatar != null) json['avatar'] = avatar;
-    if (mimeType != null) json['mime_type'] = mimeType;
-    if (name != null) json['name'] = name;
-    if (location != null) json['location'] = location;
-    if (bio != null) json['bio'] = bio;
-    if (phone != null) json['phone'] = phone;
-    if (friendInfo != null) json['friend_info'] = friendInfo;
-    if (musicPreferencesIds != null) json['music_preferences_ids'] = musicPreferencesIds;
-    if (avatarVisibility != null) json['avatar_visibility'] = avatarVisibility;
-    if (nameVisibility != null) json['name_visibility'] = nameVisibility;
-    if (locationVisibility != null) json['location_visibility'] = locationVisibility;
-    if (bioVisibility != null) json['bio_visibility'] = bioVisibility;
-    if (phoneVisibility != null) json['phone_visibility'] = phoneVisibility;
-    if (friendInfoVisibility != null) json['friend_info_visibility'] = friendInfoVisibility;
-    if (musicPreferencesVisibility != null) json['music_preferences_visibility'] = musicPreferencesVisibility;
+    if (avatar != null) { json['avatar'] = avatar; }
+    if (mimeType != null) { json['mime_type'] = mimeType; }
+    if (name != null) { json['name'] = name; }
+    if (location != null) { json['location'] = location; }
+    if (bio != null) { json['bio'] = bio; }
+    if (phone != null) { json['phone'] = phone; }
+    if (friendInfo != null) { json['friend_info'] = friendInfo; }
+    if (musicPreferencesIds != null) { json['music_preferences_ids'] = musicPreferencesIds; }
+    if (avatarVisibility != null) { json['avatar_visibility'] = avatarVisibility; }
+    if (nameVisibility != null) { json['name_visibility'] = nameVisibility; }
+    if (locationVisibility != null) { json['location_visibility'] = locationVisibility; }
+    if (bioVisibility != null) { json['bio_visibility'] = bioVisibility; }
+    if (phoneVisibility != null) { json['phone_visibility'] = phoneVisibility; }
+    if (friendInfoVisibility != null) { json['friend_info_visibility'] = friendInfoVisibility; }
+    if (musicPreferencesVisibility != null) { json['music_preferences_visibility'] = musicPreferencesVisibility; }
     return json;
   }
 }
@@ -213,11 +213,11 @@ class PublicInfoUpdateRequest {
   
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (avatarBase64 != null) json['avatar_base64'] = avatarBase64;
-    if (mimeType != null) json['mime_type'] = mimeType;
-    if (gender != null) json['gender'] = gender;
-    if (location != null) json['location'] = location;
-    if (bio != null) json['bio'] = bio;
+    if (avatarBase64 != null) { json['avatar_base64'] = avatarBase64; }
+    if (mimeType != null) { json['mime_type'] = mimeType; }
+    if (gender != null) { json['gender'] = gender; }
+    if (location != null) { json['location'] = location; }
+    if (bio != null) { json['bio'] = bio; }
     return json;
   }
 }
@@ -374,7 +374,7 @@ class CreatePlaylistRequest {
   
   Map<String, dynamic> toJson() {
     final json = { 'name': name, 'description': description, 'public': public };
-    if (deviceUuid != null) json['device_uuid'] = deviceUuid!;
+    if (deviceUuid != null) { json['device_uuid'] = deviceUuid!; }
     return json;
   }
 }
@@ -403,7 +403,7 @@ class AddTrackRequest {
   const AddTrackRequest({required this.trackId, this.deviceUuid});
   Map<String, dynamic> toJson() {
     final json = <String, dynamic> { 'track_id': trackId };
-    if (deviceUuid != null) json['device_uuid'] = deviceUuid;
+    if (deviceUuid != null) { json['device_uuid'] = deviceUuid; }
     return json;
   }
 }

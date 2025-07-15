@@ -1,5 +1,7 @@
 // lib/core/app_builder.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import '../core/core.dart';
@@ -30,7 +32,6 @@ class AppBuilder {
     return [
       ChangeNotifierProxyProvider<DynamicThemeProvider, MusicPlayerService>(
         create: (context) {
-          final themeProvider = Provider.of<DynamicThemeProvider>(context, listen: false);
           return getIt<MusicPlayerService>();
         },
         update: (context, themeProvider, previous) => previous ?? getIt<MusicPlayerService>(),
@@ -54,7 +55,9 @@ class AppBuilder {
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
-    print('Generating route for: ${settings.name} with arguments: ${settings.arguments}');
+    if (kDebugMode) {
+      developer.log('Generating route for: ${settings.name} with arguments: ${settings.arguments}', name: 'AppBuilder');
+    }
 
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
@@ -127,7 +130,9 @@ class AppBuilder {
   }
 
   static Widget _buildProtectedRoute(RouteSettings settings) {
-    print('Building protected route: ${settings.name} with arguments: ${settings.arguments}');
+    if (kDebugMode) {
+      developer.log('Building protected route: ${settings.name} with arguments: ${settings.arguments}', name: 'AppBuilder');
+    }
     
     switch (settings.name) {
       case AppRoutes.home:
@@ -170,10 +175,14 @@ class AppBuilder {
 
   static Widget _buildPlaylistDetail(RouteSettings settings) {
     final args = settings.arguments;
-    print('Playlist detail args: $args, type: ${args.runtimeType}');
+    if (kDebugMode) {
+      developer.log('Playlist detail args: $args, type: ${args.runtimeType}', name: 'AppBuilder');
+    }
     
     if (args == null) {
-      print('No arguments provided for playlist detail');
+      if (kDebugMode) {
+        developer.log('No arguments provided for playlist detail', name: 'AppBuilder');
+      }
       return _buildErrorScreen('No playlist ID provided');
     }
 
@@ -183,16 +192,22 @@ class AppBuilder {
     } else if (args is Map<String, dynamic> && args.containsKey('id')) {
       playlistId = args['id'].toString();
     } else {
-      print('Invalid arguments type for playlist detail: ${args.runtimeType}');
+      if (kDebugMode) {
+        developer.log('Invalid arguments type for playlist detail: ${args.runtimeType}', name: 'AppBuilder');
+      }
       return _buildErrorScreen('Invalid playlist ID format');
     }
 
-    if (playlistId == null || playlistId.isEmpty || playlistId == 'null') {
-      print('Invalid playlist ID: $playlistId');
+    if (playlistId.isEmpty || playlistId == 'null') {
+      if (kDebugMode) {
+        developer.log('Invalid playlist ID: $playlistId', name: 'AppBuilder');
+      }
       return _buildErrorScreen('Invalid playlist ID');
     }
 
-    print('Building PlaylistDetailScreen with ID: $playlistId');
+    if (kDebugMode) {
+      developer.log('Building PlaylistDetailScreen with ID: $playlistId', name: 'AppBuilder');
+    }
     return PlaylistDetailScreen(playlistId: playlistId);
   }
 
@@ -205,8 +220,11 @@ class AppBuilder {
         track: args['track'] as Track?,
         playlistId: args['playlistId'] as String?,
       );
-    } else if (args is String) return TrackDetailScreen(trackId: args);
-    else if (args is Track) return TrackDetailScreen(track: args);
+    } else if (args is String) {
+      return TrackDetailScreen(trackId: args);
+    } else if (args is Track) {
+      return TrackDetailScreen(track: args);
+    }
     return _buildErrorScreen('Invalid track data');
   }
 

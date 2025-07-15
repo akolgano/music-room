@@ -1,5 +1,7 @@
 // lib/providers/auth_provider.dart
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/auth_service.dart';
@@ -19,7 +21,9 @@ class AuthProvider extends BaseProvider {
       _authService = getIt<AuthService>();
       _initializeAuthState();
     } catch (e) {
-      print('Error initializing AuthProvider: $e');
+      if (kDebugMode) {
+        developer.log('Error initializing AuthProvider: $e', name: 'AuthProvider');
+      }
       _authService = getIt<AuthService>();
     }
   }
@@ -35,7 +39,6 @@ class AuthProvider extends BaseProvider {
 
   final googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile', 'openid'],
-        serverClientId: dotenv.env['FIREBASE_WEB_CLIENT_ID'],
   );
 
 
@@ -48,7 +51,9 @@ class AuthProvider extends BaseProvider {
     try {
       notifyListeners();
     } catch (e) {
-      print('Error loading stored auth state: $e');
+      if (kDebugMode) {
+        developer.log('Error loading stored auth state: $e', name: 'AuthProvider');
+      }
     }
   }
 

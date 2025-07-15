@@ -25,10 +25,10 @@ class PlaylistDetailWidgets {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft, 
                     end: Alignment.bottomRight,
-                    colors: [AppTheme.primary.withOpacity(0.8), AppTheme.primary.withOpacity(0.4)],
+                    colors: [AppTheme.primary.withValues(alpha: 0.8), AppTheme.primary.withValues(alpha: 0.4)],
                   ),
                   boxShadow: [
-                    BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
+                    BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: playlist.imageUrl?.isNotEmpty == true
@@ -70,9 +70,9 @@ class PlaylistDetailWidgets {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -98,7 +98,7 @@ class PlaylistDetailWidgets {
     return Card(
       color: ThemeUtils.getSurface(context),
       elevation: 4,
-      shadowColor: ThemeUtils.getPrimary(context).withOpacity(0.1),
+      shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -120,7 +120,7 @@ class PlaylistDetailWidgets {
     return Card(
       color: ThemeUtils.getSurface(context),
       elevation: 4,
-      shadowColor: ThemeUtils.getPrimary(context).withOpacity(0.1),
+      shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -131,7 +131,7 @@ class PlaylistDetailWidgets {
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Play All'),
                 style: ThemeUtils.getPrimaryButtonStyle(context).copyWith(
-                  padding: MaterialStateProperty.all(
+                  padding: WidgetStateProperty.all(
                     const EdgeInsets.symmetric(vertical: 12)
                   ),
                 ),
@@ -144,7 +144,7 @@ class PlaylistDetailWidgets {
                 icon: const Icon(Icons.shuffle),
                 label: const Text('Shuffle'),
                 style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
-                  padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
+                  padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
                 ),
               ),
             ),
@@ -165,7 +165,7 @@ class PlaylistDetailWidgets {
     Key? key,
   }) {
     final track = playlistTrack.track;
-    if (track == null) return buildErrorTrackItem(key, playlistTrack, index);
+    if (track == null) { return buildErrorTrackItem(key, playlistTrack, index); }
 
     return Container(
       key: key,
@@ -173,7 +173,7 @@ class PlaylistDetailWidgets {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 1),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -236,8 +236,8 @@ class PlaylistDetailWidgets {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           decoration: BoxDecoration(
-            color: getPointsColor(currentPoints).withOpacity(0.1), borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: getPointsColor(currentPoints).withOpacity(0.3)),
+            color: getPointsColor(currentPoints).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: getPointsColor(currentPoints).withValues(alpha: 0.3)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -276,7 +276,7 @@ class PlaylistDetailWidgets {
           child: Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.2),
+              color: AppTheme.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 16),
@@ -289,7 +289,7 @@ class PlaylistDetailWidgets {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.2),
+                color: Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 14),
@@ -345,7 +345,7 @@ class PlaylistDetailWidgets {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: chipColor.withOpacity(0.2),
+        color: chipColor.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: chipColor, width: 1),
       ),
@@ -382,7 +382,7 @@ class PlaylistDetailWidgets {
     return Container(
       width: 48, 
       height: 48,
-      decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
       child: track.imageUrl?.isNotEmpty == true
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -411,7 +411,7 @@ class PlaylistDetailWidgets {
         leading: Container(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(color: Colors.red.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(8)),
           child: const Icon(Icons.music_off, color: Colors.white),
         ),
         title: Text(
@@ -435,7 +435,7 @@ class PlaylistDetailWidgets {
         leading: Container(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(8)),
           child: const Stack(
             alignment: Alignment.center,
             children: [
@@ -455,8 +455,8 @@ class PlaylistDetailWidgets {
   }
 
   static Color getPointsColor(int points) {
-    if (points > 5) return Colors.green;
-    if (points > 0) return Colors.orange;
+    if (points > 5) { return Colors.green; }
+    if (points > 0) { return Colors.orange; }
     return Colors.grey;
   }
 }

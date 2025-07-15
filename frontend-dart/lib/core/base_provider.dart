@@ -47,8 +47,11 @@ abstract class BaseProvider extends ChangeNotifier {
     setLoading(true);
     try {
       final result = await operation();
-      if (successMessage != null) setSuccess(successMessage);
-      else setLoading(false);
+      if (successMessage != null) {
+        setSuccess(successMessage);
+      } else {
+        setLoading(false);
+      }
       return result;
     } catch (e) {
       setError(errorMessage ?? e.toString());
@@ -64,8 +67,11 @@ abstract class BaseProvider extends ChangeNotifier {
     setLoading(true);
     try {
       await operation();
-      if (successMessage != null) setSuccess(successMessage);
-      else setLoading(false);
+      if (successMessage != null) {
+        setSuccess(successMessage);
+      } else {
+        setLoading(false);
+      }
       return true;
     } catch (e) {
       setError(errorMessage ?? e.toString());

@@ -8,10 +8,10 @@ class TrackSortBottomSheet extends StatelessWidget {
   final Function(TrackSortOption) onSortChanged;
 
   const TrackSortBottomSheet({
-    Key? key,
+    super.key,
     required this.currentSort,
     required this.onSortChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

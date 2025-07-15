@@ -1,10 +1,11 @@
 // lib/screens/profile/profile_screen.dart
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/profile_provider.dart';
@@ -16,7 +17,7 @@ import 'social_network_link_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
-  const ProfileScreen({Key? key, this.isEmbedded = false}) : super(key: key);
+  const ProfileScreen({super.key, this.isEmbedded = false});
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -49,7 +50,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         _musicPreferences = preferences;
       });
     } catch (e) {
-      print('Error loading music preferences: $e');
+      if (kDebugMode) {
+        developer.log('Error loading music preferences: $e', name: 'ProfileScreen');
+      }
     }
   }
 
@@ -104,11 +107,11 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                       ? null
                       : LinearGradient(begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [AppTheme.primary, AppTheme.primary.withOpacity(0.7)],
+                          colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7)],
                         ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
+                      color: AppTheme.primary.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -186,7 +189,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2), 
+              color: Colors.white.withValues(alpha: 0.2), 
               borderRadius: BorderRadius.circular(12)
             ),
             child: Row(

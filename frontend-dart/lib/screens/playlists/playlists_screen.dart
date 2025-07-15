@@ -7,7 +7,7 @@ import '../../models/models.dart';
 import '../base_screen.dart';
 
 class PublicPlaylistsScreen extends StatefulWidget {
-  const PublicPlaylistsScreen({Key? key}) : super(key: key);
+  const PublicPlaylistsScreen({super.key});
 
   @override
   State<PublicPlaylistsScreen> createState() => _PublicPlaylistsScreenState();

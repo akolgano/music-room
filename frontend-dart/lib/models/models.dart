@@ -1,4 +1,6 @@
 // lib/models/models.dart
+import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 export 'voting_models.dart';
 export 'api_models.dart';
 export 'sort_models.dart';
@@ -34,7 +36,7 @@ class Track {
   });
 
   String get backendId {
-    if (deezerTrackId != null) return deezerTrackId!;
+    if (deezerTrackId != null) { return deezerTrackId!; }
     return id;
   }
 
@@ -45,12 +47,12 @@ class Track {
   }
 
   static String toBackendId(String trackId) {
-    if (trackId.startsWith('deezer_')) return trackId.substring(7);
+    if (trackId.startsWith('deezer_')) { return trackId.substring(7); }
     return trackId;
   }
 
   static String toFrontendId(String trackId, {bool isDeezer = false}) {
-    if (isDeezer && !trackId.startsWith('deezer_')) return 'deezer_$trackId';
+    if (isDeezer && !trackId.startsWith('deezer_')) { return 'deezer_$trackId'; }
     return trackId;
   }
 
@@ -80,20 +82,20 @@ class Track {
   }
 
   static String _extractArtist(Map<String, dynamic> json) {
-    if (json['artist'] is String) return json['artist'];
-    if (json['artist'] is Map && json['artist']['name'] != null) return json['artist']['name'];
+    if (json['artist'] is String) { return json['artist']; }
+    if (json['artist'] is Map && json['artist']['name'] != null) { return json['artist']['name']; }
     return '';
   }
 
   static String _extractAlbum(Map<String, dynamic> json) {
-    if (json['album'] is String) return json['album'];
-    if (json['album'] is Map && json['album']['title'] != null) return json['album']['title'];
+    if (json['album'] is String) { return json['album']; }
+    if (json['album'] is Map && json['album']['title'] != null) { return json['album']['title']; }
     return '';
   }
 
   static String? _extractImageUrl(Map<String, dynamic> json) {
-    if (json['image_url'] != null) return json['image_url'];
-    if (json['album'] is Map) return json['album']['cover_medium'] ?? json['album']['cover'];
+    if (json['image_url'] != null) { return json['image_url']; }
+    if (json['album'] is Map) { return json['album']['cover_medium'] ?? json['album']['cover']; }
     return null;
   }
 
@@ -168,7 +170,9 @@ class PlaylistTrack {
       try {
         track = Track.fromJson(json['track'] as Map<String, dynamic>);
       } catch (e) {
-        print('Error parsing nested track: $e');
+        if (kDebugMode) {
+          developer.log('Error parsing nested track: $e', name: 'PlaylistTrack');
+        }
       }
     } 
     else if (json['deezer_track_id'] != null) {
@@ -225,7 +229,7 @@ class PlaylistTrack {
   };
 
   bool get needsTrackDetails {
-    if (track?.deezerTrackId == null) return false;
+    if (track?.deezerTrackId == null) { return false; }
     
     final needsArtist = track?.artist.isEmpty ?? true;
     final needsAlbum = track?.album.isEmpty ?? true;
@@ -235,7 +239,9 @@ class PlaylistTrack {
     final criticalInfoMissing = needsArtist || needsAlbum;
     
     if (criticalInfoMissing) {
-      print('Track ${track?.name} (Deezer ID: ${track?.deezerTrackId}) needs details: artist=${track?.artist.isEmpty}, album=${track?.album.isEmpty}');
+      if (kDebugMode) {
+        developer.log('Track ${track?.name} (Deezer ID: ${track?.deezerTrackId}) needs details: artist=${track?.artist.isEmpty}, album=${track?.album.isEmpty}', name: 'PlaylistTrack');
+      }
     }
     
     return criticalInfoMissing;
@@ -295,7 +301,7 @@ class PlaylistTrack {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) { return true; }
     return other is PlaylistTrack &&
            other.trackId == trackId &&
            other.position == position;
@@ -342,15 +348,15 @@ class BatchLibraryAddResult {
   bool get isCompleteSuccess => successCount == totalTracks && failureCount == 0;
   
   String get summaryMessage {
-    if (isCompleteSuccess) return 'All $totalTracks tracks added to your library successfully!';
-    else if (hasPartialSuccess) return '$successCount/$totalTracks tracks added to your library';
-    else return 'Failed to add tracks to your library';
+    if (isCompleteSuccess) { return 'All $totalTracks tracks added to your library successfully!'; }
+    else if (hasPartialSuccess) { return '$successCount/$totalTracks tracks added to your library'; }
+    else { return 'Failed to add tracks to your library'; }
   }
 
   String get detailedMessage {
     final parts = <String>[];
-    if (successCount > 0) parts.add('$successCount added');
-    if (failureCount > 0) parts.add('$failureCount failed');
+    if (successCount > 0) { parts.add('$successCount added'); }
+    if (failureCount > 0) { parts.add('$failureCount failed'); }
     return parts.join(', ');
   }
 
@@ -420,16 +426,16 @@ class BatchAddResult {
   bool get isCompleteSuccess => successCount == totalTracks;
   
   String get summaryMessage {
-    if (isCompleteSuccess) return 'All $totalTracks tracks added successfully!';
-    else if (hasPartialSuccess) return '$successCount/$totalTracks tracks added successfully';
-    else return 'Failed to add tracks to playlist';
+    if (isCompleteSuccess) { return 'All $totalTracks tracks added successfully!'; }
+    else if (hasPartialSuccess) { return '$successCount/$totalTracks tracks added successfully'; }
+    else { return 'Failed to add tracks to playlist'; }
   }
 
   String get detailedMessage {
     final parts = <String>[];
-    if (successCount > 0) parts.add('$successCount added');
-    if (duplicateCount > 0) parts.add('$duplicateCount duplicates');
-    if (failureCount > 0) parts.add('$failureCount failed');
+    if (successCount > 0) { parts.add('$successCount added'); }
+    if (duplicateCount > 0) { parts.add('$duplicateCount duplicates'); }
+    if (failureCount > 0) { parts.add('$failureCount failed'); }
     return parts.join(', ');
   }
 }
