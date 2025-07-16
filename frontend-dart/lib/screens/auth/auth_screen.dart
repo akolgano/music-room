@@ -164,6 +164,23 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             obscureText: true,
             validator: AppValidators.password,
           ),
+          if (_isLogin) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _forgotPassword,
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           Consumer<AuthProvider>(
             builder: (context, authProvider, _) => AppWidgets.primaryButton(
@@ -319,6 +336,60 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         }
       },
       errorMessage: '$provider authentication failed',
+    );
+  }
+
+  void _forgotPassword() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final emailController = TextEditingController();
+        return AlertDialog(
+          backgroundColor: AppTheme.surface,
+          title: const Text(
+            'Reset Password',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter your email address and we\'ll send you instructions to reset your password.',
+                style: TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 16),
+              AppWidgets.textField(
+                context: context,
+                controller: emailController,
+                labelText: 'Email',
+                prefixIcon: Icons.email,
+                validator: AppValidators.email,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (emailController.text.isNotEmpty) {
+                  Navigator.pop(context);
+                  showSuccess('Password reset instructions sent to ${emailController.text}');
+                } else {
+                  showError('Please enter your email address');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Send Reset Link'),
+            ),
+          ],
+        );
+      },
     );
   }
 

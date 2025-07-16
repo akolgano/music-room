@@ -124,16 +124,16 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                                 base64Decode(profileProvider.avatarUrl!.split(',')[1]),
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.person, size: 50, color: Colors.black),
+                                    _buildInitialsAvatar(profileProvider),
                               )
                             : Image.network(
                                 profileProvider.avatarUrl!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.person, size: 50, color: Colors.black),
+                                    _buildInitialsAvatar(profileProvider),
                               ),
                       )
-                    : const Icon(Icons.person, size: 50, color: Colors.black),
+                    : _buildInitialsAvatar(profileProvider),
               ),
               Positioned(
                 bottom: 0,
@@ -487,6 +487,51 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     );
+  }
+
+  Widget _buildInitialsAvatar(ProfileProvider profileProvider) {
+    final name = profileProvider.name ?? profileProvider.username ?? auth.displayName ?? 'User';
+    final initials = _getInitials(name);
+    
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primary,
+            AppTheme.primary.withValues(alpha: 0.7),
+            Colors.purple.withValues(alpha: 0.8),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    
+    final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
+    if (words.isEmpty) return 'U';
+    
+    if (words.length == 1) {
+      return words[0].substring(0, 1).toUpperCase();
+    } else {
+      return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
+    }
   }
 
   Widget _buildVisibilityIcon(VisibilityLevel? visibility) {
