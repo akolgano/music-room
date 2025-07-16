@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/music_service.dart';
+import '../services/track_cache_service.dart';
+import '../services/api_service.dart';
 import '../models/models.dart';
 import '../models/sort_models.dart';
 import '../services/track_sorting_service.dart';
 
 class MusicProvider extends BaseProvider {
   final MusicService _musicService = getIt<MusicService>();
+  final TrackCacheService _trackCacheService = getIt<TrackCacheService>();
+  final ApiService _apiService = getIt<ApiService>();
 
   List<Playlist> _playlists = [];
   List<Track> _searchResults = [];
@@ -110,7 +114,7 @@ class MusicProvider extends BaseProvider {
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
       setLoading(true);
-      final track = await _musicService.getDeezerTrack(trackId, token);
+      final track = await _trackCacheService.getTrackDetails(trackId, token, _apiService);
       setLoading(false);
       return track;
     } catch (e) {
@@ -135,7 +139,25 @@ class MusicProvider extends BaseProvider {
       () => _musicService.getPlaylistTracksWithDetails(playlistId, token),
       errorMessage: 'Failed to load playlist tracks',
     );
-    if (result != null) _playlistTracks = result;
+    if (result != null) {
+      _playlistTracks = result;
+      
+      // Preload track details for tracks that need them
+      final trackIdsToPreload = <String>[];
+      for (final playlistTrack in _playlistTracks) {
+        final track = playlistTrack.track;
+        if (track?.deezerTrackId != null && 
+            (track?.artist.isEmpty == true || track?.album.isEmpty == true) &&
+            !_trackCacheService.isTrackCached(track!.deezerTrackId!)) {
+          trackIdsToPreload.add(track.deezerTrackId!);
+        }
+      }
+      
+      if (trackIdsToPreload.isNotEmpty) {
+        // Preload tracks in the background
+        _trackCacheService.preloadTracks(trackIdsToPreload, token, _apiService);
+      }
+    }
   }
 
   bool isTrackInPlaylist(String trackId) {

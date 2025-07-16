@@ -9,6 +9,7 @@ import '../providers/dynamic_theme_provider.dart';
 class MusicPlayerService with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final DynamicThemeProvider themeProvider;
+  bool _disposed = false;
 
   Track? _currentTrack;
   bool _isPlaying = false;
@@ -23,23 +24,34 @@ class MusicPlayerService with ChangeNotifier {
 
   MusicPlayerService({required this.themeProvider}) {
     _audioPlayer.positionStream.listen((position) {
-      _position = position;
-      notifyListeners();
+      if (!_disposed) {
+        _position = position;
+        notifyListeners();
+      }
     });
 
     _audioPlayer.durationStream.listen((duration) {
-      _duration = duration ?? Duration.zero;
-      notifyListeners();
+      if (!_disposed) {
+        _duration = duration ?? Duration.zero;
+        notifyListeners();
+      }
     });
 
     _audioPlayer.playerStateStream.listen((state) {
-      _isPlaying = state.playing;
-      notifyListeners();
+      if (!_disposed) {
+        _isPlaying = state.playing;
+        notifyListeners();
+      }
     });
 
     _audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
-        _onTrackCompleted();
+        // Add a small delay to ensure the track has truly completed
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (!_disposed) {
+            _onTrackCompleted();
+          }
+        });
       }
     });
   }
@@ -171,9 +183,24 @@ class MusicPlayerService with ChangeNotifier {
   }
 
   void _onTrackCompleted() {
-    if (hasNextTrack || _isRepeatMode) {
+    if (kDebugMode) {
+      developer.log('Track completed: ${_currentTrack?.name ?? "Unknown"}', name: 'MusicPlayerService');
+    }
+    
+    if (_isRepeatMode && _playlist.isNotEmpty) {
+      if (kDebugMode) {
+        developer.log('Repeat mode enabled, playing next track', name: 'MusicPlayerService');
+      }
+      playNext();
+    } else if (hasNextTrack) {
+      if (kDebugMode) {
+        developer.log('Auto-playing next track', name: 'MusicPlayerService');
+      }
       playNext();
     } else {
+      if (kDebugMode) {
+        developer.log('No more tracks to play, stopping', name: 'MusicPlayerService');
+      }
       stop();
     }
   }
@@ -269,6 +296,7 @@ class MusicPlayerService with ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _audioPlayer.dispose();
     super.dispose();
   }

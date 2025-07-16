@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,6 +10,7 @@ import 'widgets/network_connectivity_widget.dart';
 import 'widgets/app_widgets.dart';
 import 'providers/dynamic_theme_provider.dart';
 
+// api.yaml contains all the updated backend informations
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
