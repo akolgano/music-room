@@ -58,13 +58,17 @@ class EmailOtpRequest {
 class SocialLoginRequest {
   final String? fbAccessToken; 
   final String? idToken;       
-  final String? type;          
-  const SocialLoginRequest({ this.fbAccessToken, this.idToken, this.type });
+  final String? socialId;
+  final String? socialName;
+  final String? socialEmail;          
+  const SocialLoginRequest({this.fbAccessToken, this.idToken, this.socialId, this.socialName, this.socialEmail});
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (fbAccessToken != null) { json['fbAccessToken'] = fbAccessToken; }
-    if (idToken != null) { json['idToken'] = idToken; }
-    if (type != null) { json['type'] = type; }
+    if (fbAccessToken != null) json['fbAccessToken'] = fbAccessToken;
+    if (idToken != null) json['idToken'] = idToken;
+    if (socialId != null) json['socialId'] = socialId;
+    if (socialName != null) json['socialName'] = socialName;
+    if (socialEmail != null) json['socialEmail'] = socialEmail;
     return json;
   }
 }
@@ -72,12 +76,16 @@ class SocialLoginRequest {
 class SocialLinkRequest {
   final String? fbAccessToken; 
   final String? idToken;       
-  final String? type;          
-  const SocialLinkRequest({ this.fbAccessToken, this.idToken, this.type });
+  final String? socialId;
+  final String? socialName;
+  final String? socialEmail;          
+  const SocialLinkRequest({ this.fbAccessToken, this.idToken, this.socialId, this.socialName, this.socialEmail });
   Map<String, dynamic> toJson() => {
     if (fbAccessToken != null) 'fbAccessToken': fbAccessToken,
     if (idToken != null) 'idToken': idToken,
-    if (type != null) 'type': type,
+    if (socialId != null) 'socialId': socialId,
+    if (socialName != null) 'socialName': socialName,
+    if (socialEmail != null) 'socialEmail': socialEmail,
   };
 }
 

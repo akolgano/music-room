@@ -10,7 +10,6 @@ import '../models/api_models.dart';
 import '../core/core.dart' hide BaseProvider;
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthProvider extends BaseProvider {
@@ -113,40 +112,26 @@ class AuthProvider extends BaseProvider {
     );
   }
 
-  Future<bool> googleLoginApp() async {
+  Future<bool> googleLogin() async {
     return await executeBool(
       () async {
         final user = await googleSignIn.signIn();
         if (user == null) throw Exception("Google login failed!");
         
+        final socialId = user.id;
+        final socialEmail = user.email;
+        final socialName = user.displayName;
+
         final auth = await user.authentication;
         final idToken = auth.idToken;
 
         if (idToken != null) {
-          await _authService.googleLogin('app', idToken);
+          await _authService.googleLoginApp(idToken);
         }
         else {
-          throw Exception("Google login failed!");
+          await _authService.googleLoginWeb(socialId, socialEmail, socialName);
         }
       
-      },
-      successMessage: 'Google login successful!',
-      errorMessage: 'Google login failed',
-    );
-  }
-
-  Future<bool> googleLoginWeb(GoogleSignInUserData? account) async {
-    return await executeBool(
-      () async {
-        
-        var idToken = account?.idToken;
-
-        if (idToken != null) {
-          await _authService.googleLogin('web', idToken);
-        }
-        else {
-          throw Exception("Google login failed!");
-        }
       },
       successMessage: 'Google login successful!',
       errorMessage: 'Google login failed',

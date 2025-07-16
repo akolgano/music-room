@@ -181,6 +181,23 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
               ),
             ),
           ],
+          if (_isLogin) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _forgotPassword,
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           Consumer<AuthProvider>(
             builder: (context, authProvider, _) => AppWidgets.primaryButton(
@@ -324,7 +341,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         final authProvider = getProvider<AuthProvider>();
         bool success;
         if (provider == 'Google') {
-          success = await authProvider.googleLoginApp();
+          success = await authProvider.googleLogin();
         }
         else {
           success = await authProvider.facebookLogin();

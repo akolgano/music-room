@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';

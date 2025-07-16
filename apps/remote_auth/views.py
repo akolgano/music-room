@@ -32,8 +32,6 @@ def facebook_login(request):
 
     fb_access_token = request.data.get('fbAccessToken')
 
-    print("fb_access_token: ", fb_access_token)
-
     if not fb_access_token:
         return JsonResponse({'error': 'Access token not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -62,30 +60,30 @@ def facebook_login(request):
 @api_view(['POST'])
 def google_login(request):
     id_token = request.data.get('idToken')
-    type = request.data.get('type')
-    
-    if not id_token:
-        return JsonResponse({'error': 'idToken token not provided'}, status=status.HTTP_400_BAD_REQUEST)
-    if not type:
-        return JsonResponse({'error': 'type not provided'}, status=status.HTTP_400_BAD_REQUEST)
+    social_id = request.data.get('socialId')
+    email = request.data.get('socialEmail')
+    username = request.data.get('socialName')
 
-    if type == 'web':
-        google_client_id = GOOGLE_CLIENT_ID_WEB
-    if type == 'app':
-        google_client_id = FIREBASE_WEB_CLIENT_ID
+    google_client_id = FIREBASE_WEB_CLIENT_ID
     
-    try:
-        id_info = google_id_token.verify_oauth2_token(id_token, google_requests.Request(), google_client_id)
-    except ValueError:
-        return JsonResponse({'error': 'Invalid idToken'}, status=status.HTTP_400_BAD_REQUEST)
+    if id_token:
+        try:
+            id_info = google_id_token.verify_oauth2_token(id_token, google_requests.Request(), google_client_id)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid idToken'}, status=status.HTTP_400_BAD_REQUEST)
 
-    email = id_info.get('email')
-    username = id_info.get('name') or id_info.get('email').split('@')[0]
+        email = id_info.get('email')
+        username = id_info.get('name') or id_info.get('email').split('@')[0]
+        social_id = id_info.get('sub')
+
     username = username.replace(' ', '_')
-    social_id = id_info.get('sub')
 
+    if not username:
+        return JsonResponse({'error': 'Invalid social username'}, status=status.HTTP_400_BAD_REQUEST)
     if not email:
-            return JsonResponse({'error': 'Invalid login credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Invalid social email'}, status=status.HTTP_400_BAD_REQUEST)
+    if not social_id:
+        return JsonResponse({'error': 'Invalid social id'}, status=status.HTTP_400_BAD_REQUEST)
 
     return social_login(email, username, social_id, 'google')
 
@@ -174,29 +172,30 @@ def facebook_link(request):
 @permission_classes([IsAuthenticated])
 def google_link(request):
     id_token = request.data.get('idToken')
-    type = request.data.get('type')
     user = request.user
+    social_id = request.data.get('socialId')
+    email = request.data.get('socialEmail')
+    username = request.data.get('socialName')
 
-    if not id_token:
-        return JsonResponse({'error': 'idToken token not provided'}, status=status.HTTP_400_BAD_REQUEST)
+    google_client_id = FIREBASE_WEB_CLIENT_ID
 
-    if type == 'web':
-        google_client_id = GOOGLE_CLIENT_ID_WEB
-    if type == 'app':
-        google_client_id = FIREBASE_WEB_CLIENT_ID
+    if id_token:
+        try:
+            id_info = google_id_token.verify_oauth2_token(id_token, google_requests.Request(), google_client_id)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid idToken'}, status=status.HTTP_400_BAD_REQUEST)
+        email = id_info.get('email')
+        username = id_info.get('name') or id_info.get('email').split('@')[0]
+        social_id = id_info.get('sub')
 
-    try:
-        id_info = google_id_token.verify_oauth2_token(id_token, google_requests.Request(), google_client_id)
-    except ValueError:
-        return JsonResponse({'error': 'Invalid idToken'}, status=status.HTTP_400_BAD_REQUEST)
-
-    email = id_info.get('email')
-    username = id_info.get('name') or id_info.get('email').split('@')[0]
     username = username.replace(' ', '_')
-    social_id = id_info.get('sub')
 
+    if not username:
+        return JsonResponse({'error': 'Invalid social username'}, status=status.HTTP_400_BAD_REQUEST)
     if not email:
-            return JsonResponse({'error': 'Invalid login credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Invalid social email'}, status=status.HTTP_400_BAD_REQUEST)
+    if not social_id:
+        return JsonResponse({'error': 'Invalid social id'}, status=status.HTTP_400_BAD_REQUEST)
 
     return social_link(user, email, username, social_id, 'google')
 
