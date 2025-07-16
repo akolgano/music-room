@@ -10,6 +10,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../services/api_service.dart';
+import '../../services/track_cache_service.dart';
 import '../../core/service_locator.dart'; 
 import '../../models/models.dart';
 import '../../models/sort_models.dart';
@@ -31,6 +32,7 @@ class PlaylistDetailScreen extends StatefulWidget {
 // Voting is required as per PDF requirements
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   late final ApiService _apiService;
+  late final TrackCacheService _trackCacheService;
   final Set<String> _fetchingTrackDetails = {};
   final List<Completer> _pendingOperations = []; 
   Playlist? _playlist;
@@ -46,6 +48,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   void initState() {
     super.initState();
     _apiService = getIt<ApiService>();
+    _trackCacheService = getIt<TrackCacheService>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _votingProvider = getProvider<VotingProvider>(listen: false);
@@ -389,9 +392,44 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         !mounted ||
         (track != null && track.artist.isNotEmpty && track.album.isNotEmpty)) return;
 
+    // Check if track is already cached
+    if (_trackCacheService.isTrackCached(deezerTrackId)) {
+      final cachedTrack = await _trackCacheService.getTrackDetails(deezerTrackId, auth.token!, _apiService);
+      if (cachedTrack != null && mounted) {
+        setState(() {
+          if (index < _tracks.length && _tracks[index].trackId == playlistTrack.trackId) {
+            _tracks[index] = PlaylistTrack(
+              trackId: playlistTrack.trackId,
+              name: playlistTrack.name,
+              position: playlistTrack.position,
+              points: playlistTrack.points,
+              track: cachedTrack,
+            );
+          }
+        });
+        
+        final musicProvider = getProvider<MusicProvider>();
+        final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
+        final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
+        if (providerIndex != -1) {
+          providerTracks[providerIndex] = PlaylistTrack(
+            trackId: playlistTrack.trackId,
+            name: playlistTrack.name,
+            position: playlistTrack.position,
+            points: playlistTrack.points, 
+            track: cachedTrack,
+          );
+          musicProvider.playlistTracks.clear();
+          musicProvider.playlistTracks.addAll(providerTracks);
+          musicProvider.notifyListeners();
+        }
+      }
+      return;
+    }
+
     _fetchingTrackDetails.add(deezerTrackId);
     try {
-      final trackDetails = await _apiService.getDeezerTrack(deezerTrackId, auth.token!);
+      final trackDetails = await _trackCacheService.getTrackDetails(deezerTrackId, auth.token!, _apiService);
       if (!mounted) return;
       
       if (trackDetails != null) {
@@ -415,7 +453,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             trackId: playlistTrack.trackId,
             name: playlistTrack.name,
             position: playlistTrack.position,
-            points: playlistTrack.points, track: trackDetails,
+            points: playlistTrack.points, 
+            track: trackDetails,
           );
           musicProvider.playlistTracks.clear();
           musicProvider.playlistTracks.addAll(providerTracks);

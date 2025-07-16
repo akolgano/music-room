@@ -132,8 +132,9 @@ class ProfileProvider extends BaseProvider {
       () async {
         resetValues();
         
-        final userData = await _apiService.getUserData(token);
-        _userId = userData['id'];
+        final formattedToken = token != null ? 'Token $token' : null;
+        final userData = await _apiService.getUserData(formattedToken);
+        _userId = userData['id']?.toString();
         _username = userData['username'];
         _userEmail = userData['email'];
         _isPasswordUsable = userData['is_password_usable'] as bool;
@@ -147,7 +148,7 @@ class ProfileProvider extends BaseProvider {
           _socialId = social['social_id'];
         }
 
-        final profileData = await _apiService.getProfileData(token!);
+        final profileData = await _apiService.getProfileData(formattedToken!);
         _avatar = profileData['avatar'];
         _name = profileData['name'];
         _location = profileData['location'];
@@ -178,7 +179,8 @@ class ProfileProvider extends BaseProvider {
   Future<bool> userPasswordChange(String? token, String currentPassword, String newPassword) async {
     return await executeBool(
       () async {
-        await _apiService.userPasswordChange(token!, PasswordChangeRequest(
+        final formattedToken = 'Token $token';
+        await _apiService.userPasswordChange(formattedToken, PasswordChangeRequest(
           currentPassword: currentPassword, 
           newPassword: newPassword
         ));
@@ -194,7 +196,8 @@ class ProfileProvider extends BaseProvider {
         if (result.status == LoginStatus.success) {
           final fbAccessToken = result.accessToken!.tokenString;
           final request = SocialLinkRequest(fbAccessToken: fbAccessToken);
-          await _apiService.facebookLink(token!, request);
+          final formattedToken = 'Token $token';
+          await _apiService.facebookLink(formattedToken, request);
         } else {
           throw Exception(result.message ?? "Facebook login failed!");
         }
@@ -217,12 +220,13 @@ class ProfileProvider extends BaseProvider {
 
         final auth = await user.authentication;
         final idToken = auth.idToken;
+        final formattedToken = 'Token $token';
 
         if (idToken != null) {
-          await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken));
+          await _apiService.googleLink(formattedToken, SocialLinkRequest(idToken: idToken));
         }
         else {
-          await _apiService.googleLink(token!, SocialLinkRequest(socialId: socialId, socialEmail: socialEmail, socialName: socialName));
+          await _apiService.googleLink(formattedToken, SocialLinkRequest(socialId: socialId, socialEmail: socialEmail, socialName: socialName));
         }
       },
       successMessage: 'Google account linked successfully',
@@ -252,7 +256,8 @@ class ProfileProvider extends BaseProvider {
         if (friendInfo != null) updateData['friend_info'] = friendInfo;
         if (musicPreferencesIds != null) updateData['music_preferences_ids'] = musicPreferencesIds;
 
-        await _apiService.updateProfile(token!, updateData);
+        final formattedToken = 'Token $token';
+        await _apiService.updateProfile(formattedToken, updateData);
 
         if (avatarBase64 != null) _avatar = avatarBase64;
         if (name != null) _name = name;
@@ -287,7 +292,8 @@ class ProfileProvider extends BaseProvider {
         if (friendInfoVisibility != null) updateData['friend_info_visibility'] = friendInfoVisibility.value;
         if (musicPreferencesVisibility != null) updateData['music_preferences_visibility'] = musicPreferencesVisibility.value;
 
-        await _apiService.updateProfile(token!, updateData);
+        final formattedToken = 'Token $token';
+        await _apiService.updateProfile(formattedToken, updateData);
 
         if (avatarVisibility != null) _avatarVisibility = avatarVisibility;
         if (nameVisibility != null) _nameVisibility = nameVisibility;
@@ -304,7 +310,8 @@ class ProfileProvider extends BaseProvider {
 
   Future<List<Map<String, dynamic>>> getMusicPreferences(String token) async {
     try {
-      return await _apiService.getMusicPreferences(token);
+      final formattedToken = 'Token $token';
+      return await _apiService.getMusicPreferences(formattedToken);
     } catch (e) {
       if (kDebugMode) {
         developer.log('Error getting music preferences: $e', name: 'ProfileProvider');
@@ -316,7 +323,8 @@ class ProfileProvider extends BaseProvider {
   Future<bool> deleteAvatar(String? token) async {
     return await executeBool(
       () async {
-        await _apiService.deleteAvatar(token!);
+        final formattedToken = 'Token $token';
+        await _apiService.deleteAvatar(formattedToken);
         _avatar = null;
       },
       successMessage: 'Avatar deleted successfully',
