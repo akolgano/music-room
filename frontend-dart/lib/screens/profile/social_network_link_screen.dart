@@ -101,18 +101,20 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
 
     await runAsyncAction(
       () async {
-        SocialLoginResult result;
-        if (provider == 'Facebook') result = await SocialLoginUtils.loginWithFacebook();
-        else if (provider == 'Google') result = await SocialLoginUtils.loginWithGoogle();
-        else throw Exception('Unknown social provider: $provider');
-        if (!result.success || result.token == null) throw Exception(result.error ?? '$provider login failed');
+
         final profileProvider = getProvider<ProfileProvider>();
-        if (provider == 'Facebook') await profileProvider.facebookLink(auth.token);
-        else if (provider == 'Google') await profileProvider.googleLinkApp(auth.token);
+        if (provider == 'Facebook') {
+          await profileProvider.facebookLink(auth.token);
+        }
+        else if (provider == 'Google') {
+          await profileProvider.googleLink(auth.token);
+        }
         await profileProvider.loadProfile(auth.token);
+
       },
       successMessage: '$provider account linked successfully!',
       errorMessage: 'Failed to link $provider account',
     );
+
   }
 }

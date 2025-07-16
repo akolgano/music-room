@@ -307,7 +307,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         final authProvider = getProvider<AuthProvider>();
         bool success;
         if (provider == 'Google') {
-          success = await authProvider.googleLoginApp();
+          success = await authProvider.googleLogin();
         }
         else {
           success = await authProvider.facebookLogin();

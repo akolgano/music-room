@@ -65,8 +65,15 @@ class AuthService {
     return result;
   }
 
-  Future<AuthResult> googleLogin(String type, String token) async {
-    final request = SocialLoginRequest(type: type, idToken: token);
+  Future<AuthResult> googleLoginApp(String idToken) async {
+    final request = SocialLoginRequest(idToken: idToken);
+    final result = await _api.googleLogin(request);
+    await _storeAuth(result.token, result.user);
+    return result;
+  }
+
+  Future<AuthResult> googleLoginWeb(String socialId, String socialEmail, String? socialName) async {
+    final request = SocialLoginRequest(socialId: socialId, socialEmail: socialEmail, socialName: socialName);
     final result = await _api.googleLogin(request);
     await _storeAuth(result.token, result.user);
     return result;

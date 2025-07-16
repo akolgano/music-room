@@ -42,6 +42,11 @@ extension VisibilityLevelExtension on VisibilityLevel {
 class ProfileProvider extends BaseProvider { 
   final ApiService _apiService;  
 
+  final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile', 'openid'],
+        serverClientId: dotenv.env['FIREBASE_WEB_CLIENT_ID'],
+  );
+
   String? _userId;
   String? _username;
   String? _userEmail;
@@ -190,24 +195,35 @@ class ProfileProvider extends BaseProvider {
           final fbAccessToken = result.accessToken!.tokenString;
           final request = SocialLinkRequest(fbAccessToken: fbAccessToken);
           await _apiService.facebookLink(token!, request);
-        } else throw Exception("Facebook login failed!");
+        } else {
+          throw Exception(result.message ?? "Facebook login failed!");
+        }
       },
       successMessage: 'Facebook account linked successfully',
       errorMessage: 'Failed to link Facebook account',
     );
   }
 
-  Future<bool> googleLinkApp(String? token) async {
+  Future<bool> googleLink(String? token) async {
     return await executeBool(
       () async {
-        final googleSignIn = SocialLoginUtils.googleSignInInstance;
-        if (googleSignIn == null) throw Exception("Google Sign-In not initialized");
-        final GoogleSignInAccount? user = await googleSignIn.signIn();
+
+        final user = await googleSignIn.signIn();
         if (user == null) throw Exception("Google login failed!");
-        final GoogleSignInAuthentication auth = await user.authentication;
+
+        final socialId = user.id;
+        final socialEmail = user.email;
+        final socialName = user.displayName;
+
+        final auth = await user.authentication;
         final idToken = auth.idToken;
-        if (idToken == null) throw Exception("Google login failed!");
-        await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken, type: 'app'));
+
+        if (idToken != null) {
+          await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken));
+        }
+        else {
+          await _apiService.googleLink(token!, SocialLinkRequest(socialId: socialId, socialEmail: socialEmail, socialName: socialName));
+        }
       },
       successMessage: 'Google account linked successfully',
       errorMessage: 'Failed to link Google account',
