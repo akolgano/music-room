@@ -16,7 +16,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -49,12 +48,14 @@ INSTALLED_APPS = [
     'apps.remote_auth',
     'apps.profile',
     'drf_spectacular',
+    'drf_api_logger',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -208,3 +209,7 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+DRF_API_LOGGER_DATABASE = True
+DRF_API_LOGGER_SIGNAL = True
+DRF_API_LOGGER_EXCLUDE_KEYS = ['password', 'token', 'AUTHORIZATION', 'current_password', 'new_password']
