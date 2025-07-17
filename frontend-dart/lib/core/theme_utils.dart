@@ -1,12 +1,10 @@
-// lib/core/theme_utils.dart
 import 'package:flutter/material.dart';
-import '../providers/dynamic_theme_provider.dart';
 import '../core/core.dart';
 
 class ThemeUtils {
   static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
   static Color getSurface(BuildContext context) => Theme.of(context).colorScheme.surface;
-  static Color getBackground(BuildContext context) => Theme.of(context).colorScheme.background;
+  static Color getBackground(BuildContext context) => Theme.of(context).colorScheme.surface;
   static Color getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
   static Color getOnPrimary(BuildContext context) => Theme.of(context).colorScheme.onPrimary;
   static Color getError(BuildContext context) => Theme.of(context).colorScheme.error;
@@ -127,7 +125,6 @@ class ThemeUtils {
     String? hintText, 
     IconData? prefixIcon
   }) {
-    final theme = Theme.of(context);
     return InputDecoration(
       labelText: labelText,
       hintText: hintText,

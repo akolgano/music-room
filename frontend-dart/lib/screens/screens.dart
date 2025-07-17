@@ -15,4 +15,5 @@ export 'profile/user_password_change_screen.dart';
 export 'friends/add_friend_screen.dart';
 export 'friends/friend_request_screen.dart';
 export 'friends/friends_list_screen.dart';
+export 'deezer/deezer_auth_screen.dart';
 export 'base_screen.dart';

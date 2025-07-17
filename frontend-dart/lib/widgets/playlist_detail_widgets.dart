@@ -1,12 +1,10 @@
 // lib/widgets/playlist_detail_widgets.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../providers/voting_provider.dart';
 import '../../models/models.dart';
 import '../../core/core.dart';
-import '../../widgets/widgets.dart';
 import '../../core/theme_utils.dart';
 
 class PlaylistDetailWidgets {

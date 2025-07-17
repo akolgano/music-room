@@ -330,7 +330,9 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           success = await authProvider.facebookLogin();
         }
         if (success) {
-          Navigator.pushReplacementNamed(context, AppRoutes.home);
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, AppRoutes.home);
+          }
         } else {
           throw Exception(authProvider.errorMessage ?? '$provider authentication failed');
         }

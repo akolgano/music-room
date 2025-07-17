@@ -1,10 +1,7 @@
 // lib/screens/friends/friend_request_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
-import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 
 class FriendRequestScreen extends StatefulWidget {

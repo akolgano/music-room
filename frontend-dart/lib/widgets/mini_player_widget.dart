@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/music_player_service.dart';
 import '../core/core.dart';
-import '../models/models.dart';
 
 class MiniPlayerWidget extends StatelessWidget {
   const MiniPlayerWidget({super.key});
@@ -110,6 +109,31 @@ class MiniPlayerWidget extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                if (playerService.isUsingFullAudio) ...[
+                                  const Text(
+                                    ' • ',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(3),
+                                      border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 0.5),
+                                    ),
+                                    child: const Text(
+                                      'FULL AUDIO',
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 if (playerService.hasPlaylist) ...[
                                   const Text(
                                     ' • ',
@@ -248,7 +272,7 @@ class MiniPlayerWidget extends StatelessWidget {
       );
     }
 
-    return Container(
+    return SizedBox(
       height: 3,
       child: SliderTheme(
         data: SliderTheme.of(context).copyWith(

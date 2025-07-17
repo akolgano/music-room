@@ -1,10 +1,9 @@
-// lib/services/music_player_service.dart
 import 'dart:developer' as developer;
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier, kDebugMode;
 import 'package:just_audio/just_audio.dart';
 import '../models/models.dart';
 import '../providers/dynamic_theme_provider.dart';
+import 'deezer_service.dart';
 
 class MusicPlayerService with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -21,6 +20,7 @@ class MusicPlayerService with ChangeNotifier {
   String? _playlistId;
   bool _isShuffleMode = false;
   bool _isRepeatMode = false;
+  bool _isUsingFullAudio = false;
 
   MusicPlayerService({required this.themeProvider}) {
     _audioPlayer.positionStream.listen((position) {
@@ -46,7 +46,6 @@ class MusicPlayerService with ChangeNotifier {
 
     _audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
-        // Add a small delay to ensure the track has truly completed
         Future.delayed(const Duration(milliseconds: 100), () {
           if (!_disposed) {
             _onTrackCompleted();
@@ -68,6 +67,8 @@ class MusicPlayerService with ChangeNotifier {
   bool get hasPlaylist => _playlist.isNotEmpty;
   bool get hasPreviousTrack => _currentIndex > 0;
   bool get hasNextTrack => _currentIndex >= 0 && _currentIndex < _playlist.length - 1;
+  bool get isUsingFullAudio => _isUsingFullAudio;
+  bool get canPlayFullAudio => DeezerService.instance.canPlayFullAudio;
 
   String get currentTrackInfo {
     if (_currentTrack == null) return '';
@@ -96,14 +97,43 @@ class MusicPlayerService with ChangeNotifier {
     }
   }
 
-  Future<void> playTrack(Track track, String url) async {
+  Future<void> playTrack(Track track, String? fallbackUrl) async {
     try {
       await _audioPlayer.stop();
       _position = Duration.zero;
       _duration = Duration.zero;
       _currentTrack = track;
+      _isUsingFullAudio = false;
       
-      await _audioPlayer.setUrl(url);
+      String? audioUrl;
+      
+      if (track.deezerTrackId != null && DeezerService.instance.canPlayFullAudio) {
+        try {
+          audioUrl = await DeezerService.instance.getTrackStreamUrl(track.deezerTrackId!);
+          if (audioUrl != null) {
+            _isUsingFullAudio = true;
+            if (kDebugMode) {
+              developer.log('Using Deezer full audio for: ${track.name}', name: 'MusicPlayerService');
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            developer.log('Failed to get Deezer full audio, falling back to preview: $e', name: 'MusicPlayerService');
+          }
+        }
+      }
+      
+      if (audioUrl == null) {
+        audioUrl = fallbackUrl ?? track.previewUrl;
+        if (audioUrl == null) {
+          throw Exception('No audio URL available for track: ${track.name}');
+        }
+        if (kDebugMode) {
+          developer.log('Using preview audio for: ${track.name}', name: 'MusicPlayerService');
+        }
+      }
+      
+      await _audioPlayer.setUrl(audioUrl);
       await _audioPlayer.play();
       
       if (track.imageUrl != null) {
@@ -111,7 +141,7 @@ class MusicPlayerService with ChangeNotifier {
       }
       
       if (kDebugMode) {
-        developer.log('Successfully started playing: ${track.name}', name: 'MusicPlayerService');
+        developer.log('Successfully started playing: ${track.name} (Full audio: $_isUsingFullAudio)', name: 'MusicPlayerService');
       }
       notifyListeners();
     } catch (e) {
@@ -122,6 +152,7 @@ class MusicPlayerService with ChangeNotifier {
       _isPlaying = false;
       _position = Duration.zero;
       _duration = Duration.zero;
+      _isUsingFullAudio = false;
       notifyListeners();
       rethrow;
     }
@@ -133,10 +164,10 @@ class MusicPlayerService with ChangeNotifier {
     final playlistTrack = _playlist[_currentIndex];
     final track = playlistTrack.track;
     
-    if (track?.previewUrl != null) {
-      await playTrack(track!, track.previewUrl!);
+    if (track != null) {
+      await playTrack(track, track.previewUrl);
     } else {
-      throw Exception('No preview available for track: ${track?.name ?? playlistTrack.name}');
+      throw Exception('No track available for: ${playlistTrack.name}');
     }
   }
 

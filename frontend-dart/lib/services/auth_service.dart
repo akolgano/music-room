@@ -1,10 +1,8 @@
-// lib/services/auth_service.dart
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../models/models.dart';
-import '../models/api_models.dart';
 
 class AuthService {
   final ApiService _api;
@@ -57,7 +55,6 @@ class AuthService {
   }
 
 
-  // Facebook and google login is project requirement, they must be implemented
   Future<AuthResult> facebookLogin(String accessToken) async {
     final request = SocialLoginRequest(fbAccessToken: accessToken);
     final result = await _api.facebookLogin(request);

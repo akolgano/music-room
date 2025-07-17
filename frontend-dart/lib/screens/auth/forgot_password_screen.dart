@@ -8,7 +8,7 @@ class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
@@ -259,9 +259,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _emailController.text,
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("OTP Sent to your email! Please input OTP and new password in 5 minutes!"),
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("OTP Sent to your email! Please input OTP and new password in 5 minutes!"),
             backgroundColor: AppTheme.onSurface,
             duration: Duration(seconds: 5),
             action: SnackBarAction(
@@ -272,7 +273,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               },
             ),
           ),
-        );
+          );
+        }
 
         setState(() {
           _isGetOtp = true;
@@ -289,24 +291,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _isGetOtp = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Password changed success !"),
-            backgroundColor: AppTheme.onSurface,
-            duration: Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'DISMISS',
-              textColor: Colors.white,
-              onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Password changed success !"),
+              backgroundColor: AppTheme.onSurface,
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'DISMISS',
+                textColor: Colors.white,
+                onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+              ),
             ),
-          ),
-        );
+          );
 
-        Navigator.pop(context);
+          Navigator.pop(context);
+        }
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
           content: Text(error.toString()),
           backgroundColor: AppTheme.error,
           duration: Duration(seconds: 5),
@@ -315,12 +320,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             textColor: Colors.white,
             onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
           ),
-        ),
-      );
+          ),
+        );
+      }
     }
 
     setState(() {
       _isLoading = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _otpController.dispose();
+    super.dispose();
   }
 }

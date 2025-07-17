@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/models.dart';
-import '../models/api_models.dart';
 
 class ApiService {
   final Dio _dio;
@@ -146,12 +145,6 @@ class ApiService {
 
   Future<FriendInvitationsResponse> getSentInvitations(String token) => 
       _get('/users/invitations/sent/', FriendInvitationsResponse.fromJson, token: token);
-
-  Future<Map<String, dynamic>> getProfileData(String token) => 
-      _get('/profile/me/', (data) => data, token: token);
-
-  Future<ProfileResponse> getProfile(String token) => 
-      _get('/profile/me/', ProfileResponse.fromJson, token: token);
 
   Future<ProfileByIdResponse> getProfileById(int userId, String token) => 
       _get('/profile/$userId/', ProfileByIdResponse.fromJson, token: token);

@@ -153,7 +153,9 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         });
         _startResendCountdown();
         _showSuccess('Verification code sent to ${_emailController.text}');
-      } else _showError('Failed to send verification code');
+      } else {
+        _showError('Failed to send verification code');
+      }
     } catch (e) {
       _showError('Error: $e');
     } finally {
@@ -176,7 +178,9 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       );
       
       if (success) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
       } else {
         _showError('Signup failed. Please check your verification code.');
       }

@@ -1,5 +1,3 @@
-// lib/providers/friend_provider.dart
-import 'package:flutter/material.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/friend_service.dart';

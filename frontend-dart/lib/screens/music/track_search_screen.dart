@@ -3,17 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../services/track_sorting_service.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/sort_button.dart';
 import '../../models/models.dart';
-import '../../models/sort_models.dart';
 import '../base_screen.dart';
-import '../../providers/voting_provider.dart';
-import '../../widgets/voting_widgets.dart';
 
 enum LoadingState { idle, searching, addingTracks }
 
@@ -46,7 +42,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   bool get _isAddingToPlaylist => widget.playlistId != null;
   bool get _hasSelection => _selectedTracks.isNotEmpty;
   bool get _canAddTracks => _hasSelection && !_isLoading;
-  bool get _hasSearchResults => getProvider<MusicProvider>().searchResults.isNotEmpty;
+  // bool get _hasSearchResults => getProvider<MusicProvider>().searchResults.isNotEmpty;
   bool get _isLoading => _loadingState != LoadingState.idle;
   bool get _isSearching => _loadingState == LoadingState.searching; 
   bool get _isAddingTracks => _loadingState == LoadingState.addingTracks;
@@ -319,8 +315,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         onPressed: _toggleMultiSelectMode,
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.black,
-        child: const Icon(Icons.playlist_add),
         tooltip: 'Select multiple tracks',
+        child: const Icon(Icons.playlist_add),
       );
     }
     return null;
@@ -562,10 +558,10 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       if (result.duplicateCount > 0) _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
       if (result.failureCount > 0) _showMessage('${result.failureCount} tracks failed to add');
       _clearSelection();
-      if (mounted) {
-        final musicProvider = getProvider<MusicProvider>();
-        await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
-        if (Navigator.canPop(context)) Navigator.pop(context, true);
+      final musicProvider = getProvider<MusicProvider>();
+      await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context, true);
       }
     } catch (e) {
       _showMessage('Failed to add tracks: $e');
@@ -585,8 +581,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       icons: [..._userPlaylists.map((_) => Icons.library_music), Icons.add],
     );
     if (selectedIndex != null) {
-      if (selectedIndex == _userPlaylists.length) await _createNewPlaylistAndAddTrack(track);
-      else await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
+      if (selectedIndex == _userPlaylists.length) {
+        await _createNewPlaylistAndAddTrack(track);
+      } else {
+        await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
+      }
     }
   }
 
@@ -703,7 +702,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
                   Navigator.pop(context);
                 },
               );
-            }).toList(),
+            }),
             const SizedBox(height: 20),
           ],
         ),

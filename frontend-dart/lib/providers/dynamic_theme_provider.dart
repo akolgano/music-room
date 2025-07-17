@@ -1,4 +1,3 @@
-// lib/providers/dynamic_theme_provider.dart
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -38,16 +37,14 @@ class DynamicThemeProvider with ChangeNotifier {
       primary: _primaryColor,
       secondary: _accentColor,
       surface: _surfaceColor,
-      background: _backgroundColor,
       error: AppTheme.error,
       onPrimary: _onPrimaryColor,
       onSecondary: _getContrastColor(_accentColor),
       onSurface: _onSurfaceColor,
-      onBackground: Colors.white,
       onError: Colors.white,
       primaryContainer: _primaryColor.withValues(alpha: 0.3),
       secondaryContainer: _accentColor.withValues(alpha: 0.3),
-      surfaceVariant: _surfaceColor.withValues(alpha: 0.8),
+      surfaceContainerHighest: _surfaceColor.withValues(alpha: 0.8),
       outline: _primaryColor.withValues(alpha: 0.5),
     ),
 
@@ -227,18 +224,15 @@ class DynamicThemeProvider with ChangeNotifier {
     
     final Color accent = _generateAccentColor(hslPrimary);
     final Color surface = _generateSurfaceColor(hslPrimary);
-    final Color background = _generateBackgroundColor(hslPrimary);
 
     return ColorScheme.dark(
       primary: primary,
       secondary: accent,
       surface: surface,
-      background: background,
       error: AppTheme.error,
       onPrimary: _getContrastColor(primary),
       onSecondary: _getContrastColor(accent),
       onSurface: Colors.white,
-      onBackground: Colors.white,
     );
   }
 
@@ -246,7 +240,7 @@ class DynamicThemeProvider with ChangeNotifier {
     _primaryColor = colorScheme.primary;
     _accentColor = colorScheme.secondary;
     _surfaceColor = colorScheme.surface;
-    _backgroundColor = colorScheme.background;
+    _backgroundColor = colorScheme.surface;
     _onPrimaryColor = colorScheme.onPrimary;
     _onSurfaceColor = colorScheme.onSurface;
     notifyListeners();
@@ -283,12 +277,19 @@ class DynamicThemeProvider with ChangeNotifier {
     final HSLColor hslColor = HSLColor.fromColor(color);
     
     double saturation = hslColor.saturation;
-    if (saturation < 0.4) saturation = 0.6;
-    if (saturation > 0.9) saturation = 0.8;
+    if (saturation < 0.4) {
+      saturation = 0.6;
+    }
+    if (saturation > 0.9) {
+      saturation = 0.8;
+    }
 
     double lightness = hslColor.lightness;
-    if (lightness < 0.4) lightness = 0.5;
-    else if (lightness > 0.7) lightness = 0.6;
+    if (lightness < 0.4) {
+      lightness = 0.5;
+    } else if (lightness > 0.7) {
+      lightness = 0.6;
+    }
 
     return hslColor
         .withSaturation(saturation)
@@ -309,13 +310,6 @@ class DynamicThemeProvider with ChangeNotifier {
     return primaryHsl
         .withLightness((primaryHsl.lightness * 0.2).clamp(0.08, 0.15))
         .withSaturation((primaryHsl.saturation * 0.6).clamp(0.1, 0.8))
-        .toColor();
-  }
-
-  Color _generateBackgroundColor(HSLColor primaryHsl) {
-    return primaryHsl
-        .withLightness((primaryHsl.lightness * 0.1).clamp(0.04, 0.08))
-        .withSaturation((primaryHsl.saturation * 0.4).clamp(0.1, 0.6))
         .toColor();
   }
 

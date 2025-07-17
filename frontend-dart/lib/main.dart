@@ -6,8 +6,6 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'core/core.dart';
 import 'core/service_locator.dart';
 import 'core/app_builder.dart';
-import 'widgets/network_connectivity_widget.dart';
-import 'widgets/app_widgets.dart';
 import 'providers/dynamic_theme_provider.dart';
 
 // api.yaml contains all the updated backend informations
@@ -18,13 +16,17 @@ void main() async {
       await dotenv.load(fileName: ".env");
       final apiBaseUrl = dotenv.env['API_BASE_URL'];
       if (apiBaseUrl == null || apiBaseUrl.isEmpty) {}
-    } catch (e) {}
+    } catch (e) {
+      // comment to prevent warning
+    }
     await setupServiceLocator();
     try {
       await SocialLoginUtils.initialize();
-    } catch (e) {}
+    } catch (e) {
+      // comment to prevent warning
+    }
     runApp(const MyApp());
-  } catch (e, stackTrace) {
+  } catch (e, _) {
     runApp(MaterialApp(
       title: 'Music Room - Error',
       theme: AppTheme.darkTheme,

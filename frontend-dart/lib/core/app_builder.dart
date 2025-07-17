@@ -50,7 +50,7 @@ class AppBuilder {
     AppRoutes.friendRequests,
     AppRoutes.playlistSharing,
     AppRoutes.player,
-    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink,
+    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink, AppRoutes.deezerAuth,
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -152,6 +152,8 @@ class AppBuilder {
         return const UserPasswordChangeScreen();
       case AppRoutes.socialNetworkLink:
         return const SocialNetworkLinkScreen();
+      case AppRoutes.deezerAuth:
+        return const DeezerAuthScreen();
       case '/profile_info':
         return const ProfileScreen();
       case AppRoutes.playlistEditor:

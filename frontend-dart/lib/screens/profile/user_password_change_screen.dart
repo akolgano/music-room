@@ -120,7 +120,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
       _newPasswordController.text
     );
     
-    if (success) {
+    if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password changed successfully'), backgroundColor: Colors.green),
       );

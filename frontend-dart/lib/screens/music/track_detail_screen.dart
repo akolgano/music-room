@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:duration/duration.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
@@ -12,8 +10,6 @@ import '../../core/core.dart';
 import '../../widgets/widgets.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart';
-import '../../widgets/voting_widgets.dart';
-import '../../models/voting_models.dart';
 
 class TrackDetailScreen extends StatefulWidget {
   final String? trackId;
@@ -282,13 +278,15 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   }
 
   String _formatDuration(Duration duration) {
-    return printDuration(duration, 
-      abbreviated: false,
-      spacer: '', 
-      delimiter: ':', 
-      conjugation: '',
-      tersity: duration.inHours > 0 ? DurationTersity.hour : DurationTersity.minute,
-    );
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    } else {
+      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
   }
 
   Widget _buildProgressBar(MusicPlayerService playerService) {
@@ -515,7 +513,9 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       if (previewUrl != null && previewUrl.isNotEmpty) {
         await playerService.playTrack(_track!, previewUrl);
         showSuccess('Playing "${_track!.name}"');
-      } else showError('No preview available for this track');
+      } else {
+        showError('No preview available for this track');
+      }
     } catch (e) {
       showError('Failed to play track: $e');
     }
@@ -527,8 +527,11 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       () async {
         final musicProvider = getProvider<MusicProvider>();
         final result = await musicProvider.addTrackObjectToPlaylist(widget.playlistId!, _track!, auth.token!);
-        if (result.success) _isInPlaylist = true;
-        else throw Exception(result.message);
+        if (result.success) {
+          _isInPlaylist = true;
+        } else {
+          throw Exception(result.message);
+        }
       },
       successMessage: 'Added "${_track!.name}" to playlist!',
       errorMessage: 'Failed to add track to playlist',

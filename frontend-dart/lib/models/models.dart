@@ -1,4 +1,3 @@
-// lib/models/models.dart
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 export 'voting_models.dart';
@@ -180,8 +179,6 @@ class PlaylistTrack {
       
       String? artist;
       String? album;
-      String? previewUrl;
-      String? imageUrl;
 
       if (json['artist'] != null) {
         if (json['artist'] is String) {
@@ -233,8 +230,6 @@ class PlaylistTrack {
     
     final needsArtist = track?.artist.isEmpty ?? true;
     final needsAlbum = track?.album.isEmpty ?? true;
-    final needsImage = track?.imageUrl?.isEmpty ?? true;
-    final needsPreview = track?.previewUrl?.isEmpty ?? true;
     
     final criticalInfoMissing = needsArtist || needsAlbum;
     
@@ -254,21 +249,21 @@ class PlaylistTrack {
   }
 
   String get displayName {
-    if (track?.name?.isNotEmpty == true) {
+    if (track?.name.isNotEmpty == true) {
       return track!.name;
     }
     return name;
   }
 
   String get displayArtist {
-    if (track?.artist?.isNotEmpty == true) {
+    if (track?.artist.isNotEmpty == true) {
       return track!.artist;
     }
     return 'Unknown Artist';
   }
 
   String get displayAlbum {
-    if (track?.album?.isNotEmpty == true) {
+    if (track?.album.isNotEmpty == true) {
       return track!.album;
     }
     return 'Unknown Album';

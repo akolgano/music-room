@@ -1,9 +1,6 @@
 // lib/screens/playlists/playlist_editor_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
-import '../../services/music_player_service.dart';
 import '../../core/service_locator.dart';
 import '../../services/api_service.dart';
 import '../../models/models.dart';
@@ -26,7 +23,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   bool _isPublic = false;
   bool _isLoading = false;
   Playlist? _playlist;
-  List<PlaylistTrack> _tracks = [];
 
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
 
@@ -138,7 +134,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
           setState(() {
-            _tracks = musicProvider.playlistTracks;
+            // Tracks loaded successfully
           });
         }
       },
@@ -205,7 +201,9 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       await musicProvider.fetchUserPlaylists(auth.token!);
       
       showSuccess('Playlist visibility updated successfully!');
-      Navigator.pushReplacementNamed(context, AppRoutes.playlistDetail, arguments: widget.playlistId);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.playlistDetail, arguments: widget.playlistId);
+      }
     } catch (e) {
       showError('Failed to update playlist: $e');
     } finally {
@@ -213,76 +211,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     }
   }
 
-  void _reorderTracks(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
-      final PlaylistTrack item = _tracks.removeAt(oldIndex);
-      _tracks.insert(newIndex, item);
-    });
-
-    _updateTrackOrder(oldIndex, newIndex);
-  }
-
-  Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
-    if (!_isEditMode) return;
-
-    try {
-      final musicProvider = getProvider<MusicProvider>();
-      await musicProvider.moveTrackInPlaylist(
-        playlistId: widget.playlistId!,
-        rangeStart: oldIndex,
-        insertBefore: newIndex,
-        token: auth.token!,
-      );
-    } catch (e) {
-      showError('Failed to update track order: $e');
-      await _loadPlaylistData();
-    }
-  }
-
-  Future<void> _playTrack(Track track) async {
-    try {
-      final playerService = getProvider<MusicPlayerService>();
-      String? previewUrl = track.previewUrl;
-
-      if (previewUrl == null && track.deezerTrackId != null) {
-        final musicProvider = getProvider<MusicProvider>();
-        final fullTrackDetails = await musicProvider.getDeezerTrack(track.deezerTrackId!, auth.token!);
-        if (fullTrackDetails?.previewUrl != null) previewUrl = fullTrackDetails!.previewUrl;
-      }
-
-      if (previewUrl != null && previewUrl.isNotEmpty) {
-        await playerService.playTrack(track, previewUrl);
-        showSuccess('Playing "${track.name}"');
-      } else showInfo('No preview available for "${track.name}"');
-    } catch (e) {
-      showError('Failed to play track: $e');
-    }
-  }
-
-  Future<void> _removeTrack(String trackId) async {
-    if (!_isEditMode) return;
-
-    final confirmed = await showConfirmDialog(
-      'Remove Track',
-      'Remove this track from the playlist?',
-    );
-
-    if (confirmed) {
-      await runAsyncAction(
-        () async {
-          final musicProvider = getProvider<MusicProvider>();
-          await musicProvider.removeTrackFromPlaylist(playlistId: widget.playlistId!, trackId: trackId, token: auth.token!);
-          await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
-          setState(() => _tracks = musicProvider.playlistTracks);
-        },
-        successMessage: 'Track removed from playlist',
-        errorMessage: 'Failed to remove track',
-      );
-    }
-  }
 
   @override
   void dispose() {

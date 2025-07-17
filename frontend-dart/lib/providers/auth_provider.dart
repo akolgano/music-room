@@ -1,16 +1,11 @@
-// lib/providers/auth_provider.dart
 import 'dart:developer' as developer;
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/auth_service.dart';
 import '../models/models.dart';
-import '../models/api_models.dart';
-import '../core/core.dart' hide BaseProvider;
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthProvider extends BaseProvider {
   late final AuthService _authService;
@@ -37,7 +32,7 @@ class AuthProvider extends BaseProvider {
   String? get token => _authService.currentToken;
 
   final googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile', 'openid'],
+    scopes: ['email', 'profile', 'openid'],
   );
 
 
