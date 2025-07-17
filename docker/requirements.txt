@@ -18,3 +18,4 @@ google-auth
 geopy
 pillow
 drf_spectacular
+drf-api-logger==1.1.16
