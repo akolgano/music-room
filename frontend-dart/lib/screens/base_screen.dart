@@ -1,4 +1,3 @@
-// lib/screens/base_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -87,7 +86,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     return await AppWidgets.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText);
   }
 
-  T getProvider<T>({bool listen = false}) => Provider.of<T>(context, listen: listen);
+  P getProvider<P>({bool listen = false}) => Provider.of<P>(context, listen: listen);
 
   Future<void> runAsyncAction(Future<void> Function() operation, {String? successMessage, String? errorMessage}) async {
     try {

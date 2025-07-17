@@ -1,4 +1,3 @@
-// lib/core/core.dart
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
@@ -228,7 +227,7 @@ class AppTheme {
     elevation: elevation ?? 4,
     margin: margin ?? EdgeInsets.all(kIsWeb ? 16 : 16.w),
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))  // Fixed: now uses the correct parameter name
+      borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))  
     ),
     child: Padding(padding: padding ?? EdgeInsets.all(kIsWeb ? 24 : 24.w), child: child),
   );
@@ -295,6 +294,7 @@ class AppRoutes {
   static const String userPasswordChange = '/user_password_change';
   static const String socialNetworkLink = '/social_network_link';
   static const String signupOtp = '/signup_otp';
+  static const String deezerAuth = '/deezer_auth';
 }
 
 class SocialLoginUtils {
@@ -354,8 +354,6 @@ class SocialLoginUtils {
       if (googleClientId != null && googleClientId.isNotEmpty) {
         _googleSignIn = GoogleSignIn(
           scopes: <String>['email', 'profile', 'openid'],
-          clientId: googleClientId,
-          serverClientId: dotenv.env['GOOGLE_SERVER_CLIENT_ID'],
         );
         if (kDebugMode) {
           developer.log('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...', name: 'SocialLoginUtils');
@@ -480,7 +478,7 @@ class SocialLoginUtils {
         }
         final GoogleSignInAuthentication auth = await user.authentication;
         if (kDebugMode) {
-          developer.log('Google auth obtained - idToken: ${auth.idToken != null}, accessToken: ${auth.accessToken != null}', name: 'SocialLoginUtils');
+          developer.log('Google auth obtained - idToken: ${auth.idToken != null}', name: 'SocialLoginUtils');
         }
         
         final idToken = auth.idToken;

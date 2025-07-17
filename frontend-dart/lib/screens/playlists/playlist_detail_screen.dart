@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'playlist_licensing_screen.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
@@ -13,12 +12,9 @@ import '../../services/api_service.dart';
 import '../../services/track_cache_service.dart';
 import '../../core/service_locator.dart'; 
 import '../../models/models.dart';
-import '../../models/sort_models.dart';
-import '../../services/track_sorting_service.dart';
 import '../../core/core.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart';
-import '../../models/voting_models.dart';
 import '../../core/theme_utils.dart'; 
 import '../../widgets/widgets.dart';
 
@@ -200,12 +196,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
               ),
             ),
           );
-        } catch (e, stackTrace) {
+        } catch (e) {
           if (kDebugMode) {
             developer.log('ERROR building tracks section: $e', name: 'PlaylistDetailScreen');
-          }
-          if (kDebugMode) {
-            developer.log('Stack trace: $stackTrace', name: 'PlaylistDetailScreen');
           }
           return _buildErrorState(e.toString());
         }
@@ -233,7 +226,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             
             final widget = _buildTrackItem(playlistTrack, index, key: uniqueKey);
             return KeyedSubtree(key: uniqueKey, child: widget);
-          } catch (e, stackTrace) {
+          } catch (e) {
             if (kDebugMode) {
               developer.log('ERROR building reorderable track item at index $index: $e', name: 'PlaylistDetailScreen');
             }
@@ -257,7 +250,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           try {
             final playlistTrack = tracks[index];
             return _buildTrackItem(playlistTrack, index);
-          } catch (e, stackTrace) {
+          } catch (e) {
             if (kDebugMode) {
               developer.log('ERROR building track item at index $index: $e', name: 'PlaylistDetailScreen');
             }
@@ -390,7 +383,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     if (deezerTrackId == null || 
         _fetchingTrackDetails.contains(deezerTrackId) || 
         !mounted ||
-        (track != null && track.artist.isNotEmpty && track.album.isNotEmpty)) return;
+        (track != null && track.artist.isNotEmpty && track.album.isNotEmpty)) {
+      return;
+    }
 
     // Check if track is already cached
     if (_trackCacheService.isTrackCached(deezerTrackId)) {
@@ -419,9 +414,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             points: playlistTrack.points, 
             track: cachedTrack,
           );
-          musicProvider.playlistTracks.clear();
-          musicProvider.playlistTracks.addAll(providerTracks);
-          musicProvider.notifyListeners();
+          if (mounted) {
+            setState(() {
+              _tracks = providerTracks;
+            });
+          }
         }
       }
       return;
@@ -456,9 +453,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             points: playlistTrack.points, 
             track: trackDetails,
           );
-          musicProvider.playlistTracks.clear();
-          musicProvider.playlistTracks.addAll(providerTracks);
-          musicProvider.notifyListeners();
+          if (mounted) {
+            setState(() {
+              _tracks = providerTracks;
+            });
+          }
         }
       }
     } catch (e) {
@@ -606,7 +605,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         _tracks = tracks;
       });
       _updateTrackOrder(oldIndex, newIndex);
-    } catch (e, stackTrace) {
+    } catch (e) {
       if (kDebugMode) {
         developer.log('ERROR reordering tracks: $e', name: 'PlaylistDetailScreen');
       }
@@ -629,7 +628,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         setState(() => _tracks = musicProvider.playlistTracks);
         if (_votingProvider != null) _votingProvider!.initializeTrackPoints(_tracks);
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       if (kDebugMode) {
         developer.log('ERROR updating track order: $e', name: 'PlaylistDetailScreen');
       }

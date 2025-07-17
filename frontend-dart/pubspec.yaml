@@ -14,7 +14,7 @@ dependencies:
   collection: ^1.18.0
   connectivity_plus: ^6.1.4
   dio: ^5.8.0+1
-  duration: ^3.0.13
+  duration: ^4.0.3
   flutter_facebook_auth: ^7.1.1
   flutter_screenutil: ^5.9.3
   flutter_staggered_animations: ^1.1.1
@@ -29,7 +29,7 @@ dependencies:
   image_cropper: ^9.1.0
   just_audio: ^0.10.4
   just_audio_web: ^0.4.9
-  phone_numbers_parser: ^8.1.0
+  phone_numbers_parser: ^9.0.3
   pretty_dio_logger: ^1.4.0
   responsive_framework: ^1.1.1
   provider: ^6.1.4
@@ -37,10 +37,11 @@ dependencies:
   shimmer: ^3.0.0
   intl: ^0.20.2
   web_socket_channel: ^3.0.3
+  path_provider: ^2.1.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.5.4
+  build_runner: ^2.6.0
   flutter_lints: ^6.0.0
 flutter:
   uses-material-design: true

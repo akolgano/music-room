@@ -1,12 +1,9 @@
-// lib/providers/music_provider.dart
-import 'package:flutter/material.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/music_service.dart';
 import '../services/track_cache_service.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
-import '../models/sort_models.dart';
 import '../services/track_sorting_service.dart';
 
 class MusicProvider extends BaseProvider {
@@ -142,7 +139,6 @@ class MusicProvider extends BaseProvider {
     if (result != null) {
       _playlistTracks = result;
       
-      // Preload track details for tracks that need them
       final trackIdsToPreload = <String>[];
       for (final playlistTrack in _playlistTracks) {
         final track = playlistTrack.track;
@@ -154,7 +150,6 @@ class MusicProvider extends BaseProvider {
       }
       
       if (trackIdsToPreload.isNotEmpty) {
-        // Preload tracks in the background
         _trackCacheService.preloadTracks(trackIdsToPreload, token, _apiService);
       }
     }

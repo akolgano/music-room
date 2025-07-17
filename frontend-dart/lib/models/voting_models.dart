@@ -1,4 +1,3 @@
-// lib/models/voting_models.dart
 import 'package:flutter/material.dart';
 
 class Vote {

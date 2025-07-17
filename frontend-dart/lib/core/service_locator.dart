@@ -1,10 +1,9 @@
-// lib/core/service_locator.dart
 import 'dart:developer' as developer;
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/music_service.dart';

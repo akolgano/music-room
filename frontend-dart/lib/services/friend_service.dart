@@ -1,6 +1,4 @@
-// lib/services/friend_service.dart
 import '../services/api_service.dart';
-import '../models/api_models.dart';
 
 class FriendService {
   final ApiService _api;

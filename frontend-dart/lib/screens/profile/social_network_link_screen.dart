@@ -1,11 +1,8 @@
 // lib/screens/profile/social_network_link_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../models/models.dart';
 import '../base_screen.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {

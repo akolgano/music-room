@@ -2,8 +2,6 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
 import '../../core/service_locator.dart'; 
@@ -37,6 +35,10 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   double? _longitude;
   int? _allowedRadiusMeters = 100;
   bool _isLoading = false;
+  
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
+  final _radiusController = TextEditingController();
 
   @override
   String get screenTitle => 'Playlist Access Control';
@@ -46,6 +48,11 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     super.initState();
     
     _apiService = getIt<ApiService>();
+    
+    // Initialize controllers with default values
+    _latitudeController.text = _latitude?.toString() ?? '';
+    _longitudeController.text = _longitude?.toString() ?? '';
+    _radiusController.text = _allowedRadiusMeters?.toString() ?? '100';
     
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
@@ -285,7 +292,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
                   Expanded(
                     child: AppWidgets.textField(
                       context: context,
-                      controller: TextEditingController(text: _latitude?.toString() ?? ''),
+                      controller: _latitudeController,
                       labelText: 'Latitude',
                       prefixIcon: Icons.my_location,
                       onChanged: (value) => _latitude = double.tryParse(value),
@@ -295,7 +302,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
                   Expanded(
                     child: AppWidgets.textField(
                       context: context,
-                      controller: TextEditingController(text: _longitude?.toString() ?? ''),
+                      controller: _longitudeController,
                       labelText: 'Longitude',
                       prefixIcon: Icons.location_on,
                       onChanged: (value) => _longitude = double.tryParse(value),
@@ -306,7 +313,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
               const SizedBox(height: 16),
               AppWidgets.textField(
                 context: context,
-                controller: TextEditingController(text: _allowedRadiusMeters?.toString() ?? '100'),
+                controller: _radiusController,
                 labelText: 'Allowed Radius (meters)',
                 prefixIcon: Icons.radio_button_unchecked,
                 onChanged: (value) => _allowedRadiusMeters = int.tryParse(value),
@@ -430,6 +437,11 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             _latitude = license.latitude;
             _longitude = license.longitude;
             _allowedRadiusMeters = license.allowedRadiusMeters;
+            
+            // Update text controllers
+            _latitudeController.text = _latitude?.toString() ?? '';
+            _longitudeController.text = _longitude?.toString() ?? '';
+            _radiusController.text = _allowedRadiusMeters?.toString() ?? '100';
           });
         } catch (e) {
           if (kDebugMode) {
@@ -476,6 +488,8 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     setState(() {
       _latitude = 1.364917; 
       _longitude = 103.822872;
+      _latitudeController.text = _latitude.toString();
+      _longitudeController.text = _longitude.toString();
     });
     showInfo('Location set to current position');
   }
@@ -519,5 +533,13 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    _radiusController.dispose();
+    super.dispose();
   }
 }

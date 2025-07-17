@@ -1,4 +1,3 @@
-// lib/core/base_provider.dart
 import 'package:flutter/material.dart';
 
 abstract class BaseProvider extends ChangeNotifier {

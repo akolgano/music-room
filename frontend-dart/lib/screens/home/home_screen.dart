@@ -12,7 +12,6 @@ import '../../widgets/widgets.dart';
 import '../../models/models.dart';
 import '../profile/profile_screen.dart';
 import '../music/track_search_screen.dart';
-import '../friends/friends_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -227,9 +226,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   if (kDebugMode) {
                     developer.log('Navigating to playlist with ID: ${playlist.id}', name: 'HomeScreen');
                   }
-                  if (playlist.id.isNotEmpty && playlist.id != 'null')
+                  if (playlist.id.isNotEmpty && playlist.id != 'null') {
                     Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
-                  else _showError('Invalid playlist ID');
+                  } else {
+                    _showError('Invalid playlist ID');
+                  }
                 },
                 onPlay: () => _playPlaylist(playlist),
                 showPlayButton: true,

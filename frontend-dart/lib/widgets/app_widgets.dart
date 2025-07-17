@@ -1,25 +1,20 @@
-// lib/widgets/app_widgets.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:responsive_framework/responsive_framework.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'mini_player_widget.dart';
-import '../core/core.dart';
 import '../models/models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';
-import '../models/voting_models.dart';
 export 'mini_player_widget.dart';
 
 class AppWidgets {
   static ColorScheme _getColorScheme(BuildContext context) => Theme.of(context).colorScheme;
   static Color _getPrimary(BuildContext context) => _getColorScheme(context).primary;
   static Color _getSurface(BuildContext context) => _getColorScheme(context).surface;
-  static Color _getBackground(BuildContext context) => _getColorScheme(context).background;
+  static Color _getBackground(BuildContext context) => _getColorScheme(context).surface;
   static Color _getOnSurface(BuildContext context) => _getColorScheme(context).onSurface;
   static Color _getError(BuildContext context) => _getColorScheme(context).error;
   
@@ -42,7 +37,6 @@ class AppWidgets {
     int minLines = 1, 
     int maxLines = 1
   }) {
-    final theme = Theme.of(context);
     return TextFormField(controller: controller, obscureText: obscureText, validator: validator, onChanged: onChanged, minLines: minLines, 
       maxLines: maxLines,
       style: _primaryStyle(context),
@@ -178,7 +172,7 @@ class AppWidgets {
                             Container(
                               constraints: const BoxConstraints(maxWidth: 80),
                               child: TrackVotingControls(
-                                playlistId: playlistId!,
+                                playlistId: playlistId,
                                 trackId: track.id,
                                 isCompact: true,
                               ),
@@ -637,7 +631,7 @@ static Widget emptyState({
                   : Center(child: content),
             );
           } else {
-            return Container(height: 200, child: Center(child: content));
+            return SizedBox(height: 200, child: Center(child: content));
           }
         },
       );
@@ -893,7 +887,13 @@ static Widget emptyState({
         ],
       ),
     );
-    controller.dispose();
+    
+    // Dispose controller after the dialog is fully closed to prevent 
+    // "TextEditingController was used after being disposed" error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.dispose();
+    });
+    
     return result;
   }
 

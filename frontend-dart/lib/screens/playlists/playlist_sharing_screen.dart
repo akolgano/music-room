@@ -1,7 +1,5 @@
 // lib/screens/playlists/playlist_sharing_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';
 import '../../models/models.dart';
@@ -19,7 +17,7 @@ class PlaylistSharingScreen extends StatefulWidget {
 
 class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
   List<int> _friends = [];
-  Set<int> _selectedFriends = {};
+  final Set<int> _selectedFriends = {};
   bool _isSharing = false;
 
   @override
@@ -217,7 +215,9 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
     try {
       await Future.delayed(const Duration(seconds: 2));
       showSuccess('Playlist shared with ${_selectedFriends.length} friends!');
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       showError('Failed to share playlist: $e');
     } finally {

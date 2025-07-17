@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/core.dart';
 import '../../widgets/app_widgets.dart';
+import '../../services/deezer_service.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
 import 'social_network_link_screen.dart';
@@ -79,6 +80,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                 _buildMusicPreferencesSection(profileProvider), 
                 const SizedBox(height: 16),
                 _buildSocialAccountsSection(profileProvider), 
+                const SizedBox(height: 16),
+                _buildDeezerSection(),
                 const SizedBox(height: 16), 
                 _buildSecuritySection(profileProvider), 
                 const SizedBox(height: 16), 
@@ -489,7 +492,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Widget _buildInitialsAvatar(ProfileProvider profileProvider) {
-    final name = profileProvider.name ?? profileProvider.username ?? auth.displayName ?? 'User';
+    final name = profileProvider.name ?? profileProvider.username ?? 'User';
     final initials = _getInitials(name);
     
     return Container(
@@ -822,6 +825,30 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     }
   }
 
+  Widget _buildDeezerSection() {
+    final isConnected = DeezerService.instance.isInitialized;
+    
+    return AppWidgets.settingsSection(
+      title: 'Music Streaming',
+      items: [
+        AppWidgets.settingsItem(
+          icon: Icons.music_note,
+          title: isConnected ? 'Deezer Connected' : 'Connect Deezer',
+          subtitle: isConnected 
+              ? 'Full audio playback enabled'
+              : 'Enable full tracks instead of 30s previews',
+          color: isConnected ? Colors.green : null,
+          onTap: () async {
+            final result = await Navigator.pushNamed(context, AppRoutes.deezerAuth);
+            if (result == true) {
+              setState(() {}); // Refresh the UI to show connection status
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   void _showSignOutDialog() async {
     final confirmed = await showConfirmDialog(
       'Sign Out',
@@ -876,8 +903,11 @@ class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
               value: isSelected,
               onChanged: (value) {
                 setState(() {
-                  if (value == true) _selectedIds.add(id);
-                  else _selectedIds.remove(id);
+                  if (value == true) {
+                    _selectedIds.add(id);
+                  } else {
+                    _selectedIds.remove(id);
+                  }
                 });
               },
               title: Text(name, style: const TextStyle(color: Colors.white)),

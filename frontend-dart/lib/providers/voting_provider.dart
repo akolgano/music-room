@@ -1,21 +1,18 @@
-// lib/providers/voting_provider.dart
 import 'dart:developer' as developer;
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/voting_service.dart';
-import '../models/voting_models.dart';
 import '../models/models.dart';
 
 class VotingProvider extends BaseProvider {
   final VotingService _votingService = getIt<VotingService>();
-  Map<String, VoteStats> _trackVotes = {};
+  final Map<String, VoteStats> _trackVotes = {};
   Map<String, VoteStats> get trackVotes => Map.unmodifiable(_trackVotes);
   bool _canVote = true;
   bool get canVote => _canVote;
-  Map<int, int> _userVotesByIndex = {};
-  Map<int, int> _trackPoints = {};
+  final Map<int, int> _userVotesByIndex = {};
+  final Map<int, int> _trackPoints = {};
   Map<int, int> get trackPoints => Map.unmodifiable(_trackPoints);
 
   VoteStats? getTrackVotes(String trackId) => _trackVotes[trackId];
@@ -82,7 +79,7 @@ class VotingProvider extends BaseProvider {
         voteScore: points.toDouble(),
       );
       if (kDebugMode) {
-        developer.log('Track $i (${tracks[i].name}): ${points} points', name: 'VotingProvider');
+        developer.log('Track $i (${tracks[i].name}): $points points', name: 'VotingProvider');
       }
     }
     notifyListeners();

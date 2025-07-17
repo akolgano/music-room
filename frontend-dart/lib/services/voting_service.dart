@@ -1,6 +1,5 @@
 import '../services/api_service.dart';
-import '../models/voting_models.dart';
-import '../models/api_models.dart';
+import '../models/models.dart';
 
 class VotingService {
   final ApiService _api;

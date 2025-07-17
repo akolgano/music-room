@@ -1,13 +1,12 @@
-// lib/providers/profile_provider.dart
+import 'dart:convert';
 import 'dart:developer' as developer;
-import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import 'package:path_provider/path_provider.dart';
 import '../services/api_service.dart';
 import '../core/service_locator.dart';  
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../core/core.dart';
 import '../core/base_provider.dart'; 
 import '../models/api_models.dart';
 
@@ -43,8 +42,7 @@ class ProfileProvider extends BaseProvider {
   final ApiService _apiService;  
 
   final googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile', 'openid'],
-        serverClientId: dotenv.env['FIREBASE_WEB_CLIENT_ID'],
+    scopes: ['email', 'profile', 'openid'],
   );
 
   String? _userId;
@@ -148,28 +146,22 @@ class ProfileProvider extends BaseProvider {
           _socialId = social['social_id'];
         }
 
-        final profileData = await _apiService.getProfileData(formattedToken!);
-        _avatar = profileData['avatar'];
-        _name = profileData['name'];
-        _location = profileData['location'];
-        _bio = profileData['bio'];
-        _phone = profileData['phone'];
-        _friendInfo = profileData['friend_info'];
-
-        if (profileData['music_preferences'] != null) {
-          _musicPreferences = (profileData['music_preferences'] as List<dynamic>?)?.cast<String>();
-        }
-        if (profileData['music_preferences_ids'] != null) {
-          _musicPreferenceIds = (profileData['music_preferences_ids'] as List<dynamic>?)?.cast<int>();
-        }
-
-        _avatarVisibility = VisibilityLevelExtension.fromString(profileData['avatar_visibility']);
-        _nameVisibility = VisibilityLevelExtension.fromString(profileData['name_visibility']);
-        _locationVisibility = VisibilityLevelExtension.fromString(profileData['location_visibility']);
-        _bioVisibility = VisibilityLevelExtension.fromString(profileData['bio_visibility']);
-        _phoneVisibility = VisibilityLevelExtension.fromString(profileData['phone_visibility']);
-        _friendInfoVisibility = VisibilityLevelExtension.fromString(profileData['friend_info_visibility']);
-        _musicPreferencesVisibility = VisibilityLevelExtension.fromString(profileData['music_preferences_visibility']);
+        _avatar = null;
+        _name = null;
+        _location = null;
+        _bio = null;
+        _phone = null;
+        _friendInfo = null;
+        _musicPreferences = null;
+        _musicPreferenceIds = null;
+        
+        _avatarVisibility = VisibilityLevel.public;
+        _nameVisibility = VisibilityLevel.public;
+        _locationVisibility = VisibilityLevel.public;
+        _bioVisibility = VisibilityLevel.public;
+        _phoneVisibility = VisibilityLevel.private;
+        _friendInfoVisibility = VisibilityLevel.friends;
+        _musicPreferencesVisibility = VisibilityLevel.public;
       },
       successMessage: 'Profile loaded successfully',
       errorMessage: 'Failed to load profile',
@@ -246,26 +238,74 @@ class ProfileProvider extends BaseProvider {
   }) async {
     return await executeBool(
       () async {
-        final updateData = <String, dynamic>{};
-        if (avatarBase64 != null) updateData['avatar'] = avatarBase64;
-        if (mimeType != null) updateData['mime_type'] = mimeType;
-        if (name != null) updateData['name'] = name;
-        if (location != null) updateData['location'] = location;
-        if (bio != null) updateData['bio'] = bio;
-        if (phone != null) updateData['phone'] = phone;
-        if (friendInfo != null) updateData['friend_info'] = friendInfo;
-        if (musicPreferencesIds != null) updateData['music_preferences_ids'] = musicPreferencesIds;
-
         final formattedToken = 'Token $token';
-        await _apiService.updateProfile(formattedToken, updateData);
+        
+        if (avatarBase64 != null) {
+          if (kIsWeb) {
+            final updateData = <String, dynamic>{};
+            updateData['avatar'] = avatarBase64;
+            if (mimeType != null) updateData['mime_type'] = mimeType;
+            if (name != null) updateData['name'] = name;
+            if (location != null) updateData['location'] = location;
+            if (bio != null) updateData['bio'] = bio;
+            if (phone != null) updateData['phone'] = phone;
+            if (friendInfo != null) updateData['friend_info'] = friendInfo;
+            if (musicPreferencesIds != null) updateData['music_preferences_ids'] = musicPreferencesIds;
 
-        if (avatarBase64 != null) _avatar = avatarBase64;
-        if (name != null) _name = name;
-        if (location != null) _location = location;
-        if (bio != null) _bio = bio;
-        if (phone != null) _phone = phone;
-        if (friendInfo != null) _friendInfo = friendInfo;
-        if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+            await _apiService.updateProfile(formattedToken, updateData);
+            
+            _avatar = avatarBase64;
+            if (name != null) _name = name;
+            if (location != null) _location = location;
+            if (bio != null) _bio = bio;
+            if (phone != null) _phone = phone;
+            if (friendInfo != null) _friendInfo = friendInfo;
+            if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+          } else {
+            final bytes = base64Decode(avatarBase64);
+            final tempDir = await getTemporaryDirectory();
+            final tempFile = File('${tempDir.path}/temp_avatar.jpg');
+            await tempFile.writeAsBytes(bytes);
+            
+            final result = await _apiService.updateProfileWithFile(
+              formattedToken,
+              avatarPath: tempFile.path,
+              name: name,
+              location: location,
+              bio: bio,
+              phone: phone,
+              friendInfo: friendInfo,
+              musicPreferencesIds: musicPreferencesIds,
+            );
+            
+            await tempFile.delete();
+            
+            _avatar = result.avatar;
+            if (name != null) _name = name;
+            if (location != null) _location = location;
+            if (bio != null) _bio = bio;
+            if (phone != null) _phone = phone;
+            if (friendInfo != null) _friendInfo = friendInfo;
+            if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+          }
+        } else {
+          final updateData = <String, dynamic>{};
+          if (name != null) updateData['name'] = name;
+          if (location != null) updateData['location'] = location;
+          if (bio != null) updateData['bio'] = bio;
+          if (phone != null) updateData['phone'] = phone;
+          if (friendInfo != null) updateData['friend_info'] = friendInfo;
+          if (musicPreferencesIds != null) updateData['music_preferences_ids'] = musicPreferencesIds;
+
+          await _apiService.updateProfile(formattedToken, updateData);
+
+          if (name != null) _name = name;
+          if (location != null) _location = location;
+          if (bio != null) _bio = bio;
+          if (phone != null) _phone = phone;
+          if (friendInfo != null) _friendInfo = friendInfo;
+          if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+        }
       },
       successMessage: 'Profile updated successfully',
       errorMessage: 'Failed to update profile',
@@ -334,9 +374,13 @@ class ProfileProvider extends BaseProvider {
 
   String? get avatarUrl {
     if (_avatar?.isNotEmpty == true) {
-      if (_avatar!.startsWith('data:')) return _avatar;
-      else if (_avatar!.length > 100) return 'data:image/jpeg;base64,$_avatar';
-      else return _avatar;
+      if (_avatar!.startsWith('data:')) {
+        return _avatar;
+      } else if (_avatar!.length > 100) {
+        return 'data:image/jpeg;base64,$_avatar';
+      } else {
+        return _avatar;
+      }
     }
     return null;
   }
