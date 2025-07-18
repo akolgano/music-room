@@ -1,4 +1,3 @@
-// lib/widgets/playlist_detail_widgets.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/dynamic_theme_provider.dart';

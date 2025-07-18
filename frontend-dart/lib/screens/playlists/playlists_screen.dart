@@ -1,4 +1,3 @@
-// lib/screens/playlists/playlists_screen.dart
 import 'package:flutter/material.dart';
 import '../../providers/music_provider.dart';
 import '../../core/core.dart';

@@ -1,9 +1,8 @@
-import 'dart:developer' as developer;
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/music_service.dart';
@@ -59,31 +58,31 @@ Future<void> setupServiceLocator() async {
         }
         
         if (kDebugMode) {
-          developer.log('API Request: ${options.method} ${options.uri}', name: 'ServiceLocator');
+          debugPrint('[ServiceLocator] API Request: ${options.method} ${options.uri}');
         }
         if (options.data != null && kDebugMode) {
-          developer.log('Request Data: ${options.data}', name: 'ServiceLocator');
+          debugPrint('[ServiceLocator] Request Data: ${options.data}');
         }
         
         handler.next(options);
       },
       onResponse: (response, handler) {
         if (kDebugMode) {
-          developer.log('API Response: ${response.statusCode} ${response.requestOptions.uri}', name: 'ServiceLocator');
+          debugPrint('[ServiceLocator] API Response: ${response.statusCode} ${response.requestOptions.uri}');
         }
         handler.next(response);
       },
       onError: (error, handler) {
         if (kDebugMode) {
-          developer.log('API Error: ${error.response?.statusCode} ${error.requestOptions.uri}', name: 'ServiceLocator');
+          debugPrint('[ServiceLocator] API Error: ${error.response?.statusCode} ${error.requestOptions.uri}');
         }
         if (kDebugMode) {
-          developer.log('Error details: ${error.message}', name: 'ServiceLocator');
+          debugPrint('[ServiceLocator] Error details: ${error.message}');
         }
         
         if (error.response?.statusCode == 401) {
           if (kDebugMode) {
-            developer.log('Unauthorized - triggering logout', name: 'ServiceLocator');
+            debugPrint('[ServiceLocator] Unauthorized - triggering logout');
           }
           if (getIt.isRegistered<AuthService>()) {
             getIt<AuthService>().logout();
@@ -120,6 +119,6 @@ Future<void> setupServiceLocator() async {
       TrackCacheService());
 
   if (kDebugMode) {
-    developer.log('Service Locator setup complete with consistent API logging', name: 'ServiceLocator');
+    debugPrint('[ServiceLocator] Service Locator setup complete with consistent API logging');
   }
 }

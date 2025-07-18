@@ -1,6 +1,5 @@
-import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/models.dart';
@@ -45,7 +44,7 @@ class ApiService {
       onError: (error, handler) {
         if (error.response?.statusCode == 401) {
           if (kDebugMode) {
-            developer.log('Unauthorized request detected - should trigger logout', name: 'ApiService');
+            debugPrint('[ApiService] Unauthorized request detected - should trigger logout');
           }
         }
         handler.next(error);
@@ -86,9 +85,22 @@ class ApiService {
     );
   }
 
+  Future<void> _patchVoid(String endpoint, dynamic data, {String? token}) async {
+    if (kDebugMode) {
+      debugPrint('[ApiService] _patchVoid called: $endpoint with data: $data');
+    }
+    await _dio.patch(endpoint,
+      data: data,
+      options: token != null ? Options(headers: {'Authorization': token}) : null
+    );
+    if (kDebugMode) {
+      debugPrint('[ApiService] _patchVoid completed: $endpoint');
+    }
+  }
+
   Future<void> _delete(String endpoint, {String? token, dynamic data}) async {
     await _dio.delete(endpoint, 
-      data: data?.toJson?.call() ?? data,
+      data: data,
       options: token != null ? Options(headers: {'Authorization': token}) : null
     );
   }
@@ -150,7 +162,7 @@ class ApiService {
       _get('/profile/$userId/', ProfileByIdResponse.fromJson, token: token);
 
   Future<void> updateProfile(String token, Map<String, dynamic> data) => 
-      _patch('/profile/me/', data, (data) => data, token: token);
+      _patchVoid('/profile/me/', data, token: token);
 
   Future<ProfileResponse> updateProfileFull(String token, ProfileUpdateRequest request) => 
       _patch('/profile/me/', request, ProfileResponse.fromJson, token: token);
@@ -209,7 +221,7 @@ class ApiService {
     if (friendInfoVisibility != null) formData.fields.add(MapEntry('friend_info_visibility', friendInfoVisibility));
     if (musicPreferencesVisibility != null) formData.fields.add(MapEntry('music_preferences_visibility', musicPreferencesVisibility));
 
-    final response = await _dio.put(
+    final response = await _dio.patch(
       '/profile/me/',
       data: formData,
       options: Options(
@@ -217,6 +229,76 @@ class ApiService {
         contentType: 'multipart/form-data',
       ),
     );
+    
+    return ProfileResponse.fromJson(response.data);
+  }
+
+  Future<ProfileResponse> updateProfileWithFileWeb(String token, {
+    List<int>? avatarBytes,
+    String? mimeType,
+    String? name,
+    String? location,
+    String? bio,
+    String? phone,
+    String? friendInfo,
+    List<int>? musicPreferencesIds,
+    String? avatarVisibility,
+    String? nameVisibility,
+    String? locationVisibility,
+    String? bioVisibility,
+    String? phoneVisibility,
+    String? friendInfoVisibility,
+    String? musicPreferencesVisibility,
+  }) async {
+    final formData = FormData();
+    
+    if (avatarBytes != null) {
+      formData.files.add(MapEntry(
+        'avatar',
+        MultipartFile.fromBytes(
+          avatarBytes,
+          filename: 'avatar.jpg',
+          contentType: DioMediaType.parse(mimeType ?? 'image/jpeg'),
+        ),
+      ));
+    }
+    
+    if (name != null) formData.fields.add(MapEntry('name', name));
+    if (location != null) formData.fields.add(MapEntry('location', location));
+    if (bio != null) formData.fields.add(MapEntry('bio', bio));
+    if (phone != null) formData.fields.add(MapEntry('phone', phone));
+    if (friendInfo != null) formData.fields.add(MapEntry('friend_info', friendInfo));
+    
+    if (musicPreferencesIds != null) {
+      for (int i = 0; i < musicPreferencesIds.length; i++) {
+        formData.fields.add(MapEntry('music_preferences_ids', musicPreferencesIds[i].toString()));
+      }
+    }
+    
+    if (avatarVisibility != null) formData.fields.add(MapEntry('avatar_visibility', avatarVisibility));
+    if (nameVisibility != null) formData.fields.add(MapEntry('name_visibility', nameVisibility));
+    if (locationVisibility != null) formData.fields.add(MapEntry('location_visibility', locationVisibility));
+    if (bioVisibility != null) formData.fields.add(MapEntry('bio_visibility', bioVisibility));
+    if (phoneVisibility != null) formData.fields.add(MapEntry('phone_visibility', phoneVisibility));
+    if (friendInfoVisibility != null) formData.fields.add(MapEntry('friend_info_visibility', friendInfoVisibility));
+    if (musicPreferencesVisibility != null) formData.fields.add(MapEntry('music_preferences_visibility', musicPreferencesVisibility));
+
+    if (kDebugMode) {
+      debugPrint('[ApiService] updateProfileWithFileWeb: Sending multipart form data to /profile/me/');
+    }
+
+    final response = await _dio.patch(
+      '/profile/me/',
+      data: formData,
+      options: Options(
+        headers: {'Authorization': token},
+        contentType: 'multipart/form-data',
+      ),
+    );
+    
+    if (kDebugMode) {
+      debugPrint('[ApiService] updateProfileWithFileWeb: Response received with status ${response.statusCode}');
+    }
     
     return ProfileResponse.fromJson(response.data);
   }

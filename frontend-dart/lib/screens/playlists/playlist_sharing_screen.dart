@@ -1,4 +1,3 @@
-// lib/screens/playlists/playlist_sharing_screen.dart
 import 'package:flutter/material.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';

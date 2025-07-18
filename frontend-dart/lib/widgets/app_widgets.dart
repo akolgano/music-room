@@ -932,7 +932,32 @@ static Widget emptyState({
           key: formKey,
           child: TextFormField(
             controller: controller,
-            decoration: InputDecoration(hintText: hintText, filled: true, fillColor: _getBackground(context)),
+            decoration: InputDecoration(
+              hintText: hintText,
+              filled: true,
+              fillColor: _getBackground(context),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: _getPrimary(context), width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: _getError(context), width: 2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: _getError(context), width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
             style: TextStyle(color: _getOnSurface(context)),
             maxLines: maxLines, validator: validator,
           ),
