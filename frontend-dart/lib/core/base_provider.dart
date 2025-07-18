@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 
 abstract class BaseProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -73,6 +74,10 @@ abstract class BaseProvider extends ChangeNotifier {
       }
       return true;
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[BaseProvider] executeBool error: $e');
+        debugPrint('[BaseProvider] Stack trace: ${StackTrace.current}');
+      }
       setError(errorMessage ?? e.toString());
       return false;
     }

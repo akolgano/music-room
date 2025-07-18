@@ -1,4 +1,3 @@
-// lib/screens/auth/forgot_password_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -174,7 +173,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   obscureText: true,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) return 'Please enter a password';
-                                    if (value.length < 8) return 'Password must be at least 8 characters';
+                                    if (value.length < 4) return 'Password must be at least 4 characters';
                                     return null;
                                   },
                                 ),

@@ -1,4 +1,3 @@
-// lib/screens/auth/signup_with_otp_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

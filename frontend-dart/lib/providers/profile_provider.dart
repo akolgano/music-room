@@ -1,7 +1,6 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:path_provider/path_provider.dart';
 import '../services/api_service.dart';
 import '../core/service_locator.dart';  
@@ -146,22 +145,45 @@ class ProfileProvider extends BaseProvider {
           _socialId = social['social_id'];
         }
 
-        _avatar = null;
-        _name = null;
-        _location = null;
-        _bio = null;
-        _phone = null;
-        _friendInfo = null;
-        _musicPreferences = null;
-        _musicPreferenceIds = null;
-        
-        _avatarVisibility = VisibilityLevel.public;
-        _nameVisibility = VisibilityLevel.public;
-        _locationVisibility = VisibilityLevel.public;
-        _bioVisibility = VisibilityLevel.public;
-        _phoneVisibility = VisibilityLevel.private;
-        _friendInfoVisibility = VisibilityLevel.friends;
-        _musicPreferencesVisibility = VisibilityLevel.public;
+        if (_userId != null) {
+          try {
+            final profileData = await _apiService.getProfileById(int.parse(_userId!), formattedToken!);
+            _avatar = profileData.avatar;
+            _name = profileData.name;
+            _location = profileData.location;
+            _bio = profileData.bio;
+            _phone = profileData.phone;
+            _friendInfo = profileData.friendInfo;
+            _musicPreferences = profileData.musicPreferences;
+            _avatarVisibility = VisibilityLevel.public;
+            _nameVisibility = VisibilityLevel.public;
+            _locationVisibility = VisibilityLevel.public;
+            _bioVisibility = VisibilityLevel.public;
+            _phoneVisibility = VisibilityLevel.private;
+            _friendInfoVisibility = VisibilityLevel.friends;
+            _musicPreferencesVisibility = VisibilityLevel.public;
+          } catch (e) {
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Error loading profile data: $e');
+            }
+            _avatar = null;
+            _name = null;
+            _location = null;
+            _bio = null;
+            _phone = null;
+            _friendInfo = null;
+            _musicPreferences = null;
+            _musicPreferenceIds = null;
+            
+            _avatarVisibility = VisibilityLevel.public;
+            _nameVisibility = VisibilityLevel.public;
+            _locationVisibility = VisibilityLevel.public;
+            _bioVisibility = VisibilityLevel.public;
+            _phoneVisibility = VisibilityLevel.private;
+            _friendInfoVisibility = VisibilityLevel.friends;
+            _musicPreferencesVisibility = VisibilityLevel.public;
+          }
+        }
       },
       successMessage: 'Profile loaded successfully',
       errorMessage: 'Failed to load profile',
@@ -240,19 +262,35 @@ class ProfileProvider extends BaseProvider {
       () async {
         final formattedToken = 'Token $token';
         
+        if (kDebugMode) {
+          debugPrint('[ProfileProvider] updateProfile called with avatarBase64: ${avatarBase64 != null ? 'present' : 'null'}');
+        }
+        
         if (avatarBase64 != null) {
           if (kIsWeb) {
-            final updateData = <String, dynamic>{};
-            updateData['avatar'] = avatarBase64;
-            if (mimeType != null) updateData['mime_type'] = mimeType;
-            if (name != null) updateData['name'] = name;
-            if (location != null) updateData['location'] = location;
-            if (bio != null) updateData['bio'] = bio;
-            if (phone != null) updateData['phone'] = phone;
-            if (friendInfo != null) updateData['friend_info'] = friendInfo;
-            if (musicPreferencesIds != null) updateData['music_preferences_ids'] = musicPreferencesIds;
-
-            await _apiService.updateProfile(formattedToken, updateData);
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Web platform detected, preparing avatar upload with multipart');
+            }
+            
+            final bytes = base64Decode(avatarBase64);
+            
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Making API call to updateProfileWithFile (web)');
+            }
+            await _apiService.updateProfileWithFileWeb(
+              formattedToken,
+              avatarBytes: bytes,
+              mimeType: mimeType,
+              name: name,
+              location: location,
+              bio: bio,
+              phone: phone,
+              friendInfo: friendInfo,
+              musicPreferencesIds: musicPreferencesIds,
+            );
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Web API call completed successfully');
+            }
             
             _avatar = avatarBase64;
             if (name != null) _name = name;
@@ -262,14 +300,62 @@ class ProfileProvider extends BaseProvider {
             if (friendInfo != null) _friendInfo = friendInfo;
             if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
           } else {
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Mobile platform detected, preparing avatar upload');
+            }
             final bytes = base64Decode(avatarBase64);
+            
+            if (bytes.length > 5 * 1024 * 1024) {
+              throw Exception('Image too large. Please choose an image smaller than 5MB.');
+            }
+            
             final tempDir = await getTemporaryDirectory();
             final tempFile = File('${tempDir.path}/temp_avatar.jpg');
             await tempFile.writeAsBytes(bytes);
             
-            final result = await _apiService.updateProfileWithFile(
+            try {
+              if (kDebugMode) {
+                debugPrint('[ProfileProvider] Making API call to updateProfileWithFile');
+              }
+              final result = await _apiService.updateProfileWithFile(
+                formattedToken,
+                avatarPath: tempFile.path,
+                name: name,
+                location: location,
+                bio: bio,
+                phone: phone,
+                friendInfo: friendInfo,
+                musicPreferencesIds: musicPreferencesIds,
+              );
+              
+              if (kDebugMode) {
+                debugPrint('[ProfileProvider] Mobile API call completed successfully');
+              }
+              
+              _avatar = result.avatar;
+              if (name != null) _name = name;
+              if (location != null) _location = location;
+              if (bio != null) _bio = bio;
+              if (phone != null) _phone = phone;
+              if (friendInfo != null) _friendInfo = friendInfo;
+              if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+            } finally {
+              if (await tempFile.exists()) {
+                await tempFile.delete();
+              }
+            }
+          }
+        } else {
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] No avatar update, performing regular profile update with multipart');
+          }
+          
+          if (kIsWeb) {
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Web platform detected for non-avatar update');
+            }
+            await _apiService.updateProfileWithFileWeb(
               formattedToken,
-              avatarPath: tempFile.path,
               name: name,
               location: location,
               bio: bio,
@@ -277,27 +363,26 @@ class ProfileProvider extends BaseProvider {
               friendInfo: friendInfo,
               musicPreferencesIds: musicPreferencesIds,
             );
-            
-            await tempFile.delete();
-            
-            _avatar = result.avatar;
-            if (name != null) _name = name;
-            if (location != null) _location = location;
-            if (bio != null) _bio = bio;
-            if (phone != null) _phone = phone;
-            if (friendInfo != null) _friendInfo = friendInfo;
-            if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Web non-avatar API call completed successfully');
+            }
+          } else {
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Mobile platform detected for non-avatar update');
+            }
+            await _apiService.updateProfileWithFile(
+              formattedToken,
+              name: name,
+              location: location,
+              bio: bio,
+              phone: phone,
+              friendInfo: friendInfo,
+              musicPreferencesIds: musicPreferencesIds,
+            );
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Mobile non-avatar API call completed successfully');
+            }
           }
-        } else {
-          final updateData = <String, dynamic>{};
-          if (name != null) updateData['name'] = name;
-          if (location != null) updateData['location'] = location;
-          if (bio != null) updateData['bio'] = bio;
-          if (phone != null) updateData['phone'] = phone;
-          if (friendInfo != null) updateData['friend_info'] = friendInfo;
-          if (musicPreferencesIds != null) updateData['music_preferences_ids'] = musicPreferencesIds;
-
-          await _apiService.updateProfile(formattedToken, updateData);
 
           if (name != null) _name = name;
           if (location != null) _location = location;
@@ -323,17 +408,35 @@ class ProfileProvider extends BaseProvider {
   }) async {
     return await executeBool(
       () async {
-        final updateData = <String, dynamic>{};
-        if (avatarVisibility != null) updateData['avatar_visibility'] = avatarVisibility.value;
-        if (nameVisibility != null) updateData['name_visibility'] = nameVisibility.value;
-        if (locationVisibility != null) updateData['location_visibility'] = locationVisibility.value;
-        if (bioVisibility != null) updateData['bio_visibility'] = bioVisibility.value;
-        if (phoneVisibility != null) updateData['phone_visibility'] = phoneVisibility.value;
-        if (friendInfoVisibility != null) updateData['friend_info_visibility'] = friendInfoVisibility.value;
-        if (musicPreferencesVisibility != null) updateData['music_preferences_visibility'] = musicPreferencesVisibility.value;
-
         final formattedToken = 'Token $token';
-        await _apiService.updateProfile(formattedToken, updateData);
+        
+        if (kDebugMode) {
+          debugPrint('[ProfileProvider] Updating visibility settings with multipart');
+        }
+        
+        if (kIsWeb) {
+          await _apiService.updateProfileWithFileWeb(
+            formattedToken,
+            avatarVisibility: avatarVisibility?.value,
+            nameVisibility: nameVisibility?.value,
+            locationVisibility: locationVisibility?.value,
+            bioVisibility: bioVisibility?.value,
+            phoneVisibility: phoneVisibility?.value,
+            friendInfoVisibility: friendInfoVisibility?.value,
+            musicPreferencesVisibility: musicPreferencesVisibility?.value,
+          );
+        } else {
+          await _apiService.updateProfileWithFile(
+            formattedToken,
+            avatarVisibility: avatarVisibility?.value,
+            nameVisibility: nameVisibility?.value,
+            locationVisibility: locationVisibility?.value,
+            bioVisibility: bioVisibility?.value,
+            phoneVisibility: phoneVisibility?.value,
+            friendInfoVisibility: friendInfoVisibility?.value,
+            musicPreferencesVisibility: musicPreferencesVisibility?.value,
+          );
+        }
 
         if (avatarVisibility != null) _avatarVisibility = avatarVisibility;
         if (nameVisibility != null) _nameVisibility = nameVisibility;
@@ -354,7 +457,7 @@ class ProfileProvider extends BaseProvider {
       return await _apiService.getMusicPreferences(formattedToken);
     } catch (e) {
       if (kDebugMode) {
-        developer.log('Error getting music preferences: $e', name: 'ProfileProvider');
+        debugPrint('[ProfileProvider] Error getting music preferences: $e');
       }
       return [];
     }

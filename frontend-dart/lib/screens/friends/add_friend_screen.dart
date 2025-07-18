@@ -1,4 +1,3 @@
-// lib/screens/friends/add_friend_screen.dart
 import 'package:flutter/material.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/core.dart';

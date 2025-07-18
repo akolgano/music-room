@@ -1,11 +1,10 @@
-// lib/screens/profile/profile_screen.dart
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../core/core.dart';
@@ -51,7 +50,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       });
     } catch (e) {
       if (kDebugMode) {
-        developer.log('Error loading music preferences: $e', name: 'ProfileScreen');
+        debugPrint('[ProfileScreen] Error loading music preferences: $e');
       }
     }
   }
@@ -551,48 +550,151 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Future<void> _editAvatar(ProfileProvider profileProvider) async {
     try {
-      final ImageSource? source = await _showImageSourceDialog();
-      if (source == null) return;
-
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source, 
-        maxWidth: 512, 
-        maxHeight: 512, 
-        imageQuality: 80
-      );
-      if (image == null) return;
+      final String? sourceType = await _showImageSourceDialog();
+      if (sourceType == null) return;
 
       Uint8List imageBytes;
-      if (kIsWeb) {
-        imageBytes = await image.readAsBytes();
+      String mimeType = 'image/jpeg';
+
+      if (sourceType == 'random_cat') {
+        if (kDebugMode) {
+          debugPrint('[ProfileScreen] Fetching random cat picture');
+        }
+        
+        showSuccess('Fetching a cute cat picture...');
+        
+        try {
+          http.Response? response;
+          
+          final catApis = [
+            'https://cataas.com/cat?width=512&height=512',
+            'https://placekitten.com/512/512',
+            'https://loremflickr.com/512/512/cat',
+          ];
+          
+          for (String apiUrl in catApis) {
+            try {
+              if (kDebugMode) {
+                debugPrint('[ProfileScreen] Trying cat API: $apiUrl');
+              }
+              
+              response = await http.get(
+                Uri.parse(apiUrl),
+                headers: {'User-Agent': 'Music Room App'},
+              ).timeout(const Duration(seconds: 10));
+              
+              if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+                if (kDebugMode) {
+                  debugPrint('[ProfileScreen] Success with API: $apiUrl');
+                }
+                break;
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('[ProfileScreen] Failed with API $apiUrl: $e');
+              }
+              continue;
+            }
+          }
+          
+          if (response?.statusCode == 200 && response?.bodyBytes.isNotEmpty == true) {
+            imageBytes = response!.bodyBytes;
+            mimeType = 'image/jpeg';
+            
+            if (kDebugMode) {
+              debugPrint('[ProfileScreen] Successfully fetched cat picture: ${imageBytes.length} bytes');
+            }
+          } else {
+            throw Exception('All cat picture APIs failed');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[ProfileScreen] Error fetching cat picture: $e');
+          }
+          showError('Failed to fetch cat picture. Please check your internet connection and try again.');
+          return;
+        }
       } else {
-        final File file = File(image.path);
-        imageBytes = await file.readAsBytes();
+        ImageSource source;
+        if (sourceType == 'camera') {
+          source = ImageSource.camera;
+        } else {
+          source = ImageSource.gallery;
+        }
+
+        final ImagePicker picker = ImagePicker();
+        final XFile? image = await picker.pickImage(
+          source: source, 
+          maxWidth: 512, 
+          maxHeight: 512, 
+          imageQuality: 80
+        );
+        if (image == null) return;
+
+        if (kIsWeb) {
+          imageBytes = await image.readAsBytes();
+        } else {
+          final File file = File(image.path);
+          imageBytes = await file.readAsBytes();
+        }
+        mimeType = image.mimeType ?? 'image/jpeg';
+      }
+
+      if (imageBytes.length > 5 * 1024 * 1024) {
+        showError('Image too large. Please choose an image smaller than 5MB.');
+        return;
       }
 
       final String base64Image = base64Encode(imageBytes);
-      final String mimeType = image.mimeType ?? 'image/jpeg';
+
+      if (kDebugMode) {
+        debugPrint('[ProfileScreen] Uploading avatar: size=${imageBytes.length} bytes, type=$mimeType');
+        debugPrint('[ProfileScreen] Base64 image length: ${base64Image.length}');
+        debugPrint('[ProfileScreen] Auth token: ${auth.token != null ? 'present' : 'null'}');
+      }
 
       final success = await profileProvider.updateProfile(
         auth.token,
         avatarBase64: base64Image,
         mimeType: mimeType,
       );
+      
+      if (kDebugMode) {
+        debugPrint('[ProfileScreen] Avatar upload result: $success');
+      }
 
       if (success) {
         showSuccess('Avatar updated successfully!');
         await profileProvider.loadProfile(auth.token);
       } else {
-        showError('Failed to update avatar');
+        showError('Failed to update avatar - check network connection and try again');
       }
     } catch (e) {
-      showError('Error updating avatar: $e');
+      if (kDebugMode) {
+        debugPrint('[ProfileScreen] Avatar upload error: $e');
+      }
+      String errorMessage = 'Error updating avatar: ';
+      if (e.toString().contains('DioException')) {
+        if (e.toString().contains('401')) {
+          errorMessage = 'Authentication failed - please login again';
+        } else if (e.toString().contains('413')) {
+          errorMessage = 'Image too large - please choose a smaller image';
+        } else if (e.toString().contains('400')) {
+          errorMessage = 'Invalid image format - please try a different image';
+        } else if (e.toString().contains('500')) {
+          errorMessage = 'Server error - please try again later';
+        } else {
+          errorMessage = 'Network error - check your connection';
+        }
+      } else {
+        errorMessage += e.toString();
+      }
+      showError(errorMessage);
     }
   }
 
-  Future<ImageSource?> _showImageSourceDialog() async {
-    return await showDialog<ImageSource>(
+  Future<String?> _showImageSourceDialog() async {
+    return await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -611,7 +713,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                     'Camera',
                     style: TextStyle(color: Colors.white),
                   ),
-                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                  onTap: () => Navigator.pop(context, 'camera'),
                 ),
               ListTile(
                 leading: const Icon(Icons.photo_library, color: AppTheme.primary),
@@ -619,7 +721,15 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                   kIsWeb ? 'Choose File' : 'Gallery',
                   style: const TextStyle(color: Colors.white),
                 ),
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
+                onTap: () => Navigator.pop(context, 'gallery'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.pets, color: AppTheme.primary),
+                title: const Text(
+                  'Random Cat Picture',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () => Navigator.pop(context, 'random_cat'),
               ),
             ],
           ),
@@ -635,6 +745,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
   Future<void> _editName(ProfileProvider profileProvider) async {
+    if (kDebugMode) {
+      debugPrint('[ProfileScreen] _editName called');
+    }
     final name = await AppWidgets.showTextInputDialog(
       context,
       title: 'Edit Display Name',
@@ -642,10 +755,16 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       hintText: 'Enter your display name',
     );
     if (name != null) {
+      if (kDebugMode) {
+        debugPrint('[ProfileScreen] Updating name to: $name');
+      }
       final success = await profileProvider.updateProfile(
         auth.token,
         name: name.trim(),
       );
+      if (kDebugMode) {
+        debugPrint('[ProfileScreen] Name update result: $success');
+      }
       if (success) {
         showSuccess('Display name updated successfully');
         profileProvider.loadProfile(auth.token);
@@ -841,7 +960,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           onTap: () async {
             final result = await Navigator.pushNamed(context, AppRoutes.deezerAuth);
             if (result == true) {
-              setState(() {}); // Refresh the UI to show connection status
+              setState(() {}); 
             }
           },
         ),

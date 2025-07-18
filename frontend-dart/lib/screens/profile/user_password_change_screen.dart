@@ -1,4 +1,3 @@
-// lib/screens/profile/user_password_change_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/core.dart';
@@ -72,7 +71,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             labelText: 'Current Password',
                             obscureText: true,
                             validator: (v) => v?.isEmpty ?? true ? 'Please enter current password' : 
-                                      v!.length < 8 ? 'Password must be at least 8 characters' : null,
+                                      v!.length < 4 ? 'Password must be at least 4 characters' : null,
                           ),
                           const SizedBox(height: 24),
                           AppWidgets.textField(
@@ -81,7 +80,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             labelText: 'New Password',
                             obscureText: true,
                             validator: (v) => v?.isEmpty ?? true ? 'Please enter new password' : 
-                                      v!.length < 8 ? 'Password must be at least 8 characters' : null,
+                                      v!.length < 4 ? 'Password must be at least 4 characters' : null,
                           ), 
                           const SizedBox(height: 24),
                           profileProvider.isLoading
