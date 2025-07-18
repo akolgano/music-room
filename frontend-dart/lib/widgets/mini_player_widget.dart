@@ -10,13 +10,14 @@ class MiniPlayerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     return Consumer<MusicPlayerService>(
       builder: (context, playerService, _) {
         final currentTrack = playerService.currentTrack;
         if (currentTrack == null) return const SizedBox.shrink();
 
         return Container(
-          height: 100,
+          height: isLandscape ? 60 : 100,
           decoration: BoxDecoration(
             color: AppTheme.surface,
             border: Border(
@@ -38,12 +39,12 @@ class MiniPlayerWidget extends StatelessWidget {
               _buildProgressBar(context, playerService),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: isLandscape ? 4 : 8),
                   child: Row(
                     children: [
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: isLandscape ? 40 : 56,
+                        height: isLandscape ? 40 : 56,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           color: AppTheme.surfaceVariant,
@@ -161,8 +162,8 @@ class MiniPlayerWidget extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 32,
-                            height: 32,
+                            width: isLandscape ? 28 : 32,
+                            height: isLandscape ? 28 : 32,
                             decoration: BoxDecoration(
                               color: playerService.hasPreviousTrack 
                                   ? Colors.grey.withValues(alpha: 0.3)
@@ -187,8 +188,8 @@ class MiniPlayerWidget extends StatelessWidget {
                           const SizedBox(width: 8),
                           
                           Container(
-                            width: 40,
-                            height: 40,
+                            width: isLandscape ? 36 : 40,
+                            height: isLandscape ? 36 : 40,
                             decoration: const BoxDecoration(
                               color: AppTheme.primary,
                               shape: BoxShape.circle,
@@ -209,8 +210,8 @@ class MiniPlayerWidget extends StatelessWidget {
                           const SizedBox(width: 8),
                           
                           Container(
-                            width: 32,
-                            height: 32,
+                            width: isLandscape ? 28 : 32,
+                            height: isLandscape ? 28 : 32,
                             decoration: BoxDecoration(
                               color: playerService.hasNextTrack 
                                   ? Colors.grey.withValues(alpha: 0.3)
@@ -237,8 +238,8 @@ class MiniPlayerWidget extends StatelessWidget {
                       const SizedBox(width: 8),
                       
                       Container(
-                        width: 32,
-                        height: 32,
+                        width: isLandscape ? 28 : 32,
+                        height: isLandscape ? 28 : 32,
                         decoration: BoxDecoration(
                           color: Colors.grey.withValues(alpha: 0.3),
                           shape: BoxShape.circle,

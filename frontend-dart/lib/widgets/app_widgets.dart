@@ -549,67 +549,131 @@ static Widget emptyState({
           
           Widget content = Padding(
             padding: EdgeInsets.all(padding),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                SizedBox(height: spacing),
-                Text(
-                  title, 
-                  style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
-                  textAlign: TextAlign.center,
-                  maxLines: isConstrained ? 2 : null,
-                  overflow: isConstrained ? TextOverflow.ellipsis : null,
+            child: isConstrained 
+              ? SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                      SizedBox(height: spacing),
+                      Text(
+                        title, 
+                        style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
+                        textAlign: TextAlign.center,
+                        maxLines: isConstrained ? 2 : null,
+                        overflow: isConstrained ? TextOverflow.ellipsis : null,
+                      ),
+                      if (subtitle != null) ...[
+                        SizedBox(height: spacing / 2), 
+                        Text(
+                          subtitle, 
+                          style: _secondaryStyle(context).copyWith(
+                            fontSize: isConstrained ? (kIsWeb ? 10.0 : 10.sp.toDouble()) : null,
+                          ), 
+                          textAlign: TextAlign.center,
+                          maxLines: isConstrained ? 1 : null,
+                          overflow: isConstrained ? TextOverflow.ellipsis : null,
+                        )
+                      ],
+                      if (buttonText != null && onButtonPressed != null && !isConstrained) ...[
+                        SizedBox(height: spacing),
+                        ElevatedButton(
+                          onPressed: onButtonPressed, 
+                          child: Text(
+                            buttonText, 
+                            style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        ),
+                      ],
+                      if (buttonText != null && onButtonPressed != null && isConstrained) ...[
+                        SizedBox(height: spacing / 2),
+                        TextButton(
+                          onPressed: onButtonPressed,
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: kIsWeb ? 8.0 : 8.w.toDouble(),
+                              vertical: kIsWeb ? 4.0 : 4.h.toDouble(),
+                            ),
+                            minimumSize: Size.zero,
+                          ),
+                          child: Text(
+                            buttonText,
+                            style: TextStyle(
+                              fontSize: kIsWeb ? 10.0 : 10.sp.toDouble(),
+                              color: theme.colorScheme.primary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                )
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                    SizedBox(height: spacing),
+                    Text(
+                      title, 
+                      style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
+                      textAlign: TextAlign.center,
+                      maxLines: isConstrained ? 2 : null,
+                      overflow: isConstrained ? TextOverflow.ellipsis : null,
+                    ),
+                    if (subtitle != null) ...[
+                      SizedBox(height: spacing / 2), 
+                      Text(
+                        subtitle, 
+                        style: _secondaryStyle(context).copyWith(
+                          fontSize: isConstrained ? (kIsWeb ? 10.0 : 10.sp.toDouble()) : null,
+                        ), 
+                        textAlign: TextAlign.center,
+                        maxLines: isConstrained ? 1 : null,
+                        overflow: isConstrained ? TextOverflow.ellipsis : null,
+                      )
+                    ],
+                    if (buttonText != null && onButtonPressed != null && !isConstrained) ...[
+                      SizedBox(height: spacing),
+                      ElevatedButton(
+                        onPressed: onButtonPressed, 
+                        child: Text(
+                          buttonText, 
+                          style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      ),
+                    ],
+                    if (buttonText != null && onButtonPressed != null && isConstrained) ...[
+                      SizedBox(height: spacing / 2),
+                      TextButton(
+                        onPressed: onButtonPressed,
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: kIsWeb ? 8.0 : 8.w.toDouble(),
+                            vertical: kIsWeb ? 4.0 : 4.h.toDouble(),
+                          ),
+                          minimumSize: Size.zero,
+                        ),
+                        child: Text(
+                          buttonText,
+                          style: TextStyle(
+                            fontSize: kIsWeb ? 10.0 : 10.sp.toDouble(),
+                            color: theme.colorScheme.primary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                if (subtitle != null) ...[
-                  SizedBox(height: spacing / 2), 
-                  Text(
-                    subtitle, 
-                    style: _secondaryStyle(context).copyWith(
-                      fontSize: isConstrained ? (kIsWeb ? 10.0 : 10.sp.toDouble()) : null,
-                    ), 
-                    textAlign: TextAlign.center,
-                    maxLines: isConstrained ? 1 : null,
-                    overflow: isConstrained ? TextOverflow.ellipsis : null,
-                  )
-                ],
-                if (buttonText != null && onButtonPressed != null && !isConstrained) ...[
-                  SizedBox(height: spacing),
-                  ElevatedButton(
-                    onPressed: onButtonPressed, 
-                    child: Text(
-                      buttonText, 
-                      style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  ),
-                ],
-                if (buttonText != null && onButtonPressed != null && isConstrained) ...[
-                  SizedBox(height: spacing / 2),
-                  TextButton(
-                    onPressed: onButtonPressed,
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: kIsWeb ? 8.0 : 8.w.toDouble(),
-                        vertical: kIsWeb ? 4.0 : 4.h.toDouble(),
-                      ),
-                      minimumSize: Size.zero,
-                    ),
-                    child: Text(
-                      buttonText,
-                      style: TextStyle(
-                        fontSize: kIsWeb ? 10.0 : 10.sp.toDouble(),
-                        color: theme.colorScheme.primary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ],
-            ),
           );
           
           if (!hasFiniteHeight) {

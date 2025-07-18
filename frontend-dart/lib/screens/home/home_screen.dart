@@ -22,7 +22,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-  int _currentIndex = 0; 
+  int _currentIndex = 0;
+  bool get isLandscape => MediaQuery.of(context).orientation == Orientation.landscape;
 
   @override
   void initState() {
@@ -37,58 +38,152 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: _currentIndex == 0 ? AppBar(
+    
+    if (isLandscape) {
+      return Scaffold(
         backgroundColor: AppTheme.background,
-        title: Text(AppConstants.appName),
-        automaticallyImplyLeading: false, 
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-          ),
-        ],
-      ) : null, 
-      body: Column(
-        children: [
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [_buildDashboard(auth), _buildLibraryWithAppBar(), _buildSearchWithAppBar(),
-                _buildFriendsWithAppBar(),
-                _buildProfileWithAppBar(),
-              ],
+        appBar: _currentIndex == 0 ? AppBar(
+          backgroundColor: AppTheme.background,
+          title: Text(AppConstants.appName),
+          automaticallyImplyLeading: false,
+          toolbarHeight: 48,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              border: Border(
-                top: BorderSide(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+            ),
+          ],
+        ) : null,
+        body: Row(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: NavigationRail(
+                        backgroundColor: AppTheme.surface,
+                        selectedIndex: _currentIndex,
+                        onDestinationSelected: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                            _tabController.index = index;
+                          });
+                        },
+                        labelType: NavigationRailLabelType.all,
+                        leading: const SizedBox(height: 8),
+                        destinations: const [
+                          NavigationRailDestination(
+                            icon: Icon(Icons.home_outlined),
+                            selectedIcon: Icon(Icons.home),
+                            label: Text('Home'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.library_music_outlined),
+                            selectedIcon: Icon(Icons.library_music),
+                            label: Text('Library'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.search_outlined),
+                            selectedIcon: Icon(Icons.search),
+                            label: Text('Search'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.people_outline),
+                            selectedIcon: Icon(Icons.people),
+                            label: Text('Friends'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.person_outline),
+                            selectedIcon: Icon(Icons.person),
+                            label: Text('Profile'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const VerticalDivider(thickness: 1, width: 1),
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [_buildDashboard(auth), _buildLibraryWithAppBar(), _buildSearchWithAppBar(),
+                        _buildFriendsWithAppBar(),
+                        _buildProfileWithAppBar(),
+                      ],
+                    ),
+                  ),
+                  const MiniPlayerWidget(),
+                ],
               ),
             ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: AppTheme.primary,
-              labelStyle: const TextStyle(fontSize: 12),
-              tabs: const [
-                Tab(icon: Icon(Icons.home), text: 'Home'),
-                Tab(icon: Icon(Icons.library_music), text: 'Library'),
-                Tab(icon: Icon(Icons.search), text: 'Search'),
-                Tab(icon: Icon(Icons.people), text: 'Friends'),
-                Tab(icon: Icon(Icons.person), text: 'Profile'),
-              ],
+          ],
+        ),
+      );
+    } else {
+      return Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: _currentIndex == 0 ? AppBar(
+          backgroundColor: AppTheme.background,
+          title: Text(AppConstants.appName),
+          automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
-          ),
-          const MiniPlayerWidget(),
-        ],
-      ),
-    );
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+            ),
+          ],
+        ) : null,
+        body: Column(
+          children: [
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [_buildDashboard(auth), _buildLibraryWithAppBar(), _buildSearchWithAppBar(),
+                  _buildFriendsWithAppBar(),
+                  _buildProfileWithAppBar(),
+                ],
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                border: Border(
+                  top: BorderSide(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
+                ),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: AppTheme.primary,
+                labelStyle: const TextStyle(fontSize: 12),
+                tabs: const [
+                  Tab(icon: Icon(Icons.home), text: 'Home'),
+                  Tab(icon: Icon(Icons.library_music), text: 'Library'),
+                  Tab(icon: Icon(Icons.search), text: 'Search'),
+                  Tab(icon: Icon(Icons.people), text: 'Friends'),
+                  Tab(icon: Icon(Icons.person), text: 'Profile'),
+                ],
+              ),
+            ),
+            const MiniPlayerWidget(),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildDashboard(AuthProvider auth) {
@@ -150,6 +245,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: AppTheme.background,
         title: const Text('Your Library'),
         automaticallyImplyLeading: false,
+        toolbarHeight: isLandscape ? 48 : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -175,6 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: AppTheme.background,
         title: const Text('Friends'),
         automaticallyImplyLeading: false,
+        toolbarHeight: isLandscape ? 48 : null,
         actions: [
           TextButton.icon(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
