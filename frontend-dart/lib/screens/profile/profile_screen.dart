@@ -706,7 +706,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (!kIsWeb) 
+              if (!kIsWeb && !Platform.isAndroid) 
                 ListTile(
                   leading: const Icon(Icons.camera_alt, color: AppTheme.primary),
                   title: const Text(

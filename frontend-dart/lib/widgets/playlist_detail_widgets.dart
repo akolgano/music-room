@@ -5,6 +5,8 @@ import '../../providers/voting_provider.dart';
 import '../../models/models.dart';
 import '../../core/core.dart';
 import '../../core/theme_utils.dart';
+import '../services/track_cache_service.dart';
+import '../core/service_locator.dart';
 
 class PlaylistDetailWidgets {
   static Widget buildThemedPlaylistHeader(BuildContext context, Playlist playlist) {
@@ -397,6 +399,9 @@ class PlaylistDetailWidgets {
   }
 
   static Widget buildErrorTrackItem(Key? key, PlaylistTrack playlistTrack, int index) {
+    final trackCacheService = getIt<TrackCacheService>();
+    final trackId = playlistTrack.trackId;
+    
     return Container(
       key: key,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -408,16 +413,52 @@ class PlaylistDetailWidgets {
         leading: Container(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(8)),
-          child: const Icon(Icons.music_off, color: Colors.white),
+          decoration: BoxDecoration(
+            color: trackCacheService.isTrackRetrying(trackId) 
+                ? Colors.orange.withValues(alpha: 0.3) 
+                : Colors.red.withValues(alpha: 0.3), 
+            borderRadius: BorderRadius.circular(8)
+          ),
+          child: trackCacheService.isTrackRetrying(trackId)
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                  ),
+                )
+              : const Icon(Icons.music_off, color: Colors.white),
         ),
         title: Text(
           playlistTrack.name,
           style: const TextStyle(color: Colors.white),
         ),
-        subtitle: const Text('Track details unavailable', style: TextStyle(color: Colors.grey)),
+        subtitle: Text(
+          _getTrackStatusText(trackCacheService, trackId),
+          style: TextStyle(
+            color: trackCacheService.isTrackRetrying(trackId) ? Colors.orange : Colors.grey
+          ),
+        ),
+        trailing: trackCacheService.isTrackRetrying(trackId)
+            ? IconButton(
+                icon: const Icon(Icons.cancel, color: Colors.orange),
+                onPressed: () => trackCacheService.cancelRetries(trackId),
+                tooltip: 'Cancel retries',
+              )
+            : null,
       ),
     );
+  }
+
+  static String _getTrackStatusText(TrackCacheService cacheService, String trackId) {
+    if (cacheService.isTrackRetrying(trackId)) {
+      final retryCount = cacheService.getRetryCount(trackId);
+      final maxRetries = cacheService.retryConfig.maxRetries;
+      return 'Retrying... (attempt $retryCount/$maxRetries)';
+    } else {
+      return 'Track details unavailable';
+    }
   }
 
   static Widget buildLoadingTrackItem(Key? key, PlaylistTrack playlistTrack, int index) {

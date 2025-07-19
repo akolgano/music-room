@@ -24,7 +24,6 @@ class PlaylistDetailScreen extends StatefulWidget {
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
 
-// Voting is required as per PDF requirements
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   late final ApiService _apiService;
   late final TrackCacheService _trackCacheService;
@@ -48,6 +47,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       if (mounted) {
         _votingProvider = getProvider<VotingProvider>(listen: false);
         _votingProvider?.setVotingPermission(true);
+        _setupTrackReplacementNotifications();
         _loadData();
         _startAutoRefresh();
       }
@@ -326,6 +326,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
+  void _setupTrackReplacementNotifications() {
+    final playerService = getProvider<MusicPlayerService>(listen: false);
+    playerService.setTrackReplacedCallback((originalTrack, replacementTrack) {
+      if (mounted) {
+        showSuccess('Replaced unplayable track:\n"$originalTrack"\nwith\n"$replacementTrack"');
+        _loadData();
+      }
+    });
+  }
+
   Future<void> _loadData() async {
     await runAsyncAction(
       () async {
@@ -378,6 +388,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Future<void> _fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack, int index) async {
     final track = playlistTrack.track;
     final deezerTrackId = track?.deezerTrackId;
+    final trackId = playlistTrack.trackId;
     
     if (deezerTrackId == null || 
         _fetchingTrackDetails.contains(deezerTrackId) || 
@@ -386,106 +397,78 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       return;
     }
 
-    // Check if track is already cached
-    if (_trackCacheService.isTrackCached(deezerTrackId)) {
-      final cachedTrack = await _trackCacheService.getTrackDetails(deezerTrackId, auth.token!, _apiService);
-      if (cachedTrack != null && mounted) {
-        setState(() {
-          if (index < _tracks.length && _tracks[index].trackId == playlistTrack.trackId) {
-            _tracks[index] = PlaylistTrack(
-              trackId: playlistTrack.trackId,
-              name: playlistTrack.name,
-              position: playlistTrack.position,
-              points: playlistTrack.points,
-              track: cachedTrack,
-            );
-          }
-        });
-        
-        final musicProvider = getProvider<MusicProvider>();
-        final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
-        final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
-        if (providerIndex != -1) {
-          providerTracks[providerIndex] = PlaylistTrack(
-            trackId: playlistTrack.trackId,
-            name: playlistTrack.name,
-            position: playlistTrack.position,
-            points: playlistTrack.points, 
-            track: cachedTrack,
-          );
-          if (mounted) {
-            setState(() {
-              _tracks = providerTracks;
-            });
-          }
-        }
-      }
-      return;
-    }
-
     _fetchingTrackDetails.add(deezerTrackId);
+    
     try {
       final trackDetails = await _trackCacheService.getTrackDetails(deezerTrackId, auth.token!, _apiService);
       if (!mounted) return;
       
       if (trackDetails != null) {
-        setState(() {
-          if (index < _tracks.length && _tracks[index].trackId == playlistTrack.trackId) {
-            _tracks[index] = PlaylistTrack(
-              trackId: playlistTrack.trackId,
-              name: playlistTrack.name,
-              position: playlistTrack.position,
-              points: playlistTrack.points,
-              track: trackDetails,
-            );
-          }
-        });
-        
-        final musicProvider = getProvider<MusicProvider>();
-        final providerTracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
-        final providerIndex = providerTracks.indexWhere((t) => t.trackId == playlistTrack.trackId);
-        if (providerIndex != -1) {
-          providerTracks[providerIndex] = PlaylistTrack(
-            trackId: playlistTrack.trackId,
-            name: playlistTrack.name,
-            position: playlistTrack.position,
-            points: playlistTrack.points, 
-            track: trackDetails,
-          );
-          if (mounted) {
-            setState(() {
-              _tracks = providerTracks;
-            });
-          }
-        }
+        _updateTrackDetails(trackId, trackDetails);
       }
     } catch (e) {
       if (kDebugMode) {
-        developer.log('ERROR fetching track details for $deezerTrackId: $e', name: 'PlaylistDetailScreen');
+        developer.log('Error fetching track details for $deezerTrackId: $e', name: 'PlaylistDetailScreen');
       }
     } finally {
-      if (mounted) _fetchingTrackDetails.remove(deezerTrackId);
+      _fetchingTrackDetails.remove(deezerTrackId);
     }
+  }
+
+  void _updateTrackDetails(String trackId, Track trackDetails) {
+    if (!mounted) return;
+    
+    setState(() {
+      for (int i = 0; i < _tracks.length; i++) {
+        if (_tracks[i].trackId == trackId) {
+          _tracks[i] = PlaylistTrack(
+            trackId: _tracks[i].trackId,
+            name: _tracks[i].name,
+            position: _tracks[i].position,
+            points: _tracks[i].points,
+            track: trackDetails,
+          );
+          break;
+        }
+      }
+    });
+    
+    final musicProvider = getProvider<MusicProvider>(listen: false);
+    musicProvider.updateTrackInPlaylist(trackId, trackDetails);
   }
 
   Future<void> _startBatchTrackDetailsFetch() async {
     if (!mounted) return;
-    final tracksNeedingDetails = <int>[];
+    
+    final tracksNeedingDetails = <PlaylistTrack>[];
     
     for (int i = 0; i < _tracks.length; i++) {
       final track = _tracks[i].track;
       if (track?.deezerTrackId != null && 
-          (track?.artist.isEmpty == true || track?.album.isEmpty == true)) {
-        tracksNeedingDetails.add(i);
+          (track?.artist.isEmpty == true || track?.album.isEmpty == true) &&
+          !_fetchingTrackDetails.contains(track!.deezerTrackId!)) {
+        tracksNeedingDetails.add(_tracks[i]);
       }
     }
     
-    for (int index in tracksNeedingDetails) {
-      if (!mounted) break;
-      final playlistTrack = _tracks[index];
-      await _fetchTrackDetailsIfNeeded(playlistTrack, index);
-      if (mounted && index < tracksNeedingDetails.length - 1) {
-        await Future.delayed(const Duration(milliseconds: 300));
+    if (tracksNeedingDetails.isEmpty) return;
+    
+    if (kDebugMode) {
+      developer.log('Starting parallel fetch for ${tracksNeedingDetails.length} tracks', name: 'PlaylistDetailScreen');
+    }
+    
+    final futures = tracksNeedingDetails.map((playlistTrack) {
+      return _fetchTrackDetailsIfNeeded(playlistTrack, -1); 
+    }).toList();
+    
+    try {
+      await Future.wait(futures);
+      if (kDebugMode) {
+        developer.log('Completed parallel fetch for ${tracksNeedingDetails.length} tracks', name: 'PlaylistDetailScreen');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        developer.log('Error in batch track fetch: $e', name: 'PlaylistDetailScreen');
       }
     }
   }
@@ -502,6 +485,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         playlist: _tracks,
         startIndex: 0,
         playlistId: widget.playlistId,
+        authToken: auth.token,
       );
       showInfo('Playing "${_playlist!.name}"');
     } catch (e) {
@@ -524,6 +508,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         playlist: shuffledTracks,
         startIndex: 0,
         playlistId: widget.playlistId,
+        authToken: auth.token,
       );
       playerService.toggleShuffle();
       
@@ -547,6 +532,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           playlist: _tracks,
           startIndex: index,
           playlistId: widget.playlistId,
+          authToken: auth.token,
         );
       }
       
@@ -671,8 +657,18 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   void _startAutoRefresh() {
-    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      if (mounted) _refreshPlaylistData();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted) {
+        final trackCacheService = getIt<TrackCacheService>();
+        final cacheStats = trackCacheService.getCacheStats();
+        final hasRetryingTracks = cacheStats['tracks_retrying'] > 0;
+        
+        if (timer.tick % 6 == 0 || hasRetryingTracks) {
+          _refreshPlaylistData();
+        } else {
+          if (mounted) setState(() {});
+        }
+      }
     });
   }
 

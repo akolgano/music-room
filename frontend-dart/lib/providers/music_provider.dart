@@ -252,4 +252,20 @@ class MusicProvider extends BaseProvider {
       errorMessage: 'Failed to update track order',
     );
   }
+
+  void updateTrackInPlaylist(String trackId, Track trackDetails) {
+    for (int i = 0; i < _playlistTracks.length; i++) {
+      if (_playlistTracks[i].trackId == trackId) {
+        _playlistTracks[i] = PlaylistTrack(
+          trackId: _playlistTracks[i].trackId,
+          name: _playlistTracks[i].name,
+          position: _playlistTracks[i].position,
+          points: _playlistTracks[i].points,
+          track: trackDetails,
+        );
+        notifyListeners();
+        break;
+      }
+    }
+  }
 }
