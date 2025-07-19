@@ -4,10 +4,13 @@ import 'package:just_audio/just_audio.dart';
 import '../models/models.dart';
 import '../providers/dynamic_theme_provider.dart';
 import 'deezer_service.dart';
+import 'music_service.dart';
+import '../core/service_locator.dart';
 
 class MusicPlayerService with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final DynamicThemeProvider themeProvider;
+  final MusicService _musicService = getIt<MusicService>();
   bool _disposed = false;
 
   Track? _currentTrack;
@@ -21,6 +24,9 @@ class MusicPlayerService with ChangeNotifier {
   bool _isShuffleMode = false;
   bool _isRepeatMode = false;
   bool _isUsingFullAudio = false;
+  String? _authToken;
+  final Set<String> _failedTracks = {};
+  Function(String originalTrack, String replacementTrack)? _onTrackReplaced;
 
   MusicPlayerService({required this.themeProvider}) {
     _audioPlayer.positionStream.listen((position) {
@@ -75,15 +81,22 @@ class MusicPlayerService with ChangeNotifier {
     return '${_currentIndex + 1} of ${_playlist.length}';
   }
 
+  void setTrackReplacedCallback(Function(String originalTrack, String replacementTrack)? callback) {
+    _onTrackReplaced = callback;
+  }
+
   Future<void> setPlaylistAndPlay({
     required List<PlaylistTrack> playlist,
     required int startIndex,
     String? playlistId,
+    String? authToken,
   }) async {
     try {
       _playlist = List.from(playlist);
       _playlistId = playlistId;
+      _authToken = authToken;
       _currentIndex = startIndex.clamp(0, _playlist.length - 1);
+      _failedTracks.clear();
       
       await _playCurrentTrack();
       if (kDebugMode) {
@@ -165,9 +178,38 @@ class MusicPlayerService with ChangeNotifier {
     final track = playlistTrack.track;
     
     if (track != null) {
-      await playTrack(track, track.previewUrl);
+      try {
+        await playTrack(track, track.previewUrl);
+      } catch (e) {
+        if (kDebugMode) {
+          developer.log('Failed to play track "${track.name}": $e', name: 'MusicPlayerService');
+        }
+        
+        final trackKey = '${track.name}_${track.artist}';
+        if (!_failedTracks.contains(trackKey)) {
+          _failedTracks.add(trackKey);
+          
+          final replacement = await _findEquivalentTrack(track);
+          if (replacement != null && _playlistId != null && _authToken != null) {
+            await _replaceTrackInPlaylist(playlistTrack, replacement);
+            
+            _onTrackReplaced?.call('${track.name} by ${track.artist}', '${replacement.name} by ${replacement.artist}');
+            
+            await _playCurrentTrack(); 
+            return;
+          }
+        }
+        
+        if (kDebugMode) {
+          developer.log('No replacement found for "${track.name}", skipping to next track', name: 'MusicPlayerService');
+        }
+        await playNext();
+      }
     } else {
-      throw Exception('No track available for: ${playlistTrack.name}');
+      if (kDebugMode) {
+        developer.log('No track available for: ${playlistTrack.name}, skipping', name: 'MusicPlayerService');
+      }
+      await playNext();
     }
   }
 
@@ -319,9 +361,136 @@ class MusicPlayerService with ChangeNotifier {
     _playlist.clear();
     _currentIndex = -1;
     _playlistId = null;
+    _authToken = null;
+    _failedTracks.clear();
     notifyListeners();
     if (kDebugMode) {
       developer.log('Playlist cleared', name: 'MusicPlayerService');
+    }
+  }
+
+  Future<Track?> _findEquivalentTrack(Track originalTrack) async {
+    if (_authToken == null) return null;
+    
+    try {
+      if (kDebugMode) {
+        developer.log('Searching for equivalent track for: ${originalTrack.name} by ${originalTrack.artist}', name: 'MusicPlayerService');
+      }
+      
+      final searchQuery = '${originalTrack.name} ${originalTrack.artist}';
+      final searchResults = await _musicService.searchDeezerTracks(searchQuery);
+      
+      if (searchResults.isNotEmpty) {
+        for (final candidate in searchResults) {
+          if (candidate.id != originalTrack.id && 
+              candidate.previewUrl != null && 
+              candidate.previewUrl!.isNotEmpty) {
+            
+            final similarity = _calculateTrackSimilarity(originalTrack, candidate);
+            if (similarity > 0.7) {
+              if (kDebugMode) {
+                developer.log('Found replacement: ${candidate.name} by ${candidate.artist} (similarity: ${(similarity * 100).toStringAsFixed(1)}%)', name: 'MusicPlayerService');
+              }
+              return candidate;
+            }
+          }
+        }
+      }
+      
+      if (kDebugMode) {
+        developer.log('No suitable replacement found for: ${originalTrack.name}', name: 'MusicPlayerService');
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        developer.log('Error searching for replacement track: $e', name: 'MusicPlayerService');
+      }
+      return null;
+    }
+  }
+
+  double _calculateTrackSimilarity(Track original, Track candidate) {
+    final originalName = original.name.toLowerCase().trim();
+    final candidateName = candidate.name.toLowerCase().trim();
+    final originalArtist = original.artist.toLowerCase().trim();
+    final candidateArtist = candidate.artist.toLowerCase().trim();
+    
+    final nameSimilarity = _stringSimilarity(originalName, candidateName);
+    final artistSimilarity = _stringSimilarity(originalArtist, candidateArtist);
+    
+    return (nameSimilarity * 0.7) + (artistSimilarity * 0.3);
+  }
+
+  double _stringSimilarity(String a, String b) {
+    if (a == b) return 1.0;
+    if (a.isEmpty || b.isEmpty) return 0.0;
+    
+    if (a.contains(b) || b.contains(a)) return 0.8;
+    
+    final longer = a.length > b.length ? a : b;
+    final shorter = a.length > b.length ? b : a;
+    
+    if (longer.isEmpty) return 1.0;
+    
+    final editDistance = _levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
+  }
+
+  int _levenshteinDistance(String s1, String s2) {
+    final matrix = List.generate(s1.length + 1, (_) => List.filled(s2.length + 1, 0));
+    
+    for (int i = 0; i <= s1.length; i++) {
+      matrix[i][0] = i;
+    }
+    for (int j = 0; j <= s2.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (int i = 1; i <= s1.length; i++) {
+      for (int j = 1; j <= s2.length; j++) {
+        final cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+        matrix[i][j] = [
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost,
+        ].reduce((a, b) => a < b ? a : b);
+      }
+    }
+    
+    return matrix[s1.length][s2.length];
+  }
+
+  Future<void> _replaceTrackInPlaylist(PlaylistTrack originalTrack, Track replacementTrack) async {
+    if (_playlistId == null || _authToken == null) return;
+    
+    try {
+      if (kDebugMode) {
+        developer.log('Replacing "${originalTrack.name}" with "${replacementTrack.name}" in playlist', name: 'MusicPlayerService');
+      }
+      
+      await _musicService.removeTrackFromPlaylist(_playlistId!, originalTrack.trackId, _authToken!);
+      
+      await _musicService.addTrackToPlaylist(_playlistId!, replacementTrack.backendId, _authToken!);
+      
+      final newPlaylistTrack = PlaylistTrack(
+        trackId: replacementTrack.id,
+        name: replacementTrack.name,
+        position: originalTrack.position,
+        points: originalTrack.points,
+        track: replacementTrack,
+      );
+      
+      _playlist[_currentIndex] = newPlaylistTrack;
+      notifyListeners();
+      
+      if (kDebugMode) {
+        developer.log('Successfully replaced track in playlist', name: 'MusicPlayerService');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        developer.log('Error replacing track in playlist: $e', name: 'MusicPlayerService');
+      }
+      rethrow;
     }
   }
 

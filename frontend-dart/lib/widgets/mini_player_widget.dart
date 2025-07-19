@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/music_player_service.dart';
 import '../core/core.dart';
+import '../models/models.dart';
+import '../screens/music/track_detail_screen.dart';
 
 class MiniPlayerWidget extends StatelessWidget {
   const MiniPlayerWidget({super.key});
@@ -37,10 +39,12 @@ class MiniPlayerWidget extends StatelessWidget {
             children: [
               _buildProgressBar(context, playerService),
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: isLandscape ? 4 : 8),
-                  child: Row(
-                    children: [
+                child: GestureDetector(
+                  onTap: () => _navigateToTrackDetail(context, currentTrack),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: isLandscape ? 4 : 8),
+                    child: Row(
+                      children: [
                       Container(
                         width: isLandscape ? 40 : 56,
                         height: isLandscape ? 40 : 56,
@@ -253,6 +257,7 @@ class MiniPlayerWidget extends StatelessWidget {
                     ],
                   ),
                 ),
+                ),
               ),
             ],
           ),
@@ -287,6 +292,17 @@ class MiniPlayerWidget extends StatelessWidget {
           max: duration.inSeconds.toDouble(),
           onChanged: (value) => playerService.seek(Duration(seconds: value.toInt())),
         ),
+      ),
+    );
+  }
+
+  void _navigateToTrackDetail(BuildContext context, Track? track) {
+    if (track == null) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TrackDetailScreen(track: track),
       ),
     );
   }
