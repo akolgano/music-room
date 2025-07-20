@@ -2,7 +2,9 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
+import '../models/result_models.dart';
+import '../models/api_models.dart';
 
 class AuthService {
   final ApiService _api;
@@ -44,7 +46,7 @@ class AuthService {
     if (_currentUser != null && _currentToken != null) {
       try {
         final request = LogoutRequest(username: _currentUser!.username);
-        await _api.logout('Token $_currentToken', request);
+        await _api.logout(_currentToken!, request);
       } catch (e) {
         if (kDebugMode) {
           developer.log('Error during logout API call: $e', name: 'AuthService');

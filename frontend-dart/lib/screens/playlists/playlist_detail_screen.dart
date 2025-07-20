@@ -10,12 +10,18 @@ import '../../services/music_player_service.dart';
 import '../../services/api_service.dart';
 import '../../services/track_cache_service.dart';
 import '../../core/service_locator.dart'; 
-import '../../models/models.dart';
-import '../../core/core.dart';
+import '../../models/music_models.dart';
+import '../../models/result_models.dart';
+import '../../models/sort_models.dart';
+import '../../core/theme_utils.dart';
+import '../../core/validators.dart';
+import '../../core/constants.dart';
+import '../../core/social_login.dart';
 import '../base_screen.dart';
-import '../../providers/voting_provider.dart';
-import '../../core/theme_utils.dart'; 
-import '../../widgets/widgets.dart';
+import '../../providers/voting_provider.dart'; 
+import '../../widgets/playlist_detail_widgets.dart';
+import '../../widgets/sort_button.dart';
+import '../../widgets/track_sort_bottom_sheet.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;

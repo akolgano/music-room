@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/voting_service.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
+import '../models/voting_models.dart';
 
 class VotingProvider extends BaseProvider {
   final VotingService _votingService = getIt<VotingService>();

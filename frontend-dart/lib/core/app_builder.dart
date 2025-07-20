@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-import '../core/core.dart';
+import '../core/theme_utils.dart';
+import '../core/social_login.dart';
+import '../core/constants.dart';
 import '../core/service_locator.dart';
 import '../providers/auth_provider.dart';
 import '../providers/music_provider.dart';
@@ -12,8 +14,23 @@ import '../providers/profile_provider.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../providers/voting_provider.dart';
 import '../services/music_player_service.dart';
-import '../models/models.dart';
-import '../screens/screens.dart';
+import '../models/music_models.dart';
+import '../screens/auth/auth_screen.dart';
+import '../screens/auth/signup_with_otp_screen.dart';
+import '../screens/home/home_screen.dart';
+import '../screens/music/track_detail_screen.dart';
+import '../screens/music/track_search_screen.dart';
+import '../screens/playlists/playlist_detail_screen.dart';
+import '../screens/playlists/playlist_editor_screen.dart';
+import '../screens/playlists/playlist_sharing_screen.dart';
+import '../screens/playlists/playlists_screen.dart';
+import '../screens/profile/profile_screen.dart';
+import '../screens/profile/social_network_link_screen.dart';
+import '../screens/profile/user_password_change_screen.dart';
+import '../screens/friends/add_friend_screen.dart';
+import '../screens/friends/friend_request_screen.dart';
+import '../screens/friends/friends_list_screen.dart';
+import '../screens/deezer/deezer_auth_screen.dart';
 
 class AppBuilder {
   static List<SingleChildWidget> buildProviders() {

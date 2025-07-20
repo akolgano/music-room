@@ -2,7 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
+import '../models/result_models.dart';
+import '../models/social_models.dart';
+import '../models/api_models.dart';
 
 class ApiService {
   final Dio _dio;
@@ -57,7 +60,7 @@ class ApiService {
   Future<T> _post<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
     final response = await _dio.post(endpoint, 
       data: data?.toJson?.call() ?? data,
-      options: token != null ? Options(headers: {'Authorization': token}) : null
+      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
     );
     return fromJson(response.data);
   }
@@ -65,7 +68,7 @@ class ApiService {
   Future<T> _get<T>(String endpoint, T Function(Map<String, dynamic>) fromJson, {String? token, Map<String, dynamic>? queryParams}) async {
     final response = await _dio.get(endpoint,
       queryParameters: queryParams,
-      options: token != null ? Options(headers: {'Authorization': token}) : null
+      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
     );
     return fromJson(response.data);
   }
@@ -73,7 +76,7 @@ class ApiService {
   Future<T> _patch<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
     final response = await _dio.patch(endpoint,
       data: data?.toJson?.call() ?? data,
-      options: token != null ? Options(headers: {'Authorization': token}) : null
+      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
     );
     return fromJson(response.data);
   }
@@ -81,7 +84,7 @@ class ApiService {
   Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async {
     await _dio.post(endpoint,
       data: data?.toJson?.call() ?? data,
-      options: token != null ? Options(headers: {'Authorization': token}) : null
+      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
     );
   }
 
@@ -91,7 +94,7 @@ class ApiService {
     }
     await _dio.patch(endpoint,
       data: data,
-      options: token != null ? Options(headers: {'Authorization': token}) : null
+      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
     );
     if (kDebugMode) {
       debugPrint('[ApiService] _patchVoid completed: $endpoint');
@@ -101,7 +104,7 @@ class ApiService {
   Future<void> _delete(String endpoint, {String? token, dynamic data}) async {
     await _dio.delete(endpoint, 
       data: data,
-      options: token != null ? Options(headers: {'Authorization': token}) : null
+      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
     );
   }
 
@@ -169,7 +172,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getMusicPreferences(String token) async {
     final response = await _dio.get('/profile/music-preferences/', 
-      options: Options(headers: {'Authorization': token}));
+      options: Options(headers: {'Authorization': 'Token $token'}));
     return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
@@ -225,7 +228,7 @@ class ApiService {
       '/profile/me/',
       data: formData,
       options: Options(
-        headers: {'Authorization': token},
+        headers: {'Authorization': 'Token $token'},
         contentType: 'multipart/form-data',
       ),
     );
@@ -291,7 +294,7 @@ class ApiService {
       '/profile/me/',
       data: formData,
       options: Options(
-        headers: {'Authorization': token},
+        headers: {'Authorization': 'Token $token'},
         contentType: 'multipart/form-data',
       ),
     );
@@ -305,6 +308,9 @@ class ApiService {
 
   Future<DeezerSearchResponse> searchDeezerTracks(String query) => 
       _get('/deezer/search/', DeezerSearchResponse.fromJson, queryParams: {'q': query});
+
+  Future<DeezerSearchResponse> searchTracks(String query, String token) => 
+      _get('/tracks/search/', DeezerSearchResponse.fromJson, token: token, queryParams: {'query': query});
 
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
@@ -331,7 +337,7 @@ class ApiService {
 
   Future<CreatePlaylistResponse> createPlaylist(String token, CreatePlaylistRequest request) async {
     final response = await _dio.post('/playlists/playlists', data: request.toJson(), 
-      options: Options(headers: {'Authorization': token})
+      options: Options(headers: {'Authorization': 'Token $token'})
     );
     return CreatePlaylistResponse.fromJson(response.data);
   }

@@ -3,7 +3,9 @@ import '../core/service_locator.dart';
 import '../services/music_service.dart';
 import '../services/track_cache_service.dart';
 import '../services/api_service.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
+import '../models/result_models.dart';
+import '../models/sort_models.dart';
 import '../services/track_sorting_service.dart';
 
 class MusicProvider extends BaseProvider {

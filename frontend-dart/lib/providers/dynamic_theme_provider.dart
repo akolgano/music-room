@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../core/core.dart';
+import '../core/theme_utils.dart';
+import '../core/validators.dart';
+import '../core/constants.dart';
+import '../core/social_login.dart';
 
 class DynamicThemeProvider with ChangeNotifier {
   Color _primaryColor = AppTheme.primary;

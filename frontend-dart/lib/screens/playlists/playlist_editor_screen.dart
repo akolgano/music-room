@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import '../../providers/music_provider.dart';
 import '../../core/service_locator.dart';
 import '../../services/api_service.dart';
-import '../../models/models.dart';
-import '../../core/core.dart';
-import '../../widgets/widgets.dart';
+import '../../models/music_models.dart';
+import '../../models/result_models.dart';
+import '../../models/api_models.dart';
+import '../../core/theme_utils.dart';
+import '../../core/validators.dart';
+import '../../core/constants.dart';
+import '../../core/social_login.dart';
+import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
@@ -185,7 +190,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         final visibilityRequest = VisibilityRequest(public: _isPublic);
         await apiService.changePlaylistVisibility(
           widget.playlistId!, 
-          'Token ${auth.token!}', 
+          auth.token!, 
           visibilityRequest
         );
       }
