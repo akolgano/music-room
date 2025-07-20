@@ -4,9 +4,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
-import '../../models/models.dart';
-import '../../core/core.dart';
-import '../../widgets/widgets.dart';
+import '../../models/music_models.dart';
+import '../../core/theme_utils.dart';
+import '../../widgets/app_widgets.dart';
+import '../../widgets/voting_widgets.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart';
 

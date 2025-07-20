@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
-import '../../core/core.dart';
+import '../../core/theme_utils.dart';
+import '../../core/validators.dart';
+import '../../core/constants.dart';
+import '../../core/social_login.dart';
 import '../../widgets/app_widgets.dart';
 import '../../services/deezer_service.dart';
 import '../base_screen.dart';
@@ -752,7 +755,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       context,
       title: 'Edit Display Name',
       initialValue: profileProvider.name,
-      hintText: 'Enter your display name',
+      hintText: 'Enter your display name (max 100 characters)',
+      validator: AppValidators.name,
     );
     if (name != null) {
       if (kDebugMode) {
@@ -777,7 +781,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       context, 
       title: 'Edit Location',
       initialValue: profileProvider.location,
-      hintText: 'Enter your location',
+      hintText: 'Enter your location (max 100 characters)',
+      validator: AppValidators.location,
     );
     if (location != null) {
       final success = await profileProvider.updateProfile(
@@ -796,8 +801,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       context,
       title: 'Edit Bio',
       initialValue: profileProvider.bio,
-      hintText: 'Tell us about yourself...',
+      hintText: 'Tell us about yourself (max 500 characters)...',
       maxLines: 3,
+      validator: AppValidators.bio,
     );
     if (bio != null) {
       final success = await profileProvider.updateProfile(

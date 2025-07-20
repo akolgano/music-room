@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart' show ChangeNotifier, kDebugMode;
 import 'package:just_audio/just_audio.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
 import '../providers/dynamic_theme_provider.dart';
 import 'deezer_service.dart';
 import 'music_service.dart';

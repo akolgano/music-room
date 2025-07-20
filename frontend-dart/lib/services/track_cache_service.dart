@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
 import '../services/api_service.dart';
 
 class TrackRetryConfig {
@@ -79,8 +79,7 @@ class TrackCacheService {
     final currentRetries = _retryCount[deezerTrackId] ?? 0;
     
     try {
-      final formattedToken = 'Token $token';
-      final track = await apiService.getDeezerTrack(deezerTrackId, formattedToken);
+      final track = await apiService.getDeezerTrack(deezerTrackId, token);
       
       if (track != null) {
         // Success - clear retry tracking

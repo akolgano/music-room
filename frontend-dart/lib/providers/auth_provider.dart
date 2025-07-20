@@ -3,7 +3,9 @@ import 'package:flutter/foundation.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/auth_service.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
+import '../models/result_models.dart';
+import '../models/api_models.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 

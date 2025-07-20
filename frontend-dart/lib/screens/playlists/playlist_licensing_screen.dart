@@ -2,7 +2,10 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../providers/friend_provider.dart';
-import '../../core/core.dart';
+import '../../core/theme_utils.dart';
+import '../../core/validators.dart';
+import '../../core/constants.dart';
+import '../../core/social_login.dart';
 import '../../core/service_locator.dart'; 
 import '../../widgets/app_widgets.dart';
 import '../../models/api_models.dart';
@@ -411,7 +414,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
         try {
           final license = await _apiService.getPlaylistLicense(
             widget.playlistId,
-            'Token ${auth.token!}',
+            auth.token!,
           );
           if (kDebugMode) {
             developer.log('Loaded existing license settings: ${license.licenseType}', name: 'PlaylistLicensingScreen');
@@ -523,7 +526,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
         allowedRadiusMeters: _licenseType == 'location_time' ? _allowedRadiusMeters : null,
       );
 
-      await _apiService.updatePlaylistLicense(widget.playlistId, 'Token ${auth.token!}', request);
+      await _apiService.updatePlaylistLicense(widget.playlistId, auth.token!, request);
       
       showSuccess('Playlist access control updated successfully!');
       navigateBack();

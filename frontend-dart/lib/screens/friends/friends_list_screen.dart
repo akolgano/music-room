@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/core.dart';
+import '../../core/theme_utils.dart';
+import '../../core/validators.dart';
+import '../../core/constants.dart';
+import '../../core/social_login.dart';
 import '../../providers/friend_provider.dart';
 import '../base_screen.dart';
 

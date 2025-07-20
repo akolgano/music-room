@@ -6,9 +6,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/friend_provider.dart';
-import '../../core/core.dart';
-import '../../widgets/widgets.dart';
-import '../../models/models.dart';
+import '../../core/theme_utils.dart';
+import '../../core/constants.dart';
+import '../../widgets/app_widgets.dart';
+import '../../models/music_models.dart';
 import '../profile/profile_screen.dart';
 import '../music/track_search_screen.dart';
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:dio/dio.dart';
 
 abstract class BaseProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -78,8 +79,47 @@ abstract class BaseProvider extends ChangeNotifier {
         debugPrint('[BaseProvider] executeBool error: $e');
         debugPrint('[BaseProvider] Stack trace: ${StackTrace.current}');
       }
-      setError(errorMessage ?? e.toString());
+      setError(errorMessage ?? _extractErrorMessage(e));
       return false;
     }
+  }
+  
+  String _extractErrorMessage(dynamic error) {
+    if (error is DioException) {
+      if (error.response?.statusCode == 400 && error.response?.data is Map) {
+        final data = error.response!.data as Map<String, dynamic>;
+        
+        // Extract validation errors
+        final errors = <String>[];
+        for (final entry in data.entries) {
+          if (entry.value is List) {
+            final fieldErrors = (entry.value as List).cast<String>();
+            errors.addAll(fieldErrors);
+          } else if (entry.value is String) {
+            errors.add(entry.value);
+          }
+        }
+        
+        if (errors.isNotEmpty) {
+          return errors.first; // Return the first validation error
+        }
+      }
+      
+      // Return a user-friendly message for other error types
+      switch (error.response?.statusCode) {
+        case 401:
+          return 'Authentication required. Please log in again.';
+        case 403:
+          return 'You do not have permission to perform this action.';
+        case 404:
+          return 'The requested resource was not found.';
+        case 500:
+          return 'Server error. Please try again later.';
+        default:
+          return 'An error occurred. Please try again.';
+      }
+    }
+    
+    return error.toString();
   }
 }

@@ -1,5 +1,7 @@
 import '../services/api_service.dart';
-import '../models/models.dart';
+import '../models/music_models.dart';
+import '../models/result_models.dart';
+import '../models/api_models.dart';
 
 class MusicService {
   final ApiService _api;
@@ -29,6 +31,11 @@ class MusicService {
 
   Future<List<Track>> searchDeezerTracks(String query) async {
     final response = await _api.searchDeezerTracks(query);
+    return response.data;
+  }
+
+  Future<List<Track>> searchTracks(String query, String token) async {
+    final response = await _api.searchTracks(query, token);
     return response.data;
   }
 
