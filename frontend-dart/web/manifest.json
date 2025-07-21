@@ -1,11 +1,11 @@
 {
-    "name": "music_room",
-    "short_name": "music_room",
+    "name": "MusicRoom",
+    "short_name": "MusicRoom",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#8B6F47",
+    "theme_color": "#8B6F47",
+    "description": "A collaborative music streaming application.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

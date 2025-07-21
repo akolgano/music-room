@@ -13,7 +13,7 @@ pytest
 pytest-django
 pytest-asyncio
 uvicorn
-#uvicorn[standard]
+uvicorn[standard]
 google-auth
 geopy
 pillow

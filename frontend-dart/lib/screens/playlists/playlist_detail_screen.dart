@@ -9,6 +9,7 @@ import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../services/api_service.dart';
 import '../../services/track_cache_service.dart';
+import '../../services/websocket_service.dart';
 import '../../core/service_locator.dart'; 
 import '../../models/music_models.dart';
 import '../../models/result_models.dart';
@@ -33,6 +34,7 @@ class PlaylistDetailScreen extends StatefulWidget {
 class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   late final ApiService _apiService;
   late final TrackCacheService _trackCacheService;
+  late final WebSocketService _webSocketService;
   final Set<String> _fetchingTrackDetails = {};
   final List<Completer> _pendingOperations = []; 
   Playlist? _playlist;
@@ -40,6 +42,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   bool _isOwner = false;
   VotingProvider? _votingProvider;
   Timer? _autoRefreshTimer;
+  StreamSubscription<PlaylistUpdateMessage>? _playlistUpdateSubscription;
 
   @override
   String get screenTitle => _playlist?.name ?? 'Playlist Details';
@@ -49,11 +52,13 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     super.initState();
     _apiService = getIt<ApiService>();
     _trackCacheService = getIt<TrackCacheService>();
+    _webSocketService = getIt<WebSocketService>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _votingProvider = getProvider<VotingProvider>(listen: false);
         _votingProvider?.setVotingPermission(true);
         _setupTrackReplacementNotifications();
+        _setupWebSocketConnection();
         _loadData();
         _startAutoRefresh();
       }
@@ -64,6 +69,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   void dispose() {
     _cancelPendingOperations();
     _stopAutoRefresh();
+    _playlistUpdateSubscription?.cancel();
+    _webSocketService.disconnect();
     super.dispose();
   }
 
@@ -71,7 +78,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   List<Widget> get actions => [
     if (_isOwner) IconButton(icon: const Icon(Icons.settings), onPressed: _openPlaylistSettings, tooltip: 'Playlist Settings'),
     IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
-    IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData, tooltip: 'Refresh'),
+    IconButton(
+      icon: Icon(_webSocketService.isConnected ? Icons.refresh : Icons.sync_problem), 
+      onPressed: _refreshWithReconnect, 
+      tooltip: _webSocketService.isConnected ? 'Refresh' : 'Refresh & Reconnect'
+    ),
   ];
 
   @override
@@ -123,92 +134,101 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         final sortedTracks = musicProvider.sortedPlaylistTracks;
         final currentSort = musicProvider.currentSortOption;
         
-        try {
-          return Card(
-            color: ThemeUtils.getSurface(context),
-            elevation: 4,
-            shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.queue_music, color: ThemeUtils.getPrimary(context), size: 20),
-                          const SizedBox(width: 8),
-                          Text('Tracks', style: ThemeUtils.getSubheadingStyle(context)),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            '${sortedTracks.length} tracks',
-                            style: ThemeUtils.getCaptionStyle(context),
-                          ),
-                          const SizedBox(width: 8),
-                          SortButton(currentSort: currentSort, onPressed: _showSortOptions, showLabel: false),
-                        ],
-                      ),
-                    ],
-                  ),
-                  if (currentSort.field != TrackSortField.position) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(currentSort.icon, size: 14, color: AppTheme.primary), 
-                          const SizedBox(width: 4),
-                          Text(
-                            'Sorted by ${currentSort.displayName}',
-                            style: const TextStyle(
-                              color: AppTheme.primary, 
-                              fontSize: 12, 
-                              fontWeight: FontWeight.w500
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          GestureDetector(
-                            onTap: () {
-                              musicProvider.resetToCustomOrder();
-                              if (mounted) showInfo('Restored to custom order');
-                            },
-                            child: const Icon(Icons.close, size: 14, color: AppTheme.primary),
-                          ),
-                        ],
-                      ),
+        return Card(
+          color: ThemeUtils.getSurface(context),
+          elevation: 4,
+          shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.queue_music, color: ThemeUtils.getPrimary(context), size: 20),
+                        const SizedBox(width: 8),
+                        Text('Tracks', style: ThemeUtils.getSubheadingStyle(context)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '${sortedTracks.length} tracks',
+                          style: ThemeUtils.getCaptionStyle(context),
+                        ),
+                        const SizedBox(width: 8),
+                        SortButton(currentSort: currentSort, onPressed: _showSortOptions, showLabel: false),
+                      ],
                     ),
                   ],
-                  const SizedBox(height: 16),
-                  if (sortedTracks.isEmpty) 
-                    PlaylistDetailWidgets.buildEmptyTracksState(
-                      isOwner: _isOwner,
-                      onAddTracks: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
-                    )
-                  else 
-                    _buildTracksList(sortedTracks, currentSort),
+                ),
+                if (currentSort.field != TrackSortField.position) ...[
+                  const SizedBox(height: 8),
+                  _buildStyledIndicator(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(currentSort.icon, size: 14, color: AppTheme.primary), 
+                        const SizedBox(width: 4),
+                        Text(
+                          'Sorted by ${currentSort.displayName}',
+                          style: const TextStyle(
+                            color: AppTheme.primary, 
+                            fontSize: 12, 
+                            fontWeight: FontWeight.w500
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            musicProvider.resetToCustomOrder();
+                            if (mounted) showInfo('Restored to custom order');
+                          },
+                          child: const Icon(Icons.close, size: 14, color: AppTheme.primary),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
+                const SizedBox(height: 16),
+                if (sortedTracks.isEmpty) 
+                  PlaylistDetailWidgets.buildEmptyTracksState(
+                    isOwner: _isOwner,
+                    onAddTracks: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
+                  )
+                else 
+                  _buildTracksList(sortedTracks, currentSort),
+              ],
             ),
-          );
-        } catch (e) {
-          if (kDebugMode) {
-            developer.log('ERROR building tracks section: $e', name: 'PlaylistDetailScreen');
-          }
-          return _buildErrorState(e.toString());
-        }
+          ),
+        );
       },
     );
+  }
+
+  Widget _buildTrackItemSafely(List<PlaylistTrack> tracks, int index, {bool needsKey = false}) {
+    try {
+      final playlistTrack = tracks[index];
+      final key = needsKey ? ValueKey('reorder_${playlistTrack.trackId}_${playlistTrack.position}_$index') : null;
+      final widget = _buildTrackItem(playlistTrack, index, key: key);
+      return needsKey ? KeyedSubtree(key: key!, child: widget) : widget;
+    } catch (e) {
+      if (kDebugMode) {
+        developer.log('ERROR building track item at index $index: $e', name: 'PlaylistDetailScreen');
+      }
+      final errorKey = needsKey ? ValueKey('error_$index') : null;
+      return Container(
+        key: errorKey,
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          'Error loading track at position $index', 
+          style: const TextStyle(color: Colors.red)
+        ),
+      );
+    }
   }
 
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
@@ -217,68 +237,26 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       developer.log('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}', name: 'PlaylistDetailScreen');
     }
     
-    if (canReorder) {
-      return ReorderableListView.builder(
-        shrinkWrap: true, 
-        physics: const NeverScrollableScrollPhysics(), 
-        itemCount: tracks.length,
-        onReorder: _onReorderTracks,
-        itemBuilder: (context, index) {
-          try {
-            final playlistTrack = tracks[index];
-            final keyString = 'reorder_${playlistTrack.trackId}_${playlistTrack.position}_$index';
-            final uniqueKey = ValueKey(keyString);
-            
-            final widget = _buildTrackItem(playlistTrack, index, key: uniqueKey);
-            return KeyedSubtree(key: uniqueKey, child: widget);
-          } catch (e) {
-            if (kDebugMode) {
-              developer.log('ERROR building reorderable track item at index $index: $e', name: 'PlaylistDetailScreen');
-            }
-            return Container(
-              key: ValueKey('error_$index'),
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Error loading track at position $index', 
-                style: const TextStyle(color: Colors.red)
-              ),
-            );
-          }
-        },
-      );
-    } else {
-      return ListView.builder(
-        shrinkWrap: true, 
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: tracks.length,
-        itemBuilder: (context, index) {
-          try {
-            final playlistTrack = tracks[index];
-            return _buildTrackItem(playlistTrack, index);
-          } catch (e) {
-            if (kDebugMode) {
-              developer.log('ERROR building track item at index $index: $e', name: 'PlaylistDetailScreen');
-            }
-            return Container(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Error loading track at position $index', 
-                style: const TextStyle(color: Colors.red)
-              ),
-            );
-          }
-        },
-      );
-    }
+    return canReorder
+      ? ReorderableListView.builder(
+          shrinkWrap: true, 
+          physics: const NeverScrollableScrollPhysics(), 
+          itemCount: tracks.length,
+          onReorder: _onReorderTracks,
+          itemBuilder: (context, index) => _buildTrackItemSafely(tracks, index, needsKey: true),
+        )
+      : ListView.builder(
+          shrinkWrap: true, 
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: tracks.length,
+          itemBuilder: (context, index) => _buildTrackItemSafely(tracks, index),
+        );
   }
 
   Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
     final track = playlistTrack.track;
     
-    if (track?.deezerTrackId != null && 
-        (track?.artist.isEmpty == true || track?.album.isEmpty == true) &&
-        !_fetchingTrackDetails.contains(track!.deezerTrackId!) &&
-        mounted) {
+    if (_needsTrackDetailsFetch(track) && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchTrackDetailsIfNeeded(playlistTrack, index);
       });
@@ -286,7 +264,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
     if (track?.deezerTrackId != null && 
         _fetchingTrackDetails.contains(track!.deezerTrackId!) &&
-        (track.artist.isEmpty || track.album.isEmpty)) {
+        _trackHasMissingDetails(track)) {
       return PlaylistDetailWidgets.buildLoadingTrackItem(key, playlistTrack, index);
     }
 
@@ -302,35 +280,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
-  Widget _buildErrorState(String error) {
-    return Card(
-      color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Icon(Icons.error, color: Colors.red, size: 48),
-            const SizedBox(height: 16),
-            const Text(
-              'Error loading tracks',
-              style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Error: $error',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _setupTrackReplacementNotifications() {
     final playerService = getProvider<MusicPlayerService>(listen: false);
@@ -340,6 +289,101 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         _loadData();
       }
     });
+  }
+
+  void _setupWebSocketConnection() {
+    _playlistUpdateSubscription = _webSocketService.playlistUpdateStream.listen(
+      (updateMessage) {
+        if (kDebugMode) {
+          developer.log('Received WebSocket playlist update: ${updateMessage.tracks.length} tracks', 
+              name: 'PlaylistDetailScreen');
+        }
+        
+        if (updateMessage.playlistId == widget.playlistId && mounted) {
+          _handlePlaylistUpdate(updateMessage.tracks);
+        }
+      },
+      onError: (error) {
+        if (kDebugMode) {
+          developer.log('WebSocket error: $error', name: 'PlaylistDetailScreen');
+        }
+      },
+    );
+
+    if (auth.token != null) {
+      _webSocketService.connectToPlaylist(widget.playlistId, auth.token!);
+    }
+  }
+
+  Future<void> _refreshTracksFromProvider() async {
+    final musicProvider = _getMountedProvider<MusicProvider>();
+    if (musicProvider == null) return;
+    await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
+    setState(() => _tracks = musicProvider.playlistTracks);
+    _initializeVotingIfNeeded();
+  }
+
+  bool _needsTrackDetailsFetch(Track? track) {
+    return track?.deezerTrackId != null && 
+           _trackHasMissingDetails(track) &&
+           !_fetchingTrackDetails.contains(track!.deezerTrackId!);
+  }
+
+  void _logError(String message, dynamic error) {
+    if (kDebugMode) {
+      developer.log('ERROR $message: $error', name: 'PlaylistDetailScreen');
+    }
+  }
+
+  T? _getMountedProvider<T>() {
+    return mounted ? getProvider<T>(listen: false) : null;
+  }
+
+  bool _trackHasMissingDetails(Track? track) {
+    return track?.artist.isEmpty == true || track?.album.isEmpty == true;
+  }
+
+  Widget _buildStyledIndicator(Widget child) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+      ),
+      child: child,
+    );
+  }
+
+  void _initializeVotingIfNeeded() {
+    if (_votingProvider != null) {
+      _votingProvider!.initializeTrackPoints(_tracks);
+    }
+  }
+
+  bool _shouldSkipTrackDetailsFetch(String? deezerTrackId, Track? track) {
+    return deezerTrackId == null || 
+           _fetchingTrackDetails.contains(deezerTrackId) || 
+           !mounted ||
+           (track != null && !_trackHasMissingDetails(track));
+  }
+
+  void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) {
+    final musicProvider = _getMountedProvider<MusicProvider>();
+    if (musicProvider == null) return;
+    
+    setState(() {
+      _tracks = updatedTracks;
+    });
+    
+    musicProvider.updatePlaylistTracks(updatedTracks);
+    
+    _initializeVotingIfNeeded();
+    
+    if (kDebugMode) {
+      developer.log('Updated playlist tracks via WebSocket: ${_tracks.length} tracks', 
+          name: 'PlaylistDetailScreen');
+    }
   }
 
   Future<void> _loadData() async {
@@ -354,13 +398,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             _isOwner = _playlist!.creator == auth.username;
           });
           
-          await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
-          setState(() => _tracks = musicProvider.playlistTracks);
+          await _refreshTracksFromProvider();
           
           if (_votingProvider != null) {
             _votingProvider!.clearVotingData();
             _votingProvider!.setVotingPermission(true);
-            _votingProvider!.initializeTrackPoints(_tracks);
           }
           
           if (_playlist!.imageUrl?.isNotEmpty == true) {
@@ -376,14 +418,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     );
   }
 
+  Future<void> _refreshWithReconnect() async {
+    if (!_webSocketService.isConnected && auth.token != null) {
+      await _webSocketService.forceReconnect();
+    }
+    await _loadData();
+  }
+
   Future<void> _refreshPlaylistData() async {
     try {
-      final musicProvider = getProvider<MusicProvider>();
-      await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
-      if (mounted) {
-        setState(() => _tracks = musicProvider.playlistTracks);
-        if (_votingProvider != null) _votingProvider!.initializeTrackPoints(_tracks);
-      }
+      await _refreshTracksFromProvider();
     } catch (e) {
       if (kDebugMode) {
         developer.log('Error refreshing playlist data: $e', name: 'PlaylistDetailScreen');
@@ -396,50 +440,43 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     final deezerTrackId = track?.deezerTrackId;
     final trackId = playlistTrack.trackId;
     
-    if (deezerTrackId == null || 
-        _fetchingTrackDetails.contains(deezerTrackId) || 
-        !mounted ||
-        (track != null && track.artist.isNotEmpty && track.album.isNotEmpty)) {
+    if (_shouldSkipTrackDetailsFetch(deezerTrackId, track)) {
       return;
     }
 
-    _fetchingTrackDetails.add(deezerTrackId);
+    _fetchingTrackDetails.add(deezerTrackId!);
     
     try {
-      final trackDetails = await _trackCacheService.getTrackDetails(deezerTrackId, auth.token!, _apiService);
+      final trackDetails = await _trackCacheService.getTrackDetails(deezerTrackId!, auth.token!, _apiService);
       if (!mounted) return;
       
       if (trackDetails != null) {
         _updateTrackDetails(trackId, trackDetails);
       }
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error fetching track details for $deezerTrackId: $e', name: 'PlaylistDetailScreen');
-      }
+      _logError('fetching track details for $deezerTrackId', e);
     } finally {
-      _fetchingTrackDetails.remove(deezerTrackId);
+      _fetchingTrackDetails.remove(deezerTrackId!);
     }
   }
 
   void _updateTrackDetails(String trackId, Track trackDetails) {
-    if (!mounted) return;
+    final musicProvider = _getMountedProvider<MusicProvider>();
+    if (musicProvider == null) return;
     
-    setState(() {
-      for (int i = 0; i < _tracks.length; i++) {
-        if (_tracks[i].trackId == trackId) {
-          _tracks[i] = PlaylistTrack(
-            trackId: _tracks[i].trackId,
-            name: _tracks[i].name,
-            position: _tracks[i].position,
-            points: _tracks[i].points,
+    final updatedTracks = _tracks.map((playlistTrack) =>
+      playlistTrack.trackId == trackId
+        ? PlaylistTrack(
+            trackId: playlistTrack.trackId,
+            name: playlistTrack.name,
+            position: playlistTrack.position,
+            points: playlistTrack.points,
             track: trackDetails,
-          );
-          break;
-        }
-      }
-    });
+          )
+        : playlistTrack
+    ).toList();
     
-    final musicProvider = getProvider<MusicProvider>(listen: false);
+    setState(() => _tracks = updatedTracks);
     musicProvider.updateTrackInPlaylist(trackId, trackDetails);
   }
 
@@ -450,9 +487,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     
     for (int i = 0; i < _tracks.length; i++) {
       final track = _tracks[i].track;
-      if (track?.deezerTrackId != null && 
-          (track?.artist.isEmpty == true || track?.album.isEmpty == true) &&
-          !_fetchingTrackDetails.contains(track!.deezerTrackId!)) {
+      if (_needsTrackDetailsFetch(track)) {
         tracksNeedingDetails.add(_tracks[i]);
       }
     }
@@ -473,9 +508,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         developer.log('Completed parallel fetch for ${tracksNeedingDetails.length} tracks', name: 'PlaylistDetailScreen');
       }
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error in batch track fetch: $e', name: 'PlaylistDetailScreen');
-      }
+      _logError('in batch track fetch', e);
     }
   }
 
@@ -565,8 +598,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
             trackId: trackId, 
             token: auth.token!
           );
-          await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
-          setState(() => _tracks = musicProvider.playlistTracks);
+          await _refreshTracksFromProvider();
         },
         successMessage: 'Track removed from playlist',
         errorMessage: 'Failed to remove track',
@@ -597,9 +629,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       });
       _updateTrackOrder(oldIndex, newIndex);
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('ERROR reordering tracks: $e', name: 'PlaylistDetailScreen');
-      }
+      _logError('reordering tracks', e);
       if (mounted) showError('Failed to reorder tracks: $e');
     }
   }
@@ -615,14 +645,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       );
       
       if (mounted) {
-        await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
-        setState(() => _tracks = musicProvider.playlistTracks);
-        if (_votingProvider != null) _votingProvider!.initializeTrackPoints(_tracks);
+        await _refreshTracksFromProvider();
       }
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('ERROR updating track order: $e', name: 'PlaylistDetailScreen');
-      }
+      _logError('updating track order', e);
       if (mounted) {
         showError('Failed to update track order: $e');
         await _loadData();
@@ -663,13 +689,15 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   void _startAutoRefresh() {
-    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted) {
         final trackCacheService = getIt<TrackCacheService>();
         final cacheStats = trackCacheService.getCacheStats();
         final hasRetryingTracks = cacheStats['tracks_retrying'] > 0;
         
-        if (timer.tick % 6 == 0 || hasRetryingTracks) {
+        if (hasRetryingTracks) {
+          _refreshPlaylistData();
+        } else if (!_webSocketService.isConnected && timer.tick % 3 == 0) {
           _refreshPlaylistData();
         } else {
           if (mounted) setState(() {});

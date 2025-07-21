@@ -39,10 +39,10 @@ class MusicProvider extends BaseProvider {
     notifyListeners();
   }
 
-  Future<void> fetchUserPlaylists(String token) async {
+  Future<void> _fetchPlaylists(Future<List<Playlist>> Function() fetchMethod, String errorMessage) async {
     final result = await executeAsync(
-      () => _musicService.getUserPlaylists(token),
-      errorMessage: 'Failed to load playlists',
+      fetchMethod,
+      errorMessage: errorMessage,
     );
     if (result != null) {
       _playlists = result;
@@ -52,17 +52,18 @@ class MusicProvider extends BaseProvider {
     }
   }
 
-  Future<void> fetchPublicPlaylists(String token) async {
-    final result = await executeAsync(
-      () => _musicService.getPublicPlaylists(token),
-      errorMessage: 'Failed to load public playlists',
+  Future<void> fetchUserPlaylists(String token) async {
+    await _fetchPlaylists(
+      () => _musicService.getUserPlaylists(token),
+      'Failed to load playlists',
     );
-    if (result != null) {
-      _playlists = result;
-      _hasConnectionError = false;
-    } else {
-      _hasConnectionError = true;
-    }
+  }
+
+  Future<void> fetchPublicPlaylists(String token) async {
+    await _fetchPlaylists(
+      () => _musicService.getPublicPlaylists(token),
+      'Failed to load public playlists',
+    );
   }
 
   Future<Playlist?> getPlaylistDetails(String id, String token) async {
@@ -123,14 +124,8 @@ class MusicProvider extends BaseProvider {
   }
 
   Track? getTrackById(String trackId) {
-    for (final track in _searchResults) {
-      if (track.id == trackId) return track;
-    }
-    for (final playlistTrack in _playlistTracks) {
-      if (playlistTrack.track?.id == trackId) return playlistTrack.track;
-      if (playlistTrack.trackId == trackId) return playlistTrack.track;
-    }
-    return null;
+    return _searchResults.where((track) => track.id == trackId).firstOrNull ??
+           _playlistTracks.where((pt) => pt.track?.id == trackId || pt.trackId == trackId).firstOrNull?.track;
   }
 
   Future<void> fetchPlaylistTracks(String playlistId, String token) async {
@@ -161,7 +156,7 @@ class MusicProvider extends BaseProvider {
     return _playlistTracks.any((pt) => pt.trackId == trackId || pt.track?.id == trackId);
   }
 
- Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
+  Future<AddTrackResult> _addTrackToPlaylistInternal(String playlistId, String trackId, String token) async {
     try {
       await _musicService.addTrackToPlaylist(playlistId, trackId, token);
       await fetchPlaylistTracks(playlistId, token);
@@ -172,15 +167,12 @@ class MusicProvider extends BaseProvider {
     }
   }
 
+  Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
+    return _addTrackToPlaylistInternal(playlistId, trackId, token);
+  }
+
   Future<AddTrackResult> addTrackObjectToPlaylist(String playlistId, Track track, String token) async {
-    try {
-      await _musicService.addTrackToPlaylist(playlistId, track.backendId, token);
-      await fetchPlaylistTracks(playlistId, token);
-      notifyListeners();
-      return AddTrackResult(success: true, message: 'Track added successfully');
-    } catch (e) {
-      return AddTrackResult(success: false, message: e.toString());
-    }
+    return _addTrackToPlaylistInternal(playlistId, track.backendId, token);
   }
 
   Future<BatchAddResult> addMultipleTracksToPlaylist({
@@ -208,14 +200,17 @@ class MusicProvider extends BaseProvider {
         failureCount++;
         errors.add(e.toString());
       }
-      if (i < trackIds.length - 1) {
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
+      await Future.delayed(const Duration(milliseconds: 100));
     }
     await fetchPlaylistTracks(playlistId, token);
     notifyListeners();
     return BatchAddResult(
-      totalTracks: trackIds.length, successCount: successCount, duplicateCount: duplicateCount, failureCount: failureCount, errors: errors);
+      totalTracks: trackIds.length, 
+      successCount: successCount, 
+      duplicateCount: duplicateCount, 
+      failureCount: failureCount, 
+      errors: errors
+    );
   }
 
   Future<void> removeTrackFromPlaylist({
@@ -269,5 +264,10 @@ class MusicProvider extends BaseProvider {
         break;
       }
     }
+  }
+
+  void updatePlaylistTracks(List<PlaylistTrack> updatedTracks) {
+    _playlistTracks = updatedTracks;
+    notifyListeners();
   }
 }
