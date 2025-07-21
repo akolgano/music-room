@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
@@ -100,11 +101,15 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     return AppTheme.buildHeaderCard(
       child: Column(
         children: [
-          Stack(
-            children: [
+          GestureDetector(
+            onTap: profileProvider.isLoading 
+                ? null 
+                : () => _editAvatar(profileProvider),
+            child: Stack(
+              children: [
               Container(
-                width: 100,
-                height: 100,
+                width: 140,
+                height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: profileProvider.avatarUrl?.isNotEmpty == true
@@ -147,7 +152,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                       ? null 
                       : () => _editAvatar(profileProvider),
                   child: Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: profileProvider.isLoading 
                           ? Colors.grey 
@@ -164,11 +169,12 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Icon(Icons.camera_alt, color: Colors.black, size: 16),
+                        : const Icon(Icons.camera_alt, color: Colors.black, size: 20),
                   ),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -556,6 +562,13 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       final String? sourceType = await _showImageSourceDialog();
       if (sourceType == null) return;
 
+      if (sourceType == 'remove') {
+        final auth = context.read<AuthProvider>();
+        await profileProvider.deleteAvatar(auth.token);
+        showSuccess('Avatar removed successfully!');
+        return;
+      }
+
       Uint8List imageBytes;
       String mimeType = 'image/jpeg';
 
@@ -618,16 +631,9 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           return;
         }
       } else {
-        ImageSource source;
-        if (sourceType == 'camera') {
-          source = ImageSource.camera;
-        } else {
-          source = ImageSource.gallery;
-        }
-
         final ImagePicker picker = ImagePicker();
         final XFile? image = await picker.pickImage(
-          source: source, 
+          source: ImageSource.gallery, 
           maxWidth: 512, 
           maxHeight: 512, 
           imageQuality: 80
@@ -709,15 +715,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (!kIsWeb && !Platform.isAndroid) 
-                ListTile(
-                  leading: const Icon(Icons.camera_alt, color: AppTheme.primary),
-                  title: const Text(
-                    'Camera',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onTap: () => Navigator.pop(context, 'camera'),
-                ),
               ListTile(
                 leading: const Icon(Icons.photo_library, color: AppTheme.primary),
                 title: Text(
@@ -733,6 +730,14 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onTap: () => Navigator.pop(context, 'random_cat'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'Remove Avatar',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () => Navigator.pop(context, 'remove'),
               ),
             ],
           ),
