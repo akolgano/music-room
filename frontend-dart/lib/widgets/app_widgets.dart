@@ -9,23 +9,53 @@ import '../models/result_models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';
+import 'dialog_widgets.dart';
 export 'mini_player_widget.dart';
 
 class AppWidgets {
-  static ColorScheme _getColorScheme(BuildContext context) => Theme.of(context).colorScheme;
-  static Color _getPrimary(BuildContext context) => _getColorScheme(context).primary;
-  static Color _getSurface(BuildContext context) => _getColorScheme(context).surface;
-  static Color _getBackground(BuildContext context) => _getColorScheme(context).surface;
-  static Color _getOnSurface(BuildContext context) => _getColorScheme(context).onSurface;
-  static Color _getError(BuildContext context) => _getColorScheme(context).error;
+  static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
+
+  static IconButton _buildStyledIconButton(IconData icon, Color color, double size, VoidCallback onPressed, {String? tooltip}) => IconButton(
+    icon: Icon(icon, color: color, size: _responsiveValue(size)),
+    onPressed: onPressed,
+    tooltip: tooltip,
+    padding: EdgeInsets.all(_responsiveWidth(4.0)),
+    constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
+  );
   
   static TextStyle _primaryStyle(BuildContext context) => TextStyle(
-    color: _getOnSurface(context), fontSize: kIsWeb ? 16.0 : 16.sp.toDouble(), fontWeight: FontWeight.w600
+    color: _colorScheme(context).onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
   );
   
   static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
-    color: _getOnSurface(context).withValues(alpha: 0.7), fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()
+    color: _colorScheme(context).onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
   );
+
+  static OutlineInputBorder _createBorder(Color color, double width) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: color, width: width),
+      );
+
+  static double _responsiveSize(double webSize, double mobileSize) => kIsWeb ? webSize : mobileSize.sp.toDouble();
+  static double _responsiveWidth(double size) => _responsive(size, type: 'w');
+  static double _responsiveHeight(double size) => _responsive(size, type: 'h');
+  static double _responsiveValue(double value) => _responsive(value);
+  
+  static double _responsive(double value, {String type = 'sp'}) {
+    if (kIsWeb) return value;
+    switch (type) {
+      case 'w': return value.w.toDouble();
+      case 'h': return value.h.toDouble();
+      case 'sp': default: return value.sp.toDouble();
+    }
+  }
+
+  static Color _getTrackCardColor(ColorScheme colorScheme, bool isSelected, bool isCurrentTrack) {
+    if (isSelected) return colorScheme.primary.withValues(alpha: 0.2);
+    if (isCurrentTrack) return colorScheme.primary.withValues(alpha: 0.1);
+    return colorScheme.surface;
+  }
 
   static Widget textField({required BuildContext context, 
     required TextEditingController controller,
@@ -44,38 +74,20 @@ class AppWidgets {
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: _getPrimary(context)) : null,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: _colorScheme(context).primary) : null,
         filled: true,
-        fillColor: _getSurface(context),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8), 
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8), 
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _getPrimary(context), width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _getError(context), width: 2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _getError(context), width: 2),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
-        ),
-        labelStyle: TextStyle(fontSize: 16, color: _getOnSurface(context).withValues(alpha: 0.7)),
-        hintStyle: TextStyle(fontSize: 14, color: _getOnSurface(context).withValues(alpha: 0.5)),
+        fillColor: _colorScheme(context).surface,
+        border: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
+        enabledBorder: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
+        focusedBorder: _createBorder(_colorScheme(context).primary, 2),
+        errorBorder: _createBorder(_colorScheme(context).error, 2),
+        focusedErrorBorder: _createBorder(_colorScheme(context).error, 2),
+        disabledBorder: _createBorder(Colors.grey.withValues(alpha: 0.2), 1),
+        labelStyle: TextStyle(fontSize: 16, color: _colorScheme(context).onSurface.withValues(alpha: 0.7)),
+        hintStyle: TextStyle(fontSize: 14, color: _colorScheme(context).onSurface.withValues(alpha: 0.5)),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: kIsWeb ? 16.0 : 16.w.toDouble(), 
-          vertical: kIsWeb ? 12.0 : 12.h.toDouble()
+          horizontal: _responsiveWidth(16.0), 
+          vertical: _responsiveHeight(12.0)
         ),
       ),
     );
@@ -120,18 +132,16 @@ class AppWidgets {
           child: FadeInAnimation(
             child: Container(
               margin: EdgeInsets.symmetric(
-                horizontal: kIsWeb ? 16.0 : 16.w.toDouble(), 
-                vertical: kIsWeb ? 4.0 : 4.h.toDouble()
+                horizontal: _responsiveWidth(16.0), 
+                vertical: _responsiveHeight(4.0)
               ),
               decoration: BoxDecoration(
-                color: isSelected ? colorScheme.primary.withValues(alpha: 0.2) : 
-                       isCurrentTrack ? colorScheme.primary.withValues(alpha: 0.1) : 
-                       colorScheme.surface,
-                borderRadius: BorderRadius.circular(kIsWeb ? 12.0 : 12.r.toDouble()),
+                color: _getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
+                borderRadius: BorderRadius.circular(_responsiveWidth(12.0)),
                 border: isCurrentTrack ? Border.all(color: colorScheme.primary, width: 2) : null,
               ),
               child: Padding(
-                padding: EdgeInsets.all(kIsWeb ? 12.0 : 12.w.toDouble()),
+                padding: EdgeInsets.all(_responsiveWidth(12.0)),
                 child: Row(
                   children: [
                     if (onSelectionChanged != null)
@@ -145,7 +155,7 @@ class AppWidgets {
                       )
                     else
                       _buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
-                    SizedBox(width: kIsWeb ? 12.0 : 12.w.toDouble()),
+                    SizedBox(width: _responsiveWidth(12.0)),
                     Expanded(
                       child: Row(
                         children: [
@@ -220,7 +230,7 @@ class AppWidgets {
             )
           : Icon(
               defaultIcon, 
-              color: _getOnSurface(context), 
+              color: _colorScheme(context).onSurface, 
               size: kIsWeb ? size * 0.5 : (size * 0.5).sp.toDouble()
             ),
     );
@@ -240,53 +250,41 @@ class AppWidgets {
     final actions = <Widget>[];
     
     if (showPlayButton && onPlay != null) {
-      actions.add(IconButton(
-        icon: Icon(
-          trackIsPlaying ? Icons.pause : Icons.play_arrow, 
-          color: colorScheme.primary, 
-          size: kIsWeb ? 20.0 : 20.sp.toDouble() 
-        ), 
-        onPressed: onPlay,
-        padding: EdgeInsets.all(kIsWeb ? 4.0 : 4.w.toDouble()), 
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40), 
+      actions.add(_buildStyledIconButton(
+        trackIsPlaying ? Icons.pause : Icons.play_arrow, 
+        colorScheme.primary, 
+        20.0, 
+        onPlay
       ));
     }
     
     if (showAddButton && onAdd != null && !isInPlaylist) {
-      actions.add(IconButton(
-        icon: Icon(
-          Icons.add_circle_outline, 
-          color: colorScheme.onSurface, 
-          size: kIsWeb ? 18.0 : 18.sp.toDouble() 
-        ), 
-        onPressed: onAdd, 
-        tooltip: 'Add to Playlist',
-        padding: EdgeInsets.all(kIsWeb ? 4.0 : 4.w.toDouble()), 
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40), 
+      actions.add(_buildStyledIconButton(
+        Icons.add_circle_outline, 
+        colorScheme.onSurface, 
+        18.0, 
+        onAdd, 
+        tooltip: 'Add to Playlist'
       ));
     }
     
     if (isInPlaylist) {
       actions.add(Padding(
-        padding: EdgeInsets.all(kIsWeb ? 4.0 : 4.w.toDouble()),
+        padding: EdgeInsets.all(_responsiveWidth(4.0)),
         child: Icon(
           Icons.check_circle, 
           color: Colors.green, 
-          size: kIsWeb ? 18.0 : 18.sp.toDouble() 
+          size: _responsiveValue(18.0) 
         ),
       ));
     }
     
     if (onRemove != null) {
-      actions.add(IconButton(
-        icon: Icon(
-          Icons.remove_circle_outline, 
-          color: colorScheme.error, 
-          size: kIsWeb ? 18.0 : 18.sp.toDouble() 
-        ), 
-        onPressed: onRemove,
-        padding: EdgeInsets.all(kIsWeb ? 4.0 : 4.w.toDouble()), 
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40), 
+      actions.add(_buildStyledIconButton(
+        Icons.remove_circle_outline, 
+        colorScheme.error, 
+        18.0, 
+        onRemove
       ));
     }
     
@@ -304,7 +302,7 @@ class AppWidgets {
           children: [
             CircularProgressIndicator(color: colorScheme.primary),
             if (message != null) ...[
-              SizedBox(height: kIsWeb ? 16.0 : 16.h.toDouble()), 
+              SizedBox(height: _responsiveHeight(16.0)), 
               Text(message, style: _secondaryStyle(context))
             ],
           ],
@@ -324,8 +322,8 @@ class AppWidgets {
     final theme = Theme.of(context);
     final content = isLoading 
       ? SizedBox(
-          width: kIsWeb ? 16.0 : 16.w.toDouble(), 
-          height: kIsWeb ? 16.0 : 16.h.toDouble(), 
+          width: _responsiveWidth(16.0), 
+          height: _responsiveHeight(16.0), 
           child: CircularProgressIndicator(
             strokeWidth: 2, 
             color: theme.colorScheme.onPrimary
@@ -336,13 +334,13 @@ class AppWidgets {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: kIsWeb ? 16.0 : 16.sp.toDouble()), 
-              SizedBox(width: kIsWeb ? 8.0 : 8.w.toDouble())
+              Icon(icon, size: _responsiveValue(16.0)), 
+              SizedBox(width: _responsiveWidth(8.0))
             ],
             Flexible(
               child: Text(
                 text, 
-                style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()), 
+                style: TextStyle(fontSize: _responsiveValue(14.0)), 
                 overflow: TextOverflow.visible,
                 textAlign: TextAlign.center, 
                 maxLines: 1
@@ -359,7 +357,7 @@ class AppWidgets {
     
     return fullWidth ? SizedBox(
       width: double.infinity, 
-      height: kIsWeb ? 50.0 : 50.h.toDouble(), 
+      height: _responsiveHeight(50.0), 
       child: button
     ) : button;
   }
@@ -377,13 +375,13 @@ class AppWidgets {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: kIsWeb ? 16.0 : 16.sp.toDouble()), 
-          SizedBox(width: kIsWeb ? 6.0 : 6.w.toDouble())
+          Icon(icon, size: _responsiveValue(16.0)), 
+          SizedBox(width: _responsiveWidth(6.0))
         ],
         Flexible(
           child: Text(
             text, 
-            style: TextStyle(fontSize: kIsWeb ? 13.0 : 13.sp.toDouble()), 
+            style: TextStyle(fontSize: _responsiveValue(13.0)), 
             overflow: TextOverflow.visible,
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -400,7 +398,7 @@ class AppWidgets {
     
     return fullWidth ? SizedBox(
       width: double.infinity, 
-      height: kIsWeb ? 50.0 : 50.h.toDouble(), 
+      height: _responsiveHeight(50.0), 
       child: button
     ) : button;
   }
@@ -418,13 +416,13 @@ class AppWidgets {
       final bannerColor = color ?? theme.colorScheme.primary;
       return Container(
         margin: EdgeInsets.symmetric(
-          horizontal: kIsWeb ? 16.0 : 16.w.toDouble(), 
-          vertical: kIsWeb ? 8.0 : 8.h.toDouble()
+          horizontal: _responsiveWidth(16.0), 
+          vertical: _responsiveHeight(8.0)
         ),
-        padding: EdgeInsets.all(kIsWeb ? 16.0 : 16.w.toDouble()),
+        padding: EdgeInsets.all(_responsiveWidth(16.0)),
         decoration: BoxDecoration(
           color: bannerColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(kIsWeb ? 12.0 : 12.r.toDouble()),
+          borderRadius: BorderRadius.circular(_responsiveWidth(12.0)),
           border: Border.all(color: bannerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
@@ -432,30 +430,30 @@ class AppWidgets {
           children: [
             Row(
               children: [
-                Icon(icon, color: bannerColor, size: kIsWeb ? 20.0 : 20.sp.toDouble()),
-                SizedBox(width: kIsWeb ? 8.0 : 8.w.toDouble()),
+                Icon(icon, color: bannerColor, size: _responsiveValue(20.0)),
+                SizedBox(width: _responsiveWidth(8.0)),
                 Expanded(
                   child: Text(
                     title,
                     style: TextStyle(
                       color: bannerColor,
-                      fontSize: kIsWeb ? 16.0 : 16.sp.toDouble(),
+                      fontSize: _responsiveValue(16.0),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: kIsWeb ? 8.0 : 8.h.toDouble()),
+            SizedBox(height: _responsiveHeight(8.0)),
             Text(
               message,
               style: TextStyle(
                 color: bannerColor,
-                fontSize: kIsWeb ? 14.0 : 14.sp.toDouble(),
+                fontSize: _responsiveValue(14.0),
               ),
             ),
             if (actionText != null && onAction != null) ...[
-              SizedBox(height: kIsWeb ? 12.0 : 12.h.toDouble()),
+              SizedBox(height: _responsiveHeight(12.0)),
               TextButton(
                 onPressed: onAction,
                 child: Text(
@@ -482,32 +480,32 @@ class AppWidgets {
       final errorColor = theme.colorScheme.error;
       return Container(
         margin: EdgeInsets.symmetric(
-          horizontal: kIsWeb ? 16.0 : 16.w.toDouble(), 
-          vertical: kIsWeb ? 8.0 : 8.h.toDouble()
+          horizontal: _responsiveWidth(16.0), 
+          vertical: _responsiveHeight(8.0)
         ),
-        padding: EdgeInsets.all(kIsWeb ? 16.0 : 16.w.toDouble()),
+        padding: EdgeInsets.all(_responsiveWidth(16.0)),
         decoration: BoxDecoration(
           color: errorColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(kIsWeb ? 12.0 : 12.r.toDouble()),
+          borderRadius: BorderRadius.circular(_responsiveWidth(12.0)),
           border: Border.all(color: errorColor.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            Icon(Icons.error, color: errorColor, size: kIsWeb ? 20.0 : 20.sp.toDouble()),
-            SizedBox(width: kIsWeb ? 8.0 : 8.w.toDouble()),
+            Icon(Icons.error, color: errorColor, size: _responsiveValue(20.0)),
+            SizedBox(width: _responsiveWidth(8.0)),
             Expanded(
               child: Text(
                 message,
                 style: TextStyle(
                   color: errorColor,
-                  fontSize: kIsWeb ? 14.0 : 14.sp.toDouble(),
+                  fontSize: _responsiveValue(14.0),
                 ),
               ),
             ),
             if (onDismiss != null)
               IconButton(
                 onPressed: onDismiss,
-                icon: Icon(Icons.close, color: errorColor, size: kIsWeb ? 20.0 : 20.sp.toDouble()),
+                icon: Icon(Icons.close, color: errorColor, size: _responsiveValue(20.0)),
               ),
           ],
         ),
@@ -518,7 +516,7 @@ class AppWidgets {
   static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
     final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble())),
+      content: Text(message, style: TextStyle(fontSize: _responsiveValue(14.0))),
       backgroundColor: backgroundColor ?? theme.colorScheme.primary,
       behavior: SnackBarBehavior.fixed,
       duration: const Duration(seconds: 2),
@@ -528,6 +526,80 @@ class AppWidgets {
         onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
       ),
     ));
+  }
+
+  static Widget _buildEmptyStateContent(
+    BuildContext context, 
+    IconData icon, 
+    String title, 
+    String? subtitle, 
+    String? buttonText, 
+    VoidCallback? onButtonPressed,
+    bool isConstrained,
+    double iconSize,
+    double titleSize,
+    double spacing,
+    ThemeData theme
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+      Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+      SizedBox(height: spacing),
+      Text(
+        title, 
+        style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
+        textAlign: TextAlign.center,
+        maxLines: isConstrained ? 2 : null,
+        overflow: isConstrained ? TextOverflow.ellipsis : null,
+      ),
+      if (subtitle != null) ...[
+        SizedBox(height: spacing / 2), 
+        Text(
+          subtitle, 
+          style: _secondaryStyle(context).copyWith(
+            fontSize: isConstrained ? (_responsiveValue(10.0)) : null,
+          ), 
+          textAlign: TextAlign.center,
+          maxLines: isConstrained ? 1 : null,
+          overflow: isConstrained ? TextOverflow.ellipsis : null,
+        )
+      ],
+      if (buttonText != null && onButtonPressed != null) ...[
+        SizedBox(height: isConstrained ? spacing / 2 : spacing),
+        isConstrained 
+          ? TextButton(
+              onPressed: onButtonPressed,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: _responsiveWidth(8.0),
+                  vertical: _responsiveHeight(4.0),
+                ),
+                minimumSize: Size.zero,
+              ),
+              child: Text(
+                buttonText,
+                style: TextStyle(
+                  fontSize: _responsiveValue(10.0),
+                  color: theme.colorScheme.primary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            )
+          : ElevatedButton(
+              onPressed: onButtonPressed, 
+              child: Text(
+                buttonText, 
+                style: TextStyle(fontSize: _responsiveValue(14.0)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            ),
+      ],
+      ],
+    );
   }
 
 static Widget emptyState({
@@ -543,138 +615,16 @@ static Widget emptyState({
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
-          final iconSize = isConstrained ? (kIsWeb ? 24.0 : 24.sp.toDouble()) : (kIsWeb ? 64.0 : 64.sp.toDouble());
-          final titleSize = isConstrained ? (kIsWeb ? 12.0 : 12.sp.toDouble()) : (kIsWeb ? 18.0 : 18.sp.toDouble());
-          final spacing = isConstrained ? (kIsWeb ? 6.0 : 6.h.toDouble()) : (kIsWeb ? 16.0 : 16.h.toDouble());
-          final padding = isConstrained ? (kIsWeb ? 8.0 : 8.w.toDouble()) : (kIsWeb ? 32.0 : 32.w.toDouble());
+          final iconSize = _responsiveSize(isConstrained ? 24.0 : 64.0, isConstrained ? 24 : 64);
+          final titleSize = _responsiveSize(isConstrained ? 12.0 : 18.0, isConstrained ? 12 : 18);
+          final spacing = _responsiveHeight(isConstrained ? 6.0 : 16.0);
+          final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
           
           Widget content = Padding(
             padding: EdgeInsets.all(padding),
             child: isConstrained 
-              ? SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                      SizedBox(height: spacing),
-                      Text(
-                        title, 
-                        style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
-                        textAlign: TextAlign.center,
-                        maxLines: isConstrained ? 2 : null,
-                        overflow: isConstrained ? TextOverflow.ellipsis : null,
-                      ),
-                      if (subtitle != null) ...[
-                        SizedBox(height: spacing / 2), 
-                        Text(
-                          subtitle, 
-                          style: _secondaryStyle(context).copyWith(
-                            fontSize: isConstrained ? (kIsWeb ? 10.0 : 10.sp.toDouble()) : null,
-                          ), 
-                          textAlign: TextAlign.center,
-                          maxLines: isConstrained ? 1 : null,
-                          overflow: isConstrained ? TextOverflow.ellipsis : null,
-                        )
-                      ],
-                      if (buttonText != null && onButtonPressed != null && !isConstrained) ...[
-                        SizedBox(height: spacing),
-                        ElevatedButton(
-                          onPressed: onButtonPressed, 
-                          child: Text(
-                            buttonText, 
-                            style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          )
-                        ),
-                      ],
-                      if (buttonText != null && onButtonPressed != null && isConstrained) ...[
-                        SizedBox(height: spacing / 2),
-                        TextButton(
-                          onPressed: onButtonPressed,
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: kIsWeb ? 8.0 : 8.w.toDouble(),
-                              vertical: kIsWeb ? 4.0 : 4.h.toDouble(),
-                            ),
-                            minimumSize: Size.zero,
-                          ),
-                          child: Text(
-                            buttonText,
-                            style: TextStyle(
-                              fontSize: kIsWeb ? 10.0 : 10.sp.toDouble(),
-                              color: theme.colorScheme.primary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                    SizedBox(height: spacing),
-                    Text(
-                      title, 
-                      style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
-                      textAlign: TextAlign.center,
-                      maxLines: isConstrained ? 2 : null,
-                      overflow: isConstrained ? TextOverflow.ellipsis : null,
-                    ),
-                    if (subtitle != null) ...[
-                      SizedBox(height: spacing / 2), 
-                      Text(
-                        subtitle, 
-                        style: _secondaryStyle(context).copyWith(
-                          fontSize: isConstrained ? (kIsWeb ? 10.0 : 10.sp.toDouble()) : null,
-                        ), 
-                        textAlign: TextAlign.center,
-                        maxLines: isConstrained ? 1 : null,
-                        overflow: isConstrained ? TextOverflow.ellipsis : null,
-                      )
-                    ],
-                    if (buttonText != null && onButtonPressed != null && !isConstrained) ...[
-                      SizedBox(height: spacing),
-                      ElevatedButton(
-                        onPressed: onButtonPressed, 
-                        child: Text(
-                          buttonText, 
-                          style: TextStyle(fontSize: kIsWeb ? 14.0 : 14.sp.toDouble()),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      ),
-                    ],
-                    if (buttonText != null && onButtonPressed != null && isConstrained) ...[
-                      SizedBox(height: spacing / 2),
-                      TextButton(
-                        onPressed: onButtonPressed,
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: kIsWeb ? 8.0 : 8.w.toDouble(),
-                            vertical: kIsWeb ? 4.0 : 4.h.toDouble(),
-                          ),
-                          minimumSize: Size.zero,
-                        ),
-                        child: Text(
-                          buttonText,
-                          style: TextStyle(
-                            fontSize: kIsWeb ? 10.0 : 10.sp.toDouble(),
-                            color: theme.colorScheme.primary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+              ? SingleChildScrollView(child: _buildEmptyStateContent(context, icon, title, subtitle, buttonText, onButtonPressed, isConstrained, iconSize, titleSize, spacing, theme))
+              : _buildEmptyStateContent(context, icon, title, subtitle, buttonText, onButtonPressed, isConstrained, iconSize, titleSize, spacing, theme),
           );
           
           if (!hasFiniteHeight) {
@@ -708,21 +658,21 @@ static Widget emptyState({
       final theme = Theme.of(context);
       return Center(
         child: Padding(
-          padding: EdgeInsets.all(kIsWeb ? 32.0 : 32.w.toDouble()),
+          padding: EdgeInsets.all(_responsiveWidth(32.0)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: kIsWeb ? 64.0 : 64.sp.toDouble(), color: theme.colorScheme.error),
-              SizedBox(height: kIsWeb ? 16.0 : 16.h.toDouble()),
+              Icon(Icons.error_outline, size: _responsiveValue(64.0), color: theme.colorScheme.error),
+              SizedBox(height: _responsiveHeight(16.0)),
               Text(
                 message,
-                style: TextStyle(color: theme.colorScheme.onSurface, fontSize: kIsWeb ? 18.0 : 18.sp.toDouble(),
+                style: TextStyle(color: theme.colorScheme.onSurface, fontSize: _responsiveValue(18.0),
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
               if (onRetry != null) ...[
-                SizedBox(height: kIsWeb ? 24.0 : 24.h.toDouble()),
+                SizedBox(height: _responsiveHeight(24.0)),
                 ElevatedButton(onPressed: onRetry, child: Text(retryText ?? 'Retry')),
               ],
             ],
@@ -834,6 +784,7 @@ static Widget emptyState({
     required Playlist playlist,
     VoidCallback? onTap,
     VoidCallback? onPlay,
+    VoidCallback? onCreatorTap,
     bool showPlayButton = false,
   }) {
     return Builder(builder: (context) {
@@ -843,16 +794,33 @@ static Widget emptyState({
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: _getPrimary(context).withValues(alpha: 0.2),
+              color: _colorScheme(context).primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.library_music),
           ),
           title: Text(playlist.name, style: _primaryStyle(context)),
-          subtitle: Text('${playlist.tracks.length} tracks', style: _secondaryStyle(context)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${playlist.tracks.length} tracks', style: _secondaryStyle(context)),
+              GestureDetector(
+                onTap: onCreatorTap,
+                child: Text(
+                  'by ${playlist.creator}',
+                  style: _secondaryStyle(context).copyWith(
+                    color: _colorScheme(context).primary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: _colorScheme(context).primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
           trailing: showPlayButton && onPlay != null
               ? IconButton(
-                  icon: Icon(Icons.play_arrow, color: _getPrimary(context)),
+                  icon: Icon(Icons.play_arrow, color: _colorScheme(context).primary),
                   onPressed: onPlay,
                 )
               : null,
@@ -868,7 +836,7 @@ static Widget emptyState({
   }) {
     return Builder(builder: (context) {
       return Card(
-        color: _getSurface(context),
+        color: _colorScheme(context).surface,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -889,7 +857,7 @@ static Widget emptyState({
     Color? color,
   }) {
     return Builder(builder: (context) {
-      final itemColor = color ?? _getOnSurface(context);
+      final itemColor = color ?? _colorScheme(context).onSurface;
       return ListTile(
         leading: Icon(icon, color: itemColor),
         title: Text(title, style: TextStyle(color: itemColor)),
@@ -905,10 +873,10 @@ static Widget emptyState({
   }) {
     return Builder(builder: (context) {
       return ListTile(
-        leading: icon != null ? Icon(icon, color: _getPrimary(context)) : null,
+        leading: icon != null ? Icon(icon, color: _colorScheme(context).primary) : null,
         title: Text(title, style: _primaryStyle(context)),
         subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle(context)) : null,
-        trailing: Switch(value: value, onChanged: onChanged, activeColor: _getPrimary(context)),
+        trailing: Switch(value: value, onChanged: onChanged, activeColor: _colorScheme(context).primary),
       );
     });
   }
@@ -920,72 +888,7 @@ static Widget emptyState({
     String? hintText,
     int maxLines = 1,
     String? Function(String?)? validator,
-  }) async {
-    final controller = TextEditingController(text: initialValue);
-    final formKey = GlobalKey<FormState>();
-
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _getSurface(context),
-        title: Text(title, style: TextStyle(color: _getOnSurface(context))),
-        content: Form(
-          key: formKey,
-          child: TextFormField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: hintText,
-              filled: true,
-              fillColor: _getBackground(context),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _getPrimary(context), width: 2),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _getError(context), width: 2),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _getError(context), width: 2),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            style: TextStyle(color: _getOnSurface(context)),
-            maxLines: maxLines, validator: validator,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? true) Navigator.pop(context, controller.text);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-    
-    // Dispose controller after the dialog is fully closed to prevent 
-    // "TextEditingController was used after being disposed" error
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.dispose();
-    });
-    
-    return result;
-  }
+  }) => DialogWidgets.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText, maxLines: maxLines, validator: validator);
 
   static Future<bool> showConfirmDialog(
     BuildContext context, {
@@ -994,61 +897,12 @@ static Widget emptyState({
     bool isDangerous = false,
     String confirmText = 'Confirm',
     String cancelText = 'Cancel',
-  }) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _getSurface(context),
-        title: Text(title, style: TextStyle(color: _getOnSurface(context))),
-        content: Text(message, style: TextStyle(color: _getOnSurface(context))),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(cancelText, style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDangerous ? Colors.red : _getPrimary(context),
-              foregroundColor: isDangerous ? Colors.white : Colors.black,
-            ),
-            child: Text(confirmText),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
-  }
+  }) => DialogWidgets.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous, confirmText: confirmText, cancelText: cancelText);
 
   static Future<int?> showSelectionDialog<T>({
     required BuildContext context, 
     required String title,
     required List<T> items,
     required String Function(T) itemTitle,
-  }) async {
-    return showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _getSurface(context),
-        title: Text(title, style: TextStyle(color: _getOnSurface(context))),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: items.length,
-            itemBuilder: (context, index) => ListTile(
-              title: Text(itemTitle(items[index]), style: TextStyle(color: _getOnSurface(context))),
-              onTap: () => Navigator.pop(context, index),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
-          ),
-        ],
-      ),
-    );
-  }
+  }) => DialogWidgets.showSelectionDialog<T>(context: context, title: title, items: items, itemTitle: itemTitle);
 }

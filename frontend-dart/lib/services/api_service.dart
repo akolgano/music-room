@@ -57,10 +57,14 @@ class ApiService {
     return dio;
   }
 
+  Options? _createAuthOptions(String? token) {
+    return token != null ? Options(headers: {'Authorization': 'Token $token'}) : null;
+  }
+
   Future<T> _post<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
     final response = await _dio.post(endpoint, 
       data: data?.toJson?.call() ?? data,
-      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
+      options: _createAuthOptions(token)
     );
     return fromJson(response.data);
   }
@@ -68,7 +72,7 @@ class ApiService {
   Future<T> _get<T>(String endpoint, T Function(Map<String, dynamic>) fromJson, {String? token, Map<String, dynamic>? queryParams}) async {
     final response = await _dio.get(endpoint,
       queryParameters: queryParams,
-      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
+      options: _createAuthOptions(token)
     );
     return fromJson(response.data);
   }
@@ -76,7 +80,7 @@ class ApiService {
   Future<T> _patch<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, {String? token}) async {
     final response = await _dio.patch(endpoint,
       data: data?.toJson?.call() ?? data,
-      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
+      options: _createAuthOptions(token)
     );
     return fromJson(response.data);
   }
@@ -84,7 +88,7 @@ class ApiService {
   Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async {
     await _dio.post(endpoint,
       data: data?.toJson?.call() ?? data,
-      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
+      options: _createAuthOptions(token)
     );
   }
 
@@ -94,7 +98,7 @@ class ApiService {
     }
     await _dio.patch(endpoint,
       data: data,
-      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
+      options: _createAuthOptions(token)
     );
     if (kDebugMode) {
       debugPrint('[ApiService] _patchVoid completed: $endpoint');
@@ -104,7 +108,7 @@ class ApiService {
   Future<void> _delete(String endpoint, {String? token, dynamic data}) async {
     await _dio.delete(endpoint, 
       data: data,
-      options: token != null ? Options(headers: {'Authorization': 'Token $token'}) : null
+      options: _createAuthOptions(token)
     );
   }
 
@@ -179,6 +183,29 @@ class ApiService {
   Future<void> deleteAvatar(String token) => 
       _delete('/profile/me/avatar/', token: token);
 
+  void _addProfileFieldsToFormData(FormData formData, {
+    String? name, String? location, String? bio, String? phone, String? friendInfo,
+    String? avatarVisibility, String? nameVisibility, String? locationVisibility,
+    String? bioVisibility, String? phoneVisibility, String? friendInfoVisibility,
+    String? musicPreferencesVisibility, List<int>? musicPreferencesIds,
+  }) {
+    final fieldMap = {
+      'name': name, 'location': location, 'bio': bio, 'phone': phone, 'friend_info': friendInfo,
+      'avatar_visibility': avatarVisibility, 'name_visibility': nameVisibility,
+      'location_visibility': locationVisibility, 'bio_visibility': bioVisibility,
+      'phone_visibility': phoneVisibility, 'friend_info_visibility': friendInfoVisibility,
+      'music_preferences_visibility': musicPreferencesVisibility,
+    };
+    fieldMap.forEach((key, value) {
+      if (value != null) formData.fields.add(MapEntry(key, value));
+    });
+    if (musicPreferencesIds != null) {
+      for (final id in musicPreferencesIds) {
+        formData.fields.add(MapEntry('music_preferences_ids', id.toString()));
+      }
+    }
+  }
+
   Future<ProfileResponse> updateProfileWithFile(String token, {
     String? avatarPath,
     String? name,
@@ -204,25 +231,11 @@ class ApiService {
       ));
     }
     
-    if (name != null) formData.fields.add(MapEntry('name', name));
-    if (location != null) formData.fields.add(MapEntry('location', location));
-    if (bio != null) formData.fields.add(MapEntry('bio', bio));
-    if (phone != null) formData.fields.add(MapEntry('phone', phone));
-    if (friendInfo != null) formData.fields.add(MapEntry('friend_info', friendInfo));
-    
-    if (musicPreferencesIds != null) {
-      for (int i = 0; i < musicPreferencesIds.length; i++) {
-        formData.fields.add(MapEntry('music_preferences_ids', musicPreferencesIds[i].toString()));
-      }
-    }
-    
-    if (avatarVisibility != null) formData.fields.add(MapEntry('avatar_visibility', avatarVisibility));
-    if (nameVisibility != null) formData.fields.add(MapEntry('name_visibility', nameVisibility));
-    if (locationVisibility != null) formData.fields.add(MapEntry('location_visibility', locationVisibility));
-    if (bioVisibility != null) formData.fields.add(MapEntry('bio_visibility', bioVisibility));
-    if (phoneVisibility != null) formData.fields.add(MapEntry('phone_visibility', phoneVisibility));
-    if (friendInfoVisibility != null) formData.fields.add(MapEntry('friend_info_visibility', friendInfoVisibility));
-    if (musicPreferencesVisibility != null) formData.fields.add(MapEntry('music_preferences_visibility', musicPreferencesVisibility));
+    _addProfileFieldsToFormData(formData, name: name, location: location, bio: bio, phone: phone,
+      friendInfo: friendInfo, avatarVisibility: avatarVisibility, nameVisibility: nameVisibility,
+      locationVisibility: locationVisibility, bioVisibility: bioVisibility, phoneVisibility: phoneVisibility,
+      friendInfoVisibility: friendInfoVisibility, musicPreferencesVisibility: musicPreferencesVisibility,
+      musicPreferencesIds: musicPreferencesIds);
 
     final response = await _dio.patch(
       '/profile/me/',
@@ -266,25 +279,11 @@ class ApiService {
       ));
     }
     
-    if (name != null) formData.fields.add(MapEntry('name', name));
-    if (location != null) formData.fields.add(MapEntry('location', location));
-    if (bio != null) formData.fields.add(MapEntry('bio', bio));
-    if (phone != null) formData.fields.add(MapEntry('phone', phone));
-    if (friendInfo != null) formData.fields.add(MapEntry('friend_info', friendInfo));
-    
-    if (musicPreferencesIds != null) {
-      for (int i = 0; i < musicPreferencesIds.length; i++) {
-        formData.fields.add(MapEntry('music_preferences_ids', musicPreferencesIds[i].toString()));
-      }
-    }
-    
-    if (avatarVisibility != null) formData.fields.add(MapEntry('avatar_visibility', avatarVisibility));
-    if (nameVisibility != null) formData.fields.add(MapEntry('name_visibility', nameVisibility));
-    if (locationVisibility != null) formData.fields.add(MapEntry('location_visibility', locationVisibility));
-    if (bioVisibility != null) formData.fields.add(MapEntry('bio_visibility', bioVisibility));
-    if (phoneVisibility != null) formData.fields.add(MapEntry('phone_visibility', phoneVisibility));
-    if (friendInfoVisibility != null) formData.fields.add(MapEntry('friend_info_visibility', friendInfoVisibility));
-    if (musicPreferencesVisibility != null) formData.fields.add(MapEntry('music_preferences_visibility', musicPreferencesVisibility));
+    _addProfileFieldsToFormData(formData, name: name, location: location, bio: bio, phone: phone,
+      friendInfo: friendInfo, avatarVisibility: avatarVisibility, nameVisibility: nameVisibility,
+      locationVisibility: locationVisibility, bioVisibility: bioVisibility, phoneVisibility: phoneVisibility,
+      friendInfoVisibility: friendInfoVisibility, musicPreferencesVisibility: musicPreferencesVisibility,
+      musicPreferencesIds: musicPreferencesIds);
 
     if (kDebugMode) {
       debugPrint('[ApiService] updateProfileWithFileWeb: Sending multipart form data to /profile/me/');

@@ -10,7 +10,6 @@ import 'core/service_locator.dart';
 import 'core/app_builder.dart';
 import 'providers/dynamic_theme_provider.dart';
 
-// api.yaml contains all the updated backend informations
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
@@ -19,13 +18,11 @@ void main() async {
       final apiBaseUrl = dotenv.env['API_BASE_URL'];
       if (apiBaseUrl == null || apiBaseUrl.isEmpty) {}
     } catch (e) {
-      // comment to prevent warning
     }
     await setupServiceLocator();
     try {
       await SocialLoginUtils.initialize();
     } catch (e) {
-      // comment to prevent warning
     }
     runApp(const MyApp());
   } catch (e, _) {
@@ -91,11 +88,8 @@ class MyApp extends StatelessWidget {
           providers: [...AppBuilder.buildProviders(), ...AppBuilder.buildAdditionalProviders()],
           child: ResponsiveBreakpoints(
             breakpoints: [
-              const Breakpoint(start: 0, end: 450, name: MOBILE),
-              const Breakpoint(start: 451, end: 800, name: TABLET),
-              const Breakpoint(start: 801, end: 1920, name: DESKTOP),
-              const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
-            ],
+              (0.0, 450.0, MOBILE), (451.0, 800.0, TABLET), (801.0, 1920.0, DESKTOP), (1921.0, double.infinity, '4K')
+            ].map((data) => Breakpoint(start: data.$1, end: data.$2, name: data.$3)).toList(),
             child: Consumer<DynamicThemeProvider>(
               builder: (context, themeProvider, _) {
                 return MaterialApp(

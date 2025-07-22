@@ -12,19 +12,21 @@ class SocialLoginUtils {
   static bool _isInitialized = false;
   static bool _facebookInitialized = false;
 
+  static void _debugLog(String message) {
+    if (kDebugMode) {
+      developer.log(message, name: 'SocialLoginUtils');
+    }
+  }
+
   static Future<void> initialize() async {
     if (_isInitialized) { return; }    
     try {
       await _initializeFacebook();
       await _initializeGoogle();
       _isInitialized = true;
-      if (kDebugMode) {
-        developer.log('Social login initialization completed successfully', name: 'SocialLoginUtils');
-      }
+      _debugLog('Social login initialization completed successfully');
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Social login initialization error: $e', name: 'SocialLoginUtils');
-      }
+      _debugLog('Social login initialization error: $e');
       rethrow;
     }
   }
@@ -33,26 +35,18 @@ class SocialLoginUtils {
     try {
       final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
       if (fbAppId == null || fbAppId.isEmpty) {
-        if (kDebugMode) {
-          developer.log('Warning: FACEBOOK_APP_ID not found in environment variables', name: 'SocialLoginUtils');
-        }
+        _debugLog('Warning: FACEBOOK_APP_ID not found in environment variables');
         return;
       }
       if (kIsWeb) {
         await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v18.0");
-        if (kDebugMode) {
-          developer.log('Facebook initialized for web', name: 'SocialLoginUtils');
-        }
+        _debugLog('Facebook initialized for web');
       } else {
-        if (kDebugMode) {
-          developer.log('Facebook SDK configured for mobile platform', name: 'SocialLoginUtils');
-        }
+        _debugLog('Facebook SDK configured for mobile platform');
       }
       _facebookInitialized = true;
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Facebook initialization error: $e', name: 'SocialLoginUtils');
-      }
+      _debugLog('Facebook initialization error: $e');
       _facebookInitialized = false;
       rethrow;
     }
@@ -65,18 +59,12 @@ class SocialLoginUtils {
         _googleSignIn = GoogleSignIn(
           scopes: <String>['email', 'profile', 'openid'],
         );
-        if (kDebugMode) {
-          developer.log('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...', name: 'SocialLoginUtils');
-        }
+        _debugLog('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...');
       } else {
-        if (kDebugMode) {
-          developer.log('Warning: Google Client ID not found in environment variables', name: 'SocialLoginUtils');
-        }
+        _debugLog('Warning: Google Client ID not found in environment variables');
       }
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Google initialization error: $e', name: 'SocialLoginUtils');
-      }
+      _debugLog('Google initialization error: $e');
       rethrow;
     }
   }
@@ -88,67 +76,47 @@ class SocialLoginUtils {
   static Future<SocialLoginResult> loginWithFacebook() async {
     try {
       if (!_isInitialized) {
-        if (kDebugMode) {
-          developer.log('Social login not initialized, initializing now...', name: 'SocialLoginUtils');
-        }
+        _debugLog('Social login not initialized, initializing now...');
         await initialize();
       }
 
       if (!_facebookInitialized) { return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.'); }
 
-      if (kDebugMode) {
-        developer.log('Attempting Facebook login...', name: 'SocialLoginUtils');
-      }
+      _debugLog('Attempting Facebook login...');
       
       try {
         await FacebookAuth.instance.logOut();
       } catch (e) {
-        if (kDebugMode) {
-          developer.log('Warning: Could not log out existing Facebook session: $e', name: 'SocialLoginUtils');
-        }
+        _debugLog('Warning: Could not log out existing Facebook session: $e');
       }
 
       final result = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
       );
 
-      if (kDebugMode) {
-        developer.log('Facebook login result status: ${result.status}', name: 'SocialLoginUtils');
-      }
+      _debugLog('Facebook login result status: ${result.status}');
 
       if (result.status == LoginStatus.success) {
         final accessToken = result.accessToken?.tokenString;
         if (accessToken != null && accessToken.isNotEmpty) {
-          if (kDebugMode) {
-            developer.log('Facebook login successful with access token', name: 'SocialLoginUtils');
-          }
+          _debugLog('Facebook login successful with access token');
           return SocialLoginResult.success(accessToken, 'facebook');
         } else {
-          if (kDebugMode) {
-            developer.log('Facebook login failed - no valid token received', name: 'SocialLoginUtils');
-          }
+          _debugLog('Facebook login failed - no valid token received');
           return SocialLoginResult.error('Facebook login failed - no access token received');
         }
       } else if (result.status == LoginStatus.cancelled) {
-        if (kDebugMode) {
-          developer.log('Facebook login was cancelled by user', name: 'SocialLoginUtils');
-        }
+        _debugLog('Facebook login was cancelled by user');
         return SocialLoginResult.error('Facebook login was cancelled');
       } else if (result.status == LoginStatus.failed) {
-        if (kDebugMode) {
-          developer.log('Facebook login failed: ${result.message}', name: 'SocialLoginUtils');
-        }
+        _debugLog('Facebook login failed: ${result.message}');
         return SocialLoginResult.error('Facebook login failed: ${result.message ?? "Unknown error"}');
       } else {
-        if (kDebugMode) {
-          developer.log('Facebook login failed with status: ${result.status}', name: 'SocialLoginUtils');
-        }
+        _debugLog('Facebook login failed with status: ${result.status}');
         return SocialLoginResult.error('Facebook login failed with unexpected status');
       }
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Facebook login error: $e', name: 'SocialLoginUtils');
-      }
+      _debugLog('Facebook login error: $e');
       
       if (e.toString().contains('MissingPluginException')) {
         return SocialLoginResult.error(
@@ -162,16 +130,12 @@ class SocialLoginUtils {
 
   static Future<SocialLoginResult> loginWithGoogle() async {
     if (!_isInitialized) {
-      if (kDebugMode) {
-        developer.log('Google Sign-In not initialized, initializing now...', name: 'SocialLoginUtils');
-      }
+      _debugLog('Google Sign-In not initialized, initializing now...');
       await initialize();
     }
 
     if (_googleSignIn == null) {
-      if (kDebugMode) {
-        developer.log('Google Sign-In instance is null after initialization', name: 'SocialLoginUtils');
-      }
+      _debugLog('Google Sign-In instance is null after initialization');
       return SocialLoginResult.error(
         'Google Sign-In not properly initialized. Please check your configuration.'
       );
@@ -183,36 +147,24 @@ class SocialLoginUtils {
       final GoogleSignInAccount? user = await _googleSignIn!.signIn();
       
       if (user != null) {
-        if (kDebugMode) {
-          developer.log('Google user signed in: ${user.email}', name: 'SocialLoginUtils');
-        }
+        _debugLog('Google user signed in: ${user.email}');
         final GoogleSignInAuthentication auth = await user.authentication;
-        if (kDebugMode) {
-          developer.log('Google auth obtained - idToken: ${auth.idToken != null}', name: 'SocialLoginUtils');
-        }
+        _debugLog('Google auth obtained - idToken: ${auth.idToken != null}');
         
         final idToken = auth.idToken;
         if (idToken != null && idToken.isNotEmpty) {
-          if (kDebugMode) {
-            developer.log('Google login successful with idToken', name: 'SocialLoginUtils');
-          }
+          _debugLog('Google login successful with idToken');
           return SocialLoginResult.success(idToken, 'google');
         }
       } else {
-        if (kDebugMode) {
-          developer.log('Google sign-in was cancelled by user', name: 'SocialLoginUtils');
-        }
+        _debugLog('Google sign-in was cancelled by user');
         return SocialLoginResult.error('Google sign-in was cancelled');
       }
       
-      if (kDebugMode) {
-        developer.log('Google login failed - no valid token received', name: 'SocialLoginUtils');
-      }
+      _debugLog('Google login failed - no valid token received');
       return SocialLoginResult.error('Google login failed - no valid token received');
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Google login error: $e', name: 'SocialLoginUtils');
-      }
+      _debugLog('Google login error: $e');
       return SocialLoginResult.error('Google login error: $e');
     }
   }
@@ -240,7 +192,7 @@ class SocialLoginButton extends StatelessWidget {
       color = Colors.blue;
     } else {
       icon = Icons.login;
-      color = const Color(0xFF1DB954); // AppTheme.primary
+      color = const Color(0xFF1DB954); 
     }
 
     return SizedBox(
@@ -249,7 +201,7 @@ class SocialLoginButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF282828), // AppTheme.surface
+          backgroundColor: const Color(0xFF282828), 
           foregroundColor: Colors.white,
           side: BorderSide(color: color),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

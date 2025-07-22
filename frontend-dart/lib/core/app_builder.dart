@@ -27,6 +27,7 @@ import '../screens/playlists/playlists_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/social_network_link_screen.dart';
 import '../screens/profile/user_password_change_screen.dart';
+import '../screens/profile/user_page_screen.dart';
 import '../screens/friends/add_friend_screen.dart';
 import '../screens/friends/friend_request_screen.dart';
 import '../screens/friends/friends_list_screen.dart';
@@ -55,6 +56,15 @@ class AppBuilder {
     ];
   }
 
+  static Widget _buildAuthenticatedRoute(Widget Function() builder) {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+        return builder();
+      },
+    );
+  }
+
   static final Set<String> _protectedRoutes = {
     AppRoutes.home, AppRoutes.profile,
     AppRoutes.playlistEditor,
@@ -67,7 +77,7 @@ class AppBuilder {
     AppRoutes.friendRequests,
     AppRoutes.playlistSharing,
     AppRoutes.player,
-    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink, AppRoutes.deezerAuth,
+    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink, AppRoutes.deezerAuth, AppRoutes.userPage,
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -78,12 +88,7 @@ class AppBuilder {
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
-            return const HomeScreen();
-          },
-        ),
+        builder: (context) => _buildAuthenticatedRoute(() => const HomeScreen()),
       );
     }
 
@@ -104,12 +109,7 @@ class AppBuilder {
     if (_protectedRoutes.contains(settings.name)) {
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
-            return _buildProtectedRoute(settings);
-          },
-        ),
+        builder: (context) => _buildAuthenticatedRoute(() => _buildProtectedRoute(settings)),
       );
     }
 
@@ -117,12 +117,7 @@ class AppBuilder {
       final playlistId = settings.name!.split('/').last;
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
-            return PlaylistDetailScreen(playlistId: playlistId);
-          },
-        ),
+        builder: (context) => _buildAuthenticatedRoute(() => PlaylistDetailScreen(playlistId: playlistId)),
       );
     }
 
@@ -130,12 +125,7 @@ class AppBuilder {
       final trackId = settings.name!.split('/').last;
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
-            return TrackDetailScreen(trackId: trackId);
-          },
-        ),
+        builder: (context) => _buildAuthenticatedRoute(() => TrackDetailScreen(trackId: trackId)),
       );
     }
 
@@ -171,6 +161,8 @@ class AppBuilder {
         return const SocialNetworkLinkScreen();
       case AppRoutes.deezerAuth:
         return const DeezerAuthScreen();
+      case AppRoutes.userPage:
+        return _buildUserPage(settings);
       case '/profile_info':
         return const ProfileScreen();
       case AppRoutes.playlistEditor:
@@ -250,6 +242,28 @@ class AppBuilder {
     final args = settings.arguments;
     if (args is Playlist) return PlaylistSharingScreen(playlist: args);
     return _buildErrorScreen('Invalid playlist data');
+  }
+
+  static Widget _buildUserPage(RouteSettings settings) {
+    final args = settings.arguments;
+    
+    if (args is Map<String, dynamic>) {
+      final userId = args['userId'];
+      final username = args['username'] as String?;
+      
+      if (userId is int) {
+        return UserPageScreen(userId: userId, username: username);
+      } else if (userId is String) {
+        final parsedUserId = int.tryParse(userId);
+        if (parsedUserId != null) {
+          return UserPageScreen(userId: parsedUserId, username: username);
+        }
+      }
+    } else if (args is int) {
+      return UserPageScreen(userId: args);
+    }
+    
+    return _buildErrorScreen('Invalid user data provided');
   }
 
   static Widget _buildErrorScreen(String message) {
