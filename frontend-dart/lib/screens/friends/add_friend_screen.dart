@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../providers/friend_provider.dart';
+import '../../widgets/app_widgets.dart';
 import '../../core/theme_utils.dart';
-import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
-import '../../widgets/app_widgets.dart'; 
 import '../base_screen.dart';
 
 class AddFriendScreen extends StatefulWidget {
@@ -44,7 +42,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
         children: [
           AppWidgets.infoBanner(
             title: 'Send Friend Request',
-            message: 'Enter the user ID of the person you want to add as a friend. They will need to accept your request.',
+            message: 'Enter their user ID to send a friend request.',
             icon: Icons.people,
           ),
           const SizedBox(height: 16),
@@ -58,7 +56,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                   AppWidgets.textField(
                     context: context,
                     controller: _userIdController, 
-                    labelText: 'Friend\'s User ID',
+                    labelText: 'User ID',
                     hintText: 'e.g., 12',
                     prefixIcon: Icons.person_search,
                     validator: (value) {
@@ -72,17 +70,36 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                   const SizedBox(height: 16),
                   buildConsumerContent<FriendProvider>(
                     builder: (context, friendProvider) {
-                      return SizedBox(
-                        width: double.infinity,
-                        child: AppWidgets.primaryButton(
-                          context: context,
-                          text: friendProvider.isLoading ? 'Sending...' : 'Send Friend Request',
-                          onPressed: _userIdController.text.isNotEmpty && !friendProvider.isLoading 
-                            ? _sendFriendRequest 
-                            : null, 
-                          icon: Icons.send,
-                          isLoading: friendProvider.isLoading,
-                        ),
+                      final userId = int.tryParse(_userIdController.text.trim());
+                      final showButtons = _userIdController.text.isNotEmpty && userId != null && userId > 0;
+                      
+                      return Column(
+                        children: [
+                          if (showButtons) ...[
+                            SizedBox(
+                              width: double.infinity,
+                              child: AppWidgets.primaryButton(
+                                context: context,
+                                text: 'View Profile',
+                                onPressed: () => _viewUserProfile(userId),
+                                icon: Icons.person,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                          SizedBox(
+                            width: double.infinity,
+                            child: AppWidgets.primaryButton(
+                              context: context,
+                              text: friendProvider.isLoading ? 'Sending...' : 'Send Request',
+                              onPressed: _userIdController.text.isNotEmpty && !friendProvider.isLoading 
+                                ? _sendFriendRequest 
+                                : null, 
+                              icon: Icons.send,
+                              isLoading: friendProvider.isLoading,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -93,7 +110,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           const SizedBox(height: 16),
           AppWidgets.infoBanner(
             title: 'Quick Access',
-            message: 'Check your sent and received friend requests',
+            message: 'View sent and received requests',
             icon: Icons.info_outline,
             color: Colors.blue,
             actionText: 'View Requests',
@@ -102,12 +119,23 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           const SizedBox(height: 16),
           AppWidgets.infoBanner(
             title: 'How It Works',
-            message: '1. Get their user ID\n2. Enter it above\n3. Send the request\n4. They accept your request\n5. Start sharing music!',
+            message: '1. Get their ID\n2. Enter above\n3. Send request\n4. They accept\n5. Share music!',
             icon: Icons.help_outline,
             color: Colors.purple,
           ),
         ],
       ),
+    );
+  }
+
+  void _viewUserProfile(int userId) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.userPage,
+      arguments: {
+        'userId': userId,
+        'username': null,
+      },
     );
   }
 

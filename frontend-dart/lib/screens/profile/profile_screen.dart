@@ -17,6 +17,7 @@ import '../../services/deezer_service.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
 import 'social_network_link_screen.dart';
+import 'widgets/music_preference_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded; 
@@ -221,7 +222,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Widget _buildAccountInfoSection(ProfileProvider profileProvider) {
     return AppWidgets.settingsSection(
-      title: 'Account Information',
+      title: 'Account',
       items: [
         _buildInfoItem(
           icon: Icons.person,
@@ -241,15 +242,15 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Widget _buildPublicInfoSection(ProfileProvider profileProvider) {
     return AppWidgets.settingsSection(
-      title: 'Public Information',
+      title: 'Public Info',
       items: [
         _buildInfoItemWithVisibility(
           icon: Icons.person_outline,
-          title: 'Display Name',
+          title: 'Name',
           value: profileProvider.name ?? 'Not set',
           visibility: profileProvider.nameVisibility,
           onEdit: () => _editName(profileProvider),
-          onVisibilityChanged: (visibility) => _updateNameVisibility(profileProvider, visibility),
+          onVisibilityChanged: (visibility) => _updateVisibility(profileProvider, 'nameVisibility', visibility),
         ),
         _buildInfoItemWithVisibility(
           icon: Icons.location_on,
@@ -257,7 +258,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           value: profileProvider.location ?? 'Not specified',
           visibility: profileProvider.locationVisibility,
           onEdit: () => _editLocation(profileProvider),
-          onVisibilityChanged: (visibility) => _updateLocationVisibility(profileProvider, visibility),
+          onVisibilityChanged: (visibility) => _updateVisibility(profileProvider, 'locationVisibility', visibility),
         ),
         _buildInfoItemWithVisibility(
           icon: Icons.info,
@@ -265,7 +266,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           value: profileProvider.bio ?? 'No bio yet',
           visibility: profileProvider.bioVisibility,
           onEdit: () => _editBio(profileProvider),
-          onVisibilityChanged: (visibility) => _updateBioVisibility(profileProvider, visibility),
+          onVisibilityChanged: (visibility) => _updateVisibility(profileProvider, 'bioVisibility', visibility),
           maxLines: 3,
         ),
       ],
@@ -274,7 +275,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Widget _buildContactInfoSection(ProfileProvider profileProvider) {
     return AppWidgets.settingsSection(
-      title: 'Contact Information',
+      title: 'Contact',
       items: [
         _buildInfoItemWithVisibility(
           icon: Icons.phone,
@@ -282,7 +283,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           value: profileProvider.phone ?? 'Not set',
           visibility: profileProvider.phoneVisibility,
           onEdit: () => _editPhone(profileProvider),
-          onVisibilityChanged: (visibility) => _updatePhoneVisibility(profileProvider, visibility),
+          onVisibilityChanged: (visibility) => _updateVisibility(profileProvider, 'phoneVisibility', visibility),
         ),
       ],
     );
@@ -290,7 +291,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Widget _buildFriendInfoSection(ProfileProvider profileProvider) {
     return AppWidgets.settingsSection(
-      title: 'Friend Information',
+      title: 'Friends',
       items: [
         _buildInfoItemWithVisibility(
           icon: Icons.people,
@@ -298,7 +299,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           value: profileProvider.friendInfo ?? 'No friend info',
           visibility: profileProvider.friendInfoVisibility,
           onEdit: () => _editFriendInfo(profileProvider),
-          onVisibilityChanged: (visibility) => _updateFriendInfoVisibility(profileProvider, visibility),
+          onVisibilityChanged: (visibility) => _updateVisibility(profileProvider, 'friendInfoVisibility', visibility),
           maxLines: 3,
         ),
       ],
@@ -307,7 +308,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Widget _buildMusicPreferencesSection(ProfileProvider profileProvider) {
     return AppWidgets.settingsSection(
-      title: 'Music Preferences',
+      title: 'Music',
       items: [
         _buildInfoItemWithVisibility(
           icon: Icons.music_note, 
@@ -317,7 +318,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
               : 'No preferences set',
           visibility: profileProvider.musicPreferencesVisibility,
           onEdit: () => _editMusicPreferences(profileProvider),
-          onVisibilityChanged: (visibility) => _updateMusicPreferencesVisibility(profileProvider, visibility),
+          onVisibilityChanged: (visibility) => _updateVisibility(profileProvider, 'musicPreferencesVisibility', visibility),
           maxLines: 2,
         ),
       ],
@@ -326,7 +327,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
 
   Widget _buildSocialAccountsSection(ProfileProvider profileProvider) {
     return AppWidgets.settingsSection(
-      title: 'Social Accounts',
+      title: 'Social',
       items: [
         if (profileProvider.socialType != null) ...[
           _buildInfoItem(
@@ -338,8 +339,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         ] else
           AppWidgets.settingsItem(
             icon: Icons.link,
-            title: 'Link Social Account',
-            subtitle: 'Connect Facebook or Google account',
+            title: 'Connect Social',
+            subtitle: 'Link Facebook or Google',
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SocialNetworkLinkScreen()),
@@ -358,8 +359,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       items: [
         AppWidgets.settingsItem(
           icon: Icons.password,
-          title: 'Change Password',
-          subtitle: 'Change your account password',
+          title: 'Password',
+          subtitle: 'Update password',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const UserPasswordChangeScreen()),
@@ -375,8 +376,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
       items: [
         AppWidgets.settingsItem(
           icon: Icons.logout,
-          title: 'Sign Out',
-          subtitle: 'Sign out of your account',
+          title: 'Logout',
+          subtitle: 'Exit account',
           onTap: _showSignOutDialog,
           color: Colors.orange,
         ),
@@ -752,115 +753,57 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     );
   }
 
-  Future<void> _editName(ProfileProvider profileProvider) async {
-    if (kDebugMode) {
-      debugPrint('[ProfileScreen] _editName called');
-    }
-    final name = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit Display Name',
-      initialValue: profileProvider.name,
-      hintText: 'Enter your display name (max 100 characters)',
-      validator: AppValidators.name,
-    );
-    if (name != null) {
-      if (kDebugMode) {
-        debugPrint('[ProfileScreen] Updating name to: $name');
-      }
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        name: name.trim(),
-      );
-      if (kDebugMode) {
-        debugPrint('[ProfileScreen] Name update result: $success');
-      }
-      if (success) {
-        showSuccess('Display name updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
+  Future<void> _editName(ProfileProvider profileProvider) => _editField(
+    profileProvider: profileProvider,
+    title: 'Edit Display Name',
+    initialValue: profileProvider.name,
+    hintText: 'Enter your display name (max 100 characters)',
+    successMessage: 'Display name',
+    validator: AppValidators.name,
+    updateFunction: (value) => profileProvider.updateProfile(auth.token, name: value),
+  );
 
-  Future<void> _editLocation(ProfileProvider profileProvider) async {
-    final location = await AppWidgets.showTextInputDialog(
-      context, 
-      title: 'Edit Location',
-      initialValue: profileProvider.location,
-      hintText: 'Enter your location (max 100 characters)',
-      validator: AppValidators.location,
-    );
-    if (location != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        location: location.trim(),
-      );
-      if (success) {
-        showSuccess('Location updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
+  Future<void> _editLocation(ProfileProvider profileProvider) => _editField(
+    profileProvider: profileProvider,
+    title: 'Edit Location',
+    initialValue: profileProvider.location,
+    hintText: 'Enter your location (max 100 characters)',
+    successMessage: 'Location',
+    validator: AppValidators.location,
+    updateFunction: (value) => profileProvider.updateProfile(auth.token, location: value),
+  );
 
-  Future<void> _editBio(ProfileProvider profileProvider) async {
-    final bio = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit Bio',
-      initialValue: profileProvider.bio,
-      hintText: 'Tell us about yourself (max 500 characters)...',
-      maxLines: 3,
-      validator: AppValidators.bio,
-    );
-    if (bio != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token, 
-        bio: bio.trim()
-      );
-      if (success) {
-        showSuccess('Bio updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
+  Future<void> _editBio(ProfileProvider profileProvider) => _editField(
+    profileProvider: profileProvider,
+    title: 'Edit Bio',
+    initialValue: profileProvider.bio,
+    hintText: 'Tell us about yourself (max 500 characters)...',
+    successMessage: 'Bio',
+    validator: AppValidators.bio,
+    updateFunction: (value) => profileProvider.updateProfile(auth.token, bio: value),
+    maxLines: 3,
+  );
 
-  Future<void> _editPhone(ProfileProvider profileProvider) async {
-    final phone = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit Phone Number',
-      initialValue: profileProvider.phone,
-      hintText: 'Enter your phone number',
-      validator: (value) => AppValidators.phoneNumber(value, false),
-    );
-    if (phone != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        phone: phone.trim(),
-      );
-      if (success) {
-        showSuccess('Phone number updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
+  Future<void> _editPhone(ProfileProvider profileProvider) => _editField(
+    profileProvider: profileProvider,
+    title: 'Edit Phone Number',
+    initialValue: profileProvider.phone,
+    hintText: 'Enter your phone number',
+    successMessage: 'Phone number',
+    validator: (value) => AppValidators.phoneNumber(value, false),
+    updateFunction: (value) => profileProvider.updateProfile(auth.token, phone: value),
+  );
 
-  Future<void> _editFriendInfo(ProfileProvider profileProvider) async {
-    final friendInfo = await AppWidgets.showTextInputDialog(
-      context,
-      title: 'Edit Friend Info',
-      initialValue: profileProvider.friendInfo,
-      hintText: 'Share something about yourself with friends...',
-      maxLines: 3,
-    );
-    if (friendInfo != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        friendInfo: friendInfo.trim(),
-      );
-      if (success) {
-        showSuccess('Friend info updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
-    }
-  }
+  Future<void> _editFriendInfo(ProfileProvider profileProvider) => _editField(
+    profileProvider: profileProvider,
+    title: 'Edit Friend Info',
+    initialValue: profileProvider.friendInfo,
+    hintText: 'Share something about yourself with friends...',
+    successMessage: 'Friend info',
+    validator: null,
+    updateFunction: (value) => profileProvider.updateProfile(auth.token, friendInfo: value),
+    maxLines: 3,
+  );
 
   Future<void> _editMusicPreferences(ProfileProvider profileProvider) async {
     if (_musicPreferences.isEmpty) {
@@ -871,7 +814,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     final currentPreferenceIds = profileProvider.musicPreferenceIds ?? [];
     final selectedIds = await showDialog<List<int>>(
       context: context,
-      builder: (context) => _MusicPreferenceDialog(
+      builder: (context) => MusicPreferenceDialog(
         availablePreferences: _musicPreferences,
         selectedIds: currentPreferenceIds,
       ),
@@ -882,78 +825,57 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         auth.token, 
         musicPreferencesIds: selectedIds
       );
-      if (success) {
-        showSuccess('Music preferences updated successfully');
-        profileProvider.loadProfile(auth.token);
-      }
+      if (success) _handleUpdateSuccess('Music preferences', profileProvider);
     }
   }
 
-  Future<void> _updateNameVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
-    final success = await profileProvider.updateVisibility(
-      auth.token,
-      nameVisibility: visibility,
+  void _handleUpdateSuccess(String fieldName, ProfileProvider profileProvider) {
+    showSuccess('$fieldName updated successfully');
+    profileProvider.loadProfile(auth.token);
+  }
+
+  Future<void> _editField({
+    required ProfileProvider profileProvider,
+    required String title,
+    required String? initialValue,
+    required String hintText,
+    required String successMessage,
+    required String? Function(String?)? validator,
+    required Future<bool> Function(String) updateFunction,
+    int maxLines = 1,
+  }) async {
+    final value = await AppWidgets.showTextInputDialog(
+      context,
+      title: title,
+      initialValue: initialValue,
+      hintText: hintText,
+      validator: validator,
+      maxLines: maxLines,
+    );
+    if (value != null && await updateFunction(value.trim())) {
+      _handleUpdateSuccess(successMessage, profileProvider);
+    }
+  }
+
+  Future<void> _updateVisibility(ProfileProvider profileProvider, String field, VisibilityLevel visibility) async {
+    final success = await profileProvider.updateVisibility(auth.token, 
+      nameVisibility: field == 'nameVisibility' ? visibility : null,
+      locationVisibility: field == 'locationVisibility' ? visibility : null,
+      bioVisibility: field == 'bioVisibility' ? visibility : null,
+      phoneVisibility: field == 'phoneVisibility' ? visibility : null,
+      friendInfoVisibility: field == 'friendInfoVisibility' ? visibility : null,
+      musicPreferencesVisibility: field == 'musicPreferencesVisibility' ? visibility : null,
     );
     if (success) {
-      showSuccess('Name visibility updated');
+      final fieldNames = {
+        'nameVisibility': 'Name', 'locationVisibility': 'Location', 'bioVisibility': 'Bio',
+        'phoneVisibility': 'Phone', 'friendInfoVisibility': 'Friend info', 'musicPreferencesVisibility': 'Music preferences',
+      };
+      showSuccess('${fieldNames[field]} visibility updated');
       profileProvider.loadProfile(auth.token);
     }
   }
 
-  Future<void> _updateLocationVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
-    final success = await profileProvider.updateVisibility(
-      auth.token,
-      locationVisibility: visibility,
-    );
-    if (success) {
-      showSuccess('Location visibility updated');
-      profileProvider.loadProfile(auth.token);
-    }
-  }
-
-  Future<void> _updateBioVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
-    final success = await profileProvider.updateVisibility(
-      auth.token,
-      bioVisibility: visibility,
-    );
-    if (success) {
-      showSuccess('Bio visibility updated');
-      profileProvider.loadProfile(auth.token);
-    }
-  }
-
-  Future<void> _updatePhoneVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
-    final success = await profileProvider.updateVisibility(
-      auth.token,
-      phoneVisibility: visibility,
-    );
-    if (success) {
-      showSuccess('Phone visibility updated');
-      profileProvider.loadProfile(auth.token);
-    }
-  }
-
-  Future<void> _updateFriendInfoVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
-    final success = await profileProvider.updateVisibility(
-      auth.token,
-      friendInfoVisibility: visibility,
-    );
-    if (success) {
-      showSuccess('Friend info visibility updated');
-      profileProvider.loadProfile(auth.token);
-    }
-  }
-
-  Future<void> _updateMusicPreferencesVisibility(ProfileProvider profileProvider, VisibilityLevel visibility) async {
-    final success = await profileProvider.updateVisibility(
-      auth.token,
-      musicPreferencesVisibility: visibility,
-    );
-    if (success) {
-      showSuccess('Music preferences visibility updated');
-      profileProvider.loadProfile(auth.token);
-    }
-  }
 
   Widget _buildDeezerSection() {
     final isConnected = DeezerService.instance.isInitialized;
@@ -991,75 +913,3 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 }
 
-class _MusicPreferenceDialog extends StatefulWidget {
-  final List<Map<String, dynamic>> availablePreferences;
-  final List<int> selectedIds;
-
-  const _MusicPreferenceDialog({
-    required this.availablePreferences, 
-    required this.selectedIds
-  });
-
-  @override
-  State<_MusicPreferenceDialog> createState() => _MusicPreferenceDialogState();
-}
-
-class _MusicPreferenceDialogState extends State<_MusicPreferenceDialog> {
-  late List<int> _selectedIds;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedIds = List.from(widget.selectedIds);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppTheme.surface,
-      title: const Text('Select Music Preferences', style: TextStyle(color: Colors.white)),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: widget.availablePreferences.length,
-          itemBuilder: (context, index) {
-            final preference = widget.availablePreferences[index];
-            final id = preference['id'] as int;
-            final name = preference['name'] as String;
-            final isSelected = _selectedIds.contains(id);
-
-            return CheckboxListTile(
-              value: isSelected,
-              onChanged: (value) {
-                setState(() {
-                  if (value == true) {
-                    _selectedIds.add(id);
-                  } else {
-                    _selectedIds.remove(id);
-                  }
-                });
-              },
-              title: Text(name, style: const TextStyle(color: Colors.white)),
-              activeColor: AppTheme.primary,
-            );
-          },
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context), 
-          child: const Text('Cancel', style: TextStyle(color: Colors.grey))
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, _selectedIds),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primary, 
-            foregroundColor: Colors.black
-          ),
-          child: const Text('Save'),
-        ),
-      ],
-    );
-  }
-}

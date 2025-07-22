@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../providers/music_provider.dart';
-import '../../core/theme_utils.dart';
-import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
 import '../../widgets/app_widgets.dart'; 
 import '../../models/music_models.dart';
 import '../base_screen.dart';
@@ -40,6 +37,7 @@ class _PublicPlaylistsScreenState extends BaseScreen<PublicPlaylistsScreen> {
           playlist: playlist,
           onTap: () => _viewPlaylist(playlist), 
           onPlay: () => _playPlaylist(playlist),
+          onCreatorTap: () => _viewCreatorProfile(playlist.creator),
           showPlayButton: true,
         ),
         emptyState: AppWidgets.emptyState( 
@@ -65,4 +63,8 @@ class _PublicPlaylistsScreenState extends BaseScreen<PublicPlaylistsScreen> {
 
   void _viewPlaylist(Playlist playlist) => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id); 
   void _playPlaylist(Playlist playlist) => showInfo('Playing ${playlist.name}');
+  
+  void _viewCreatorProfile(String username) {
+    showInfo('Profile view for $username coming soon! User search by username needs to be implemented in the backend.');
+  }
 }

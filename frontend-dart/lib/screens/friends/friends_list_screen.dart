@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme_utils.dart';
-import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
 import '../../providers/friend_provider.dart';
 import '../base_screen.dart';
 
@@ -64,7 +62,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
       emptyState: buildEmptyState(
         icon: Icons.people,
         title: 'No friends yet',
-        subtitle: 'Add friends to start sharing music together!',
+        subtitle: 'Start connecting and sharing music',
         buttonText: 'Add Friend',
         onButtonPressed: () => navigateTo(AppRoutes.addFriend),
       ),
@@ -97,7 +95,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
             child: ElevatedButton.icon(
               onPressed: () => navigateTo(AppRoutes.friendRequests),
               icon: const Icon(Icons.visibility),
-              label: const Text('View All Requests'),
+              label: const Text('View All'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.black,
@@ -123,31 +121,36 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
       margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.surface,
       child: ListTile(
+        onTap: () => _navigateToUserPage(friendId),
         leading: CircleAvatar(
           backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
           child: const Icon(Icons.person, color: Colors.white),
         ),
         title: Text(
-          'User ID: $friendId', 
+          '$friendId', 
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)
         ),
         subtitle: Text(
-          'Friend since you connected', 
+          'Connected', 
           style: const TextStyle(color: Colors.grey, fontSize: 12)
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) => _handleFriendAction(value, friendId),
           itemBuilder: (context) => [
             const PopupMenuItem(
+              value: 'view_profile',
+              child: Row(children: [Icon(Icons.person, size: 16), SizedBox(width: 8), Text('Profile')])
+            ),
+            const PopupMenuItem(
               value: 'share', 
-              child: Row(children: [Icon(Icons.playlist_play, size: 16), SizedBox(width: 8), Text('Share Playlist')])
+              child: Row(children: [Icon(Icons.playlist_play, size: 16), SizedBox(width: 8), Text('Share')])
             ),
             const PopupMenuItem(
               value: 'remove', 
               child: Row(children: [
                 Icon(Icons.person_remove, size: 16, color: Colors.red), 
                 SizedBox(width: 8), 
-                Text('Remove Friend', style: TextStyle(color: Colors.red))
+                Text('Remove', style: TextStyle(color: Colors.red))
               ])
             ),
           ],
@@ -165,17 +168,19 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: fromUserId != null 
-                ? Colors.primaries[fromUserId % Colors.primaries.length]
-                : Colors.grey,
-              radius: 20,
-              child: const Icon(Icons.person, color: Colors.white, size: 20),
-            ),
+      child: InkWell(
+        onTap: fromUserId != null ? () => _navigateToUserPage(fromUserId) : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: fromUserId != null 
+                  ? Colors.primaries[fromUserId % Colors.primaries.length]
+                  : Colors.grey,
+                radius: 20,
+                child: const Icon(Icons.person, color: Colors.white, size: 20),
+              ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -190,7 +195,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
                     ),
                   ),
                   const Text(
-                    'Wants to be your friend',
+                    'Friend request',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 12,
@@ -218,7 +223,8 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
                 ],
               ),
             ],
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -256,6 +262,9 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
 
   void _handleFriendAction(String action, int friendId) {
     switch (action) {
+      case 'view_profile':
+        _navigateToUserPage(friendId);
+        break;
       case 'share': 
         showInfo('Playlist sharing coming soon!'); 
         break;
@@ -263,6 +272,17 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
         _showRemoveDialog(friendId); 
         break;
     }
+  }
+
+  void _navigateToUserPage(int userId) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.userPage,
+      arguments: {
+        'userId': userId,
+        'username': null,
+      },
+    );
   }
 
   void _showRemoveDialog(int friendId) async {

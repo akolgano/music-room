@@ -5,6 +5,7 @@ import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../core/social_login.dart';
+import '../../widgets/app_widgets.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -136,7 +137,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 TextFormField(
                                   controller: _otpController,
                                   decoration: InputDecoration(
-                                    labelText: 'One Time Passcode',
+                                    labelText: 'OTP Code',
                                     prefixIcon: Icon(Icons.lock, color: AppTheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -223,7 +224,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    'Cancel',
+                                    'Back',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -262,20 +263,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         );
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("OTP Sent to your email! Please input OTP and new password in 5 minutes!"),
-            backgroundColor: AppTheme.onSurface,
-            duration: Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'DISMISS',
-              textColor: Colors.white,
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              },
-            ),
-          ),
-          );
+          AppWidgets.showSnackBar(context, "OTP Sent to your email! Please input OTP and new password in 5 minutes!", backgroundColor: AppTheme.onSurface);
         }
 
         setState(() {
@@ -300,7 +288,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               backgroundColor: AppTheme.onSurface,
               duration: Duration(seconds: 5),
               action: SnackBarAction(
-                label: 'DISMISS',
+                label: 'OK',
                 textColor: Colors.white,
                 onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
               ),
