@@ -100,7 +100,10 @@ class MusicPlayerService with ChangeNotifier {
       
       await _playCurrentTrack();
       if (kDebugMode) {
-        developer.log('Playlist set with ${_playlist.length} tracks, starting at index $_currentIndex', name: 'MusicPlayerService');
+        developer.log(
+          'Playlist set with ${_playlist.length} tracks, starting at index $_currentIndex',
+          name: 'MusicPlayerService',
+        );
       }
     } catch (e) {
       if (kDebugMode) {
