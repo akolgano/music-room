@@ -114,6 +114,12 @@ def test_token(request):
     return Response("passed!")
 
 
+@api_view(['GET'])
+def check_email(request):
+    email = request.data.get('email')
+    return JsonResponse({'exists': User.objects.filter(email=email).exists()}, status=status.HTTP_200_OK)
+    
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])

@@ -19,5 +19,6 @@ urlpatterns = [
     path('signup_email_otp/', views.signup_email_otp, name='signup_email_otp'),
     path('invitations/received/', views.get_pending_friend_request, name='get_pending_friend_request'),
     path('invitations/sent/', views.get_sent_friend_request, name='get_sent_friend_request'),
+    path('check_email/', views.check_email, name='check_email'),
 ]
 
