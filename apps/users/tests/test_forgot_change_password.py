@@ -10,41 +10,19 @@ from datetime import timedelta
 
 
 @pytest.mark.django_db
-def test_forgot_change_password_missing_fields():
+@pytest.mark.parametrize("payload", [
+    {},
+    {"email": "user123@example.com", "otp": "123456"},
+    {"email": "user123@example.com"},
+    {"otp": "123456", "password": "somePassword123"},
+])
+def test_forgot_change_password_missing_fields(payload):
     """
         # Missing email, otp, password or all
         # Ensure get response error {'error': 'Invalid email, otp or password'}
     """
     client = APIClient()
     url = reverse("users:forgot_change_password")
-
-    payload = {}
-
-    response = client.post(url, payload, format="json")
-    assert response.status_code == 400
-    assert response.json() == {'error': 'Invalid email, otp or password'}
-
-    payload = {
-        "email": "user123@example.com",
-        "otp": "123456"
-    }
-
-    response = client.post(url, payload, format="json")
-    assert response.status_code == 400
-    assert response.json() == {'error': 'Invalid email, otp or password'}
-
-    payload = {
-        "email": "user123@example.com"
-    }
-
-    response = client.post(url, payload, format="json")
-    assert response.status_code == 400
-    assert response.json() == {'error': 'Invalid email, otp or password'}
-
-    payload = {
-        "otp": "123456",
-        "password": "somePassword123"
-    }
 
     response = client.post(url, payload, format="json")
     assert response.status_code == 400

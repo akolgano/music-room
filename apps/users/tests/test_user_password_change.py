@@ -6,7 +6,12 @@ from unittest.mock import patch
 
 
 @pytest.mark.django_db
-def test_user_password_change_missing_fields(authenticated_user):
+@pytest.mark.parametrize("payload", [
+    {},
+    {"new_password": "newPass123"},
+    {"current_password": "wrongpass123"},
+])
+def test_user_password_change_missing_fields(authenticated_user, payload):
     """
         # Missing current_password, new_password or all
         # Ensure get response error {'error': 'No current password or new password provided'}
@@ -15,24 +20,6 @@ def test_user_password_change_missing_fields(authenticated_user):
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
     url = reverse("users:user_password_change")
-
-    payload = {
-        "new_password": "newPass123"
-    }
-
-    response = client.post(url, payload, format="json")
-    assert response.status_code == 400
-    assert response.json() == {'error': 'No current password or new password provided'}
-
-    payload = {
-        "current_password": "wrongpass123",
-    }
-
-    response = client.post(url, payload, format="json")
-    assert response.status_code == 400
-    assert response.json() == {'error': 'No current password or new password provided'}
-
-    payload = {}
 
     response = client.post(url, payload, format="json")
     assert response.status_code == 400
