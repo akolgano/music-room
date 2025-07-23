@@ -5,31 +5,18 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
 @pytest.mark.django_db
-def test_login_missing_fields():
+@pytest.mark.parametrize("payload", [
+    {},
+    {"username": "user123"},
+    {"password": "strongPassword123"},
+])
+def test_login_missing_fields(payload):
     """
         # Missing username, password, or both
         # Ensure get response error {'detail': 'Username or password not provided'}
     """
     client = APIClient()
     url = reverse("users:login")
-
-    payload = {
-        "username": "user123"
-    }
-
-    response = client.post(url, payload, format="json")
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'Username or password not provided'}
-
-    payload = {
-        "password": "strongPassword123"
-    }
-
-    response = client.post(url, payload, format="json")
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'Username or password not provided'}
-
-    payload = {}
 
     response = client.post(url, payload, format="json")
     assert response.status_code == 404
