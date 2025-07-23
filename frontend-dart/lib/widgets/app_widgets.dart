@@ -15,7 +15,13 @@ export 'mini_player_widget.dart';
 class AppWidgets {
   static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
 
-  static IconButton _buildStyledIconButton(IconData icon, Color color, double size, VoidCallback onPressed, {String? tooltip}) => IconButton(
+  static IconButton _buildStyledIconButton(
+    IconData icon,
+    Color color,
+    double size,
+    VoidCallback onPressed, {
+    String? tooltip,
+  }) => IconButton(
     icon: Icon(icon, color: color, size: _responsiveValue(size)),
     onPressed: onPressed,
     tooltip: tooltip,
@@ -68,7 +74,12 @@ class AppWidgets {
     int minLines = 1, 
     int maxLines = 1
   }) {
-    return TextFormField(controller: controller, obscureText: obscureText, validator: validator, onChanged: onChanged, minLines: minLines, 
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      validator: validator,
+      onChanged: onChanged,
+      minLines: minLines, 
       maxLines: maxLines,
       style: _primaryStyle(context),
       decoration: InputDecoration(
@@ -215,7 +226,13 @@ class AppWidgets {
     },
   );
 
-  static Widget _buildImage(BuildContext context, String? imageUrl, double size, Color backgroundColor, IconData defaultIcon) {
+  static Widget _buildImage(
+    BuildContext context,
+    String? imageUrl,
+    double size,
+    Color backgroundColor,
+    IconData defaultIcon,
+  ) {
     return Container(
       width: kIsWeb ? size : size.w.toDouble(), 
       height: kIsWeb ? size : size.h.toDouble(),
@@ -622,9 +639,35 @@ static Widget emptyState({
           
           Widget content = Padding(
             padding: EdgeInsets.all(padding),
-            child: isConstrained 
-              ? SingleChildScrollView(child: _buildEmptyStateContent(context, icon, title, subtitle, buttonText, onButtonPressed, isConstrained, iconSize, titleSize, spacing, theme))
-              : _buildEmptyStateContent(context, icon, title, subtitle, buttonText, onButtonPressed, isConstrained, iconSize, titleSize, spacing, theme),
+            child: isConstrained
+                ? SingleChildScrollView(
+                    child: _buildEmptyStateContent(
+                      context,
+                      icon,
+                      title,
+                      subtitle,
+                      buttonText,
+                      onButtonPressed,
+                      isConstrained,
+                      iconSize,
+                      titleSize,
+                      spacing,
+                      theme,
+                    ),
+                  )
+                : _buildEmptyStateContent(
+                    context,
+                    icon,
+                    title,
+                    subtitle,
+                    buttonText,
+                    onButtonPressed,
+                    isConstrained,
+                    iconSize,
+                    titleSize,
+                    spacing,
+                    theme,
+                  ),
           );
           
           if (!hasFiniteHeight) {
@@ -698,7 +741,9 @@ static Widget emptyState({
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Container(
                     constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight.isFinite ? constraints.maxHeight : MediaQuery.of(context).size.height * 0.6,
+                      minHeight: constraints.maxHeight.isFinite
+                          ? constraints.maxHeight
+                          : MediaQuery.of(context).size.height * 0.6,
                     ),
                     child: emptyState,
                   ),
@@ -853,7 +898,11 @@ static Widget emptyState({
     });
   }
 
-  static Widget settingsItem({required IconData icon, required String title, String? subtitle, required VoidCallback onTap,
+  static Widget settingsItem({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
     Color? color,
   }) {
     return Builder(builder: (context) {
@@ -868,7 +917,11 @@ static Widget emptyState({
     });
   }
 
-  static Widget switchTile({required bool value, required ValueChanged<bool> onChanged, required String title, String? subtitle,
+  static Widget switchTile({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String title,
+    String? subtitle,
     IconData? icon,
   }) {
     return Builder(builder: (context) {
@@ -888,7 +941,14 @@ static Widget emptyState({
     String? hintText,
     int maxLines = 1,
     String? Function(String?)? validator,
-  }) => DialogWidgets.showTextInputDialog(context, title: title, initialValue: initialValue, hintText: hintText, maxLines: maxLines, validator: validator);
+  }) => DialogWidgets.showTextInputDialog(
+    context,
+    title: title,
+    initialValue: initialValue,
+    hintText: hintText,
+    maxLines: maxLines,
+    validator: validator,
+  );
 
   static Future<bool> showConfirmDialog(
     BuildContext context, {
@@ -897,7 +957,14 @@ static Widget emptyState({
     bool isDangerous = false,
     String confirmText = 'Confirm',
     String cancelText = 'Cancel',
-  }) => DialogWidgets.showConfirmDialog(context, title: title, message: message, isDangerous: isDangerous, confirmText: confirmText, cancelText: cancelText);
+  }) => DialogWidgets.showConfirmDialog(
+    context,
+    title: title,
+    message: message,
+    isDangerous: isDangerous,
+    confirmText: confirmText,
+    cancelText: cancelText,
+  );
 
   static Future<int?> showSelectionDialog<T>({
     required BuildContext context, 
