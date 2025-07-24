@@ -39,24 +39,56 @@ class ApiService {
     return token != null ? Options(headers: {'Authorization': 'Token $token'}) : null;
   }
 
-  Future<T> _post<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, 
-      {String? token}) async => fromJson((await _dio.post(endpoint, 
-      data: data?.toJson?.call() ?? data, options: _createAuthOptions(token))).data);
-  Future<T> _get<T>(String endpoint, T Function(Map<String, dynamic>) fromJson, 
-      {String? token, Map<String, dynamic>? queryParams}) async => fromJson((await _dio.get(
-      endpoint, queryParameters: queryParams, options: _createAuthOptions(token))).data);
-  Future<T> _patch<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, 
-      {String? token}) async => fromJson((await _dio.patch(endpoint, 
-      data: data?.toJson?.call() ?? data, options: _createAuthOptions(token))).data);
-  Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async => 
-      _dio.post(endpoint, data: data?.toJson?.call() ?? data, options: _createAuthOptions(token));
-  Future<void> _patchVoid(String endpoint, dynamic data, {String? token}) async { 
-    if (kDebugMode) debugPrint('[ApiService] _patchVoid called: $endpoint with data: $data'); 
-    await _dio.patch(endpoint, data: data, options: _createAuthOptions(token)); 
-    if (kDebugMode) debugPrint('[ApiService] _patchVoid completed: $endpoint'); 
+  Future<T> _request<T>(
+    String method, 
+    String endpoint, {
+    dynamic data,
+    Map<String, dynamic>? queryParams,
+    String? token,
+    T Function(Map<String, dynamic>)? fromJson,
+    bool debug = false,
+  }) async {
+    if (debug && kDebugMode) debugPrint('[ApiService] $method called: $endpoint with data: $data');
+    
+    final options = _createAuthOptions(token);
+    final processedData = data?.toJson?.call() ?? data;
+    
+    Response response;
+    switch (method.toUpperCase()) {
+      case 'GET':
+        response = await _dio.get(endpoint, queryParameters: queryParams, options: options);
+        break;
+      case 'POST':
+        response = await _dio.post(endpoint, data: processedData, options: options);
+        break;
+      case 'PATCH':
+        response = await _dio.patch(endpoint, data: processedData, options: options);
+        break;
+      case 'DELETE':
+        response = await _dio.delete(endpoint, data: processedData, options: options);
+        break;
+      default:
+        throw ArgumentError('Unsupported HTTP method: $method');
+    }
+    
+    if (debug && kDebugMode) debugPrint('[ApiService] $method completed: $endpoint');
+    
+    return fromJson != null ? fromJson(response.data) : response.data;
   }
+
+  Future<T> _post<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, 
+      {String? token}) async => _request('POST', endpoint, data: data, fromJson: fromJson, token: token);
+  Future<T> _get<T>(String endpoint, T Function(Map<String, dynamic>) fromJson, 
+      {String? token, Map<String, dynamic>? queryParams}) async => 
+      _request('GET', endpoint, queryParams: queryParams, fromJson: fromJson, token: token);
+  Future<T> _patch<T>(String endpoint, dynamic data, T Function(Map<String, dynamic>) fromJson, 
+      {String? token}) async => _request('PATCH', endpoint, data: data, fromJson: fromJson, token: token);
+  Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async => 
+      _request<void>('POST', endpoint, data: data, token: token);
+  Future<void> _patchVoid(String endpoint, dynamic data, {String? token}) async => 
+      _request<void>('PATCH', endpoint, data: data, token: token, debug: true);
   Future<void> _delete(String endpoint, {String? token, dynamic data}) async => 
-      _dio.delete(endpoint, data: data, options: _createAuthOptions(token));
+      _request<void>('DELETE', endpoint, data: data, token: token);
 
   Future<AuthResult> login(LoginRequest request) => _post('/users/login/', request, AuthResult.fromJson);
   Future<void> logout(String token, LogoutRequest request) => _postVoid('/users/logout/', request, token: token);
@@ -181,10 +213,10 @@ class ApiService {
   Future<PlaylistsResponse> getPublicPlaylists(String token) => 
       _get('/playlists/public_playlists/', PlaylistsResponse.fromJson, token: token);
   Future<PlaylistDetailResponse> getPlaylist(String id, String token) => 
-      _get('/playlists/$id', PlaylistDetailResponse.fromJson, token: token);
+      _get('/playlists/playlists/$id', PlaylistDetailResponse.fromJson, token: token);
 
   Future<CreatePlaylistResponse> createPlaylist(String token, CreatePlaylistRequest request) async => 
-      CreatePlaylistResponse.fromJson((await _dio.post('/playlists/', data: request.toJson(), 
+      CreatePlaylistResponse.fromJson((await _dio.post('/playlists/playlists', data: request.toJson(), 
       options: Options(headers: {'Authorization': 'Token $token'}))).data);
 
   Future<void> changePlaylistVisibility(String playlistId, String token, VisibilityRequest request) => 

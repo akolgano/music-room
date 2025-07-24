@@ -151,4 +151,16 @@ class AuthProvider extends BaseProvider {
     );
   }
 
+  Future<bool> checkEmailAvailability(String email) async {
+    try {
+      final result = await _authService.checkEmailAvailability(email);
+      return result['available'] == true;
+    } catch (e) {
+      if (kDebugMode) {
+        developer.log('Error checking email availability: $e', name: 'AuthProvider');
+      }
+      return false;
+    }
+  }
+
 }

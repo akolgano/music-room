@@ -71,4 +71,39 @@ class MusicService {
     final request = InviteUserRequest(userId: userId);
     await _api.inviteUserToPlaylist(playlistId, token, request); 
   }
+
+  Future<List<Track>> getRandomTracks({int count = 10}) async {
+    final randomQueries = [
+      'pop', 'rock', 'jazz', 'electronic', 'hip hop', 'classical', 'indie', 'dance', 'blues', 'reggae',
+      'folk', 'country', 'metal', 'punk', 'soul', 'funk', 'disco', 'house', 'techno', 'ambient',
+      'a', 'e', 'i', 'o', 'u', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of',
+      'love', 'life', 'time', 'night', 'day', 'home', 'heart', 'world', 'dream', 'fire', 'water'
+    ];
+    
+    final random = DateTime.now().millisecondsSinceEpoch;
+    final query = randomQueries[random % randomQueries.length];
+    
+    try {
+      final response = await _api.searchDeezerTracks(query);
+      final tracks = response.data;
+      
+      if (tracks.isEmpty) {
+        final fallbackQuery = randomQueries[(random + 1) % randomQueries.length];
+        final fallbackResponse = await _api.searchDeezerTracks(fallbackQuery);
+        return fallbackResponse.data.take(count).toList();
+      }
+      
+      tracks.shuffle();
+      return tracks.take(count).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> addRandomTrackToPlaylist(String playlistId, String token) async {
+    final randomTracks = await getRandomTracks(count: 1);
+    if (randomTracks.isNotEmpty) {
+      await addTrackToPlaylist(playlistId, randomTracks.first.backendId, token);
+    }
+  }
 }

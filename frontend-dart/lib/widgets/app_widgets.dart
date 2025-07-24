@@ -15,6 +15,16 @@ export 'mini_player_widget.dart';
 class AppWidgets {
   static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
 
+  static Widget _buildWithTheme(Widget Function(BuildContext context, ThemeData theme, ColorScheme colorScheme) builder) {
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return builder(context, theme, colorScheme);
+      },
+    );
+  }
+
   static IconButton _buildStyledIconButton(
     IconData icon,
     Color color,
@@ -311,8 +321,7 @@ class AppWidgets {
   }
 
   static Widget loading([String? message]) {
-    return Builder(builder: (context) {
-      final colorScheme = Theme.of(context).colorScheme;
+    return _buildWithTheme((context, theme, colorScheme) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -428,9 +437,8 @@ class AppWidgets {
     String? actionText,
     VoidCallback? onAction,
   }) {
-    return Builder(builder: (context) {
-      final theme = Theme.of(context);
-      final bannerColor = color ?? theme.colorScheme.primary;
+    return _buildWithTheme((context, theme, colorScheme) {
+      final bannerColor = color ?? colorScheme.primary;
       return Container(
         margin: EdgeInsets.symmetric(
           horizontal: _responsiveWidth(16.0), 
@@ -492,9 +500,8 @@ class AppWidgets {
     required String message,
     VoidCallback? onDismiss,
   }) {
-    return Builder(builder: (context) {
-      final theme = Theme.of(context);
-      final errorColor = theme.colorScheme.error;
+    return _buildWithTheme((context, theme, colorScheme) {
+      final errorColor = colorScheme.error;
       return Container(
         margin: EdgeInsets.symmetric(
           horizontal: _responsiveWidth(16.0), 
@@ -697,19 +704,18 @@ static Widget emptyState({
   }
 
   static Widget errorState({required String message, VoidCallback? onRetry, String? retryText}) {
-    return Builder(builder: (context) {
-      final theme = Theme.of(context);
+    return _buildWithTheme((context, theme, colorScheme) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(_responsiveWidth(32.0)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: _responsiveValue(64.0), color: theme.colorScheme.error),
+              Icon(Icons.error_outline, size: _responsiveValue(64.0), color: colorScheme.error),
               SizedBox(height: _responsiveHeight(16.0)),
               Text(
                 message,
-                style: TextStyle(color: theme.colorScheme.onSurface, fontSize: _responsiveValue(18.0),
+                style: TextStyle(color: colorScheme.onSurface, fontSize: _responsiveValue(18.0),
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,

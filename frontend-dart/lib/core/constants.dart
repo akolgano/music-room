@@ -30,6 +30,6 @@ class AppRoutes {
   static const String userPasswordChange = '/user_password_change';
   static const String socialNetworkLink = '/social_network_link';
   static const String signupOtp = '/signup_otp';
-  static const String deezerAuth = '/deezer_auth';
   static const String userPage = '/user_page';
+  static const String adminDashboard = '/admin_dashboard';
 }

@@ -77,22 +77,35 @@ class Track {
     );
   }
 
+  static T? _extractValue<T>(Map<String, dynamic> json, String key, {String? nestedKey, T? defaultValue, List<String>? fallbackKeys}) {
+    if (json[key] is T) { 
+      return json[key]; 
+    }
+    if (json[key] is Map && nestedKey != null) { 
+      final nestedValue = json[key][nestedKey];
+      if (nestedValue is T) return nestedValue;
+    }
+    if (fallbackKeys != null) {
+      for (String fallbackKey in fallbackKeys) {
+        if (json[key] is Map && json[key][fallbackKey] is T) {
+          return json[key][fallbackKey];
+        }
+      }
+    }
+    return defaultValue;
+  }
+
   static String _extractArtist(Map<String, dynamic> json) {
-    if (json['artist'] is String) { return json['artist']; }
-    if (json['artist'] is Map && json['artist']['name'] != null) { return json['artist']['name']; }
-    return '';
+    return _extractValue<String>(json, 'artist', nestedKey: 'name', defaultValue: '') ?? '';
   }
 
   static String _extractAlbum(Map<String, dynamic> json) {
-    if (json['album'] is String) { return json['album']; }
-    if (json['album'] is Map && json['album']['title'] != null) { return json['album']['title']; }
-    return '';
+    return _extractValue<String>(json, 'album', nestedKey: 'title', defaultValue: '') ?? '';
   }
 
   static String? _extractImageUrl(Map<String, dynamic> json) {
-    if (json['image_url'] != null) { return json['image_url']; }
-    if (json['album'] is Map) { return json['album']['cover_medium'] ?? json['album']['cover']; }
-    return null;
+    return _extractValue<String>(json, 'image_url') ?? 
+           _extractValue<String>(json, 'album', fallbackKeys: ['cover_medium', 'cover']);
   }
 
   Map<String, dynamic> toJson() => {

@@ -138,7 +138,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
           setState(() {
-            // Tracks loaded successfully
           });
         }
       },

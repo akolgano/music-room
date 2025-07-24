@@ -13,7 +13,6 @@ import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../core/social_login.dart';
 import '../../widgets/app_widgets.dart';
-import '../../services/deezer_service.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
 import 'social_network_link_screen.dart';
@@ -84,8 +83,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                 _buildMusicPreferencesSection(profileProvider), 
                 const SizedBox(height: 16),
                 _buildSocialAccountsSection(profileProvider), 
-                const SizedBox(height: 16),
-                _buildDeezerSection(),
                 const SizedBox(height: 16), 
                 _buildSecuritySection(profileProvider), 
                 const SizedBox(height: 16), 
@@ -374,6 +371,13 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
     return AppWidgets.settingsSection(
       title: 'Account',
       items: [
+        AppWidgets.settingsItem(
+          icon: Icons.admin_panel_settings,
+          title: 'Admin Dashboard',
+          subtitle: 'Access Django admin and API routes',
+          onTap: () => Navigator.pushNamed(context, AppRoutes.adminDashboard),
+          color: Colors.blue,
+        ),
         AppWidgets.settingsItem(
           icon: Icons.logout,
           title: 'Logout',
@@ -877,29 +881,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
   }
 
 
-  Widget _buildDeezerSection() {
-    final isConnected = DeezerService.instance.isInitialized;
-    
-    return AppWidgets.settingsSection(
-      title: 'Music Streaming',
-      items: [
-        AppWidgets.settingsItem(
-          icon: Icons.music_note,
-          title: isConnected ? 'Deezer Connected' : 'Connect Deezer',
-          subtitle: isConnected 
-              ? 'Full audio playback enabled'
-              : 'Enable full tracks instead of 30s previews',
-          color: isConnected ? Colors.green : null,
-          onTap: () async {
-            final result = await Navigator.pushNamed(context, AppRoutes.deezerAuth);
-            if (result == true) {
-              setState(() {}); 
-            }
-          },
-        ),
-      ],
-    );
-  }
 
   void _showSignOutDialog() async {
     final confirmed = await showConfirmDialog(

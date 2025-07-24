@@ -31,7 +31,7 @@ import '../screens/profile/user_page_screen.dart';
 import '../screens/friends/add_friend_screen.dart';
 import '../screens/friends/friend_request_screen.dart';
 import '../screens/friends/friends_list_screen.dart';
-import '../screens/deezer/deezer_auth_screen.dart';
+import '../screens/admin/admin_dashboard_screen.dart';
 
 class AppBuilder {
   static List<SingleChildWidget> buildProviders() {
@@ -77,7 +77,8 @@ class AppBuilder {
     AppRoutes.friendRequests,
     AppRoutes.playlistSharing,
     AppRoutes.player,
-    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink, AppRoutes.deezerAuth, AppRoutes.userPage,
+    AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink, AppRoutes.userPage,
+    AppRoutes.adminDashboard,
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -159,10 +160,10 @@ class AppBuilder {
         return const UserPasswordChangeScreen();
       case AppRoutes.socialNetworkLink:
         return const SocialNetworkLinkScreen();
-      case AppRoutes.deezerAuth:
-        return const DeezerAuthScreen();
       case AppRoutes.userPage:
         return _buildUserPage(settings);
+      case AppRoutes.adminDashboard:
+        return const AdminDashboardScreen();
       case '/profile_info':
         return const ProfileScreen();
       case AppRoutes.playlistEditor:

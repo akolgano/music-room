@@ -51,7 +51,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     
     _apiService = getIt<ApiService>();
     
-    // Initialize controllers with default values
     _latitudeController.text = _latitude?.toString() ?? '';
     _longitudeController.text = _longitude?.toString() ?? '';
     _radiusController.text = _allowedRadiusMeters?.toString() ?? '100';
@@ -440,7 +439,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             _longitude = license.longitude;
             _allowedRadiusMeters = license.allowedRadiusMeters;
             
-            // Update text controllers
             _latitudeController.text = _latitude?.toString() ?? '';
             _longitudeController.text = _longitude?.toString() ?? '';
             _radiusController.text = _allowedRadiusMeters?.toString() ?? '100';

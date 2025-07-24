@@ -23,6 +23,54 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   var _isGetEmail = true;
   var _isGetOtp = false;
 
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(prefixIcon, color: AppTheme.onSurfaceVariant),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        fillColor: AppTheme.surfaceVariant,
+      ),
+      style: const TextStyle(color: Colors.white),
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+    );
+  }
+
+  void _showSnackBarWithAction({
+    required String message,
+    required Color backgroundColor,
+    required String actionLabel,
+  }) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: backgroundColor,
+          duration: Duration(seconds: 5),
+          action: SnackBarAction(
+            label: actionLabel,
+            textColor: Colors.white,
+            onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
@@ -105,19 +153,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               const SizedBox(height: 24),
 
                               if (_isGetEmail)
-                                TextFormField(
+                                _buildTextFormField(
                                   controller: _emailController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Email',
-                                    prefixIcon: Icon(Icons.email, color: AppTheme.onSurfaceVariant),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    filled: true,
-                                    fillColor: AppTheme.surfaceVariant,
-                                  ),
-                                  style: const TextStyle(color: Colors.white),
+                                  labelText: 'Email',
+                                  prefixIcon: Icons.email,
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
@@ -134,19 +173,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 ),
 
                               if (_isGetOtp) ...[
-                                TextFormField(
+                                _buildTextFormField(
                                   controller: _otpController,
-                                  decoration: InputDecoration(
-                                    labelText: 'OTP Code',
-                                    prefixIcon: Icon(Icons.lock, color: AppTheme.onSurfaceVariant),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    filled: true,
-                                    fillColor: AppTheme.surfaceVariant,
-                                  ),
-                                  style: const TextStyle(color: Colors.white),
+                                  labelText: 'OTP Code',
+                                  prefixIcon: Icons.lock,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter OTP';
@@ -161,19 +191,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   },
                                 ),
                                 const SizedBox(height: 24),
-                                TextFormField(
+                                _buildTextFormField(
                                   controller: _passwordController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Password',
-                                    prefixIcon: Icon(Icons.lock, color: AppTheme.onSurfaceVariant),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    filled: true,
-                                    fillColor: AppTheme.surfaceVariant,
-                                  ),
-                                  style: const TextStyle(color: Colors.white),
+                                  labelText: 'Password',
+                                  prefixIcon: Icons.lock,
                                   obscureText: true,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) return 'Please enter a password';
@@ -281,38 +302,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _isGetOtp = false;
         });
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Password changed success !"),
-              backgroundColor: AppTheme.onSurface,
-              duration: Duration(seconds: 5),
-              action: SnackBarAction(
-                label: 'OK',
-                textColor: Colors.white,
-                onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-              ),
-            ),
-          );
+        _showSnackBarWithAction(
+          message: "Password changed success !",
+          backgroundColor: AppTheme.onSurface,
+          actionLabel: 'OK',
+        );
 
+        if (mounted) {
           Navigator.pop(context);
         }
       }
     } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-          content: Text(error.toString()),
-          backgroundColor: AppTheme.error,
-          duration: Duration(seconds: 5),
-          action: SnackBarAction(
-            label: 'DISMISS',
-            textColor: Colors.white,
-            onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-          ),
-          ),
-        );
-      }
+      _showSnackBarWithAction(
+        message: error.toString(),
+        backgroundColor: AppTheme.error,
+        actionLabel: 'DISMISS',
+      );
     }
 
     setState(() {
