@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = "auth"
+
 urlpatterns = [
     path('facebook/login/', views.facebook_login, name='facebook_login'),
     path('google/login/', views.google_login, name='google_login'),

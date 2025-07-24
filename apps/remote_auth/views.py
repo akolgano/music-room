@@ -17,6 +17,9 @@ from .models import SocialNetwork
 from .serializers import RemoteUserSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from .docs import *
+from apps.profile.models import Profile
+from django.db import transaction
 
 User = get_user_model()
 
@@ -26,7 +29,7 @@ GOOGLE_CLIENT_ID_WEB = os.environ.get('GOOGLE_CLIENT_ID_WEB')
 GOOGLE_CLIENT_ID_APP = os.environ.get('GOOGLE_CLIENT_ID_APP')
 FIREBASE_WEB_CLIENT_ID = os.environ.get('FIREBASE_WEB_CLIENT_ID')
 
-
+@facebook_login_schema
 @api_view(['POST'])
 def facebook_login(request):
 
@@ -57,6 +60,7 @@ def facebook_login(request):
     return social_login(email, username, social_id, 'facebook')
 
 
+@google_login_schema
 @api_view(['POST'])
 def google_login(request):
     id_token = request.data.get('idToken')
@@ -76,14 +80,14 @@ def google_login(request):
         username = id_info.get('name') or id_info.get('email').split('@')[0]
         social_id = id_info.get('sub')
 
-    username = username.replace(' ', '_')
-
     if not username:
         return JsonResponse({'error': 'Invalid social username'}, status=status.HTTP_400_BAD_REQUEST)
     if not email:
         return JsonResponse({'error': 'Invalid social email'}, status=status.HTTP_400_BAD_REQUEST)
     if not social_id:
         return JsonResponse({'error': 'Invalid social id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    username = username.replace(' ', '_')
 
     return social_login(email, username, social_id, 'google')
 
@@ -102,20 +106,22 @@ def social_login(email, username, social_id, type):
         if not user:
             serializer = RemoteUserSerializer(data=user_data)
             if serializer.is_valid():
-                user = serializer.save()
-                token = Token.objects.create(user=user)
-                response_data = {
-                    'token': token.key,
-                    'user': serializer.data
-                }
-                SocialNetwork.objects.create(
-                    user = user,
-                    type = type,
-                    social_id = social_id,
-                    name = username,
-                    email = email
-                )
-                return JsonResponse(response_data, status=status.HTTP_200_OK)
+                with transaction.atomic():
+                    user = serializer.save()
+                    token = Token.objects.create(user=user)
+                    response_data = {
+                        'token': token.key,
+                        'user': serializer.data
+                    }
+                    SocialNetwork.objects.create(
+                        user = user,
+                        type = type,
+                        social_id = social_id,
+                        name = username,
+                        email = email
+                    )
+                    profile = Profile.objects.create(user = user)
+                    return JsonResponse(response_data, status=status.HTTP_200_OK)
         else:
             return JsonResponse({'error': 'Already has a account with same email.'}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -134,6 +140,7 @@ def social_login(email, username, social_id, type):
         return JsonResponse(response_data, status=status.HTTP_200_OK)     
 
 
+@facebook_link_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -167,6 +174,7 @@ def facebook_link(request):
     return social_link(user, email, username, social_id, 'facebook')
 
 
+@google_link_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -188,14 +196,14 @@ def google_link(request):
         username = id_info.get('name') or id_info.get('email').split('@')[0]
         social_id = id_info.get('sub')
 
-    username = username.replace(' ', '_')
-
     if not username:
         return JsonResponse({'error': 'Invalid social username'}, status=status.HTTP_400_BAD_REQUEST)
     if not email:
         return JsonResponse({'error': 'Invalid social email'}, status=status.HTTP_400_BAD_REQUEST)
     if not social_id:
         return JsonResponse({'error': 'Invalid social id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    username = username.replace(' ', '_')
 
     return social_link(user, email, username, social_id, 'google')
 
