@@ -146,6 +146,16 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      if (!_otpSent) {
+        final isEmailAvailable = await authProvider.checkEmailAvailability(_emailController.text);
+        if (!isEmailAvailable) {
+          _showError('This email is already registered. Please use a different email or try logging in.');
+          setState(() => _isLoading = false);
+          return;
+        }
+      }
+      
       final success = await authProvider.sendSignupEmailOtp(_emailController.text);
       if (success) {
         setState(() {

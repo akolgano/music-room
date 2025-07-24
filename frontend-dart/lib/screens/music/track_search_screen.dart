@@ -46,7 +46,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   bool get _isAddingToPlaylist => widget.playlistId != null;
   bool get _hasSelection => _selectedTracks.isNotEmpty;
   bool get _canAddTracks => _hasSelection && !_isLoading;
-  // bool get _hasSearchResults => getProvider<MusicProvider>().searchResults.isNotEmpty;
   bool get _isLoading => _loadingState != LoadingState.idle;
   bool get _isSearching => _loadingState == LoadingState.searching; 
   bool get _isAddingTracks => _loadingState == LoadingState.addingTracks;

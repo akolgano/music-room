@@ -118,6 +118,7 @@ class PlaylistDetailWidgets {
   static Widget buildThemedPlaylistActions(BuildContext context, {
     required VoidCallback onPlayAll,
     required VoidCallback onShuffle,
+    VoidCallback? onAddRandomTrack,
   }) {
     return Card(
       color: ThemeUtils.getSurface(context),
@@ -125,31 +126,51 @@ class PlaylistDetailWidgets {
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: onPlayAll,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Play All'),
-                style: ThemeUtils.getPrimaryButtonStyle(context).copyWith(
-                  padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(vertical: 12)
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: onPlayAll,
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Play All'),
+                    style: ThemeUtils.getPrimaryButtonStyle(context).copyWith(
+                      padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(vertical: 12)
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onShuffle,
+                    icon: const Icon(Icons.shuffle),
+                    label: const Text('Shuffle'),
+                    style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
+                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (onAddRandomTrack != null) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onAddRandomTrack,
+                  icon: const Icon(Icons.casino),
+                  label: const Text('Add Random Track'),
+                  style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
+                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
+                    foregroundColor: WidgetStateProperty.all(ThemeUtils.getPrimary(context)),
+                    side: WidgetStateProperty.all(BorderSide(color: ThemeUtils.getPrimary(context))),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: onShuffle,
-                icon: const Icon(Icons.shuffle),
-                label: const Text('Shuffle'),
-                style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
-                  padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
-                ),
-              ),
-            ),
+            ],
           ],
         ),
       ),

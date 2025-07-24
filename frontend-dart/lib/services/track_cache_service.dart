@@ -32,7 +32,6 @@ class TrackCacheService {
   final Map<String, int> _retryCount = {};
   final Map<String, DateTime> _lastRetryTime = {};
   
-  // Retry configuration - can be updated at runtime
   TrackRetryConfig _retryConfig = TrackRetryConfig.standard;
 
   Future<Track?> getTrackDetails(String deezerTrackId, String token, ApiService apiService) async {
@@ -82,7 +81,6 @@ class TrackCacheService {
       final track = await apiService.getDeezerTrack(deezerTrackId, token);
       
       if (track != null) {
-        // Success - clear retry tracking
         _retryCount.remove(deezerTrackId);
         _lastRetryTime.remove(deezerTrackId);
         if (kDebugMode) {
@@ -90,7 +88,6 @@ class TrackCacheService {
         }
         return track;
       } else {
-        // API returned null - treat as retriable error
         throw Exception('API returned null for track $deezerTrackId');
       }
     } catch (e) {
@@ -104,7 +101,6 @@ class TrackCacheService {
         if (kDebugMode) {
           developer.log('Max retries (${_retryConfig.maxRetries}) reached for track $deezerTrackId, giving up', name: 'TrackCacheService');
         }
-        // Clean up retry tracking after max retries
         _retryCount.remove(deezerTrackId);
         _lastRetryTime.remove(deezerTrackId);
         return null;
@@ -117,7 +113,6 @@ class TrackCacheService {
     _retryCount[deezerTrackId] = retryCount;
     _lastRetryTime[deezerTrackId] = DateTime.now();
     
-    // Calculate exponential backoff delay
     final baseDelay = _retryConfig.baseDelayMs * math.pow(2, retryCount - 1);
     final jitter = math.Random().nextDouble() * _retryConfig.jitterFactor;
     final delayMs = math.min((baseDelay * (1 + jitter)).round(), _retryConfig.maxDelayMs);
@@ -128,7 +123,6 @@ class TrackCacheService {
     
     await Future.delayed(Duration(milliseconds: delayMs));
     
-    // Check if we're still supposed to retry (could have been cleared)
     if (_retryCount.containsKey(deezerTrackId)) {
       return await _fetchTrackWithRetry(deezerTrackId, token, apiService);
     }

@@ -89,7 +89,6 @@ abstract class BaseProvider extends ChangeNotifier {
       if (error.response?.statusCode == 400 && error.response?.data is Map) {
         final data = error.response!.data as Map<String, dynamic>;
         
-        // Extract validation errors
         final errors = <String>[];
         for (final entry in data.entries) {
           if (entry.value is List) {
@@ -105,7 +104,6 @@ abstract class BaseProvider extends ChangeNotifier {
         }
       }
       
-      // Return a user-friendly message for other error types
       switch (error.response?.statusCode) {
         case 401:
           return 'Authentication required. Please log in again.';

@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart' show ChangeNotifier, kDebugMode;
 import 'package:just_audio/just_audio.dart';
 import '../models/music_models.dart';
 import '../providers/dynamic_theme_provider.dart';
-import 'deezer_service.dart';
 import 'music_service.dart';
 import '../core/service_locator.dart';
 
@@ -74,7 +73,7 @@ class MusicPlayerService with ChangeNotifier {
   bool get hasPreviousTrack => _currentIndex > 0;
   bool get hasNextTrack => _currentIndex >= 0 && _currentIndex < _playlist.length - 1;
   bool get isUsingFullAudio => _isUsingFullAudio;
-  bool get canPlayFullAudio => DeezerService.instance.canPlayFullAudio;
+  bool get canPlayFullAudio => false; // Deezer integration removed
 
   String get currentTrackInfo {
     if (_currentTrack == null) return '';
@@ -123,21 +122,6 @@ class MusicPlayerService with ChangeNotifier {
       
       String? audioUrl;
       
-      if (track.deezerTrackId != null && DeezerService.instance.canPlayFullAudio) {
-        try {
-          audioUrl = await DeezerService.instance.getTrackStreamUrl(track.deezerTrackId!);
-          if (audioUrl != null) {
-            _isUsingFullAudio = true;
-            if (kDebugMode) {
-              developer.log('Using Deezer full audio for: ${track.name}', name: 'MusicPlayerService');
-            }
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            developer.log('Failed to get Deezer full audio, falling back to preview: $e', name: 'MusicPlayerService');
-          }
-        }
-      }
       
       if (audioUrl == null) {
         audioUrl = fallbackUrl ?? track.previewUrl;

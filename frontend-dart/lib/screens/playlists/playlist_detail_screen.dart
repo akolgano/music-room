@@ -117,7 +117,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                 const SizedBox(height: 16), 
                 PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
                 const SizedBox(height: 16), 
-                PlaylistDetailWidgets.buildThemedPlaylistActions(context, onPlayAll: _playPlaylist, onShuffle: _shufflePlaylist),
+                PlaylistDetailWidgets.buildThemedPlaylistActions(
+                  context, 
+                  onPlayAll: _playPlaylist, 
+                  onShuffle: _shufflePlaylist,
+                  onAddRandomTrack: _isOwner ? _addRandomTrack : null,
+                ),
                 const SizedBox(height: 16), 
                 _buildTracksSection(),
               ],
@@ -555,6 +560,28 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     } catch (e) {
       showError('Failed to shuffle playlist: $e');
     }
+  }
+
+  Future<void> _addRandomTrack() async {
+    if (auth.token == null) {
+      showError('Authentication required');
+      return;
+    }
+
+    await runAsyncAction(
+      () async {
+        final musicProvider = getProvider<MusicProvider>();
+        final result = await musicProvider.addRandomTrackToPlaylist(widget.playlistId, auth.token!);
+        
+        if (result.success) {
+          showInfo('Random track added successfully!');
+          await _refreshTracksFromProvider();
+        } else {
+          showError(result.message);
+        }
+      },
+      errorMessage: 'Failed to add random track',
+    );
   }
 
   Future<void> _playTrackAt(int index) async {

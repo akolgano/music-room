@@ -175,6 +175,17 @@ class MusicProvider extends BaseProvider {
     return _addTrackToPlaylistInternal(playlistId, track.backendId, token);
   }
 
+  Future<AddTrackResult> addRandomTrackToPlaylist(String playlistId, String token) async {
+    try {
+      await _musicService.addRandomTrackToPlaylist(playlistId, token);
+      await fetchPlaylistTracks(playlistId, token);
+      notifyListeners();
+      return AddTrackResult(success: true, message: 'Random track added successfully');
+    } catch (e) {
+      return AddTrackResult(success: false, message: e.toString());
+    }
+  }
+
   Future<BatchAddResult> addMultipleTracksToPlaylist({
     required String playlistId,
     required List<String> trackIds,
