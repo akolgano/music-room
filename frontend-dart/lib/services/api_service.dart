@@ -7,6 +7,7 @@ import '../models/result_models.dart';
 import '../models/social_models.dart';
 import '../models/api_models.dart';
 
+// stop refactoring this file, too many api errors happening already
 class ApiService {
   final Dio _dio;
 

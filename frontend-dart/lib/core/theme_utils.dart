@@ -163,14 +163,45 @@ class ThemeUtils {
 
 class AppTheme {
   static const primary = Color(0xFF1DB954);
+  static const primaryDark = Color(0xFF1AA34A);
   static const background = Color(0xFF121212);
+  static const backgroundDark = Color(0xFF0A0A0A);
   static const surface = Color(0xFF282828);
+  static const surfaceDark = Color(0xFF1E1E1E);
   static const surfaceVariant = Color(0xFF333333);
   static const onSurface = Color(0xFFFFFFFF);
   static const onSurfaceVariant = Color(0xFFB3B3B3);
   static const textSecondary = Color(0xFFB3B3B3);
   static const error = Color(0xFFE91429);
   static const success = Color(0xFF00C851);
+
+  static LinearGradient get backgroundGradient => const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [background, backgroundDark],
+  );
+
+  static LinearGradient get surfaceGradient => const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [surface, surfaceDark],
+  );
+
+  static LinearGradient get primaryGradient => const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [primary, primaryDark],
+  );
+
+  static LinearGradient get cardGradient => LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      surface,
+      surfaceDark,
+      surface.withValues(alpha: 0.8),
+    ],
+  );
 
   static ThemeData _buildTheme() {
     return ThemeData(
