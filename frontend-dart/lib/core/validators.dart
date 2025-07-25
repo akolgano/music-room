@@ -8,7 +8,7 @@ class AppValidators {
   static String? email(String? value) =>
       ValidationBuilder().email('Please enter a valid email address').build()(value);
   
-  static String? password(String? value, [int minLength = 4]) =>
+  static String? password(String? value, [int minLength = 8]) =>
       ValidationBuilder().minLength(minLength, 'Password must be at least $minLength characters').build()(value);
   
   static String? username(String? value) =>

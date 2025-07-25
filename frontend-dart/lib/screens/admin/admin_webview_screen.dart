@@ -18,7 +18,7 @@ class AdminWebViewScreen extends StatefulWidget {
 }
 
 class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
-  late final WebViewController _controller;
+  WebViewController? _controller;
   bool _isLoading = true;
   String? _currentUrl;
 
@@ -37,16 +37,20 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-              _currentUrl = url;
-            });
+            if (mounted) {
+              setState(() {
+                _isLoading = true;
+                _currentUrl = url;
+              });
+            }
           },
           onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-              _currentUrl = url;
-            });
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+                _currentUrl = url;
+              });
+            }
           },
           onNavigationRequest: (NavigationRequest request) {
             return NavigationDecision.navigate;
@@ -57,18 +61,20 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
   }
 
   void _reload() {
-    setState(() {
-      _isLoading = true;
-    });
-    _controller.reload();
+    if (_controller != null && mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+      _controller!.reload();
+    }
   }
 
   void _goBack() {
-    _controller.goBack();
+    _controller?.goBack();
   }
 
   void _goForward() {
-    _controller.goForward();
+    _controller?.goForward();
   }
 
   @override
@@ -122,7 +128,9 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
               ),
             ),
           Expanded(
-            child: WebViewWidget(controller: _controller),
+            child: _controller != null 
+                ? WebViewWidget(controller: _controller!)
+                : const Center(child: CircularProgressIndicator()),
           ),
         ],
       ),
