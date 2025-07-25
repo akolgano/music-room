@@ -2,8 +2,10 @@ from django.http import JsonResponse
 from .deezer_client import DeezerClient
 from rest_framework.decorators import api_view
 from rest_framework import status
+from .docs import *
 
 
+@get_deezer_track_schema
 @api_view(['GET'])
 def get_deezer_track(request, track_id):
     client = DeezerClient()
@@ -15,6 +17,7 @@ def get_deezer_track(request, track_id):
         return JsonResponse({'error': 'Track not found'}, status=404)
 
 
+@search_deezer_tracks_schema
 @api_view(['GET'])
 def search_deezer_tracks(request):
     query = request.GET.get('q')
@@ -28,3 +31,4 @@ def search_deezer_tracks(request):
         return JsonResponse({"error": "Failed to fetch data from Deezer."}, status=status.HTTP_502_BAD_GATEWAY)
 
     return JsonResponse(results)
+
