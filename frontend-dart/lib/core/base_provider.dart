@@ -89,6 +89,10 @@ abstract class BaseProvider extends ChangeNotifier {
       if (error.response?.statusCode == 400 && error.response?.data is Map) {
         final data = error.response!.data as Map<String, dynamic>;
         
+        if (kDebugMode) {
+          debugPrint('[BaseProvider] 400 error response data: $data');
+        }
+        
         final errors = <String>[];
         for (final entry in data.entries) {
           if (entry.value is List) {

@@ -12,8 +12,6 @@ django.log
 #migrations/
 .env
 tmp
-tmp/
-*/tmp
 
 # Kotlin & Android
 *.iml
@@ -34,4 +32,5 @@ output.json
 frontend-dart/.env
 
 **/windows/flutter/
-api.yaml
+music-room.pdf
+music-room.md
