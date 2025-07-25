@@ -23,8 +23,10 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
   @override
   void initState() {
     super.initState();
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    profileProvider.clearMessages(); 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      profileProvider.clearMessages(); 
+    });
   }
 
   @override
