@@ -114,11 +114,18 @@ def test_token(request):
     return Response("passed!")
 
 
-@api_view(['GET'])
+@check_email_schema
+@api_view(['POST'])
 def check_email(request):
     email = request.data.get('email')
-    return JsonResponse({'exists': User.objects.filter(email=email).exists()}, status=status.HTTP_200_OK)
     
+    email_exists = (
+        SocialNetwork.objects.filter(email=email).exists() or
+        User.objects.filter(email=email).exists()
+    )
+    
+    return JsonResponse({'exists': email_exists}, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])

@@ -349,3 +349,16 @@ logout_view_schema = extend_schema(
         )
     }
 )
+
+
+check_email_schema = extend_schema(
+    methods=["POST"],
+    summary="Check if email exists in User or SocialNetwork",
+    request=CheckEmailRequestSerializer,
+    responses={
+        200: OpenApiResponse(
+            description="Returns whether the email exists in User or SocialNetwork table",
+            response=CheckEmailResponseSerializer
+        ),
+    },
+)
