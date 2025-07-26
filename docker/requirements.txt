@@ -19,3 +19,4 @@ geopy
 pillow
 drf_spectacular
 drf-api-logger==1.1.16
+psutil
