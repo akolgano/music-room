@@ -154,7 +154,7 @@ void main() {
 
     test('PlaylistEditorScreen should handle form submission', () {
 
-      final formKey = GlobalKey<FormState>();
+      GlobalKey<FormState>();
       const validPlaylistData = {
         'name': 'Test Playlist',
         'description': 'Test Description',

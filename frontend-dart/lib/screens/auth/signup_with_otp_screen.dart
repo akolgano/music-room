@@ -5,7 +5,6 @@ import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
 import '../../widgets/app_widgets.dart';
 
 class SignupWithOtpScreen extends StatefulWidget {
@@ -207,29 +206,32 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     _stopCountdown(); 
     
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {  
-        setState(() {
-          _resendCountdown--;
-          if (_resendCountdown <= 0) {
-            _canResendOtp = true;
-            timer.cancel();
-          }
-        });
-      } else {
+      if (!mounted) {
         timer.cancel();
+        return;
       }
+      
+      if (_resendCountdown <= 0) {
+        _canResendOtp = true;
+        timer.cancel();
+        _countdownTimer = null;
+        if (mounted) {
+          setState(() {});
+        }
+        return;
+      }
+      
+      setState(() {
+        _resendCountdown--;
+      });
     });
   }
 
   void _stopCountdown() {
     _countdownTimer?.cancel();
     _countdownTimer = null;
-    if (mounted) {
-      setState(() {
-        _canResendOtp = true;
-        _resendCountdown = 0;
-      });
-    }
+    _canResendOtp = true;
+    _resendCountdown = 0;
   }
 
   void _showSuccess(String message) {

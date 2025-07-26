@@ -66,7 +66,7 @@ void main() {
     });
 
     test('PlaylistDetailScreen should manage track retry mechanisms', () {
-      const failedTrack = Track(
+      const Track(
         id: 'failed_track',
         name: 'Failed Track',
         artist: 'Artist',

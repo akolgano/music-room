@@ -77,8 +77,8 @@ void main() {
       expect(Colors.red, isA<Color>());
       expect(Colors.green, isA<Color>());
       
-      expect(Colors.blue.value, isA<int>());
-      expect(Colors.blue.alpha, lessThanOrEqualTo(255));
+      expect(Colors.blue.r, isA<double>());
+      expect((Colors.blue.a * 255.0).round() & 0xff, lessThanOrEqualTo(255));
     });
   });
 }

@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/providers/voting_provider.dart';
 import 'package:music_room/models/voting_models.dart';
-import 'package:music_room/core/base_provider.dart';
 
 void main() {
   group('Voting Provider Tests', () {

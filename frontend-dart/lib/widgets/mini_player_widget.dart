@@ -3,9 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/music_player_service.dart';
 import '../core/theme_utils.dart';
-import '../core/validators.dart';
-import '../core/constants.dart';
-import '../core/social_login.dart';
 import '../models/music_models.dart';
 import '../screens/music/track_detail_screen.dart';
 

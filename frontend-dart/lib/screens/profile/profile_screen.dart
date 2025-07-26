@@ -11,7 +11,6 @@ import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
 import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';

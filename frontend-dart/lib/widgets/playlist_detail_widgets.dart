@@ -4,10 +4,6 @@ import '../../providers/dynamic_theme_provider.dart';
 import '../../providers/voting_provider.dart';
 import '../models/music_models.dart';
 import '../core/theme_utils.dart';
-import '../core/validators.dart';
-import '../core/constants.dart';
-import '../core/social_login.dart';
-import '../../core/theme_utils.dart';
 import '../services/track_cache_service.dart';
 import '../core/service_locator.dart';
 

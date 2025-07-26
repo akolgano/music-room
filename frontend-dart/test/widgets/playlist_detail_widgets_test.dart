@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/widgets/playlist_detail_widgets.dart';
 import 'package:music_room/models/music_models.dart';
 
 void main() {

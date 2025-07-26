@@ -76,8 +76,11 @@ abstract class BaseProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[BaseProvider] executeBool error: $e');
-        debugPrint('[BaseProvider] Stack trace: ${StackTrace.current}');
+        debugPrint('[BaseProvider] executeBool error: ${_extractErrorMessage(e)}');
+        if (e is! DioException) {
+          debugPrint('[BaseProvider] Full error: $e');
+          debugPrint('[BaseProvider] Stack trace: ${StackTrace.current}');
+        }
       }
       setError(errorMessage ?? _extractErrorMessage(e));
       return false;
@@ -86,25 +89,35 @@ abstract class BaseProvider extends ChangeNotifier {
   
   String _extractErrorMessage(dynamic error) {
     if (error is DioException) {
-      if (error.response?.statusCode == 400 && error.response?.data is Map) {
+      if (error.response?.data is Map) {
         final data = error.response!.data as Map<String, dynamic>;
         
         if (kDebugMode) {
-          debugPrint('[BaseProvider] 400 error response data: $data');
+          debugPrint('[BaseProvider] ${error.response?.statusCode} error response data: $data');
         }
         
-        final errors = <String>[];
-        for (final entry in data.entries) {
-          if (entry.value is List) {
-            final fieldErrors = (entry.value as List).cast<String>();
-            errors.addAll(fieldErrors);
-          } else if (entry.value is String) {
-            errors.add(entry.value);
+        if (data['detail'] != null) {
+          return data['detail'].toString();
+        }
+        
+        if (data['error'] != null) {
+          return data['error'].toString();
+        }
+        
+        if (error.response?.statusCode == 400) {
+          final errors = <String>[];
+          for (final entry in data.entries) {
+            if (entry.value is List) {
+              final fieldErrors = (entry.value as List).cast<String>();
+              errors.addAll(fieldErrors);
+            } else if (entry.value is String) {
+              errors.add(entry.value);
+            }
           }
-        }
-        
-        if (errors.isNotEmpty) {
-          return errors.first; // Return the first validation error
+          
+          if (errors.isNotEmpty) {
+            return errors.first;
+          }
         }
       }
       

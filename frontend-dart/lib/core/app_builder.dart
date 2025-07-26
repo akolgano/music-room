@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import '../core/theme_utils.dart';
-import '../core/social_login.dart';
 import '../core/constants.dart';
 import '../core/service_locator.dart';
 import '../providers/auth_provider.dart';
@@ -32,6 +31,7 @@ import '../screens/friends/add_friend_screen.dart';
 import '../screens/friends/friend_request_screen.dart';
 import '../screens/friends/friends_list_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
+import '../screens/voting/music_track_vote_screen.dart';
 
 class AppBuilder {
   static List<SingleChildWidget> buildProviders() {
@@ -78,7 +78,7 @@ class AppBuilder {
     AppRoutes.playlistSharing,
     AppRoutes.player,
     AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink, AppRoutes.userPage,
-    AppRoutes.adminDashboard,
+    AppRoutes.adminDashboard, AppRoutes.votingEvent,
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -174,6 +174,8 @@ class AppBuilder {
         return _buildTrackDetail(settings);
       case AppRoutes.playlistSharing:
         return _buildPlaylistSharing(settings);
+      case AppRoutes.votingEvent:
+        return _buildVotingEvent(settings);
       default:
         return _buildErrorScreen('Page not found');
     }
@@ -265,6 +267,26 @@ class AppBuilder {
     }
     
     return _buildErrorScreen('Invalid user data provided');
+  }
+
+  static Widget _buildVotingEvent(RouteSettings settings) {
+    final args = settings.arguments;
+    
+    if (args == null) {
+      return const MusicTrackVoteScreen(isCreatingEvent: true);
+    }
+    
+    if (args is String) {
+      return MusicTrackVoteScreen(eventId: args);
+    }
+    
+    if (args is Map<String, dynamic>) {
+      final eventId = args['eventId'] as String?;
+      final isCreating = args['isCreatingEvent'] as bool? ?? false;
+      return MusicTrackVoteScreen(eventId: eventId, isCreatingEvent: isCreating);
+    }
+    
+    return _buildErrorScreen('Invalid voting event data');
   }
 
   static Widget _buildErrorScreen(String message) {

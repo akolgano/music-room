@@ -12,12 +12,9 @@ import '../../services/track_cache_service.dart';
 import '../../services/websocket_service.dart';
 import '../../core/service_locator.dart'; 
 import '../../models/music_models.dart';
-import '../../models/result_models.dart';
 import '../../models/sort_models.dart';
 import '../../core/theme_utils.dart';
-import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart'; 
 import '../../widgets/playlist_detail_widgets.dart';
@@ -76,6 +73,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   List<Widget> get actions => [
+    IconButton(
+      icon: const Icon(Icons.how_to_vote),
+      onPressed: () => navigateTo(AppRoutes.votingEvent),
+      tooltip: 'Track Voting',
+    ),
     if (_isOwner) IconButton(icon: const Icon(Icons.settings), onPressed: _openPlaylistSettings, tooltip: 'Playlist Settings'),
     IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
     IconButton(
@@ -449,10 +451,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       return;
     }
 
-    _fetchingTrackDetails.add(deezerTrackId!);
+    final nonNullDeezerTrackId = deezerTrackId!;
+    _fetchingTrackDetails.add(nonNullDeezerTrackId);
     
     try {
-      final trackDetails = await _trackCacheService.getTrackDetails(deezerTrackId!, auth.token!, _apiService);
+      final trackDetails = await _trackCacheService.getTrackDetails(nonNullDeezerTrackId, auth.token!, _apiService);
       if (!mounted) return;
       
       if (trackDetails != null) {
@@ -461,7 +464,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     } catch (e) {
       _logError('fetching track details for $deezerTrackId', e);
     } finally {
-      _fetchingTrackDetails.remove(deezerTrackId!);
+      _fetchingTrackDetails.remove(nonNullDeezerTrackId);
     }
   }
 
