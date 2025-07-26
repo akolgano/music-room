@@ -109,3 +109,11 @@ class LogoutRequestSerializer(serializers.Serializer):
 
 class LogoutSuccessResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
+
+
+#check_email
+class CheckEmailRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class CheckEmailResponseSerializer(serializers.Serializer):
+    exists = serializers.BooleanField()
