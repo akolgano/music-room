@@ -179,6 +179,14 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',  # for unauthenticated users
+        'rest_framework.throttling.UserRateThrottle',  # for authenticated users
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '10/minute',     # max 10 requests per minute for anonymous users
+        'user': '1000/day',      # max 1000 requests per day for authenticated users
+    }
 }
 
 # Channel layer for Redis
