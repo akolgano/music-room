@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../providers/music_provider.dart';
 import '../../core/service_locator.dart';
 import '../../services/api_service.dart';
+import '../../services/websocket_service.dart';
 import '../../models/music_models.dart';
-import '../../models/result_models.dart';
 import '../../models/api_models.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
 import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 
@@ -26,32 +26,59 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   final _descriptionController = TextEditingController();
   bool _isPublic = false;
   bool _isLoading = false;
+  String _licenseType = 'open';
+  
   Playlist? _playlist;
+  List<Track> _playlistTracks = [];
+  List<CollaboratorInfo> _activeCollaborators = [];
+  List<RecentEdit> _recentEdits = [];
+  
+  StreamSubscription? _wsSubscription;
+  bool _showCollaborationFeatures = false;
 
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
+  bool get _canEdit => true; 
 
   @override
   String get screenTitle => _isEditMode ? 'Edit Playlist' : 'Create Playlist';
 
   @override
   List<Widget> get actions => [
-    if (_isEditMode)
+    if (_isEditMode) ...[
+      IconButton(
+        icon: Icon(_showCollaborationFeatures ? Icons.edit : Icons.people),
+        onPressed: () => setState(() => _showCollaborationFeatures = !_showCollaborationFeatures),
+        tooltip: _showCollaborationFeatures ? 'Show Settings' : 'Show Collaboration',
+      ),
+      if (_showCollaborationFeatures && _activeCollaborators.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.group),
+          onPressed: _showCollaborators,
+          tooltip: 'Active Collaborators',
+        ),
       TextButton(
         onPressed: () => navigateTo(AppRoutes.playlistDetail, arguments: widget.playlistId),
         child: const Text('View Details', style: TextStyle(color: AppTheme.primary)),
       ),
+    ],
   ];
 
   @override
   void initState() {
     super.initState();
-    if (_isEditMode) WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
+    if (_isEditMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylistData());
+    }
   }
 
   @override
   Widget buildContent() {
     if (_isLoading) {
       return buildLoadingState(message: _isEditMode ? 'Loading playlist...' : 'Creating playlist...');
+    }
+
+    if (_isEditMode && _showCollaborationFeatures) {
+      return _buildCollaborativeEditor();
     }
 
     return SingleChildScrollView(
@@ -108,6 +135,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
               : 'Only you can view this playlist',
             icon: _isPublic ? Icons.public : Icons.lock,
           ),
+          const SizedBox(height: 16),
+          _buildEditPermissionSettings(),
           const SizedBox(height: 24),
           AppWidgets.primaryButton(
             context: context,
@@ -115,6 +144,360 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             icon: _isEditMode ? Icons.save : Icons.add,
             onPressed: _isLoading ? null : (_isEditMode ? _saveChanges : _createPlaylist),
             isLoading: _isLoading,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditPermissionSettings() {
+    return AppTheme.buildFormCard(
+      title: 'Edit Permissions',
+      titleIcon: Icons.edit,
+      child: Column(
+        children: [
+          RadioListTile<String>(
+            title: const Text('Open Editing'),
+            subtitle: const Text('Anyone with access can edit'),
+            value: 'open',
+            groupValue: _licenseType,
+            onChanged: (value) => setState(() => _licenseType = value!),
+          ),
+          RadioListTile<String>(
+            title: const Text('Invite Only'),
+            subtitle: const Text('Only invited collaborators can edit'),
+            value: 'invite_only',
+            groupValue: _licenseType,
+            onChanged: (value) => setState(() => _licenseType = value!),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollaborativeEditor() {
+    return Column(
+      children: [
+        _buildEditorHeader(),
+        if (_activeCollaborators.isNotEmpty) _buildActiveCollaborators(),
+        Expanded(child: _buildTracksList()),
+        if (_canEdit) _buildEditorActions(),
+      ],
+    );
+  }
+
+  Widget _buildEditorHeader() {
+    if (_playlist == null) return const SizedBox.shrink();
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withValues(alpha: 0.1),
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                _playlist!.isPublic ? Icons.public : Icons.lock,
+                color: AppTheme.primary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _playlist!.name,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (!_canEdit)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'View Only',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (_playlist!.description.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              _playlist!.description,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 4),
+              Text(
+                '${_playlistTracks.length} tracks',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(width: 16),
+              Icon(Icons.people, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 4),
+              Text(
+                '${_activeCollaborators.length + 1} collaborators',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveCollaborators() {
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.green.withValues(alpha: 0.1),
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.circle, color: Colors.green, size: 12),
+          const SizedBox(width: 8),
+          const Text(
+            'Active now:',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _activeCollaborators.length,
+              itemBuilder: (context, index) {
+                final collaborator = _activeCollaborators[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Chip(
+                    avatar: CircleAvatar(
+                      backgroundColor: collaborator.color,
+                      child: Text(
+                        collaborator.initials,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    label: Text(collaborator.name),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTracksList() {
+    if (_playlistTracks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.queue_music,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No tracks yet',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _canEdit 
+                ? 'Add the first track to get started!'
+                : 'This playlist is empty',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_canEdit) {
+      return ReorderableListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _playlistTracks.length,
+        onReorder: (oldIndex, newIndex) => _reorderTracks(oldIndex, newIndex),
+        itemBuilder: (context, index) {
+          final track = _playlistTracks[index];
+          return _buildTrackCard(track, index, key: ValueKey(track.id));
+        },
+      );
+    } else {
+      return ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _playlistTracks.length,
+        itemBuilder: (context, index) {
+          final track = _playlistTracks[index];
+          return _buildTrackCard(track, index, key: ValueKey(track.id));
+        },
+      );
+    }
+  }
+
+  Widget _buildTrackCard(Track track, int index, {required Key key}) {
+    final recentEdit = _recentEdits.where((edit) => edit.trackId == track.id).firstOrNull;
+    final showEditIndicator = recentEdit != null && 
+        DateTime.now().difference(recentEdit.timestamp).inSeconds < 5;
+
+    return Card(
+      key: key,
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: showEditIndicator ? 4 : 1,
+      color: showEditIndicator 
+        ? Colors.blue.withValues(alpha: 0.1) 
+        : null,
+      child: ListTile(
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_canEdit)
+              ReorderableDragStartListener(
+                index: index,
+                child: const Icon(Icons.drag_handle, color: Colors.grey),
+              ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: track.imageUrl != null 
+                ? Image.network(
+                    track.imageUrl!,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
+                  )
+                : _buildDefaultAlbumArt(),
+            ),
+          ],
+        ),
+        title: Text(
+          track.name,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(track.artist),
+            if (showEditIndicator)
+              Text(
+                'Recently ${recentEdit.action} by ${recentEdit.userName}',
+                style: TextStyle(
+                  color: Colors.blue[700],
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+          ],
+        ),
+        trailing: _canEdit 
+          ? PopupMenuButton<String>(
+              onSelected: (action) => _handleTrackAction(action, track, index),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'play',
+                  child: ListTile(
+                    leading: Icon(Icons.play_arrow),
+                    title: Text('Play'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'remove',
+                  child: ListTile(
+                    leading: Icon(Icons.remove, color: Colors.red),
+                    title: Text('Remove', style: TextStyle(color: Colors.red)),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            )
+          : IconButton(
+              icon: const Icon(Icons.play_arrow),
+              onPressed: () => _playTrack(track),
+            ),
+      ),
+    );
+  }
+
+  Widget _buildDefaultAlbumArt() {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(
+        Icons.music_note,
+        color: AppTheme.primary,
+        size: 25,
+      ),
+    );
+  }
+
+  Widget _buildEditorActions() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(
+          top: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: AppWidgets.primaryButton(
+              context: context,
+              text: 'Add Track',
+              icon: Icons.add,
+              onPressed: _addTrackToPlaylist,
+              isLoading: false,
+            ),
+          ),
+          const SizedBox(width: 12),
+          OutlinedButton.icon(
+            onPressed: _clearPlaylist,
+            icon: const Icon(Icons.clear_all, color: Colors.red),
+            label: const Text('Clear All', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -137,8 +520,13 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           });
 
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
-          setState(() {
-          });
+          _playlistTracks = _playlist!.tracks;
+          
+          if (_showCollaborationFeatures) {
+            await _initializeWebSocket();
+          }
+          
+          setState(() {});
         }
       },
       errorMessage: 'Failed to load playlist',
@@ -159,7 +547,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         _descriptionController.text.trim(),
         _isPublic,
         auth.token!,
-        null, 
+        _licenseType, 
       );
 
       if (playlistId?.isEmpty ?? true) {
@@ -215,10 +603,236 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   }
 
 
+  Future<void> _initializeWebSocket() async {
+    try {
+      getIt<WebSocketService>();
+    } catch (e) {
+      print('WebSocket connection failed: $e');
+    }
+  }
+
+
+
+  Future<void> _addTrackToPlaylist() async {
+    final selectedTrack = await Navigator.pushNamed(
+      context, 
+      AppRoutes.trackSearch,
+      arguments: {'selectMode': true},
+    ) as Track?;
+
+    if (selectedTrack != null) {
+      try {
+        final musicProvider = getProvider<MusicProvider>();
+        await musicProvider.addTrackToPlaylist(
+          widget.playlistId!, 
+          selectedTrack.id, 
+          auth.token!,
+        );
+
+        setState(() {
+          _playlistTracks.add(selectedTrack);
+          _recentEdits.add(RecentEdit(
+            trackId: selectedTrack.id,
+            action: 'added',
+            userName: 'You',
+            timestamp: DateTime.now(),
+          ));
+        });
+
+        showSuccess('Track added to playlist!');
+      } catch (e) {
+        showError('Failed to add track: $e');
+      }
+    }
+  }
+
+  Future<void> _reorderTracks(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final track = _playlistTracks.removeAt(oldIndex);
+    _playlistTracks.insert(newIndex, track);
+
+    _playlistTracks.map((t) => t.id).toList();
+    setState(() {});
+
+    try {
+      getProvider<MusicProvider>();
+    } catch (e) {
+      showError('Failed to save track order: $e');
+    }
+  }
+
+  void _handleTrackAction(String action, Track track, int index) {
+    switch (action) {
+      case 'play':
+        _playTrack(track);
+        break;
+      case 'remove':
+        _removeTrack(track, index);
+        break;
+    }
+  }
+
+  void _playTrack(Track track) {
+    showInfo('Playing: ${track.name}');
+  }
+
+  Future<void> _removeTrack(Track track, int index) async {
+    try {
+      final musicProvider = getProvider<MusicProvider>();
+      await musicProvider.removeTrackFromPlaylist(
+        playlistId: widget.playlistId!,
+        trackId: track.id,
+        token: auth.token!,
+      );
+
+      setState(() {
+        _playlistTracks.removeAt(index);
+        _recentEdits.add(RecentEdit(
+          trackId: track.id,
+          action: 'removed',
+          userName: 'You',
+          timestamp: DateTime.now(),
+        ));
+      });
+
+      showSuccess('Track removed from playlist!');
+    } catch (e) {
+      showError('Failed to remove track: $e');
+    }
+  }
+
+  Future<void> _clearPlaylist() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Playlist'),
+        content: const Text('Are you sure you want to remove all tracks from this playlist?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Clear All'),
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (confirm) {
+      try {
+        getProvider<MusicProvider>();
+        setState(() {
+          _playlistTracks.clear();
+        });
+
+        showSuccess('Playlist cleared!');
+      } catch (e) {
+        showError('Failed to clear playlist: $e');
+      }
+    }
+  }
+
+  void _showCollaborators() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Active Collaborators'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: _activeCollaborators.length + 1,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: AppTheme.primary,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                  title: Text(auth.username ?? 'You'),
+                  subtitle: const Text('Host'),
+                  trailing: const Icon(Icons.star, color: Colors.orange),
+                );
+              }
+              
+              final collaborator = _activeCollaborators[index - 1];
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: collaborator.color,
+                  child: Text(
+                    collaborator.initials,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(collaborator.name),
+                subtitle: const Text('Collaborator'),
+                trailing: const Icon(Icons.circle, color: Colors.green, size: 12),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _wsSubscription?.cancel();
     super.dispose();
   }
+}
+
+class CollaboratorInfo {
+  final String userId;
+  final String name;
+  final Color color;
+  final DateTime joinedAt;
+  
+  String get initials => name.split(' ').map((n) => n.isNotEmpty ? n[0] : '').take(2).join().toUpperCase();
+
+  const CollaboratorInfo({
+    required this.userId,
+    required this.name,
+    required this.color,
+    required this.joinedAt,
+  });
+
+  factory CollaboratorInfo.fromJson(Map<String, dynamic> json) => CollaboratorInfo(
+    userId: json['user_id'] as String,
+    name: json['name'] as String,
+    color: Color(json['color'] as int? ?? 0xFF2196F3),
+    joinedAt: DateTime.parse(json['joined_at'] as String),
+  );
+}
+
+class RecentEdit {
+  final String trackId;
+  final String action;
+  final String userName;
+  final DateTime timestamp;
+
+  const RecentEdit({
+    required this.trackId,
+    required this.action,
+    required this.userName,
+    required this.timestamp,
+  });
+}
+
+extension ListExtensions<T> on List<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }

@@ -18,6 +18,11 @@ class _PublicPlaylistsScreenState extends BaseScreen<PublicPlaylistsScreen> {
 
   @override
   List<Widget> get actions => [
+    IconButton(
+      icon: const Icon(Icons.how_to_vote),
+      onPressed: () => navigateTo(AppRoutes.votingEvent),
+      tooltip: 'Track Voting',
+    ),
     IconButton(icon: const Icon(Icons.refresh), onPressed: _loadPlaylists),
   ];
 

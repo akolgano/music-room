@@ -4,7 +4,6 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
 import '../models/result_models.dart';
-import '../models/social_models.dart';
 import '../models/api_models.dart';
 
 // stop refactoring this file, too many api errors happening already

@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/services/auth_service.dart';
 import 'package:music_room/models/music_models.dart';
-import 'package:music_room/models/result_models.dart';
 import 'package:music_room/models/api_models.dart';
 
 void main() {

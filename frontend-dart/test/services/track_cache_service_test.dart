@@ -7,13 +7,12 @@ import 'package:music_room/models/music_models.dart';
 void main() {
   group('Track Cache Service Tests', () {
     late TrackCacheService cacheService;
-    late ApiService apiService;
 
     setUp(() {
       cacheService = TrackCacheService();
       final dio = Dio();
       dio.options.baseUrl = 'http://localhost:8000';
-      apiService = ApiService(dio);
+      ApiService(dio);
       cacheService.clearCache();
     });
 

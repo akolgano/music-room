@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/playlists/playlists_screen.dart';
 import 'package:music_room/models/music_models.dart';
 
 void main() {
@@ -94,7 +93,7 @@ void main() {
     });
 
     test('PlaylistsScreen should handle playlist actions', () {
-      const playlistId = 'playlist_123';
+      'playlist_123';
       const actions = {
         'edit': true,
         'delete': true,

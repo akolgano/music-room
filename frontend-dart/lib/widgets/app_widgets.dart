@@ -5,7 +5,6 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/music_models.dart';
-import '../models/result_models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';

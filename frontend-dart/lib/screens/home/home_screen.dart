@@ -53,6 +53,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
             IconButton(
+              icon: const Icon(Icons.how_to_vote),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
+              tooltip: 'Track Voting',
+            ),
+            IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
             ),
@@ -143,6 +148,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
             IconButton(
+              icon: const Icon(Icons.how_to_vote),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
+              tooltip: 'Track Voting',
+            ),
+            IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
             ),
@@ -197,7 +207,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             message: 'Ready to discover and share music?',
             icon: Icons.music_note,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.symmetric(horizontal: 0),
+            decoration: BoxDecoration(
+              color: Colors.pink.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.pink.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.how_to_vote, color: Colors.pink, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'New: Track Voting! 🗳️',
+                        style: TextStyle(
+                          color: Colors.pink,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Create voting sessions, suggest tracks, and vote with friends',
+                        style: TextStyle(
+                          color: Colors.pink[200],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
+                  child: const Text(
+                    'Try It',
+                    style: TextStyle(
+                      color: Colors.pink,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           AppWidgets.sectionTitle('Quick Actions'),
           const SizedBox(height: 16),
           GridView.count(
@@ -218,6 +277,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 icon: Icons.add_circle,
                 color: Colors.green,
                 onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+              ),
+              AppWidgets.quickActionCard(
+                title: 'Track Voting',
+                icon: Icons.how_to_vote,
+                color: Colors.pink,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
               ),
               AppWidgets.quickActionCard(
                 title: 'Find Friends',

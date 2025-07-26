@@ -120,17 +120,13 @@ class MusicPlayerService with ChangeNotifier {
       _currentTrack = track;
       _isUsingFullAudio = false;
       
-      String? audioUrl;
-      
+      String? audioUrl = fallbackUrl ?? track.previewUrl;
       
       if (audioUrl == null) {
-        audioUrl = fallbackUrl ?? track.previewUrl;
-        if (audioUrl == null) {
-          throw Exception('No audio URL available for track: ${track.name}');
-        }
-        if (kDebugMode) {
-          developer.log('Using preview audio for: ${track.name}', name: 'MusicPlayerService');
-        }
+        throw Exception('No audio URL available for track: ${track.name}');
+      }
+      if (kDebugMode) {
+        developer.log('Using preview audio for: ${track.name}', name: 'MusicPlayerService');
       }
       
       await _audioPlayer.setUrl(audioUrl);

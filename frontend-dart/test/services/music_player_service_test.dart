@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:music_room/services/music_player_service.dart';
 import 'package:music_room/providers/dynamic_theme_provider.dart';
-import 'package:music_room/models/music_models.dart';
 import 'package:music_room/services/api_service.dart';
 import 'package:music_room/services/music_service.dart';
 

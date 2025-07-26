@@ -17,7 +17,7 @@ void main() {
     });
 
     test('PlaylistSharingScreen should handle friend sharing', () {
-      final friendsList = ['friend1', 'friend2', 'friend3'];
+      ['friend1', 'friend2', 'friend3'];
       final selectedFriends = <String>[];
       selectedFriends.add('friend1');
       selectedFriends.add('friend3');

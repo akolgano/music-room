@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/theme_utils.dart';
-import '../../core/validators.dart';
 import '../../core/constants.dart';
-import '../../core/social_login.dart';
 import '../base_screen.dart';
 
 class FriendRequestScreen extends StatefulWidget {
