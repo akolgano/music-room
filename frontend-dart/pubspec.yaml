@@ -3,7 +3,7 @@ description: "Music, Collaboration and mobility"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
-  sdk: ^3.7.2
+  sdk: '>=3.7.2 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
@@ -19,16 +19,15 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
   flutter_dotenv: ^5.2.1
   form_validator: ^2.1.1
-  google_sign_in: ^6.3.0
-  google_sign_in_platform_interface: ^2.5.0
+  google_sign_in: ^6.2.0
   get_it: ^8.0.3
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  http: ^1.1.0
+  http: ^1.0.0
   image_picker: ^1.1.2
   image_cropper: ^9.1.0
   just_audio: ^0.10.4
-  just_audio_web: ^0.4.9
+  just_audio_web: ^0.4.12
   phone_numbers_parser: ^9.0.3
   pretty_dio_logger: ^1.4.0
   responsive_framework: ^1.1.1
@@ -39,10 +38,10 @@ dependencies:
   web_socket_channel: ^3.0.3
   path_provider: ^2.1.5
   webview_flutter: ^4.4.4
-  webview_flutter_android: ^3.12.1
+  webview_flutter_android: ^4.8.2
   webview_flutter_wkwebview: ^3.8.0
-  webview_flutter_web: ^0.2.2+4
   url_launcher: ^6.2.4
+  universal_html: ^2.2.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
