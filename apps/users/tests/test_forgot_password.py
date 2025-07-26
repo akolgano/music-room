@@ -1,9 +1,12 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from django.contrib.auth.models import User
 from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 @pytest.mark.django_db
 def test_forgot_password_no_email():

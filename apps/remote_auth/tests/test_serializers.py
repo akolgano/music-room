@@ -1,6 +1,9 @@
 import pytest
 from apps.remote_auth.serializers import RemoteUserSerializer
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 @pytest.mark.django_db

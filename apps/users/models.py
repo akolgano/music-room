@@ -1,13 +1,17 @@
+import uuid
 from django.db import models 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from datetime import timedelta
 
+
+class CustomUser(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
 class Friendship(models.Model):
-    from_user = models.ForeignKey(User, related_name='friendships_created', on_delete=models.CASCADE)
-    to_user = models.ForeignKey(User, related_name='friendships_received', on_delete=models.CASCADE)
+    from_user = models.ForeignKey('users.CustomUser', related_name='friendships_created', on_delete=models.CASCADE)
+    to_user = models.ForeignKey('users.CustomUser', related_name='friendships_received', on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -29,7 +33,7 @@ def get_expiry_time():
     return timezone.now() + timedelta(minutes=5)
 
 class OneTimePasscode(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
     code = models.CharField(max_length=200)
     expired_at = models.DateTimeField(default=get_expiry_time)
     created_at = models.DateTimeField(auto_now_add=True)

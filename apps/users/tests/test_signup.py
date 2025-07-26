@@ -5,13 +5,15 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.utils import timezone
 from datetime import timedelta
-
 from apps.users.models import SignupOneTimePasscode
 from apps.remote_auth.models import SocialNetwork
 from apps.profile.models import Profile
-from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 @pytest.mark.django_db
 def test_signup_success():

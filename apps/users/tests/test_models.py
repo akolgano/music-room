@@ -1,9 +1,11 @@
-from django.contrib.auth.models import User
 import pytest
 from django.contrib.auth.hashers import make_password
 from apps.users.models import OneTimePasscode, SignupOneTimePasscode
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 @pytest.mark.django_db
 def test_create_user():
