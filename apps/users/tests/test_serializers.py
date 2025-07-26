@@ -1,7 +1,10 @@
-from django.contrib.auth.models import User
 from apps.users.serializers import UserSerializer
 import pytest
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 @pytest.mark.django_db

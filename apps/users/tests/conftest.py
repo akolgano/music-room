@@ -1,6 +1,9 @@
 import pytest
-from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 @pytest.fixture
 def authenticated_user(db):

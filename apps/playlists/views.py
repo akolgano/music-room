@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from django.http import JsonResponse
 from .models import Playlist, Track
 from apps.tracks.models import Track
-from apps.users.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -18,6 +17,9 @@ from .decorators import check_access_to_playlist, check_license
 from .serializers import PlaylistLicenseSerializer
 from apps.deezer.deezer_client import DeezerClient
 from .serializers import PlaylistLicenseSerializer, VoteSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 @api_view(['POST'])

@@ -4,9 +4,11 @@ from rest_framework.test import APIClient
 from unittest.mock import patch
 from conftest import MockResponse
 from apps.users.tests.conftest import authenticated_user
-from django.contrib.auth.models import User
 from apps.remote_auth.models import SocialNetwork
+from django.contrib.auth import get_user_model
 
+
+User = get_user_model()
 
 @patch('google.oauth2.id_token.verify_oauth2_token')
 def test_google_link_invalid_token(mock_verify, authenticated_user):
