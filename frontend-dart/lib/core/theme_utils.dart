@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class ThemeUtils {
   static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
@@ -11,31 +12,116 @@ class ThemeUtils {
   static Color getError(BuildContext context) => Theme.of(context).colorScheme.error;
   static Color getSecondary(BuildContext context) => Theme.of(context).colorScheme.secondary;
 
-  static TextStyle getHeadingStyle(BuildContext context) => TextStyle(
-    color: getOnSurface(context), fontSize: 24, fontWeight: FontWeight.bold
-  );
+  static bool isSmallMobile(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    return width <= 360;
+  }
 
-  static TextStyle getSubheadingStyle(BuildContext context) => TextStyle(
-    color: getOnSurface(context), fontSize: 18, fontWeight: FontWeight.w600,
-  );
+  static bool isMobile(BuildContext context) {
+    return ResponsiveBreakpoints.of(context).isMobile || isSmallMobile(context);
+  }
 
-  static TextStyle getBodyStyle(BuildContext context) => TextStyle(
-    color: getOnSurface(context),
-    fontSize: 16,
-  );
+  static bool isTablet(BuildContext context) {
+    return ResponsiveBreakpoints.of(context).isTablet;
+  }
 
-  static TextStyle getCaptionStyle(BuildContext context) => TextStyle(
-    color: getOnSurface(context).withValues(alpha: 0.7),
-    fontSize: 14,
-  );
+  static bool isDesktop(BuildContext context) {
+    return ResponsiveBreakpoints.of(context).isDesktop;
+  }
+
+  static double getResponsivePadding(BuildContext context) {
+    if (isSmallMobile(context)) return 4.0;
+    if (isMobile(context)) return 8.0;
+    if (isTablet(context)) return 12.0;
+    return 16.0;
+  }
+
+  static double getResponsiveMargin(BuildContext context) {
+    if (isSmallMobile(context)) return 2.0;
+    if (isMobile(context)) return 4.0;
+    if (isTablet(context)) return 8.0;
+    return 12.0;
+  }
+
+  static double getResponsiveBorderRadius(BuildContext context) {
+    if (isSmallMobile(context)) return 6.0;
+    if (isMobile(context)) return 8.0;
+    if (isTablet(context)) return 12.0;
+    return 16.0;
+  }
+
+  static double getResponsiveIconSize(BuildContext context) {
+    if (isSmallMobile(context)) return 20.0;
+    if (isMobile(context)) return 24.0;
+    if (isTablet(context)) return 28.0;
+    return 32.0;
+  }
+
+  static double getResponsiveButtonHeight(BuildContext context) {
+    if (isSmallMobile(context)) return 40.0;
+    if (isMobile(context)) return 48.0;
+    if (isTablet(context)) return 52.0;
+    return 56.0;
+  }
+
+  static EdgeInsets getResponsiveCardPadding(BuildContext context) {
+    final padding = getResponsivePadding(context);
+    return EdgeInsets.all(padding);
+  }
+
+  static EdgeInsets getResponsiveCardMargin(BuildContext context) {
+    final margin = getResponsiveMargin(context);
+    return EdgeInsets.all(margin);
+  }
+
+  static int getResponsiveGridColumns(BuildContext context) {
+    if (isSmallMobile(context)) return 1;
+    if (isMobile(context)) return 2;
+    if (isTablet(context)) return 3;
+    return 4;
+  }
+
+  static TextStyle getHeadingStyle(BuildContext context) {
+    final fontSize = isSmallMobile(context) ? 18.0 : (isMobile(context) ? 20.0 : 24.0);
+    return TextStyle(
+      color: getOnSurface(context), 
+      fontSize: fontSize, 
+      fontWeight: FontWeight.bold
+    );
+  }
+
+  static TextStyle getSubheadingStyle(BuildContext context) {
+    final fontSize = isSmallMobile(context) ? 14.0 : (isMobile(context) ? 16.0 : 18.0);
+    return TextStyle(
+      color: getOnSurface(context), 
+      fontSize: fontSize, 
+      fontWeight: FontWeight.w600,
+    );
+  }
+
+  static TextStyle getBodyStyle(BuildContext context) {
+    final fontSize = isSmallMobile(context) ? 12.0 : (isMobile(context) ? 14.0 : 16.0);
+    return TextStyle(
+      color: getOnSurface(context),
+      fontSize: fontSize,
+    );
+  }
+
+  static TextStyle getCaptionStyle(BuildContext context) {
+    final fontSize = isSmallMobile(context) ? 10.0 : (isMobile(context) ? 12.0 : 14.0);
+    return TextStyle(
+      color: getOnSurface(context).withValues(alpha: 0.7),
+      fontSize: fontSize,
+    );
+  }
 
   static BoxDecoration getCardDecoration(BuildContext context, {double? borderRadius}) => BoxDecoration(
     color: getSurface(context),
-    borderRadius: BorderRadius.circular(borderRadius ?? 12),
+    borderRadius: BorderRadius.circular(borderRadius ?? getResponsiveBorderRadius(context)),
     boxShadow: [
       BoxShadow(
         color: AppTheme.primary.withValues(alpha: 0.1), 
-        blurRadius: 8,
+        blurRadius: isSmallMobile(context) ? 4 : 8,
         offset: const Offset(0, 2),
       ),
     ],
@@ -44,15 +130,17 @@ class ThemeUtils {
   static ButtonStyle getPrimaryButtonStyle(BuildContext context) => ElevatedButton.styleFrom(
     backgroundColor: AppTheme.primary, 
     foregroundColor: getOnPrimary(context),
-    elevation: 4,
+    elevation: isSmallMobile(context) ? 2 : 4,
     shadowColor: AppTheme.primary.withValues(alpha: 0.3), 
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
+    minimumSize: Size(88, getResponsiveButtonHeight(context)),
   );
 
   static ButtonStyle getSecondaryButtonStyle(BuildContext context) => OutlinedButton.styleFrom(
     foregroundColor: getOnSurface(context),
     side: BorderSide(color: AppTheme.primary), 
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
+    minimumSize: Size(88, getResponsiveButtonHeight(context)),
   );
 
   static Future<T?> showThemedDialog<T>({
@@ -108,11 +196,11 @@ class ThemeUtils {
   }) {
     return Card(
       color: getSurface(context),
-      elevation: elevation ?? 4,
-      margin: margin ?? const EdgeInsets.all(16),
+      elevation: elevation ?? (isSmallMobile(context) ? 2 : 4),
+      margin: margin ?? getResponsiveCardMargin(context),
       shadowColor: AppTheme.primary.withValues(alpha: 0.2), 
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? 16)),
-      child: Padding(padding: padding ?? const EdgeInsets.all(24), child: child),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? getResponsiveBorderRadius(context))),
+      child: Padding(padding: padding ?? getResponsiveCardPadding(context), child: child),
     );
   }
 
@@ -227,9 +315,9 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.black,
-          minimumSize: const Size(88, 50), 
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          minimumSize: const Size(88, 40), 
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
       textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: primary)),
@@ -239,38 +327,38 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceVariant,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8), 
+          borderRadius: BorderRadius.circular(6), 
           borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           borderSide: const BorderSide(color: error, width: 2),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           borderSide: const BorderSide(color: error, width: 2),
         ),
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
         ),
-        labelStyle: const TextStyle(color: Colors.white70),
-        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+        labelStyle: const TextStyle(color: Colors.white70, fontSize: 12),
+        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
       ),
       cardTheme: CardThemeData(color: surface,
-        elevation: 4,
+        elevation: 2,
         shadowColor: primary.withValues(alpha: 0.1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       ),
       iconTheme: IconThemeData(color: primary),
       primaryIconTheme: const IconThemeData(color: Colors.white),
@@ -372,18 +460,18 @@ class AppTheme {
   }) => Card(
     color: surface,
     elevation: elevation ?? 4,
-    margin: margin ?? EdgeInsets.all(kIsWeb ? 16 : 16.w),
+    margin: margin ?? EdgeInsets.all(kIsWeb ? 8 : 8.w),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))  
     ),
-    child: Padding(padding: padding ?? EdgeInsets.all(kIsWeb ? 24 : 24.w), child: child),
+    child: Padding(padding: padding ?? EdgeInsets.all(kIsWeb ? 12 : 12.w), child: child),
   );
 
   static Widget buildHeaderCard({required Widget child}) => _buildCard(child: child, elevation: 8);
 
   static Widget buildFormCard({required String title, IconData? titleIcon, required Widget child}) => _buildCard(
     borderRadius: kIsWeb ? 12 : 12.r,
-    padding: EdgeInsets.all(kIsWeb ? 20 : 20.w),
+    padding: EdgeInsets.all(kIsWeb ? 10 : 10.w),
     margin: EdgeInsets.zero,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,7 +480,7 @@ class AppTheme {
           children: [
             if (titleIcon != null) ...[
               Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
-              SizedBox(width: kIsWeb ? 8 : 8.w)
+              SizedBox(width: kIsWeb ? 4 : 4.w)
             ],
             Flexible(
               child: Text(title, 
@@ -402,7 +490,7 @@ class AppTheme {
             ),
           ],
         ),
-        SizedBox(height: kIsWeb ? 16 : 16.h), 
+        SizedBox(height: kIsWeb ? 8 : 8.h), 
         child,
       ],
     ),

@@ -8,7 +8,9 @@ import '../models/music_models.dart';
 import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';
+import '../core/theme_utils.dart';
 import 'dialog_widgets.dart';
+import 'custom_scrollbar.dart';
 export 'mini_player_widget.dart';
 
 class AppWidgets {
@@ -80,6 +82,7 @@ class AppWidgets {
     bool obscureText = false,
     String? Function(String?)? validator, 
     ValueChanged<String>? onChanged, 
+    ValueChanged<String>? onFieldSubmitted,
     int minLines = 1, 
     int maxLines = 1
   }) {
@@ -88,6 +91,7 @@ class AppWidgets {
       obscureText: obscureText,
       validator: validator,
       onChanged: onChanged,
+      onFieldSubmitted: onFieldSubmitted,
       minLines: minLines, 
       maxLines: maxLines,
       style: _primaryStyle(context),
@@ -107,7 +111,7 @@ class AppWidgets {
         hintStyle: TextStyle(fontSize: 14, color: _colorScheme(context).onSurface.withValues(alpha: 0.5)),
         contentPadding: EdgeInsets.symmetric(
           horizontal: _responsiveWidth(16.0), 
-          vertical: _responsiveHeight(12.0)
+          vertical: _responsiveHeight(6.0)
         ),
       ),
     );
@@ -153,7 +157,7 @@ class AppWidgets {
             child: Container(
               margin: EdgeInsets.symmetric(
                 horizontal: _responsiveWidth(16.0), 
-                vertical: _responsiveHeight(4.0)
+                vertical: _responsiveHeight(2.0)
               ),
               decoration: BoxDecoration(
                 color: _getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
@@ -327,7 +331,7 @@ class AppWidgets {
           children: [
             CircularProgressIndicator(color: colorScheme.primary),
             if (message != null) ...[
-              SizedBox(height: _responsiveHeight(16.0)), 
+              SizedBox(height: _responsiveHeight(12.0)), 
               Text(message, style: _secondaryStyle(context))
             ],
           ],
@@ -382,7 +386,7 @@ class AppWidgets {
     
     return fullWidth ? SizedBox(
       width: double.infinity, 
-      height: _responsiveHeight(50.0), 
+      height: _responsiveHeight(40.0), 
       child: button
     ) : button;
   }
@@ -423,7 +427,7 @@ class AppWidgets {
     
     return fullWidth ? SizedBox(
       width: double.infinity, 
-      height: _responsiveHeight(50.0), 
+      height: _responsiveHeight(40.0), 
       child: button
     ) : button;
   }
@@ -441,7 +445,7 @@ class AppWidgets {
       return Container(
         margin: EdgeInsets.symmetric(
           horizontal: _responsiveWidth(16.0), 
-          vertical: _responsiveHeight(8.0)
+          vertical: _responsiveHeight(6.0)
         ),
         padding: EdgeInsets.all(_responsiveWidth(16.0)),
         decoration: BoxDecoration(
@@ -468,7 +472,7 @@ class AppWidgets {
                 ),
               ],
             ),
-            SizedBox(height: _responsiveHeight(8.0)),
+            SizedBox(height: _responsiveHeight(6.0)),
             Text(
               message,
               style: TextStyle(
@@ -477,7 +481,7 @@ class AppWidgets {
               ),
             ),
             if (actionText != null && onAction != null) ...[
-              SizedBox(height: _responsiveHeight(12.0)),
+              SizedBox(height: _responsiveHeight(8.0)),
               TextButton(
                 onPressed: onAction,
                 child: Text(
@@ -504,7 +508,7 @@ class AppWidgets {
       return Container(
         margin: EdgeInsets.symmetric(
           horizontal: _responsiveWidth(16.0), 
-          vertical: _responsiveHeight(8.0)
+          vertical: _responsiveHeight(6.0)
         ),
         padding: EdgeInsets.all(_responsiveWidth(16.0)),
         decoration: BoxDecoration(
@@ -597,7 +601,7 @@ class AppWidgets {
               style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(
                   horizontal: _responsiveWidth(8.0),
-                  vertical: _responsiveHeight(4.0),
+                  vertical: _responsiveHeight(2.0),
                 ),
                 minimumSize: Size.zero,
               ),
@@ -640,7 +644,7 @@ static Widget emptyState({
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
           final iconSize = _responsiveSize(isConstrained ? 24.0 : 64.0, isConstrained ? 24 : 64);
           final titleSize = _responsiveSize(isConstrained ? 12.0 : 18.0, isConstrained ? 12 : 18);
-          final spacing = _responsiveHeight(isConstrained ? 6.0 : 16.0);
+          final spacing = _responsiveHeight(isConstrained ? 4.0 : 12.0);
           final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
           
           Widget content = Padding(
@@ -695,7 +699,7 @@ static Widget emptyState({
                   : Center(child: content),
             );
           } else {
-            return SizedBox(height: 200, child: Center(child: content));
+            return SizedBox(height: 150, child: Center(child: content));
           }
         },
       );
@@ -711,7 +715,7 @@ static Widget emptyState({
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.error_outline, size: _responsiveValue(64.0), color: colorScheme.error),
-              SizedBox(height: _responsiveHeight(16.0)),
+              SizedBox(height: _responsiveHeight(12.0)),
               Text(
                 message,
                 style: TextStyle(color: colorScheme.onSurface, fontSize: _responsiveValue(18.0),
@@ -720,7 +724,7 @@ static Widget emptyState({
                 textAlign: TextAlign.center,
               ),
               if (onRetry != null) ...[
-                SizedBox(height: _responsiveHeight(24.0)),
+                SizedBox(height: _responsiveHeight(16.0)),
                 ElevatedButton(onPressed: onRetry, child: Text(retryText ?? 'Retry')),
               ],
             ],
@@ -742,23 +746,24 @@ static Widget emptyState({
       child: items.isEmpty && emptyState != null
           ? LayoutBuilder(
               builder: (context, constraints) {
-                return SingleChildScrollView(
+                return CustomSingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Container(
                     constraints: BoxConstraints(
                       minHeight: constraints.maxHeight.isFinite
                           ? constraints.maxHeight
-                          : MediaQuery.of(context).size.height * 0.6,
+                          : MediaQuery.of(context).size.height * 0.5,
                     ),
                     child: emptyState,
                   ),
                 );
               },
             )
-          : ListView.builder(
+          : CustomListView(
               padding: padding,
-              itemCount: items.length,
-              itemBuilder: (context, index) => itemBuilder(items[index], index),
+              children: items.asMap().entries.map((entry) => 
+                itemBuilder(entry.value, entry.key)
+              ).toList(),
             ),
     );
   }
@@ -811,7 +816,7 @@ static Widget emptyState({
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(8),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -842,7 +847,7 @@ static Widget emptyState({
         child: ListTile(
           leading: Container(
             width: 56,
-            height: 56,
+            height: 48,
             decoration: BoxDecoration(
               color: _colorScheme(context).primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
@@ -891,7 +896,7 @@ static Widget emptyState({
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               child: Text(
                 title, style: _primaryStyle(context).copyWith(fontSize: 18, fontWeight: FontWeight.bold),
               ),

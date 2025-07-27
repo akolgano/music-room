@@ -1,14 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/screens/base_screen.dart';
-
 void main() {
   group('Base Screen Tests', () {
     test('BaseScreen should provide common functionality', () {
-      print('Testing: BaseScreen should provide common functionality');
-
       expect(BaseScreen, isA<Type>());
       
-
       const screenConfig = {
         'hasAppBar': true,
         'hasBottomNavigation': false,
@@ -23,10 +19,7 @@ void main() {
       expect(screenConfig['canPop'], true);
       expect(screenConfig['showLoadingOverlay'], false);
     });
-
     test('BaseScreen should handle navigation functionality', () {
-      print('Testing: BaseScreen should handle navigation functionality');
-
       const navigationActions = {
         'canNavigateBack': true,
         'canNavigateToHome': true,
@@ -39,7 +32,6 @@ void main() {
       expect(navigationActions['canOpenDrawer'], false);
       expect(navigationActions['hasBackButton'], true);
       
-
       const routeInfo = {
         'currentRoute': '/profile',
         'previousRoute': '/home',
@@ -52,24 +44,18 @@ void main() {
       expect(routeInfo['routeArguments'], isA<Map<String, dynamic>>());
       expect(routeInfo['canRefresh'], true);
     });
-
     test('BaseScreen should handle loading and error states', () {
-      print('Testing: BaseScreen should handle loading and error states');
-
       var isLoading = false;
       var hasError = false;
       String? errorMessage;
       
-
       expect(isLoading, false);
       expect(hasError, false);
       expect(errorMessage, null);
       
-
       isLoading = true;
       expect(isLoading, true);
       
-
       isLoading = false;
       hasError = true;
       errorMessage = 'Failed to load data';
@@ -77,17 +63,13 @@ void main() {
       expect(hasError, true);
       expect(errorMessage, contains('Failed'));
       
-
       hasError = false;
       errorMessage = null;
       
       expect(hasError, false);
       expect(errorMessage, null);
     });
-
     test('BaseScreen should handle screen lifecycle', () {
-      print('Testing: BaseScreen should handle screen lifecycle');
-
       const lifecycleStates = {
         'initialized': true,
         'mounted': true,
@@ -102,7 +84,6 @@ void main() {
       expect(lifecycleStates['focused'], true);
       expect(lifecycleStates['disposed'], false);
       
-
       const lifecycleCallbacks = [
         'initState',
         'didChangeDependencies',
@@ -116,10 +97,7 @@ void main() {
       expect(lifecycleCallbacks.contains('build'), true);
       expect(lifecycleCallbacks.contains('dispose'), true);
     });
-
     test('BaseScreen should handle accessibility features', () {
-      print('Testing: BaseScreen should handle accessibility features');
-
       const accessibilityConfig = {
         'semanticsEnabled': true,
         'screenReaderSupport': true,
@@ -132,7 +110,6 @@ void main() {
       expect(accessibilityConfig['highContrastSupport'], true);
       expect(accessibilityConfig['textScaling'], 1.0);
       
-
       const accessibilityLabels = {
         'screenTitle': 'Profile Screen',
         'backButton': 'Navigate back',

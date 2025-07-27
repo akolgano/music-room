@@ -36,7 +36,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
       ),
       floatingActionButton: floatingActionButton != null && showMiniPlayer
           ? Container(
-              margin: const EdgeInsets.only(bottom: 80),
+              margin: const EdgeInsets.only(bottom: 40),
               child: floatingActionButton,
             )
           : floatingActionButton,

@@ -1,5 +1,4 @@
-import 'dart:developer' as developer;
-import 'package:flutter/foundation.dart';
+import '../core/app_logger.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/voting_service.dart';
@@ -46,9 +45,7 @@ class VotingProvider extends BaseProvider {
   }
 
   void updateTrackPoints(int index, int points) {
-    if (kDebugMode) {
-      developer.log('Updating track $index points to $points', name: 'VotingProvider');
-    }
+    AppLogger.debug('Updating track $index points to $points', 'VotingProvider');
     _trackPoints[index] = points;
     final trackKey = 'track_$index';
     _trackVotes[trackKey] = VoteStats(
@@ -62,9 +59,7 @@ class VotingProvider extends BaseProvider {
   }
 
   void initializeTrackPoints(List<PlaylistTrack> tracks) {
-    if (kDebugMode) {
-      developer.log('Initializing track points for ${tracks.length} tracks', name: 'VotingProvider');
-    }
+    AppLogger.debug('Initializing track points for ${tracks.length} tracks', 'VotingProvider');
     _trackPoints.clear();
     _trackVotes.clear();
     for (int i = 0; i < tracks.length; i++) {
@@ -79,17 +74,13 @@ class VotingProvider extends BaseProvider {
         userVoteValue: _userVotesByIndex[i],
         voteScore: points.toDouble(),
       );
-      if (kDebugMode) {
-        developer.log('Track $i (${tracks[i].name}): $points points', name: 'VotingProvider');
-      }
+      AppLogger.debug('Track $i (${tracks[i].name}): $points points', 'VotingProvider');
     }
     notifyListeners();
   }
 
   void setVotingPermission(bool canVote) {
-    if (kDebugMode) {
-      developer.log('Setting voting permission to: $canVote', name: 'VotingProvider');
-    }
+    AppLogger.debug('Setting voting permission to: $canVote', 'VotingProvider');
     _canVote = canVote;
     notifyListeners();
   }
@@ -107,9 +98,7 @@ class VotingProvider extends BaseProvider {
       setError('You have already voted for this track');
       return false;
     }
-    if (kDebugMode) {
-      developer.log('Voting for track at index $trackIndex', name: 'VotingProvider');
-    }
+    AppLogger.debug('Voting for track at index $trackIndex', 'VotingProvider');
     return await executeBool(
       () async {
         _userVotesByIndex[trackIndex] = 1;
@@ -125,13 +114,9 @@ class VotingProvider extends BaseProvider {
           if (response.playlist.isNotEmpty) {
             _updateVotingDataFromPlaylist(response.playlist);
           }
-          if (kDebugMode) {
-            developer.log('Vote successful for track $trackIndex, new points: $newPoints', name: 'VotingProvider');
-          }
+          AppLogger.info('Vote successful for track $trackIndex, new points: $newPoints', 'VotingProvider');
         } catch (e) {
-          if (kDebugMode) {
-            developer.log('Vote failed, reverting: $e', name: 'VotingProvider');
-          }
+          AppLogger.error('Vote failed, reverting', e, null, 'VotingProvider');
           _userVotesByIndex.remove(trackIndex);
           updateTrackPoints(trackIndex, currentPoints);
           rethrow;
@@ -163,9 +148,7 @@ class VotingProvider extends BaseProvider {
   }
 
   void _updateVotingDataFromPlaylist(List<PlaylistInfoWithVotes> playlistData) {
-    if (kDebugMode) {
-      developer.log('Updating voting data from ${playlistData.length} playlist(s)', name: 'VotingProvider');
-    }
+    AppLogger.debug('Updating voting data from ${playlistData.length} playlist(s)', 'VotingProvider');
     try {
       _trackVotes.clear();
       for (int i = 0; i < playlistData.length; i++) {
@@ -186,9 +169,7 @@ class VotingProvider extends BaseProvider {
               userVoteValue: userVoteValue,
               voteScore: points.toDouble(),
             );
-            if (kDebugMode) {
-              developer.log('Updated track $j: $points points, voted: $userHasVoted', name: 'VotingProvider');
-            }
+            AppLogger.debug('Updated track $j: $points points, voted: $userHasVoted', 'VotingProvider');
           } else {
             _trackVotes[trackKey] = VoteStats(
               totalVotes: 0,
@@ -203,16 +184,12 @@ class VotingProvider extends BaseProvider {
       }
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error updating voting data: $e', name: 'VotingProvider');
-      }
+      AppLogger.error('Error updating voting data' + ": " + e.toString(), null, null, 'VotingProvider');
     }
   }
 
   void clearVotingData() {
-    if (kDebugMode) {
-      developer.log('Clearing all voting data', name: 'VotingProvider');
-    }
+    AppLogger.debug('Clearing all voting data', 'VotingProvider');
     _trackVotes.clear();
     _userVotesByIndex.clear();
     _trackPoints.clear();
@@ -224,13 +201,9 @@ class VotingProvider extends BaseProvider {
   }
 
   void setUserVote(int trackIndex, int voteValue) {
-    if (kDebugMode) {
-      developer.log('Setting user vote for track $trackIndex: $voteValue', name: 'VotingProvider');
-    }
+    AppLogger.debug('Setting user vote for track $trackIndex: $voteValue', 'VotingProvider');
     if (voteValue <= 0) {
-      if (kDebugMode) {
-        developer.log('Invalid vote value: $voteValue', name: 'VotingProvider');
-      }
+      AppLogger.warning('Invalid vote value: $voteValue', 'VotingProvider');
       return;
     }
     _userVotesByIndex[trackIndex] = voteValue;
@@ -262,15 +235,11 @@ class VotingProvider extends BaseProvider {
   }
 
   void refreshVotingData(List<PlaylistTrack> tracks) {
-    if (kDebugMode) {
-      developer.log('Refreshing voting data for ${tracks.length} tracks', name: 'VotingProvider');
-    }
+    AppLogger.debug('Refreshing voting data for ${tracks.length} tracks', 'VotingProvider');
     for (int i = 0; i < tracks.length; i++) {
       final points = tracks[i].points;
       if (_trackPoints[i] != points) {
-        if (kDebugMode) {
-          developer.log('Track $i points changed from ${_trackPoints[i]} to $points', name: 'VotingProvider');
-        }
+        AppLogger.debug('Track $i points changed from ${_trackPoints[i]} to $points', 'VotingProvider');
         updateTrackPoints(i, points);
       }
     }

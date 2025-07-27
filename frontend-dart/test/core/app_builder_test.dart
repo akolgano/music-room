@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/app_builder.dart';
-
 void main() {
   group('App Builder Tests', () {
     test('AppBuilder should be properly configured', () {
-      print('Testing: AppBuilder should be properly configured');
       expect(AppBuilder, isA<Type>());
       
       const appConfig = {
@@ -21,9 +19,7 @@ void main() {
       expect(appConfig['supportedLocales'], isA<List>());
       expect(appConfig['defaultTheme'], isIn(['light', 'dark', 'system']));
     });
-
     test('AppBuilder should handle theme configuration', () {
-      print('Testing: AppBuilder should handle theme configuration');
       const themeConfig = {
         'useMaterial3': true,
         'supportsDynamicColor': true,
@@ -45,9 +41,7 @@ void main() {
       expect(currentTheme, 'dark');
       expect(availableThemes.contains(currentTheme), true);
     });
-
     test('AppBuilder should handle localization setup', () {
-      print('Testing: AppBuilder should handle localization setup');
       const localizationConfig = {
         'defaultLocale': 'en',
         'supportedLocales': ['en', 'es', 'fr', 'de'],
@@ -72,9 +66,7 @@ void main() {
       currentLocale = 'es';
       expect(supportedLocales.contains(currentLocale), true);
     });
-
     test('AppBuilder should handle navigation configuration', () {
-      print('Testing: AppBuilder should handle navigation configuration');
       const navigationConfig = {
         'initialRoute': '/',
         'generateRoutes': true,
@@ -100,9 +92,7 @@ void main() {
       expect(appRoutes['/auth'], 'AuthScreen');
       expect(appRoutes.keys.every((route) => route.startsWith('/')), true);
     });
-
     test('AppBuilder should handle dependency injection setup', () {
-      print('Testing: AppBuilder should handle dependency injection setup');
       const serviceConfig = {
         'useGetIt': true,
         'lazyServices': true,

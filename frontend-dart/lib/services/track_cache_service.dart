@@ -1,6 +1,5 @@
-import 'dart:developer' as developer;
+import '../core/app_logger.dart';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
 import '../models/music_models.dart';
 import '../services/api_service.dart';
 
@@ -36,22 +35,16 @@ class TrackCacheService {
 
   Future<Track?> getTrackDetails(String deezerTrackId, String token, ApiService apiService) async {
     if (_trackCache.containsKey(deezerTrackId)) {
-      if (kDebugMode) {
-        developer.log('Track $deezerTrackId found in cache', name: 'TrackCacheService');
-      }
+      AppLogger.debug('Track $deezerTrackId found in cache', 'TrackCacheService');
       return _trackCache[deezerTrackId];
     }
 
     if (_ongoingRequests.containsKey(deezerTrackId)) {
-      if (kDebugMode) {
-        developer.log('Track $deezerTrackId already being fetched, waiting for result', name: 'TrackCacheService');
-      }
+      AppLogger.debug('Track $deezerTrackId already being fetched, waiting for result', 'TrackCacheService');
       return await _ongoingRequests[deezerTrackId];
     }
 
-    if (kDebugMode) {
-      developer.log('Fetching track details for $deezerTrackId from API', name: 'TrackCacheService');
-    }
+    AppLogger.debug('Fetching track details for $deezerTrackId from API', 'TrackCacheService');
 
     final Future<Track?> request = _fetchTrackFromApi(deezerTrackId, token, apiService);
     _ongoingRequests[deezerTrackId] = request;
@@ -60,9 +53,7 @@ class TrackCacheService {
       final track = await request;
       if (track != null) {
         _trackCache[deezerTrackId] = track;
-        if (kDebugMode) {
-          developer.log('Track $deezerTrackId cached successfully', name: 'TrackCacheService');
-        }
+        AppLogger.debug('Track $deezerTrackId cached successfully', 'TrackCacheService');
       }
       return track;
     } finally {
@@ -83,24 +74,18 @@ class TrackCacheService {
       if (track != null) {
         _retryCount.remove(deezerTrackId);
         _lastRetryTime.remove(deezerTrackId);
-        if (kDebugMode) {
-          developer.log('Successfully fetched track $deezerTrackId after $currentRetries retries', name: 'TrackCacheService');
-        }
+        AppLogger.info('Successfully fetched track $deezerTrackId after $currentRetries retries', 'TrackCacheService');
         return track;
       } else {
         throw Exception('API returned null for track $deezerTrackId');
       }
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error fetching track $deezerTrackId (attempt ${currentRetries + 1}): $e', name: 'TrackCacheService');
-      }
+      AppLogger.error('Error fetching track $deezerTrackId (attempt ${currentRetries + 1})' + ": " + e.toString(), null, null, 'TrackCacheService');
       
       if (currentRetries < _retryConfig.maxRetries) {
         return await _scheduleRetry(deezerTrackId, token, apiService, currentRetries);
       } else {
-        if (kDebugMode) {
-          developer.log('Max retries (${_retryConfig.maxRetries}) reached for track $deezerTrackId, giving up', name: 'TrackCacheService');
-        }
+        AppLogger.warning('Max retries (${_retryConfig.maxRetries}) reached for track $deezerTrackId, giving up', 'TrackCacheService');
         _retryCount.remove(deezerTrackId);
         _lastRetryTime.remove(deezerTrackId);
         return null;
@@ -117,9 +102,7 @@ class TrackCacheService {
     final jitter = math.Random().nextDouble() * _retryConfig.jitterFactor;
     final delayMs = math.min((baseDelay * (1 + jitter)).round(), _retryConfig.maxDelayMs);
     
-    if (kDebugMode) {
-      developer.log('Scheduling retry $retryCount for track $deezerTrackId in ${delayMs}ms', name: 'TrackCacheService');
-    }
+    AppLogger.debug('Scheduling retry $retryCount for track $deezerTrackId in ${delayMs}ms', 'TrackCacheService');
     
     await Future.delayed(Duration(milliseconds: delayMs));
     
@@ -144,9 +127,7 @@ class TrackCacheService {
     }
 
     if (futures.isNotEmpty) {
-      if (kDebugMode) {
-        developer.log('Preloading ${futures.length} tracks', name: 'TrackCacheService');
-      }
+      AppLogger.debug('Preloading ${futures.length} tracks', 'TrackCacheService');
       await Future.wait(futures);
     }
   }
@@ -181,16 +162,12 @@ class TrackCacheService {
   void cancelRetries(String deezerTrackId) {
     _retryCount.remove(deezerTrackId);
     _lastRetryTime.remove(deezerTrackId);
-    if (kDebugMode) {
-      developer.log('Cancelled retries for track $deezerTrackId', name: 'TrackCacheService');
-    }
+    AppLogger.debug('Cancelled retries for track $deezerTrackId', 'TrackCacheService');
   }
 
   void setRetryConfig(TrackRetryConfig config) {
     _retryConfig = config;
-    if (kDebugMode) {
-      developer.log('Updated retry config: maxRetries=${config.maxRetries}, baseDelayMs=${config.baseDelayMs}', name: 'TrackCacheService');
-    }
+    AppLogger.debug('Updated retry config: maxRetries=${config.maxRetries}, baseDelayMs=${config.baseDelayMs}', 'TrackCacheService');
   }
 
   TrackRetryConfig get retryConfig => _retryConfig;
@@ -199,22 +176,16 @@ class TrackCacheService {
     _trackCache.clear();
     _retryCount.clear();
     _lastRetryTime.clear();
-    if (kDebugMode) {
-      developer.log('Track cache and retry tracking cleared', name: 'TrackCacheService');
-    }
+    AppLogger.debug('Track cache and retry tracking cleared', 'TrackCacheService');
   }
 
   void updateTrackInCache(String deezerTrackId, Track track) {
     _trackCache[deezerTrackId] = track;
-    if (kDebugMode) {
-      developer.log('Track $deezerTrackId updated in cache', name: 'TrackCacheService');
-    }
+    AppLogger.debug('Track $deezerTrackId updated in cache', 'TrackCacheService');
   }
 
   void removeFromCache(String deezerTrackId) {
     _trackCache.remove(deezerTrackId);
-    if (kDebugMode) {
-      developer.log('Track $deezerTrackId removed from cache', name: 'TrackCacheService');
-    }
+    AppLogger.debug('Track $deezerTrackId removed from cache', 'TrackCacheService');
   }
 }

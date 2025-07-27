@@ -114,7 +114,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     return RefreshIndicator(
       onRefresh: _loadUserProfile,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(4),
         child: Column(
           children: [
             _buildUserHeader(),
@@ -146,7 +146,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
@@ -169,7 +169,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
@@ -365,7 +365,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
         maxLines: maxLines,
         overflow: TextOverflow.ellipsis,
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     );
   }
 

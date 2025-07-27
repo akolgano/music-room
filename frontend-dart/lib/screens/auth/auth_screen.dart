@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/custom_scrollbar.dart';
 import '../base_screen.dart';
 import 'signup_with_otp_screen.dart';
 
@@ -50,18 +52,18 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   @override
   Widget buildContent() {
     return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      child: CustomSingleChildScrollView(
+        padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
+          constraints: BoxConstraints(maxWidth: ThemeUtils.isSmallMobile(context) ? 280 : 400),
           child: Column(
             children: [
               _buildHeader(), 
-              const SizedBox(height: 32),
+              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 16 : 32),
               _buildForm(), 
-              const SizedBox(height: 24),
+              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 12 : 24),
               _buildSocialButtons(), 
-              const SizedBox(height: 16), 
+              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16), 
               _buildModeToggle(),
             ],
           ),
@@ -77,11 +79,11 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   Widget _buildHeader() => Card(
     color: AppTheme.surface,
-    elevation: 4,
-    margin: const EdgeInsets.all(16),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    elevation: ThemeUtils.isSmallMobile(context) ? 2 : 4,
+    margin: ThemeUtils.getResponsiveCardMargin(context),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
     child: Padding(
-      padding: const EdgeInsets.all(20),
+      padding: ThemeUtils.getResponsiveCardPadding(context),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -89,42 +91,43 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.music_note,
                 color: AppTheme.primary,
-                size: 20,
+                size: ThemeUtils.getResponsiveIconSize(context),
               ),
-              const SizedBox(width: 8),
-              Text(
-                _isLogin ? 'Welcome Back' : 'Join Music Room',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              SizedBox(width: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+              Flexible(
+                child: Text(
+                  _isLogin ? 'Welcome Back' : 'Join Music Room',
+                  style: ThemeUtils.getSubheadingStyle(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
           Center(
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(ThemeUtils.isSmallMobile(context) ? 4 : 6),
               decoration: BoxDecoration(
                 color: AppTheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.music_note,
-                size: 40,
+                size: ThemeUtils.isSmallMobile(context) ? 24 : 40,
                 color: AppTheme.primary,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
           Text(
             _isLogin ? 'Sign in to continue your musical journey' : 'Create an account to start sharing music',
-            style: const TextStyle(color: Colors.white70, fontSize: 16),
+            style: ThemeUtils.getCaptionStyle(context).copyWith(color: Colors.white70),
             textAlign: TextAlign.center,
           ),
         ],
@@ -143,19 +146,21 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             controller: _usernameController, 
             labelText: 'Username', 
             prefixIcon: Icons.person, 
-            validator: AppValidators.username
+            validator: AppValidators.username,
+            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
           ),
           if (!_isLogin) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
             AppWidgets.textField(
               context: context,
               controller: _emailController,
               labelText: 'Email',
               prefixIcon: Icons.email,
               validator: AppValidators.email,
+              onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
             ),
           ],
-          const SizedBox(height: 16),
+          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
           AppWidgets.textField(
             context: context,
             controller: _passwordController,
@@ -163,25 +168,25 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             prefixIcon: Icons.lock,
             obscureText: true,
             validator: AppValidators.password,
+            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
           ),
           if (_isLogin) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: ThemeUtils.isSmallMobile(context) ? 4 : 8),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: _forgotPassword,
-                child: const Text(
+                child: Text(
                   'Forgot Password?',
-                  style: TextStyle(
+                  style: ThemeUtils.getCaptionStyle(context).copyWith(
                     color: AppTheme.primary,
-                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             ),
           ],
-          const SizedBox(height: 24),
+          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 12 : 24),
           Consumer<AuthProvider>(
             builder: (context, authProvider, _) => AppWidgets.primaryButton(
               context: context,
@@ -204,60 +209,60 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           children: [
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: ThemeUtils.getResponsiveButtonHeight(context),
                 child: ElevatedButton.icon(
                   onPressed: authProvider.isLoading ? null : () => _socialLogin('Google'),
                   icon: authProvider.isLoading 
-                    ? const SizedBox(
-                        width: 16, 
-                        height: 16, 
-                        child: CircularProgressIndicator(
+                    ? SizedBox(
+                        width: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
+                        height: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
+                        child: const CircularProgressIndicator(
                           strokeWidth: 2, 
                           color: Colors.red,
                         ),
                       )
-                    : const Icon(Icons.g_mobiledata, color: Colors.red, size: 20),
+                    : Icon(Icons.g_mobiledata, color: Colors.red, size: ThemeUtils.getResponsiveIconSize(context)),
                   label: Text(
                     authProvider.isLoading ? 'Signing in...' : 'Continue with Google',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                    overflow: TextOverflow.visible,
+                    style: ThemeUtils.getCaptionStyle(context).copyWith(fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.surface,
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.red),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
+                    elevation: ThemeUtils.isSmallMobile(context) ? 1 : 2,
                   ),
                 ),
               ),
-            const SizedBox(height: 12),
+            SizedBox(height: ThemeUtils.isSmallMobile(context) ? 6 : 12),
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: ThemeUtils.getResponsiveButtonHeight(context),
               child: ElevatedButton.icon(
                 onPressed: authProvider.isLoading ? null : () => _socialLogin('Facebook'),
                 icon: authProvider.isLoading 
-                  ? const SizedBox(
-                      width: 16, 
-                      height: 16, 
-                      child: CircularProgressIndicator(
+                  ? SizedBox(
+                      width: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
+                      height: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
+                      child: const CircularProgressIndicator(
                         strokeWidth: 2, 
                         color: Colors.blue,
                       ),
                     )
-                  : const Icon(Icons.facebook, color: Colors.blue, size: 20),
+                  : Icon(Icons.facebook, color: Colors.blue, size: ThemeUtils.getResponsiveIconSize(context)),
                 label: Text(
                   authProvider.isLoading ? 'Signing in...' : 'Continue with Facebook',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                  overflow: TextOverflow.visible,
+                  style: ThemeUtils.getCaptionStyle(context).copyWith(fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.surface,
                   foregroundColor: Colors.white,
                   side: const BorderSide(color: Colors.blue),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
+                  elevation: ThemeUtils.isSmallMobile(context) ? 1 : 2,
                 ),
               ),
             ),
@@ -388,6 +393,20 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
             labelText: 'Email',
             prefixIcon: Icons.email,
             validator: AppValidators.email,
+            onFieldSubmitted: kIsWeb ? (_) {
+              if (_emailController.text.isNotEmpty) {
+                final email = _emailController.text;
+                Navigator.pop(context);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Password reset instructions sent to $email'),
+                      backgroundColor: AppTheme.primary,
+                    ),
+                  );
+                }
+              }
+            } : null,
           ),
         ],
       ),

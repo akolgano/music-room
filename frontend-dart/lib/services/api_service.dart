@@ -6,7 +6,6 @@ import '../models/music_models.dart';
 import '../models/result_models.dart';
 import '../models/api_models.dart';
 
-// stop refactoring this file, too many api errors happening already
 class ApiService {
   final Dio _dio;
 
@@ -156,12 +155,14 @@ class ApiService {
   }
 
   Future<ProfileResponse> _updateProfileWithFormData(String token, FormData formData, [bool debug = false]) async {
-    if (debug && kDebugMode) 
+    if (debug && kDebugMode) {
       debugPrint('[ApiService] updateProfileWithFileWeb: Sending multipart form data to /profile/me/');
+    }
     final response = await _dio.patch('/profile/me/', data: formData, 
         options: Options(headers: {'Authorization': 'Token $token'}, contentType: 'multipart/form-data'));
-    if (debug && kDebugMode) 
+    if (debug && kDebugMode) {
       debugPrint('[ApiService] updateProfileWithFileWeb: Response received with status ${response.statusCode}');
+    }
     return ProfileResponse.fromJson(response.data);
   }
 
@@ -170,8 +171,9 @@ class ApiService {
       String? avatarVisibility, String? nameVisibility, String? locationVisibility, String? bioVisibility, 
       String? phoneVisibility, String? friendInfoVisibility, String? musicPreferencesVisibility}) async {
     final formData = FormData();
-    if (avatarPath != null) 
+    if (avatarPath != null) {
       formData.files.add(MapEntry('avatar', await MultipartFile.fromFile(avatarPath)));
+    }
     _addProfileFieldsToFormData(formData, name: name, location: location, bio: bio, phone: phone, friendInfo: friendInfo, 
       avatarVisibility: avatarVisibility, nameVisibility: nameVisibility, locationVisibility: locationVisibility, 
       bioVisibility: bioVisibility, phoneVisibility: phoneVisibility, friendInfoVisibility: friendInfoVisibility, 
@@ -185,9 +187,11 @@ class ApiService {
       String? locationVisibility, String? bioVisibility, String? phoneVisibility, 
       String? friendInfoVisibility, String? musicPreferencesVisibility}) async {
     final formData = FormData();
-    if (avatarBytes != null) formData.files.add(MapEntry('avatar', 
-        MultipartFile.fromBytes(avatarBytes, filename: 'avatar.jpg', 
-        contentType: DioMediaType.parse(mimeType ?? 'image/jpeg'))));
+    if (avatarBytes != null) {
+      formData.files.add(MapEntry('avatar', 
+          MultipartFile.fromBytes(avatarBytes, filename: 'avatar.jpg', 
+          contentType: DioMediaType.parse(mimeType ?? 'image/jpeg'))));
+    }
     _addProfileFieldsToFormData(formData, name: name, location: location, bio: bio, phone: phone, friendInfo: friendInfo,
       avatarVisibility: avatarVisibility, nameVisibility: nameVisibility, locationVisibility: locationVisibility,
       bioVisibility: bioVisibility, phoneVisibility: phoneVisibility, friendInfoVisibility: friendInfoVisibility,

@@ -3,6 +3,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/theme_utils.dart';
+import '../../core/app_logger.dart';
 
 class AdminWebViewScreen extends StatefulWidget {
   final String routePath;
@@ -32,14 +33,13 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
   void _initializeWebView() {
     String baseUrl;
     if (kIsWeb) {
-      // For web, we need to handle CORS and iframe restrictions
       baseUrl = 'http://localhost:8000';
     } else {
       baseUrl = dotenv.env['API_BASE_URL']?.replaceAll(RegExp(r'/$'), '') ?? 'http://localhost:8000';
     }
     final fullUrl = '$baseUrl${widget.routePath}';
     
-    print('WebView attempting to load: $fullUrl'); // Debug log
+    AppLogger.debug('WebView attempting to load: $fullUrl', 'AdminWebViewScreen');
     
     _controller = WebViewController();
     
@@ -48,7 +48,7 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
       _controller!.setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
-            print('WebView page started: $url'); // Debug log
+            AppLogger.debug('WebView page started: $url', 'AdminWebViewScreen');
             if (mounted) {
               setState(() {
                 _isLoading = true;
@@ -57,7 +57,7 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
             }
           },
           onPageFinished: (String url) {
-            print('WebView page finished: $url'); // Debug log
+            AppLogger.info('WebView page finished: $url', 'AdminWebViewScreen');
             if (mounted) {
               setState(() {
                 _isLoading = false;
@@ -66,16 +66,15 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
             }
           },
           onNavigationRequest: (NavigationRequest request) {
-            print('WebView navigation request: ${request.url}'); // Debug log
+            AppLogger.debug('WebView navigation request: ${request.url}', 'AdminWebViewScreen');
             return NavigationDecision.navigate;
           },
           onWebResourceError: (WebResourceError error) {
-            print('WebView error: ${error.description}'); // Debug log
+            AppLogger.error('WebView error: ${error.description}', null, null, 'AdminWebViewScreen');
           },
         ),
       );
     } else {
-      // For web platform, add basic navigation handling
       _controller!.setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
@@ -95,7 +94,7 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
             }
           },
           onWebResourceError: (WebResourceError error) {
-            print('WebView web error: ${error.description}');
+            AppLogger.error('WebView web error: ${error.description}', null, null, 'AdminWebViewScreen');
             if (mounted) {
               setState(() {
                 _isLoading = false;
@@ -178,7 +177,7 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
                   if (_currentUrl != null)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(gradient: AppTheme.surfaceGradient),
                       child: Text(
                         _currentUrl!,

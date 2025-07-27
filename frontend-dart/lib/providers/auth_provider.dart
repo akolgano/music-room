@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/auth_service.dart';
+import '../services/websocket_service.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -10,16 +11,19 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthProvider extends BaseProvider {
   late final AuthService _authService;
+  late final WebSocketService _webSocketService;
 
   AuthProvider() {
     try {
       _authService = getIt<AuthService>();
+      _webSocketService = getIt<WebSocketService>();
       _initializeAuthState();
     } catch (e) {
       if (kDebugMode) {
         developer.log('Error initializing AuthProvider: $e', name: 'AuthProvider');
       }
       _authService = getIt<AuthService>();
+      _webSocketService = getIt<WebSocketService>();
     }
   }
 
@@ -45,6 +49,19 @@ class AuthProvider extends BaseProvider {
   Future<void> _initializeAuthState() async {
     try {
       notifyListeners();
+      
+      if (isLoggedIn && token != null) {
+        try {
+          await _webSocketService.connect(token!);
+          if (kDebugMode) {
+            developer.log('WebSocket connected on app startup', name: 'AuthProvider');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            developer.log('Failed to connect WebSocket on app startup: $e', name: 'AuthProvider');
+          }
+        }
+      }
     } catch (e) {
       if (kDebugMode) {
         developer.log('Error loading stored auth state: $e', name: 'AuthProvider');
@@ -53,14 +70,40 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<bool> login(String username, String password) async {
-    return await executeBool(
+    final success = await executeBool(
       () => _authService.login(username, password),
       successMessage: 'Login successful!',
       errorMessage: 'Login failed',
     );
+    
+    if (success && token != null) {
+      try {
+        await _webSocketService.connect(token!);
+        if (kDebugMode) {
+          developer.log('WebSocket connected after login', name: 'AuthProvider');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          developer.log('Failed to connect WebSocket after login: $e', name: 'AuthProvider');
+        }
+      }
+    }
+    
+    return success;
   }
 
   Future<bool> logout() async {
+    try {
+      await _webSocketService.disconnect();
+      if (kDebugMode) {
+        developer.log('WebSocket disconnected before logout', name: 'AuthProvider');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        developer.log('Failed to disconnect WebSocket before logout: $e', name: 'AuthProvider');
+      }
+    }
+    
     return await executeBool(
       () => _authService.logout(),
       successMessage: 'Logged out successfully',
@@ -101,15 +144,30 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<bool> signupWithOtp(String username, String email, String password, String otp) async {
-    return await executeBool(
+    final success = await executeBool(
       () async => await _authService.signupWithOtp(username, email, password, otp),
       successMessage: 'Account created successfully!',
       errorMessage: 'Signup failed',
     );
+    
+    if (success && token != null) {
+      try {
+        await _webSocketService.connect(token!);
+        if (kDebugMode) {
+          developer.log('WebSocket connected after signup', name: 'AuthProvider');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          developer.log('Failed to connect WebSocket after signup: $e', name: 'AuthProvider');
+        }
+      }
+    }
+    
+    return success;
   }
 
   Future<bool> googleLogin() async {
-    return await executeBool(
+    final success = await executeBool(
       () async {
         final user = await googleSignIn.signIn();
         if (user == null) throw Exception("Google login failed!");
@@ -132,10 +190,25 @@ class AuthProvider extends BaseProvider {
       successMessage: 'Google login successful!',
       errorMessage: 'Google login failed',
     );
+    
+    if (success && token != null) {
+      try {
+        await _webSocketService.connect(token!);
+        if (kDebugMode) {
+          developer.log('WebSocket connected after Google login', name: 'AuthProvider');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          developer.log('Failed to connect WebSocket after Google login: $e', name: 'AuthProvider');
+        }
+      }
+    }
+    
+    return success;
   }
 
   Future<bool> facebookLogin() async {
-    return await executeBool(
+    final success = await executeBool(
       () async {
         final LoginResult result = await FacebookAuth.instance.login();
         if (result.status == LoginStatus.success) {
@@ -148,6 +221,21 @@ class AuthProvider extends BaseProvider {
       successMessage: 'Facebook login successful!',
       errorMessage: 'Facebook login failed',
     );
+    
+    if (success && token != null) {
+      try {
+        await _webSocketService.connect(token!);
+        if (kDebugMode) {
+          developer.log('WebSocket connected after Facebook login', name: 'AuthProvider');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          developer.log('Failed to connect WebSocket after Facebook login: $e', name: 'AuthProvider');
+        }
+      }
+    }
+    
+    return success;
   }
 
   Future<bool> checkEmailAvailability(String email) async {

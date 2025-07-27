@@ -1,11 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:music_room/models/voting_models.dart';
-
 void main() {
   group('Voting Models Tests', () {
     test('VoteStats should track vote counts correctly', () {
-      print('Testing: VoteStats should track vote counts correctly');
       const voteStats = VoteStats(
         totalVotes: 7,
         upvotes: 5,
@@ -20,9 +18,7 @@ void main() {
       expect(voteStats.userHasVoted, false);
       expect(voteStats.voteScore, 0.7);
     });
-
     test('VoteStats should calculate net votes correctly', () {
-      print('Testing: VoteStats should calculate net votes correctly');
       const voteStats = VoteStats(
         totalVotes: 13,
         upvotes: 10,
@@ -35,9 +31,7 @@ void main() {
       expect(voteStats.netVotes, 7);
       expect(voteStats.userVoteValue, 1);
     });
-
     test('VoteStats should handle zero votes', () {
-      print('Testing: VoteStats should handle zero votes');
       const voteStats = VoteStats(
         totalVotes: 0,
         upvotes: 0,
@@ -50,9 +44,7 @@ void main() {
       expect(voteStats.totalVotes, 0);
       expect(voteStats.displayText, 'No votes');
     });
-
     test('VoteStats should create from JSON correctly', () {
-      print('Testing: VoteStats should create from JSON correctly');
       final json = {
         'total_votes': 10,
         'upvotes': 8,
@@ -71,9 +63,7 @@ void main() {
       expect(voteStats.userVoteValue, 1);
       expect(voteStats.voteScore, 0.8);
     });
-
     test('VoteStats should handle display text correctly', () {
-      print('Testing: VoteStats should handle display text correctly');
       const oneVote = VoteStats(
         totalVotes: 1,
         upvotes: 1,
@@ -93,9 +83,7 @@ void main() {
       expect(oneVote.displayText, '1 vote');
       expect(multipleVotes.displayText, '5 votes');
     });
-
     test('VoteStats should provide correct score color', () {
-      print('Testing: VoteStats should provide correct score color');
       const highScore = VoteStats(
         totalVotes: 10,
         upvotes: 8,
@@ -124,9 +112,7 @@ void main() {
       expect(mediumScore.scoreColor, Colors.orange);
       expect(lowScore.scoreColor, Colors.red);
     });
-
     test('Vote should serialize and deserialize correctly', () {
-      print('Testing: Vote should serialize and deserialize correctly');
       final vote = Vote(
         id: 'vote123',
         trackId: 'track456',

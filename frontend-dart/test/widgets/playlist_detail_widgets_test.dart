@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/music_models.dart';
-
 void main() {
   group('Playlist Detail Widgets Tests', () {
     test('PlaylistDetailWidgets should render track items correctly', () {
-
       const track = Track(
         id: 'track_123',
         name: 'Test Song',
@@ -18,7 +16,6 @@ void main() {
       expect(track.album, 'Test Album');
       expect(track.url, startsWith('https://example.com/image.jpg'));
       
-
       final trackDisplayData = {
         'title': track.name,
         'subtitle': '${track.artist} • ${track.album}',
@@ -32,7 +29,6 @@ void main() {
       expect(trackDisplayData['subtitle'], contains('Test Album'));
       expect(trackDisplayData['hasArtwork'], true);
       
-
       const trackStates = {
         'isPlaying': false,
         'isLoading': false,
@@ -48,7 +44,6 @@ void main() {
       expect(trackStates['canReorder'], true);
       expect(trackStates['canRemove'], true);
       
-
       const menuActions = {
         'play': 'Play Track',
         'addToQueue': 'Add to Queue',
@@ -62,9 +57,7 @@ void main() {
       expect(menuActions['play'], 'Play Track');
       expect(menuActions['removeFromPlaylist'], contains('Remove'));
     });
-
     test('PlaylistDetailWidgets should handle retry states correctly', () {
-
       const retryState = {
         'isRetrying': false,
         'retryCount': 0,
@@ -79,7 +72,6 @@ void main() {
       expect(retryState['lastError'], isEmpty);
       expect(retryState['canRetry'], true);
       
-
       const retryButtonConfig = {
         'enabled': true,
         'text': 'Retry',
@@ -92,7 +84,6 @@ void main() {
       expect(retryButtonConfig['icon'], 'refresh');
       expect(retryButtonConfig['color'], 'primary');
       
-
       const errorDisplayConfig = {
         'showError': false,
         'errorMessage': '',
@@ -105,7 +96,6 @@ void main() {
       expect(errorDisplayConfig['errorType'], isIn(['network', 'timeout', 'server', 'unknown']));
       expect(errorDisplayConfig['showDetails'], false);
       
-
       const loadingOverlayConfig = {
         'visible': false,
         'opacity': 0.8,

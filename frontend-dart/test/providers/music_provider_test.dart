@@ -4,21 +4,15 @@ import 'package:music_room/providers/music_provider.dart';
 import 'package:music_room/models/music_models.dart';
 import 'package:music_room/models/result_models.dart';
 import 'package:music_room/models/sort_models.dart';
-
 void main() {
   group('Music Provider Tests', () {
     test('MusicProvider should be a valid class type', () {
-      print('Testing: MusicProvider should be a valid class type');
       expect(MusicProvider, isA<Type>());
     });
-
     test('MusicProvider should have expected properties', () {
-      print('Testing: MusicProvider should have expected properties');
       expect('$MusicProvider', contains('MusicProvider'));
     });
-
     test('Playlist model should work correctly', () {
-      print('Testing: Playlist model should work correctly');
       const playlist = Playlist(
         id: '1',
         name: 'Test Playlist',
@@ -33,9 +27,7 @@ void main() {
       expect(playlist.isPublic, false);
       expect(playlist.creator, 'testuser');
     });
-
     test('Track model should work correctly', () {
-      print('Testing: Track model should work correctly');
       const track = Track(
         id: '1',
         name: 'Test Song',
@@ -50,9 +42,7 @@ void main() {
       expect(track.album, 'Test Album');
       expect(track.url, 'http://example.com/track');
     });
-
     test('PlaylistTrack model should work correctly', () {
-      print('Testing: PlaylistTrack model should work correctly');
       const track = Track(
         id: '1',
         name: 'Test Song',
@@ -75,9 +65,7 @@ void main() {
       expect(playlistTrack.points, 5);
       expect(playlistTrack.track, track);
     });
-
     test('TrackSortOption should work correctly', () {
-      print('Testing: TrackSortOption should work correctly');
       const sortOption = TrackSortOption(
         displayName: 'By Name',
         field: TrackSortField.name,
@@ -89,9 +77,7 @@ void main() {
       expect(sortOption.field, TrackSortField.name);
       expect(sortOption.order, SortOrder.ascending);
     });
-
     test('BatchAddResult should calculate status correctly', () {
-      print('Testing: BatchAddResult should calculate status correctly');
       const result = BatchAddResult(
         totalTracks: 10,
         successCount: 8,
@@ -107,9 +93,7 @@ void main() {
       expect(result.hasPartialSuccess, true);
       expect(result.isCompleteSuccess, false);
     });
-
     test('BatchLibraryAddResult should provide summary messages', () {
-      print('Testing: BatchLibraryAddResult should provide summary messages');
       const successResult = BatchLibraryAddResult(
         totalTracks: 5,
         successCount: 5,
@@ -128,9 +112,7 @@ void main() {
       expect(partialResult.hasPartialSuccess, true);
       expect(partialResult.summaryMessage, '3/5 tracks added to your library');
     });
-
     test('Track should handle Deezer track identification', () {
-      print('Testing: Track should handle Deezer track identification');
       const deezerTrack = Track(
         id: 'deezer_123',
         name: 'Deezer Song',

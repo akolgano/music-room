@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../providers/friend_provider.dart';
 import '../../widgets/app_widgets.dart';
 import '../../core/theme_utils.dart';
@@ -37,15 +38,9 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   @override
   Widget buildContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       child: Column(
         children: [
-          AppWidgets.infoBanner(
-            title: 'Send Friend Request',
-            message: 'Enter their user ID to send a friend request.',
-            icon: Icons.people,
-          ),
-          const SizedBox(height: 16),
           AppTheme.buildFormCard(
             title: 'Add Friend by User ID', 
             titleIcon: Icons.person_add,
@@ -66,6 +61,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                       return null;
                     },
                     onChanged: (value) => setState(() {}),
+                    onFieldSubmitted: kIsWeb ? (_) => _sendFriendRequest() : null,
                   ),
                   const SizedBox(height: 16),
                   buildConsumerContent<FriendProvider>(
@@ -108,21 +104,6 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          AppWidgets.infoBanner(
-            title: 'Quick Access',
-            message: 'View sent and received requests',
-            icon: Icons.info_outline,
-            color: Colors.blue,
-            actionText: 'View Requests',
-            onAction: () => navigateTo(AppRoutes.friendRequests),
-          ),
-          const SizedBox(height: 16),
-          AppWidgets.infoBanner(
-            title: 'How It Works',
-            message: '1. Get their ID\n2. Enter above\n3. Send request\n4. They accept\n5. Share music!',
-            icon: Icons.help_outline,
-            color: Colors.purple,
-          ),
         ],
       ),
     );

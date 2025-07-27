@@ -2,19 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/screens/music/track_detail_screen.dart';
 import 'package:music_room/models/music_models.dart';
-
 void main() {
   group('Track Detail Screen Tests', () {
     test('TrackDetailScreen should be instantiable', () {
       const screen = TrackDetailScreen();
       expect(screen, isA<TrackDetailScreen>());
     });
-
     test('TrackDetailScreen should be a StatefulWidget', () {
       const screen = TrackDetailScreen();
       expect(screen, isA<StatefulWidget>());
     });
-
     test('TrackDetailScreen should handle track data correctly', () {
       const track = Track(
         id: '1',
@@ -29,7 +26,6 @@ void main() {
       expect(track.album, 'Test Album');
       expect(track.url, 'http://example.com/track1');
     });
-
     test('TrackDetailScreen should handle Deezer track identification', () {
       const deezerTrack = Track(
         id: 'deezer_123',
@@ -43,19 +39,16 @@ void main() {
       expect(deezerTrack.isDeezerTrack, true);
       expect(deezerTrack.backendId, '123');
     });
-
     test('TrackDetailScreen should create state correctly', () {
       const screen = TrackDetailScreen();
       final state = screen.createState();
       expect(state, isA<State<TrackDetailScreen>>());
     });
-
     test('TrackDetailScreen should handle key parameter', () {
       const key = Key('track_detail_key');
       const screen = TrackDetailScreen(key: key);
       expect(screen.key, key);
     });
-
     test('Track model should handle empty fields gracefully', () {
       const track = Track(
         id: '1',
@@ -71,7 +64,6 @@ void main() {
       expect(track.album, '');
       expect(track.url, '');
     });
-
     test('Track model should serialize to JSON correctly', () {
       const track = Track(
         id: '1',

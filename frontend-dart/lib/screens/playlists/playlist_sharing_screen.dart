@@ -32,7 +32,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
   @override
   Widget buildContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -71,7 +71,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
               color: widget.playlist.isPublic ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
@@ -181,7 +181,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.primary,
           foregroundColor: Colors.black,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 8),
         ),
       ),
     );

@@ -31,7 +31,7 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
   Widget buildContent() {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(5),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 450),
           child: AppTheme.buildFormCard( 

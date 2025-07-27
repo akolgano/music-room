@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../core/theme_utils.dart';
 import '../../widgets/app_widgets.dart';
@@ -33,13 +34,13 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
       appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Change Password')),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(5),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 450),
             child: Card(
               color: AppTheme.surface,
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(6),
                 child: Form(
                   key: _formKey,
                   child: Consumer<ProfileProvider>(
@@ -74,6 +75,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             obscureText: true,
                             validator: (v) => v?.isEmpty ?? true ? 'Please enter current password' : 
                                       v!.length < 4 ? 'Password must be at least 4 characters' : null,
+                            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                           ),
                           const SizedBox(height: 24),
                           AppWidgets.textField(
@@ -83,6 +85,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             obscureText: true,
                             validator: (v) => v?.isEmpty ?? true ? 'Please enter new password' : 
                                       v!.length < 4 ? 'Password must be at least 4 characters' : null,
+                            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                           ), 
                           const SizedBox(height: 24),
                           profileProvider.isLoading

@@ -1,6 +1,5 @@
-import 'dart:developer' as developer;
+import '../../core/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
@@ -9,6 +8,7 @@ import '../../providers/friend_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/custom_scrollbar.dart';
 import '../../models/music_models.dart';
 import '../profile/profile_screen.dart';
 import '../music/track_search_screen.dart';
@@ -46,19 +46,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           backgroundColor: AppTheme.background,
           title: Text(AppConstants.appName),
           automaticallyImplyLeading: false,
-          toolbarHeight: 48,
+          toolbarHeight: ThemeUtils.isSmallMobile(context) ? 40 : 48,
           actions: [
             IconButton(
-              icon: const Icon(Icons.search),
+              icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
             IconButton(
-              icon: const Icon(Icons.how_to_vote),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
-              tooltip: 'Track Voting',
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
+              icon: Icon(Icons.add, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
             ),
           ],
@@ -67,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
-                return SingleChildScrollView(
+                return CustomSingleChildScrollView(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minHeight: constraints.maxHeight),
                     child: IntrinsicHeight(
@@ -144,16 +139,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
-              icon: const Icon(Icons.search),
+              icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
             ),
             IconButton(
-              icon: const Icon(Icons.how_to_vote),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
-              tooltip: 'Track Voting',
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
+              icon: Icon(Icons.add, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
             ),
           ],
@@ -179,13 +169,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: TabBar(
                 controller: _tabController,
                 indicatorColor: AppTheme.primary,
-                labelStyle: const TextStyle(fontSize: 12),
-                tabs: const [
-                  Tab(icon: Icon(Icons.home), text: 'Home'),
-                  Tab(icon: Icon(Icons.library_music), text: 'Library'),
-                  Tab(icon: Icon(Icons.search), text: 'Search'),
-                  Tab(icon: Icon(Icons.people), text: 'Friends'),
-                  Tab(icon: Icon(Icons.person), text: 'Profile'),
+                labelStyle: ThemeUtils.getCaptionStyle(context),
+                tabs: [
+                  Tab(icon: Icon(Icons.home, size: ThemeUtils.getResponsiveIconSize(context)), text: 'Home'),
+                  Tab(icon: Icon(Icons.library_music, size: ThemeUtils.getResponsiveIconSize(context)), text: 'Library'),
+                  Tab(icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)), text: 'Search'),
+                  Tab(icon: Icon(Icons.people, size: ThemeUtils.getResponsiveIconSize(context)), text: 'Friends'),
+                  Tab(icon: Icon(Icons.person, size: ThemeUtils.getResponsiveIconSize(context)), text: 'Profile'),
                 ],
               ),
             ),
@@ -197,74 +187,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildDashboard(AuthProvider auth) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return CustomSingleChildScrollView(
+      padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppWidgets.infoBanner(
-            title: 'Welcome back, ${auth.displayName}!',
-            message: 'Ready to discover and share music?',
-            icon: Icons.music_note,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.symmetric(horizontal: 0),
-            decoration: BoxDecoration(
-              color: Colors.pink.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.pink.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.how_to_vote, color: Colors.pink, size: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'New: Track Voting! 🗳️',
-                        style: TextStyle(
-                          color: Colors.pink,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Create voting sessions, suggest tracks, and vote with friends',
-                        style: TextStyle(
-                          color: Colors.pink[200],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
-                  child: const Text(
-                    'Try It',
-                    style: TextStyle(
-                      color: Colors.pink,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          AppWidgets.sectionTitle('Quick Actions'),
-          const SizedBox(height: 16),
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
+            crossAxisCount: ThemeUtils.getResponsiveGridColumns(context),
+            mainAxisSpacing: ThemeUtils.getResponsiveMargin(context),
+            crossAxisSpacing: ThemeUtils.getResponsiveMargin(context),
             children: [
               AppWidgets.quickActionCard(
                 title: 'Search Tracks',
@@ -277,12 +210,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 icon: Icons.add_circle,
                 color: Colors.green,
                 onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-              ),
-              AppWidgets.quickActionCard(
-                title: 'Track Voting',
-                icon: Icons.how_to_vote,
-                color: Colors.pink,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.votingEvent),
               ),
               AppWidgets.quickActionCard(
                 title: 'Find Friends',
@@ -310,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: AppTheme.background,
         title: const Text('Your Library'),
         automaticallyImplyLeading: false,
-        toolbarHeight: isLandscape ? 48 : null,
+        toolbarHeight: isLandscape ? (ThemeUtils.isSmallMobile(context) ? 40 : 48) : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -336,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: AppTheme.background,
         title: const Text('Friends'),
         automaticallyImplyLeading: false,
-        toolbarHeight: isLandscape ? 48 : null,
+        toolbarHeight: isLandscape ? (ThemeUtils.isSmallMobile(context) ? 40 : 48) : null,
         actions: [
           TextButton.icon(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
@@ -374,20 +301,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return RefreshIndicator(
           onRefresh: _loadData,
           color: AppTheme.primary,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: music.playlists.length,
-            itemBuilder: (context, index) {
-              final playlist = music.playlists[index];
-              if (kDebugMode) {
-                developer.log('Playlist ID: ${playlist.id}, Name: ${playlist.name}', name: 'HomeScreen');
-              }
+          child: CustomListView(
+            padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
+            children: music.playlists.map((playlist) {
+              AppLogger.debug('Playlist ID: ${playlist.id}, Name: ${playlist.name}', 'HomeScreen');
               return AppWidgets.playlistCard(
                 playlist: playlist,
                 onTap: () {
-                  if (kDebugMode) {
-                    developer.log('Navigating to playlist with ID: ${playlist.id}', name: 'HomeScreen');
-                  }
+                  AppLogger.debug('Navigating to playlist with ID: ${playlist.id}', 'HomeScreen');
                   if (playlist.id.isNotEmpty && playlist.id != 'null') {
                     Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
                   } else {
@@ -397,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 onPlay: () => _playPlaylist(playlist),
                 showPlayButton: true,
               );
-            },
+            }).toList(),
           ),
         );
       },
@@ -409,8 +330,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (context, friendProvider, _) {
         if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
         final pendingRequests = friendProvider.receivedInvitations;
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+        return CustomSingleChildScrollView(
+          padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -419,11 +340,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 message: 'Add friends to share and collaborate on playlists together!',
                 icon: Icons.people,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
               if (pendingRequests.isNotEmpty) ...[
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
+                  margin: EdgeInsets.only(bottom: ThemeUtils.getResponsivePadding(context)),
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -460,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 6),
                       ),
                     ),
                   ),
@@ -474,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         backgroundColor: AppTheme.surface,
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Colors.white),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 6),
                       ),
                     ),
                   ),
@@ -499,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   itemBuilder: (context, index) {
                     final friendId = friendProvider.friends[index];
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
+                      margin: const EdgeInsets.only(bottom: 4),
                       color: AppTheme.surface,
                       child: ListTile(
                         leading: CircleAvatar(

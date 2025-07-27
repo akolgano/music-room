@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:async';
 import '../../providers/music_provider.dart';
 import '../../core/service_locator.dart';
@@ -9,7 +10,9 @@ import '../../models/api_models.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
+import '../../core/app_logger.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/custom_scrollbar.dart';
 import '../base_screen.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
@@ -30,8 +33,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   
   Playlist? _playlist;
   List<Track> _playlistTracks = [];
-  List<CollaboratorInfo> _activeCollaborators = [];
-  List<RecentEdit> _recentEdits = [];
+  final List<CollaboratorInfo> _activeCollaborators = [];
+  final List<RecentEdit> _recentEdits = [];
   
   StreamSubscription? _wsSubscription;
   bool _showCollaborationFeatures = false;
@@ -81,8 +84,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       return _buildCollaborativeEditor();
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return CustomSingleChildScrollView(
+      padding: const EdgeInsets.all(4),
       child: Column(
         children: [
           if (_isEditMode && _playlist != null) _buildPlaylistInfo(),
@@ -115,6 +118,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
             validator: AppValidators.playlistName,
+            onFieldSubmitted: kIsWeb ? (_) => (_isEditMode ? _saveChanges() : _createPlaylist()) : null,
           ),
           const SizedBox(height: 16),
           AppWidgets.textField(
@@ -190,7 +194,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     if (_playlist == null) return const SizedBox.shrink();
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppTheme.primary.withValues(alpha: 0.1),
         border: Border(
@@ -219,7 +223,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
               ),
               if (!_canEdit)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -268,7 +272,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   Widget _buildActiveCollaborators() {
     return Container(
       height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.green.withValues(alpha: 0.1),
         border: Border(
@@ -291,7 +295,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
               itemBuilder: (context, index) {
                 final collaborator = _activeCollaborators[index];
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: 4),
                   child: Chip(
                     avatar: CircleAvatar(
                       backgroundColor: collaborator.color,
@@ -350,7 +354,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
     if (_canEdit) {
       return ReorderableListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(4),
         itemCount: _playlistTracks.length,
         onReorder: (oldIndex, newIndex) => _reorderTracks(oldIndex, newIndex),
         itemBuilder: (context, index) {
@@ -360,7 +364,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       );
     } else {
       return ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(4),
         itemCount: _playlistTracks.length,
         itemBuilder: (context, index) {
           final track = _playlistTracks[index];
@@ -377,7 +381,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
     return Card(
       key: key,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 6),
       elevation: showEditIndicator ? 4 : 1,
       color: showEditIndicator 
         ? Colors.blue.withValues(alpha: 0.1) 
@@ -400,7 +404,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildDefaultAlbumArt(),
+                    errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
                   )
                 : _buildDefaultAlbumArt(),
             ),
@@ -475,7 +479,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Widget _buildEditorActions() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
@@ -607,7 +611,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     try {
       getIt<WebSocketService>();
     } catch (e) {
-      print('WebSocket connection failed: $e');
+      AppLogger.error('WebSocket connection failed' + ": " + e.toString(), null, null, 'PlaylistEditorScreen');
     }
   }
 
