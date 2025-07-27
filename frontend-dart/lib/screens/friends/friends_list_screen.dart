@@ -91,7 +91,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
         if (receivedInvitations.isNotEmpty) ...[
           Container(
             width: double.infinity,
-            margin: const EdgeInsets.all(16),
+            margin: const EdgeInsets.all(4),
             child: ElevatedButton.icon(
               onPressed: () => navigateTo(AppRoutes.friendRequests),
               icon: const Icon(Icons.visibility),
@@ -99,7 +99,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 6),
               ),
             ),
           ),
@@ -118,7 +118,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
 
   Widget _buildFriendCard(int friendId) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 6),
       color: AppTheme.surface,
       child: ListTile(
         onTap: () => _navigateToUserPage(friendId),
@@ -166,12 +166,12 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     final status = friendProvider.getInvitationStatus(invitation);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       color: AppTheme.surface,
       child: InkWell(
         onTap: fromUserId != null ? () => _navigateToUserPage(fromUserId) : null,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(3),
           child: Row(
             children: [
               CircleAvatar(

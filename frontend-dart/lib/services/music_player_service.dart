@@ -1,5 +1,5 @@
-import 'dart:developer' as developer;
-import 'package:flutter/foundation.dart' show ChangeNotifier, kDebugMode;
+import '../core/app_logger.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:just_audio/just_audio.dart';
 import '../models/music_models.dart';
 import '../providers/dynamic_theme_provider.dart';
@@ -98,16 +98,9 @@ class MusicPlayerService with ChangeNotifier {
       _failedTracks.clear();
       
       await _playCurrentTrack();
-      if (kDebugMode) {
-        developer.log(
-          'Playlist set with ${_playlist.length} tracks, starting at index $_currentIndex',
-          name: 'MusicPlayerService',
-        );
-      }
+      AppLogger.info('Playlist set with ${_playlist.length} tracks, starting at index $_currentIndex', 'MusicPlayerService');
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error setting playlist: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error setting playlist: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
   }
@@ -125,9 +118,7 @@ class MusicPlayerService with ChangeNotifier {
       if (audioUrl == null) {
         throw Exception('No audio URL available for track: ${track.name}');
       }
-      if (kDebugMode) {
-        developer.log('Using preview audio for: ${track.name}', name: 'MusicPlayerService');
-      }
+      AppLogger.debug('Using preview audio for: ${track.name}', 'MusicPlayerService');
       
       await _audioPlayer.setUrl(audioUrl);
       await _audioPlayer.play();
@@ -136,14 +127,10 @@ class MusicPlayerService with ChangeNotifier {
         themeProvider.extractAndApplyDominantColor(track.imageUrl);
       }
       
-      if (kDebugMode) {
-        developer.log('Successfully started playing: ${track.name} (Full audio: $_isUsingFullAudio)', name: 'MusicPlayerService');
-      }
+      AppLogger.info('Successfully started playing: ${track.name} (Full audio: $_isUsingFullAudio)', 'MusicPlayerService');
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error playing track "${track.name}": $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error playing track "${track.name}": ${e.toString()}', null, null, 'MusicPlayerService');
       _currentTrack = null;
       _isPlaying = false;
       _position = Duration.zero;
@@ -164,9 +151,7 @@ class MusicPlayerService with ChangeNotifier {
       try {
         await playTrack(track, track.previewUrl);
       } catch (e) {
-        if (kDebugMode) {
-          developer.log('Failed to play track "${track.name}": $e', name: 'MusicPlayerService');
-        }
+        AppLogger.error('Failed to play track "${track.name}": ${e.toString()}', null, null, 'MusicPlayerService');
         
         final trackKey = '${track.name}_${track.artist}';
         if (!_failedTracks.contains(trackKey)) {
@@ -183,15 +168,11 @@ class MusicPlayerService with ChangeNotifier {
           }
         }
         
-        if (kDebugMode) {
-          developer.log('No replacement found for "${track.name}", skipping to next track', name: 'MusicPlayerService');
-        }
+        AppLogger.warning('No replacement found for "${track.name}", skipping to next track', 'MusicPlayerService');
         await playNext();
       }
     } else {
-      if (kDebugMode) {
-        developer.log('No track available for: ${playlistTrack.name}, skipping', name: 'MusicPlayerService');
-      }
+      AppLogger.warning('No track available for: ${playlistTrack.name}, skipping', 'MusicPlayerService');
       await playNext();
     }
   }
@@ -207,9 +188,7 @@ class MusicPlayerService with ChangeNotifier {
     
     _currentIndex++;
     await _playCurrentTrack();
-    if (kDebugMode) {
-      developer.log('Playing next track: ${_currentTrack?.name}', name: 'MusicPlayerService');
-    }
+    AppLogger.debug('Playing next track: ${_currentTrack?.name}', 'MusicPlayerService');
   }
 
   Future<void> playPrevious() async {
@@ -223,9 +202,7 @@ class MusicPlayerService with ChangeNotifier {
     
     _currentIndex--;
     await _playCurrentTrack();
-    if (kDebugMode) {
-      developer.log('Playing previous track: ${_currentTrack?.name}', name: 'MusicPlayerService');
-    }
+    AppLogger.debug('Playing previous track: ${_currentTrack?.name}', 'MusicPlayerService');
   }
 
   Future<void> playTrackAtIndex(int index) async {
@@ -233,30 +210,20 @@ class MusicPlayerService with ChangeNotifier {
     
     _currentIndex = index;
     await _playCurrentTrack();
-    if (kDebugMode) {
-      developer.log('Playing track at index $index: ${_currentTrack?.name}', name: 'MusicPlayerService');
-    }
+    AppLogger.debug('Playing track at index $index: ${_currentTrack?.name}', 'MusicPlayerService');
   }
 
   void _onTrackCompleted() {
-    if (kDebugMode) {
-      developer.log('Track completed: ${_currentTrack?.name ?? "Unknown"}', name: 'MusicPlayerService');
-    }
+    AppLogger.debug('Track completed: ${_currentTrack?.name ?? "Unknown"}', 'MusicPlayerService');
     
     if (_isRepeatMode && _playlist.isNotEmpty) {
-      if (kDebugMode) {
-        developer.log('Repeat mode enabled, playing next track', name: 'MusicPlayerService');
-      }
+      AppLogger.debug('Repeat mode enabled, playing next track', 'MusicPlayerService');
       playNext();
     } else if (hasNextTrack) {
-      if (kDebugMode) {
-        developer.log('Auto-playing next track', name: 'MusicPlayerService');
-      }
+      AppLogger.debug('Auto-playing next track', 'MusicPlayerService');
       playNext();
     } else {
-      if (kDebugMode) {
-        developer.log('No more tracks to play, stopping', name: 'MusicPlayerService');
-      }
+      AppLogger.debug('No more tracks to play, stopping', 'MusicPlayerService');
       stop();
     }
   }
@@ -264,26 +231,20 @@ class MusicPlayerService with ChangeNotifier {
   void toggleShuffle() {
     _isShuffleMode = !_isShuffleMode;
     notifyListeners();
-    if (kDebugMode) {
-      developer.log('Shuffle mode: $_isShuffleMode', name: 'MusicPlayerService');
-    }
+    AppLogger.debug('Shuffle mode: $_isShuffleMode', 'MusicPlayerService');
   }
 
   void toggleRepeat() {
     _isRepeatMode = !_isRepeatMode;
     notifyListeners();
-    if (kDebugMode) {
-      developer.log('Repeat mode: $_isRepeatMode', name: 'MusicPlayerService');
-    }
+    AppLogger.debug('Repeat mode: $_isRepeatMode', 'MusicPlayerService');
   }
 
   Future<void> play() async {
     try {
       await _audioPlayer.play();
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error resuming playback: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error resuming playback: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
   }
@@ -292,9 +253,7 @@ class MusicPlayerService with ChangeNotifier {
     try {
       await _audioPlayer.pause();
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error pausing playback: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error pausing playback: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
   }
@@ -307,9 +266,7 @@ class MusicPlayerService with ChangeNotifier {
       _duration = Duration.zero;
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error stopping playback: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error stopping playback: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
   }
@@ -322,9 +279,7 @@ class MusicPlayerService with ChangeNotifier {
         await play();
       }
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error toggling playback: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error toggling playback: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
   }
@@ -333,9 +288,7 @@ class MusicPlayerService with ChangeNotifier {
     try {
       await _audioPlayer.seek(position);
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error seeking to position: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error seeking to position: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
   }
@@ -347,18 +300,14 @@ class MusicPlayerService with ChangeNotifier {
     _authToken = null;
     _failedTracks.clear();
     notifyListeners();
-    if (kDebugMode) {
-      developer.log('Playlist cleared', name: 'MusicPlayerService');
-    }
+    AppLogger.debug('Playlist cleared', 'MusicPlayerService');
   }
 
   Future<Track?> _findEquivalentTrack(Track originalTrack) async {
     if (_authToken == null) return null;
     
     try {
-      if (kDebugMode) {
-        developer.log('Searching for equivalent track for: ${originalTrack.name} by ${originalTrack.artist}', name: 'MusicPlayerService');
-      }
+      AppLogger.debug('Searching for equivalent track for: ${originalTrack.name} by ${originalTrack.artist}', 'MusicPlayerService');
       
       final searchQuery = '${originalTrack.name} ${originalTrack.artist}';
       final searchResults = await _musicService.searchDeezerTracks(searchQuery);
@@ -371,23 +320,17 @@ class MusicPlayerService with ChangeNotifier {
             
             final similarity = _calculateTrackSimilarity(originalTrack, candidate);
             if (similarity > 0.7) {
-              if (kDebugMode) {
-                developer.log('Found replacement: ${candidate.name} by ${candidate.artist} (similarity: ${(similarity * 100).toStringAsFixed(1)}%)', name: 'MusicPlayerService');
-              }
+              AppLogger.info('Found replacement: ${candidate.name} by ${candidate.artist} (similarity: ${(similarity * 100).toStringAsFixed(1)}%)', 'MusicPlayerService');
               return candidate;
             }
           }
         }
       }
       
-      if (kDebugMode) {
-        developer.log('No suitable replacement found for: ${originalTrack.name}', name: 'MusicPlayerService');
-      }
+      AppLogger.warning('No suitable replacement found for: ${originalTrack.name}', 'MusicPlayerService');
       return null;
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error searching for replacement track: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error searching for replacement track: ${e.toString()}', null, null, 'MusicPlayerService');
       return null;
     }
   }
@@ -447,9 +390,7 @@ class MusicPlayerService with ChangeNotifier {
     if (_playlistId == null || _authToken == null) return;
     
     try {
-      if (kDebugMode) {
-        developer.log('Replacing "${originalTrack.name}" with "${replacementTrack.name}" in playlist', name: 'MusicPlayerService');
-      }
+      AppLogger.info('Replacing "${originalTrack.name}" with "${replacementTrack.name}" in playlist', 'MusicPlayerService');
       
       await _musicService.removeTrackFromPlaylist(_playlistId!, originalTrack.trackId, _authToken!);
       
@@ -466,13 +407,9 @@ class MusicPlayerService with ChangeNotifier {
       _playlist[_currentIndex] = newPlaylistTrack;
       notifyListeners();
       
-      if (kDebugMode) {
-        developer.log('Successfully replaced track in playlist', name: 'MusicPlayerService');
-      }
+      AppLogger.info('Successfully replaced track in playlist', 'MusicPlayerService');
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error replacing track in playlist: $e', name: 'MusicPlayerService');
-      }
+      AppLogger.error('Error replacing track in playlist: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
   }

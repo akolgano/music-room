@@ -1,6 +1,5 @@
-import 'dart:developer' as developer;
+import '../core/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../core/theme_utils.dart';
@@ -206,9 +205,7 @@ class DynamicThemeProvider with ChangeNotifier {
       _colorCache[imageUrl] = colorScheme;
       _applyColorScheme(colorScheme);
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error extracting color from image: $e', name: 'DynamicThemeProvider');
-      }
+      AppLogger.error('Error extracting color from image' + ": " + e.toString(), null, null, 'DynamicThemeProvider');
       _resetToDefaultTheme();
     }
 

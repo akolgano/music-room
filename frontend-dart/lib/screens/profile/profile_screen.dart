@@ -66,25 +66,25 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
         return RefreshIndicator(
           onRefresh: () => profileProvider.loadProfile(auth.token),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
             child: Column(
               children: [
                 _buildProfileHeader(profileProvider), 
-                const SizedBox(height: 16),
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
                 _buildAccountInfoSection(profileProvider), 
-                const SizedBox(height: 16),
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
                 _buildPublicInfoSection(profileProvider), 
-                const SizedBox(height: 16),
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
                 _buildContactInfoSection(profileProvider), 
-                const SizedBox(height: 16),
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
                 _buildFriendInfoSection(profileProvider), 
-                const SizedBox(height: 16),
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
                 _buildMusicPreferencesSection(profileProvider), 
-                const SizedBox(height: 16),
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
                 _buildSocialAccountsSection(profileProvider), 
-                const SizedBox(height: 16), 
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2), 
                 _buildSecuritySection(profileProvider), 
-                const SizedBox(height: 16), 
+                SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2), 
                 _buildAccountActionsSection(),
               ],
             ),
@@ -149,7 +149,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
                       ? null 
                       : () => _editAvatar(profileProvider),
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: profileProvider.isLoading 
                           ? Colors.grey 
@@ -194,7 +194,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2), 
               borderRadius: BorderRadius.circular(12)
@@ -417,7 +417,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
               onPressed: onEdit
             ) 
           : null,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     );
   }
 
@@ -499,7 +499,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> {
             ),
         ],
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     );
   }
 

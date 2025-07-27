@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/custom_scrollbar.dart';
 
 class SignupWithOtpScreen extends StatefulWidget {
   const SignupWithOtpScreen({super.key});
@@ -34,8 +36,8 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Create Account')),
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+          child: CustomSingleChildScrollView(
+            padding: const EdgeInsets.all(8),
             child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400), child: _buildForm()),
           ),
         ),
@@ -58,6 +60,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                 labelText: 'Email',
                 prefixIcon: Icons.email,
                 validator: AppValidators.email,
+                onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
               ),
               const SizedBox(height: 16),
               AppWidgets.textField(
@@ -66,6 +69,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                 labelText: 'Username',
                 prefixIcon: Icons.person,
                 validator: AppValidators.username,
+                onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
               ),
               const SizedBox(height: 16),
               AppWidgets.textField(
@@ -75,6 +79,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                 prefixIcon: Icons.lock,
                 obscureText: true,
                 validator: AppValidators.password,
+                onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
               ),
               const SizedBox(height: 24),
               AppWidgets.primaryButton(
@@ -101,6 +106,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
                   if (!RegExp(r'^\d{6}$').hasMatch(value!)) return 'Code must be 6 digits';
                   return null;
                 },
+                onFieldSubmitted: kIsWeb ? (_) => _signup() : null,
               ),
               const SizedBox(height: 16),
               Row(

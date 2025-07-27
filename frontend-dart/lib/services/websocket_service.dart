@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
+import '../core/app_logger.dart';
 
 enum PlaylistWebSocketMessageType {
   playlistUpdate('playlist_update');
@@ -52,9 +52,7 @@ class WebSocketService {
   static const Duration _reconnectDelay = Duration(seconds: 3);
   
   void _log(String message) {
-    if (kDebugMode) {
-      debugPrint('[WebSocketService] $message');
-    }
+    AppLogger.debug(message, 'WebSocketService');
   }
   
   Stream<PlaylistUpdateMessage> get playlistUpdateStream => 
@@ -67,6 +65,10 @@ class WebSocketService {
       _playlistUpdateController != null && 
       !_playlistUpdateController!.isClosed;
 
+  Future<void> connect(String token) async {
+    _log('General WebSocket connection not supported - use connectToPlaylist instead');
+  }
+
   Future<void> connectToPlaylist(String playlistId, String token) async {
     if (_currentPlaylistId == playlistId && isConnected) {
       _log('Already connected to playlist $playlistId');
@@ -76,10 +78,14 @@ class WebSocketService {
     await disconnect();
     _reconnectAttempts = 0;
 
-    await _attemptConnection(playlistId, token);
+    await _attemptConnectionToPlaylist(playlistId, token);
   }
 
-  Future<void> _attemptConnection(String playlistId, String token) async {
+  Future<void> _attemptConnection(String token) async {
+    _log('General WebSocket connection not supported - use connectToPlaylist instead');
+  }
+
+  Future<void> _attemptConnectionToPlaylist(String playlistId, String token) async {
     try {
       String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
       
@@ -91,7 +97,7 @@ class WebSocketService {
         wsUrl = wsUrl.substring(0, wsUrl.length - 1);
       }
       
-      final uri = Uri.parse('$wsUrl/ws/playlists/$playlistId/');
+      final uri = Uri.parse('$wsUrl/ws/playlists/$playlistId/?token=$token');
       
       _log('Connecting to: $uri (attempt ${_reconnectAttempts + 1})');
 
@@ -159,9 +165,7 @@ class WebSocketService {
   }
 
   void _scheduleReconnect() {
-    if (_reconnectAttempts < _maxReconnectAttempts && 
-        _currentPlaylistId != null && 
-        _currentToken != null) {
+    if (_reconnectAttempts < _maxReconnectAttempts && _currentToken != null) {
       
       _reconnectAttempts++;
       
@@ -169,16 +173,16 @@ class WebSocketService {
       
       _reconnectTimer?.cancel();
       _reconnectTimer = Timer(_reconnectDelay, () {
-        if (_currentPlaylistId != null && _currentToken != null) {
-          _attemptConnection(_currentPlaylistId!, _currentToken!);
+        if (_currentToken != null && _currentPlaylistId != null) {
+          _attemptConnectionToPlaylist(_currentPlaylistId!, _currentToken!);
         }
       });
     } else if (_reconnectAttempts >= _maxReconnectAttempts) {
       _log('Max reconnect attempts reached. Giving up.');
-      if (!_playlistUpdateController!.isClosed) {
+      if (_playlistUpdateController != null && !_playlistUpdateController!.isClosed) {
         _playlistUpdateController?.addError('WebSocket connection failed after $_maxReconnectAttempts attempts');
       }
-      if (!_rawMessageController!.isClosed) {
+      if (_rawMessageController != null && !_rawMessageController!.isClosed) {
         _rawMessageController?.addError('WebSocket connection failed after $_maxReconnectAttempts attempts');
       }
     }
@@ -199,9 +203,9 @@ class WebSocketService {
   }
 
   Future<void> forceReconnect() async {
-    if (_currentPlaylistId != null && _currentToken != null) {
-      final playlistId = _currentPlaylistId!;
+    if (_currentToken != null && _currentPlaylistId != null) {
       final token = _currentToken!;
+      final playlistId = _currentPlaylistId!;
       await disconnect();
       await connectToPlaylist(playlistId, token);
     }

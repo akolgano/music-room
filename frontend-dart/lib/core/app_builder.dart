@@ -1,6 +1,5 @@
-import 'dart:developer' as developer;
+import 'app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import '../core/theme_utils.dart';
@@ -31,7 +30,6 @@ import '../screens/friends/add_friend_screen.dart';
 import '../screens/friends/friend_request_screen.dart';
 import '../screens/friends/friends_list_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
-import '../screens/voting/music_track_vote_screen.dart';
 
 class AppBuilder {
   static List<SingleChildWidget> buildProviders() {
@@ -78,13 +76,11 @@ class AppBuilder {
     AppRoutes.playlistSharing,
     AppRoutes.player,
     AppRoutes.userPasswordChange, AppRoutes.socialNetworkLink, AppRoutes.userPage,
-    AppRoutes.adminDashboard, AppRoutes.votingEvent,
+    AppRoutes.adminDashboard,
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
-    if (kDebugMode) {
-      developer.log('Generating route for: ${settings.name} with arguments: ${settings.arguments}', name: 'AppBuilder');
-    }
+    AppLogger.debug('Generating route for: ${settings.name} with arguments: ${settings.arguments}', 'AppBuilder');
 
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
@@ -137,9 +133,7 @@ class AppBuilder {
   }
 
   static Widget _buildProtectedRoute(RouteSettings settings) {
-    if (kDebugMode) {
-      developer.log('Building protected route: ${settings.name} with arguments: ${settings.arguments}', name: 'AppBuilder');
-    }
+    AppLogger.debug('Building protected route: ${settings.name} with arguments: ${settings.arguments}', 'AppBuilder');
     
     switch (settings.name) {
       case AppRoutes.home:
@@ -174,8 +168,6 @@ class AppBuilder {
         return _buildTrackDetail(settings);
       case AppRoutes.playlistSharing:
         return _buildPlaylistSharing(settings);
-      case AppRoutes.votingEvent:
-        return _buildVotingEvent(settings);
       default:
         return _buildErrorScreen('Page not found');
     }
@@ -188,14 +180,10 @@ class AppBuilder {
 
   static Widget _buildPlaylistDetail(RouteSettings settings) {
     final args = settings.arguments;
-    if (kDebugMode) {
-      developer.log('Playlist detail args: $args, type: ${args.runtimeType}', name: 'AppBuilder');
-    }
+    AppLogger.debug('Playlist detail args: $args, type: ${args.runtimeType}', 'AppBuilder');
     
     if (args == null) {
-      if (kDebugMode) {
-        developer.log('No arguments provided for playlist detail', name: 'AppBuilder');
-      }
+      AppLogger.warning('No arguments provided for playlist detail', 'AppBuilder');
       return _buildErrorScreen('No playlist ID provided');
     }
 
@@ -205,22 +193,16 @@ class AppBuilder {
     } else if (args is Map<String, dynamic> && args.containsKey('id')) {
       playlistId = args['id'].toString();
     } else {
-      if (kDebugMode) {
-        developer.log('Invalid arguments type for playlist detail: ${args.runtimeType}', name: 'AppBuilder');
-      }
+      AppLogger.error('Invalid arguments type for playlist detail: ${args.runtimeType}', null, null, 'AppBuilder');
       return _buildErrorScreen('Invalid playlist ID format');
     }
 
     if (playlistId.isEmpty || playlistId == 'null') {
-      if (kDebugMode) {
-        developer.log('Invalid playlist ID: $playlistId', name: 'AppBuilder');
-      }
+      AppLogger.error('Invalid playlist ID: $playlistId', null, null, 'AppBuilder');
       return _buildErrorScreen('Invalid playlist ID');
     }
 
-    if (kDebugMode) {
-      developer.log('Building PlaylistDetailScreen with ID: $playlistId', name: 'AppBuilder');
-    }
+    AppLogger.debug('Building PlaylistDetailScreen with ID: $playlistId', 'AppBuilder');
     return PlaylistDetailScreen(playlistId: playlistId);
   }
 
@@ -269,25 +251,6 @@ class AppBuilder {
     return _buildErrorScreen('Invalid user data provided');
   }
 
-  static Widget _buildVotingEvent(RouteSettings settings) {
-    final args = settings.arguments;
-    
-    if (args == null) {
-      return const MusicTrackVoteScreen(isCreatingEvent: true);
-    }
-    
-    if (args is String) {
-      return MusicTrackVoteScreen(eventId: args);
-    }
-    
-    if (args is Map<String, dynamic>) {
-      final eventId = args['eventId'] as String?;
-      final isCreating = args['isCreatingEvent'] as bool? ?? false;
-      return MusicTrackVoteScreen(eventId: eventId, isCreatingEvent: isCreating);
-    }
-    
-    return _buildErrorScreen('Invalid voting event data');
-  }
 
   static Widget _buildErrorScreen(String message) {
     return Builder(

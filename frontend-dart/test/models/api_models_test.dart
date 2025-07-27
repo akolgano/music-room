@@ -5,7 +5,7 @@ void main() {
   group('API Models Tests', () {
     group('LoginRequest', () {
       test('should serialize to JSON correctly', () {
-        print('Testing: should serialize to JSON correctly');
+        // print('Testing: should serialize to JSON correctly');
         const request = LoginRequest(username: 'testuser', password: 'testpass');
         final json = request.toJson();
         
@@ -16,7 +16,7 @@ void main() {
 
     group('SocialLoginRequest', () {
       test('should serialize Facebook login correctly', () {
-        print('Testing: should serialize Facebook login correctly');
+        // print('Testing: should serialize Facebook login correctly');
         const request = SocialLoginRequest(fbAccessToken: 'fb_token');
         final json = request.toJson();
         
@@ -25,7 +25,7 @@ void main() {
       });
 
       test('should serialize Google login correctly', () {
-        print('Testing: should serialize Google login correctly');
+        // print('Testing: should serialize Google login correctly');
         const request = SocialLoginRequest(
           idToken: 'google_token',
           socialId: 'google_id',
@@ -39,7 +39,7 @@ void main() {
       });
 
       test('should handle null values correctly', () {
-        print('Testing: should handle null values correctly');
+        // print('Testing: should handle null values correctly');
         const request = SocialLoginRequest();
         final json = request.toJson();
         
@@ -49,7 +49,7 @@ void main() {
 
     group('ProfileResponse', () {
       test('should deserialize from JSON correctly', () {
-        print('Testing: should deserialize from JSON correctly');
+        // print('Testing: should deserialize from JSON correctly');
         final json = {
           'avatar': 'avatar_url',
           'name': 'John Doe',
@@ -72,7 +72,7 @@ void main() {
       });
 
       test('should handle null values gracefully', () {
-        print('Testing: should handle null values gracefully');
+        // print('Testing: should handle null values gracefully');
         final json = <String, dynamic>{};
         final profile = ProfileResponse.fromJson(json);
         
@@ -82,7 +82,7 @@ void main() {
       });
 
       test('should serialize to JSON correctly', () {
-        print('Testing: should serialize to JSON correctly');
+        // print('Testing: should serialize to JSON correctly');
         const profile = ProfileResponse(
           avatar: 'avatar_url',
           name: 'John Doe',
@@ -99,7 +99,7 @@ void main() {
 
     group('CreatePlaylistRequest', () {
       test('should serialize correctly with device UUID', () {
-        print('Testing: should serialize correctly with device UUID');
+        // print('Testing: should serialize correctly with device UUID');
         const request = CreatePlaylistRequest(
           name: 'My Playlist',
           description: 'Test playlist',
@@ -115,7 +115,7 @@ void main() {
       });
 
       test('should serialize correctly without device UUID', () {
-        print('Testing: should serialize correctly without device UUID');
+        // print('Testing: should serialize correctly without device UUID');
         const request = CreatePlaylistRequest(
           name: 'My Playlist',
           description: 'Test playlist',
@@ -132,7 +132,7 @@ void main() {
 
     group('AuthResult', () {
       test('should deserialize from JSON correctly', () {
-        print('Testing: should deserialize from JSON correctly');
+        // print('Testing: should deserialize from JSON correctly');
         final json = {
           'token': 'auth_token_123',
           'user': {
@@ -151,7 +151,7 @@ void main() {
 
     group('VoteResponse', () {
       test('should deserialize from JSON correctly', () {
-        print('Testing: should deserialize from JSON correctly');
+        // print('Testing: should deserialize from JSON correctly');
         final json = {
           'message': 'Vote recorded successfully',
           'playlist': []
@@ -164,7 +164,7 @@ void main() {
       });
 
       test('should handle missing message field', () {
-        print('Testing: should handle missing message field');
+        // print('Testing: should handle missing message field');
         final json = {
           'playlist': []
         };
@@ -178,7 +178,7 @@ void main() {
 
     group('PlaylistLicenseRequest', () {
       test('should serialize correctly with all fields', () {
-        print('Testing: should serialize correctly with all fields');
+        // print('Testing: should serialize correctly with all fields');
         const request = PlaylistLicenseRequest(
           licenseType: 'premium',
           invitedUsers: [1, 2, 3],
@@ -200,7 +200,7 @@ void main() {
       });
 
       test('should serialize correctly with minimal fields', () {
-        print('Testing: should serialize correctly with minimal fields');
+        // print('Testing: should serialize correctly with minimal fields');
         const request = PlaylistLicenseRequest(licenseType: 'free');
         final json = request.toJson();
         
@@ -212,7 +212,7 @@ void main() {
 
     group('MusicPreference', () {
       test('should serialize and deserialize correctly', () {
-        print('Testing: should serialize and deserialize correctly');
+        // print('Testing: should serialize and deserialize correctly');
         const preference = MusicPreference(id: 1, name: 'Rock');
         final json = preference.toJson();
         final deserialized = MusicPreference.fromJson(json);

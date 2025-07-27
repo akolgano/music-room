@@ -39,7 +39,7 @@ void main() {
       isPublic = true;
       expect(isPublic, true);
       const playlistId = 'playlist_123';
-      final publicLink = 'https://example.com/playlist/${playlistId}';
+      final publicLink = 'https://example.com/playlist/$playlistId';
       
       expect(publicLink, contains(playlistId));
       expect(publicLink, startsWith('https://'));

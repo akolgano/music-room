@@ -5,7 +5,7 @@ import 'package:music_room/core/social_login.dart';
 void main() {
   group('SocialLoginUtils Tests', () {
     test('SocialLoginUtils should have correct initial state', () {
-      print('Testing: SocialLoginUtils should have correct initial state');
+      // print('Testing: SocialLoginUtils should have correct initial state');
       expect(SocialLoginUtils.isInitialized, false);
       expect(SocialLoginUtils.isFacebookInitialized, false);
       expect(SocialLoginUtils.googleSignInInstance, null);
@@ -14,7 +14,7 @@ void main() {
 
   group('SocialLoginButton Tests', () {
     testWidgets('SocialLoginButton should render correctly', (WidgetTester tester) async {
-      print('Testing: SocialLoginButton should render correctly');
+      // print('Testing: SocialLoginButton should render correctly');
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -31,7 +31,7 @@ void main() {
     });
 
     testWidgets('SocialLoginButton should show loading state', (WidgetTester tester) async {
-      print('Testing: SocialLoginButton should show loading state');
+      // print('Testing: SocialLoginButton should show loading state');
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -48,7 +48,7 @@ void main() {
     });
 
     testWidgets('SocialLoginButton should handle different providers', (WidgetTester tester) async {
-      print('Testing: SocialLoginButton should handle different providers');
+      // print('Testing: SocialLoginButton should handle different providers');
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -87,7 +87,7 @@ void main() {
     });
 
     testWidgets('SocialLoginButton should be disabled when loading', (WidgetTester tester) async {
-      print('Testing: SocialLoginButton should be disabled when loading');
+      // print('Testing: SocialLoginButton should be disabled when loading');
       bool pressed = false;
       
       await tester.pumpWidget(

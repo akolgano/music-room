@@ -22,7 +22,7 @@ void main() {
     });
 
     test('should have empty stream when not connected', () {
-      expect(webSocketService.stream, isA<Stream<Map<String, dynamic>>>());
+      expect(webSocketService.rawMessageStream, isA<Stream<Map<String, dynamic>>>());
     });
 
     test('disconnect should not throw when not connected', () async {

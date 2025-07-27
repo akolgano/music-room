@@ -88,10 +88,10 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     final status = friendProvider.getInvitationStatus(invitation);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       color: AppTheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Row(
           children: [
             CircleAvatar(
@@ -146,7 +146,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
                       ),
                       child: const Text('Accept', style: TextStyle(fontSize: 12)),
                     ),
@@ -161,7 +161,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
                       ),
                       child: const Text('Reject', style: TextStyle(fontSize: 12)),
                     ),
@@ -170,7 +170,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
               ),
             ] else ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
                   color: _getStatusColor(status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -199,10 +199,10 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     final status = friendProvider.getInvitationStatus(invitation);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       color: AppTheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Row(
           children: [
             CircleAvatar(
@@ -246,7 +246,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: _getStatusColor(status).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),

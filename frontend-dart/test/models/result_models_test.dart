@@ -5,7 +5,7 @@ void main() {
   group('Result Models Tests', () {
     group('BatchLibraryAddResult', () {
       test('should calculate status correctly for complete success', () {
-        print('Testing: should calculate status correctly for complete success');
+        // print('Testing: should calculate status correctly for complete success');
         const result = BatchLibraryAddResult(
           totalTracks: 5,
           successCount: 5,
@@ -20,7 +20,7 @@ void main() {
       });
 
       test('should calculate status correctly for partial success', () {
-        print('Testing: should calculate status correctly for partial success');
+        // print('Testing: should calculate status correctly for partial success');
         const result = BatchLibraryAddResult(
           totalTracks: 5,
           successCount: 3,
@@ -37,7 +37,7 @@ void main() {
       });
 
       test('should calculate status correctly for complete failure', () {
-        print('Testing: should calculate status correctly for complete failure');
+        // print('Testing: should calculate status correctly for complete failure');
         const result = BatchLibraryAddResult(
           totalTracks: 5,
           successCount: 0,
@@ -53,7 +53,7 @@ void main() {
       });
 
       test('should provide sample data correctly', () {
-        print('Testing: should provide sample data correctly');
+        // print('Testing: should provide sample data correctly');
         const result = BatchLibraryAddResult(
           totalTracks: 10,
           successCount: 5,
@@ -69,7 +69,7 @@ void main() {
 
     group('SocialLoginResult', () {
       test('should create success result correctly', () {
-        print('Testing: should create success result correctly');
+        // print('Testing: should create success result correctly');
         final result = SocialLoginResult.success('token123', 'google');
         
         expect(result.success, true);
@@ -79,7 +79,7 @@ void main() {
       });
 
       test('should create error result correctly', () {
-        print('Testing: should create error result correctly');
+        // print('Testing: should create error result correctly');
         final result = SocialLoginResult.error('Login failed');
         
         expect(result.success, false);
@@ -91,7 +91,7 @@ void main() {
 
     group('AddTrackResult', () {
       test('should create AddTrackResult from JSON', () {
-        print('Testing: should create AddTrackResult from JSON');
+        // print('Testing: should create AddTrackResult from JSON');
         final json = {
           'success': true,
           'message': 'Track added successfully',
@@ -106,7 +106,7 @@ void main() {
       });
 
       test('should handle missing is_duplicate field', () {
-        print('Testing: should handle missing is_duplicate field');
+        // print('Testing: should handle missing is_duplicate field');
         final json = {
           'success': true,
           'message': 'Track added successfully'
@@ -122,7 +122,7 @@ void main() {
 
     group('BatchAddResult', () {
       test('should create BatchAddResult from JSON', () {
-        print('Testing: should create BatchAddResult from JSON');
+        // print('Testing: should create BatchAddResult from JSON');
         final json = {
           'total_tracks': 10,
           'success_count': 7,
@@ -141,7 +141,7 @@ void main() {
       });
 
       test('should calculate status correctly for complete success', () {
-        print('Testing: should calculate status correctly for complete success');
+        // print('Testing: should calculate status correctly for complete success');
         const result = BatchAddResult(
           totalTracks: 5,
           successCount: 5,
@@ -156,7 +156,7 @@ void main() {
       });
 
       test('should calculate status correctly for partial success', () {
-        print('Testing: should calculate status correctly for partial success');
+        // print('Testing: should calculate status correctly for partial success');
         const result = BatchAddResult(
           totalTracks: 10,
           successCount: 6,
@@ -173,7 +173,7 @@ void main() {
       });
 
       test('should calculate status correctly for complete failure', () {
-        print('Testing: should calculate status correctly for complete failure');
+        // print('Testing: should calculate status correctly for complete failure');
         const result = BatchAddResult(
           totalTracks: 5,
           successCount: 0,
@@ -190,7 +190,7 @@ void main() {
       });
 
       test('should handle missing errors field', () {
-        print('Testing: should handle missing errors field');
+        // print('Testing: should handle missing errors field');
         final json = {
           'total_tracks': 5,
           'success_count': 5,

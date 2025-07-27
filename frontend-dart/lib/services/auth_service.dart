@@ -1,5 +1,5 @@
-import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
+import '../core/app_logger.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../models/music_models.dart';
@@ -28,7 +28,7 @@ class AuthService {
       if (userData != null) { _currentUser = User.fromJson(userData); }
     } catch (e) {
       if (kDebugMode) {
-        developer.log('Error loading stored auth: $e', name: 'AuthService');
+        AppLogger.error('Error loading stored auth' + ": " + e.toString(), null, null, 'AuthService');
       }
       await _clearAuth();
     }
@@ -48,7 +48,7 @@ class AuthService {
         await _api.logout(_currentToken!, request);
       } catch (e) {
         if (kDebugMode) {
-          developer.log('Error during logout API call: $e', name: 'AuthService');
+          AppLogger.error('Error during logout API call' + ": " + e.toString(), null, null, 'AuthService');
         }
       }
     }
@@ -106,4 +106,5 @@ class AuthService {
   Future<Map<String, dynamic>> checkEmailAvailability(String email) async {
     return await _api.checkEmail(email);
   }
+
 }

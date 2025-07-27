@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:developer' as developer;
+import '../../core/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'playlist_licensing_screen.dart';
 import '../../providers/music_provider.dart';
@@ -20,6 +19,9 @@ import '../../providers/voting_provider.dart';
 import '../../widgets/playlist_detail_widgets.dart';
 import '../../widgets/sort_button.dart';
 import '../../widgets/track_sort_bottom_sheet.dart';
+import '../../models/voting_models.dart';
+import '../../widgets/playlist_voting_widgets.dart';
+import '../../widgets/custom_scrollbar.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
@@ -40,6 +42,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   VotingProvider? _votingProvider;
   Timer? _autoRefreshTimer;
   StreamSubscription<PlaylistUpdateMessage>? _playlistUpdateSubscription;
+  
+  // Voting functionality
+  bool _isVotingMode = false;
+  bool _isPublicVoting = true;
+  String _votingLicenseType = 'open';
+  DateTime? _votingStartTime;
+  DateTime? _votingEndTime;
+  PlaylistVotingInfo? _votingInfo;
 
   @override
   String get screenTitle => _playlist?.name ?? 'Playlist Details';
@@ -74,10 +84,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   @override
   List<Widget> get actions => [
     IconButton(
-      icon: const Icon(Icons.how_to_vote),
-      onPressed: () => navigateTo(AppRoutes.votingEvent),
-      tooltip: 'Track Voting',
+      icon: Icon(_isVotingMode ? Icons.edit : Icons.how_to_vote),
+      onPressed: () => setState(() => _isVotingMode = !_isVotingMode),
+      tooltip: _isVotingMode ? 'Edit Mode' : 'Voting Mode',
     ),
+    if (_isOwner) IconButton(icon: const Icon(Icons.add), onPressed: _addSongs, tooltip: 'Add Songs'),
     if (_isOwner) IconButton(icon: const Icon(Icons.settings), onPressed: _openPlaylistSettings, tooltip: 'Playlist Settings'),
     IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
     IconButton(
@@ -88,19 +99,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   ];
 
   @override
-  Widget? get floatingActionButton {
-    if (!_isOwner) return null;
-    return FloatingActionButton.extended(
-      onPressed: () async {
-        final result = await Navigator.pushNamed(context, AppRoutes.trackSearch, arguments: widget.playlistId);
-        if (result == true && mounted) await _loadData();
-      },
-      backgroundColor: AppTheme.primary,
-      foregroundColor: Colors.black,
-      icon: const Icon(Icons.add), 
-      label: const Text('Add Songs'),
-    );
-  }
+  Widget? get floatingActionButton => null;
 
   @override
   Widget buildContent() {
@@ -111,22 +110,42 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
         return RefreshIndicator(
           onRefresh: _loadData,
           color: ThemeUtils.getPrimary(context),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+          child: CustomSingleChildScrollView(
+            padding: const EdgeInsets.all(8),
             child: Column(
               children: [
                 PlaylistDetailWidgets.buildThemedPlaylistHeader(context, _playlist!),
-                const SizedBox(height: 16), 
+                const SizedBox(height: 12), 
+                if (_isVotingMode) ...PlaylistVotingWidgets.buildVotingModeHeader(
+                  context: context,
+                  isOwner: _isOwner,
+                  isPublicVoting: _isPublicVoting,
+                  votingLicenseType: _votingLicenseType,
+                  votingStartTime: _votingStartTime,
+                  votingEndTime: _votingEndTime,
+                  votingInfo: _votingInfo,
+                  onPublicVotingChanged: (value) => setState(() => _isPublicVoting = value),
+                  onLicenseTypeChanged: (value) => setState(() => _votingLicenseType = value),
+                  onApplyVotingSettings: _applyVotingSettings,
+                  onSelectVotingDateTime: _selectVotingDateTime,
+                ),
                 PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
-                const SizedBox(height: 16), 
+                const SizedBox(height: 12), 
                 PlaylistDetailWidgets.buildThemedPlaylistActions(
                   context, 
                   onPlayAll: _playPlaylist, 
                   onShuffle: _shufflePlaylist,
                   onAddRandomTrack: _isOwner ? _addRandomTrack : null,
                 ),
-                const SizedBox(height: 16), 
-                _buildTracksSection(),
+                const SizedBox(height: 12), 
+                _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
+                  context: context,
+                  tracks: _tracks,
+                  playlistId: widget.playlistId,
+                  onLoadData: () => _loadData(),
+                  onSuggestTrackForVoting: _suggestTrackForVoting,
+                  votingInfo: _votingInfo,
+                ) : _buildTracksSection(),
               ],
             ),
           ),
@@ -146,7 +165,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           elevation: 4,
           shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -173,7 +192,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                   ],
                 ),
                 if (currentSort.field != TrackSortField.position) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   _buildStyledIndicator(
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -200,7 +219,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 if (sortedTracks.isEmpty) 
                   PlaylistDetailWidgets.buildEmptyTracksState(
                     isOwner: _isOwner,
@@ -223,13 +242,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       final widget = _buildTrackItem(playlistTrack, index, key: key);
       return needsKey ? KeyedSubtree(key: key!, child: widget) : widget;
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('ERROR building track item at index $index: $e', name: 'PlaylistDetailScreen');
-      }
+      AppLogger.error('ERROR building track item at index $index: ${e.toString()}', null, null, 'PlaylistDetailScreen');
       final errorKey = needsKey ? ValueKey('error_$index') : null;
       return Container(
         key: errorKey,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Text(
           'Error loading track at position $index', 
           style: const TextStyle(color: Colors.red)
@@ -240,9 +257,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
     final canReorder = currentSort.field == TrackSortField.position && _isOwner;
-    if (kDebugMode) {
-      developer.log('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}', name: 'PlaylistDetailScreen');
-    }
+    AppLogger.debug('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}', 'PlaylistDetailScreen');
     
     return canReorder
       ? ReorderableListView.builder(
@@ -301,19 +316,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   void _setupWebSocketConnection() {
     _playlistUpdateSubscription = _webSocketService.playlistUpdateStream.listen(
       (updateMessage) {
-        if (kDebugMode) {
-          developer.log('Received WebSocket playlist update: ${updateMessage.tracks.length} tracks', 
-              name: 'PlaylistDetailScreen');
-        }
+        AppLogger.debug('Received WebSocket playlist update: ${updateMessage.tracks.length} tracks', 'PlaylistDetailScreen');
         
         if (updateMessage.playlistId == widget.playlistId && mounted) {
           _handlePlaylistUpdate(updateMessage.tracks);
         }
       },
       onError: (error) {
-        if (kDebugMode) {
-          developer.log('WebSocket error: $error', name: 'PlaylistDetailScreen');
-        }
+        AppLogger.error('WebSocket error', error, null, 'PlaylistDetailScreen');
       },
     );
 
@@ -337,9 +347,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   void _logError(String message, dynamic error) {
-    if (kDebugMode) {
-      developer.log('ERROR $message: $error', name: 'PlaylistDetailScreen');
-    }
+    AppLogger.error('ERROR $message', error, null, 'PlaylistDetailScreen');
   }
 
   T? _getMountedProvider<T>() {
@@ -352,7 +360,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   Widget _buildStyledIndicator(Widget child) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
         color: AppTheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
@@ -387,10 +395,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     
     _initializeVotingIfNeeded();
     
-    if (kDebugMode) {
-      developer.log('Updated playlist tracks via WebSocket: ${_tracks.length} tracks', 
-          name: 'PlaylistDetailScreen');
-    }
+    AppLogger.debug('Updated playlist tracks via WebSocket: ${_tracks.length} tracks', 'PlaylistDetailScreen');
   }
 
   Future<void> _loadData() async {
@@ -436,9 +441,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     try {
       await _refreshTracksFromProvider();
     } catch (e) {
-      if (kDebugMode) {
-        developer.log('Error refreshing playlist data: $e', name: 'PlaylistDetailScreen');
-      }
+      AppLogger.error('Error refreshing playlist data: ${e.toString()}', null, null, 'PlaylistDetailScreen');
     }
   }
 
@@ -502,9 +505,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     
     if (tracksNeedingDetails.isEmpty) return;
     
-    if (kDebugMode) {
-      developer.log('Starting parallel fetch for ${tracksNeedingDetails.length} tracks', name: 'PlaylistDetailScreen');
-    }
+    AppLogger.debug('Starting parallel fetch for ${tracksNeedingDetails.length} tracks', 'PlaylistDetailScreen');
     
     final futures = tracksNeedingDetails.map((playlistTrack) {
       return _fetchTrackDetailsIfNeeded(playlistTrack, -1); 
@@ -512,16 +513,17 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     
     try {
       await Future.wait(futures);
-      if (kDebugMode) {
-        developer.log('Completed parallel fetch for ${tracksNeedingDetails.length} tracks', name: 'PlaylistDetailScreen');
-      }
+      AppLogger.debug('Completed parallel fetch for ${tracksNeedingDetails.length} tracks', 'PlaylistDetailScreen');
     } catch (e) {
       _logError('in batch track fetch', e);
     }
   }
 
   Future<void> _playPlaylist() async {
-    if (_tracks.isEmpty) {
+    final musicProvider = getProvider<MusicProvider>();
+    final sortedTracks = musicProvider.sortedPlaylistTracks;
+    
+    if (sortedTracks.isEmpty) {
       showInfo('No tracks to play');
       return;
     }
@@ -529,7 +531,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     try {
       final playerService = getProvider<MusicPlayerService>();
       await playerService.setPlaylistAndPlay(
-        playlist: _tracks,
+        playlist: sortedTracks,
         startIndex: 0,
         playlistId: widget.playlistId,
         authToken: auth.token,
@@ -541,14 +543,17 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   void _shufflePlaylist() async {
-    if (_tracks.isEmpty) {
+    final musicProvider = getProvider<MusicProvider>();
+    final sortedTracks = musicProvider.sortedPlaylistTracks;
+    
+    if (sortedTracks.isEmpty) {
       showInfo('No tracks to shuffle');
       return;
     }
     
     try {
       final playerService = getProvider<MusicPlayerService>();
-      final shuffledTracks = List<PlaylistTrack>.from(_tracks);
+      final shuffledTracks = List<PlaylistTrack>.from(sortedTracks);
       shuffledTracks.shuffle();
       
       await playerService.setPlaylistAndPlay(
@@ -588,24 +593,23 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   }
 
   Future<void> _playTrackAt(int index) async {
-    if (index < 0 || index >= _tracks.length) return;
+    final musicProvider = getProvider<MusicProvider>();
+    final sortedTracks = musicProvider.sortedPlaylistTracks;
+    
+    if (index < 0 || index >= sortedTracks.length) return;
     
     try {
       final playerService = getProvider<MusicPlayerService>();
       
-      if (playerService.playlistId == widget.playlistId && 
-          playerService.playlist.length == _tracks.length) {
-        await playerService.playTrackAtIndex(index);
-      } else {
-        await playerService.setPlaylistAndPlay(
-          playlist: _tracks,
-          startIndex: index,
-          playlistId: widget.playlistId,
-          authToken: auth.token,
-        );
-      }
+      // Always use sorted tracks to ensure consistent playback order
+      await playerService.setPlaylistAndPlay(
+        playlist: sortedTracks,
+        startIndex: index,
+        playlistId: widget.playlistId,
+        authToken: auth.token,
+      );
       
-      final track = _tracks[index].track;
+      final track = sortedTracks[index].track;
       if (track != null) {
         showSuccess('Playing "${track.name}"');
       }
@@ -718,6 +722,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     }
   }
 
+  Future<void> _addSongs() async {
+    final result = await Navigator.pushNamed(context, AppRoutes.trackSearch, arguments: widget.playlistId);
+    if (result == true && mounted) await _loadData();
+  }
+
   void _startAutoRefresh() {
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted) {
@@ -747,5 +756,87 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     }
     _pendingOperations.clear();
     _fetchingTrackDetails.clear();
+  }
+
+  // Voting callback methods
+  Future<void> _applyVotingSettings() async {
+    _votingInfo = PlaylistVotingInfo(
+      playlistId: widget.playlistId,
+      restrictions: VotingRestrictions(
+        licenseType: _votingLicenseType,
+        isInvited: true,
+        isInTimeWindow: _votingLicenseType != 'location_time' || _isInVotingTimeWindow(),
+        isInLocation: true,
+      ),
+      trackVotes: {},
+    );
+    
+    setState(() {});
+    showSuccess('Voting settings applied!');
+  }
+
+  bool _isInVotingTimeWindow() {
+    final now = DateTime.now();
+    if (_votingStartTime != null && now.isBefore(_votingStartTime!)) return false;
+    if (_votingEndTime != null && now.isAfter(_votingEndTime!)) return false;
+    return true;
+  }
+
+  Future<void> _selectVotingDateTime(bool isStartTime) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (date != null) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (time != null) {
+        final dateTime = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time.hour,
+          time.minute,
+        );
+
+        setState(() {
+          if (isStartTime) {
+            _votingStartTime = dateTime;
+          } else {
+            _votingEndTime = dateTime;
+          }
+        });
+      }
+    }
+  }
+
+  Future<void> _suggestTrackForVoting() async {
+    final selectedTrack = await Navigator.pushNamed(
+      context, 
+      AppRoutes.trackSearch,
+      arguments: {'selectMode': true},
+    ) as Track?;
+
+    if (selectedTrack != null) {
+      try {
+        final musicProvider = getProvider<MusicProvider>();
+        await musicProvider.addTrackObjectToPlaylist(
+          widget.playlistId,
+          selectedTrack,
+          auth.token!,
+        );
+        
+        await _loadData();
+        showSuccess('Track suggested for voting!');
+      } catch (e) {
+        showError('Failed to suggest track: $e');
+      }
+    }
   }
 }

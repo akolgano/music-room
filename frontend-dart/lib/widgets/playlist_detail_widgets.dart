@@ -16,70 +16,86 @@ class PlaylistDetailWidgets {
           child: Column(
             children: [
               Container(
-                width: 120,
-                height: 120,
+                width: ThemeUtils.isSmallMobile(context) ? 80 : 120,
+                height: ThemeUtils.isSmallMobile(context) ? 70 : 100,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
                   gradient: LinearGradient(
                     begin: Alignment.topLeft, 
                     end: Alignment.bottomRight,
                     colors: [AppTheme.primary.withValues(alpha: 0.8), AppTheme.primary.withValues(alpha: 0.4)],
                   ),
                   boxShadow: [
-                    BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8)),
+                    BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: ThemeUtils.isSmallMobile(context) ? 10 : 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: playlist.imageUrl?.isNotEmpty == true
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
                       child: Image.network(
                         playlist.imageUrl!, 
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => 
-                          Icon(Icons.library_music, size: 60, color: ThemeUtils.getOnSurface(context)),
+                          Icon(Icons.library_music, size: ThemeUtils.isSmallMobile(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
                       ),
                     )
-                  : Icon(Icons.library_music, size: 60, color: ThemeUtils.getOnSurface(context)),
+                  : Icon(Icons.library_music, size: ThemeUtils.isSmallMobile(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 6 : 12),
               Text(
                 playlist.name,
-                style: ThemeUtils.getHeadingStyle(context).copyWith(fontSize: 28),
+                style: ThemeUtils.getHeadingStyle(context),
                 textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 3 : 6),
               if (playlist.description.isNotEmpty) ...[
                 Text(
                   playlist.description,
-                  style: ThemeUtils.getCaptionStyle(context).copyWith(fontSize: 16),
+                  style: ThemeUtils.getCaptionStyle(context),
                   textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 3,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: ThemeUtils.isSmallMobile(context) ? 4 : 8),
               ],
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Created by ${playlist.creator}', style: ThemeUtils.getCaptionStyle(context)),
-                  const SizedBox(width: 12),
-                  buildThemedVisibilityChip(context, playlist.isPublic),
-                ],
-              ),
-              const SizedBox(height: 12),
+              if (ThemeUtils.isSmallMobile(context))
+                Column(
+                  children: [
+                    Text('Created by ${playlist.creator}', style: ThemeUtils.getCaptionStyle(context)),
+                    SizedBox(height: ThemeUtils.getResponsiveMargin(context)),
+                    buildThemedVisibilityChip(context, playlist.isPublic),
+                  ],
+                )
+              else
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(child: Text('Created by ${playlist.creator}', style: ThemeUtils.getCaptionStyle(context), overflow: TextOverflow.ellipsis)),
+                    SizedBox(width: ThemeUtils.getResponsivePadding(context)),
+                    buildThemedVisibilityChip(context, playlist.isPublic),
+                  ],
+                ),
+              SizedBox(height: ThemeUtils.getResponsivePadding(context)),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: ThemeUtils.getResponsivePadding(context), vertical: ThemeUtils.isSmallMobile(context) ? 4 : 6),
                 decoration: BoxDecoration(
                   color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
                   border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.refresh, color: Colors.blue, size: 16),
-                    SizedBox(width: 6),
-                    Text(
-                      'Pull down to refresh • Auto-refresh every 30s',
-                      style: TextStyle(color: Colors.blue, fontSize: 12, fontWeight: FontWeight.w500),
+                    Icon(Icons.refresh, color: Colors.blue, size: ThemeUtils.isSmallMobile(context) ? 12 : 16),
+                    SizedBox(width: ThemeUtils.isSmallMobile(context) ? 3 : 6),
+                    Flexible(
+                      child: Text(
+                        ThemeUtils.isSmallMobile(context) ? 'Pull to refresh' : 'Pull down to refresh • Auto-refresh every 30s',
+                        style: ThemeUtils.getCaptionStyle(context).copyWith(color: Colors.blue, fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -98,7 +114,7 @@ class PlaylistDetailWidgets {
       elevation: 4,
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -121,7 +137,7 @@ class PlaylistDetailWidgets {
       elevation: 4,
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Row(
@@ -152,7 +168,7 @@ class PlaylistDetailWidgets {
               ],
             ),
             if (onAddRandomTrack != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -195,7 +211,7 @@ class PlaylistDetailWidgets {
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(6),
         child: Row(
           children: [
             buildTrackImage(track),
@@ -293,7 +309,7 @@ class PlaylistDetailWidgets {
         GestureDetector(
           onTap: onPlay,
           child: Container(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               color: AppTheme.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
@@ -306,7 +322,7 @@ class PlaylistDetailWidgets {
           GestureDetector(
             onTap: onRemove,
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
@@ -322,11 +338,11 @@ class PlaylistDetailWidgets {
   static Widget buildEmptyTracksState({required bool isOwner, VoidCallback? onAddTracks}) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             const Icon(Icons.music_note, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             const Text(
               'No tracks yet',
               style: TextStyle(
@@ -342,7 +358,7 @@ class PlaylistDetailWidgets {
               textAlign: TextAlign.center,
             ),
             if (isOwner && onAddTracks != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: onAddTracks,
                 icon: const Icon(Icons.add),
@@ -400,7 +416,7 @@ class PlaylistDetailWidgets {
   static Widget buildTrackImage(Track track) {
     return Container(
       width: 48, 
-      height: 48,
+      height: 40,
       decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
       child: track.imageUrl?.isNotEmpty == true
           ? ClipRRect(
@@ -409,7 +425,7 @@ class PlaylistDetailWidgets {
                 track.imageUrl!, 
                 fit: BoxFit.cover,
                 width: 48,
-                height: 48,
+                height: 40,
                 errorBuilder: (context, error, stackTrace) => 
                   const Icon(Icons.music_note, color: Colors.white, size: 20),
               ),
@@ -432,7 +448,7 @@ class PlaylistDetailWidgets {
       child: ListTile(
         leading: Container(
           width: 48,
-          height: 48,
+          height: 40,
           decoration: BoxDecoration(
             color: trackCacheService.isTrackRetrying(trackId) 
                 ? Colors.orange.withValues(alpha: 0.3) 
@@ -442,7 +458,7 @@ class PlaylistDetailWidgets {
           child: trackCacheService.isTrackRetrying(trackId)
               ? const SizedBox(
                   width: 24,
-                  height: 24,
+                  height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
@@ -492,7 +508,7 @@ class PlaylistDetailWidgets {
       child: ListTile(
         leading: Container(
           width: 48,
-          height: 48,
+          height: 40,
           decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(8)),
           child: const Stack(
             alignment: Alignment.center,
@@ -500,7 +516,7 @@ class PlaylistDetailWidgets {
               Icon(Icons.music_note, color: Colors.white),
               SizedBox(
                 width: 20,
-                height: 20,
+                height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
               ),
             ],

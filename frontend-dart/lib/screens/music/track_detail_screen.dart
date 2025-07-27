@@ -71,7 +71,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         return RefreshIndicator(
           onRefresh: _loadData,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(8),
             child: Column(
               children: [
                 _buildTrackHeader(themeProvider), const SizedBox(height: 24),
@@ -170,7 +170,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         return Card(
           color: AppTheme.surface,
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(10),
             child: Column(
               children: [
                 Row(
@@ -203,7 +203,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         return Card(
           color: AppTheme.surface,
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -302,7 +302,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           inactiveColor: Colors.grey,
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -326,7 +326,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     return Card(
       color: AppTheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -364,7 +364,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   Widget _buildInfoRow(String label, String value, {Widget? trailing}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -398,7 +398,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     return Card(
       color: AppTheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

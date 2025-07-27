@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'music_models.dart';
 
 class Vote {
   final String id;
@@ -57,6 +58,15 @@ class VoteStats {
     userVoteValue: json['user_vote_value'] as int?,
     voteScore: (json['vote_score'] as num?)?.toDouble() ?? 0.0,
   );
+
+  Map<String, dynamic> toJson() => {
+    'total_votes': totalVotes,
+    'upvotes': upvotes,
+    'downvotes': downvotes,
+    'user_has_voted': userHasVoted,
+    'user_vote_value': userVoteValue,
+    'vote_score': voteScore,
+  };
 
   int get netVotes => upvotes - downvotes;
   
@@ -169,4 +179,24 @@ class PlaylistVotingInfo {
   VoteStats? getTrackVotes(String trackId) => trackVotes[trackId];
   
   bool get canVote => restrictions.permission == VotingPermission.allowed;
+}
+
+class TrackWithVotes {
+  final Track track;
+  final VoteStats voteStats;
+
+  const TrackWithVotes({
+    required this.track,
+    required this.voteStats,
+  });
+
+  factory TrackWithVotes.fromJson(Map<String, dynamic> json) => TrackWithVotes(
+    track: Track.fromJson(json['track'] as Map<String, dynamic>),
+    voteStats: VoteStats.fromJson(json['vote_stats'] as Map<String, dynamic>),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'track': track.toJson(),
+    'vote_stats': voteStats.toJson(),
+  };
 }

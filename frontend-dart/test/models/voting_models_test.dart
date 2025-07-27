@@ -5,7 +5,7 @@ import 'package:music_room/models/voting_models.dart';
 void main() {
   group('Voting Models Tests', () {
     test('VoteStats should track vote counts correctly', () {
-      print('Testing: VoteStats should track vote counts correctly');
+      // print('Testing: VoteStats should track vote counts correctly');
       const voteStats = VoteStats(
         totalVotes: 7,
         upvotes: 5,
@@ -22,7 +22,7 @@ void main() {
     });
 
     test('VoteStats should calculate net votes correctly', () {
-      print('Testing: VoteStats should calculate net votes correctly');
+      // print('Testing: VoteStats should calculate net votes correctly');
       const voteStats = VoteStats(
         totalVotes: 13,
         upvotes: 10,
@@ -37,7 +37,7 @@ void main() {
     });
 
     test('VoteStats should handle zero votes', () {
-      print('Testing: VoteStats should handle zero votes');
+      // print('Testing: VoteStats should handle zero votes');
       const voteStats = VoteStats(
         totalVotes: 0,
         upvotes: 0,
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('VoteStats should create from JSON correctly', () {
-      print('Testing: VoteStats should create from JSON correctly');
+      // print('Testing: VoteStats should create from JSON correctly');
       final json = {
         'total_votes': 10,
         'upvotes': 8,
@@ -73,7 +73,7 @@ void main() {
     });
 
     test('VoteStats should handle display text correctly', () {
-      print('Testing: VoteStats should handle display text correctly');
+      // print('Testing: VoteStats should handle display text correctly');
       const oneVote = VoteStats(
         totalVotes: 1,
         upvotes: 1,
@@ -95,7 +95,7 @@ void main() {
     });
 
     test('VoteStats should provide correct score color', () {
-      print('Testing: VoteStats should provide correct score color');
+      // print('Testing: VoteStats should provide correct score color');
       const highScore = VoteStats(
         totalVotes: 10,
         upvotes: 8,
@@ -126,7 +126,7 @@ void main() {
     });
 
     test('Vote should serialize and deserialize correctly', () {
-      print('Testing: Vote should serialize and deserialize correctly');
+      // print('Testing: Vote should serialize and deserialize correctly');
       final vote = Vote(
         id: 'vote123',
         trackId: 'track456',

@@ -12,12 +12,12 @@ void main() {
     });
 
     test('DynamicThemeProvider should extend ChangeNotifier', () {
-      print('Testing: DynamicThemeProvider should extend ChangeNotifier');
+      // print('Testing: DynamicThemeProvider should extend ChangeNotifier');
       expect(themeProvider, isA<ChangeNotifier>());
     });
 
     test('DynamicThemeProvider should have initial default colors', () {
-      print('Testing: DynamicThemeProvider should have initial default colors');
+      // print('Testing: DynamicThemeProvider should have initial default colors');
       expect(themeProvider.primaryColor, AppTheme.primary);
       expect(themeProvider.surfaceColor, AppTheme.surface);
       expect(themeProvider.backgroundColor, AppTheme.background);
@@ -27,13 +27,13 @@ void main() {
     });
 
     test('DynamicThemeProvider should provide extraction state', () {
-      print('Testing: DynamicThemeProvider should provide extraction state');
+      // print('Testing: DynamicThemeProvider should provide extraction state');
       expect(themeProvider.isExtracting, false);
       expect(themeProvider.currentImageUrl, null);
     });
 
     test('DynamicThemeProvider should generate dynamic theme', () {
-      print('Testing: DynamicThemeProvider should generate dynamic theme');
+      // print('Testing: DynamicThemeProvider should generate dynamic theme');
       final theme = themeProvider.dynamicTheme;
       
       expect(theme, isA<ThemeData>());
@@ -44,7 +44,7 @@ void main() {
     });
 
     test('DynamicThemeProvider should handle custom color setting', () {
-      print('Testing: DynamicThemeProvider should handle custom color setting');
+      // print('Testing: DynamicThemeProvider should handle custom color setting');
       const customPrimary = Colors.blue;
       const customSurface = Colors.grey;
       const customBackground = Colors.black87;
@@ -64,7 +64,7 @@ void main() {
     });
 
     test('DynamicThemeProvider should reset theme to defaults', () {
-      print('Testing: DynamicThemeProvider should reset theme to defaults');
+      // print('Testing: DynamicThemeProvider should reset theme to defaults');
       themeProvider.setCustomColors(primary: Colors.red);
       expect(themeProvider.primaryColor, Colors.red);
       
@@ -74,7 +74,7 @@ void main() {
     });
 
     test('DynamicThemeProvider should provide current colors map', () {
-      print('Testing: DynamicThemeProvider should provide current colors map');
+      // print('Testing: DynamicThemeProvider should provide current colors map');
       final colors = themeProvider.currentColors;
       
       expect(colors, isA<Map<String, Color>>());
@@ -87,20 +87,20 @@ void main() {
     });
 
     test('DynamicThemeProvider should clear color cache', () {
-      print('Testing: DynamicThemeProvider should clear color cache');
+      // print('Testing: DynamicThemeProvider should clear color cache');
       themeProvider.clearCache();
       expect(themeProvider, isNotNull);
     });
 
     test('DynamicThemeProvider should handle null image URL extraction', () async {
-      print('Testing: DynamicThemeProvider should handle null image URL extraction');
+      // print('Testing: DynamicThemeProvider should handle null image URL extraction');
       await themeProvider.extractAndApplyDominantColor(null);
       expect(themeProvider.primaryColor, AppTheme.primary);
       expect(themeProvider.currentImageUrl, null);
     });
 
     test('DynamicThemeProvider should handle empty image URL extraction', () async {
-      print('Testing: DynamicThemeProvider should handle empty image URL extraction');
+      // print('Testing: DynamicThemeProvider should handle empty image URL extraction');
       await themeProvider.extractAndApplyDominantColor('');
       expect(themeProvider.primaryColor, AppTheme.primary);
       expect(themeProvider.currentImageUrl, null);

@@ -3,7 +3,7 @@
 
 **START TESTING** → Configure test environment with backend URL
 ↓
-**Step 1** → Clear app data and prepare 3 test user accounts
+**Step 1** → Prepare 4 test user accounts
 ↓
 **Step 2** → Launch app for first time user experience
 ↓
@@ -182,21 +182,3 @@
 **Step 89** → Test network disconnection handling
 ↓
 **Step 90** → Disconnect internet and attempt app usage
-↓
-**Step 91** → Verify appropriate offline error messages
-↓
-**Step 92** → Reconnect internet and test app recovery
-↓
-**Step 93** → Test invalid input validation throughout app
-↓
-**Step 94** → Verify weak passwords are rejected
-↓
-**Step 95** → Test empty required fields show errors
-↓
-**Step 96** → Measure app launch time performance
-↓
-**Step 97** → Time login response and real-time updates
-
-**TESTING COMPLETE**
-
----

@@ -80,7 +80,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(10.0),
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: 450),
                 child: Column(
@@ -131,7 +131,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(24.0),
+                        padding: const EdgeInsets.all(12.0),
                         child: Form(
                           key: _formKey,
                           child: Column(
@@ -213,7 +213,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.primary,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(32),
                                     ),
@@ -236,7 +236,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.surface,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(32),
                                     ),

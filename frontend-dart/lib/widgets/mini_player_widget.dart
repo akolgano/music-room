@@ -18,7 +18,9 @@ class MiniPlayerWidget extends StatelessWidget {
         if (currentTrack == null) return const SizedBox.shrink();
 
         return Container(
-          height: isLandscape ? 60 : 100,
+          height: ThemeUtils.isSmallMobile(context) 
+            ? (isLandscape ? 45 : 60) 
+            : (isLandscape ? 50 : 80),
           decoration: BoxDecoration(
             color: AppTheme.surface,
             border: Border(
@@ -30,7 +32,7 @@ class MiniPlayerWidget extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 8,
+                blurRadius: ThemeUtils.isSmallMobile(context) ? 4 : 8,
                 offset: const Offset(0, -2),
               ),
             ],
@@ -42,47 +44,56 @@ class MiniPlayerWidget extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => _navigateToTrackDetail(context, currentTrack),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: isLandscape ? 4 : 8),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ThemeUtils.getResponsivePadding(context) * 2, 
+                      vertical: ThemeUtils.isSmallMobile(context) 
+                        ? (isLandscape ? 2 : 4) 
+                        : (isLandscape ? 4 : 8)
+                    ),
                     child: Row(
                       children: [
                       Container(
-                        width: isLandscape ? 40 : 56,
-                        height: isLandscape ? 40 : 56,
+                        width: ThemeUtils.isSmallMobile(context) 
+                          ? (isLandscape ? 32 : 40) 
+                          : (isLandscape ? 40 : 56),
+                        height: ThemeUtils.isSmallMobile(context) 
+                          ? (isLandscape ? 24 : 32) 
+                          : (isLandscape ? 32 : 48),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
                           color: AppTheme.surfaceVariant,
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
                           child: currentTrack.imageUrl?.isNotEmpty == true
                               ? CachedNetworkImage(
                                   imageUrl: currentTrack.imageUrl!,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => Container(
                                     color: AppTheme.surfaceVariant,
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.music_note,
                                       color: Colors.white,
-                                      size: 24,
+                                      size: ThemeUtils.getResponsiveIconSize(context),
                                     ),
                                   ),
                                   errorWidget: (context, url, error) => Container(
                                     color: AppTheme.surfaceVariant,
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.music_note,
                                       color: Colors.white,
-                                      size: 24,
+                                      size: ThemeUtils.getResponsiveIconSize(context),
                                     ),
                                   ),
                                 )
-                              : const Icon(
+                              : Icon(
                                   Icons.music_note,
                                   color: Colors.white,
-                                  size: 24,
+                                  size: ThemeUtils.getResponsiveIconSize(context),
                                 ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: ThemeUtils.getResponsivePadding(context)),
                       
                       Expanded(
                         child: Column(
@@ -91,15 +102,14 @@ class MiniPlayerWidget extends StatelessWidget {
                           children: [
                             Text(
                               currentTrack.name,
-                              style: const TextStyle(
+                              style: ThemeUtils.getBodyStyle(context).copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 1),
                             Row(
                               children: [
                                 Flexible(
@@ -166,7 +176,7 @@ class MiniPlayerWidget extends StatelessWidget {
                         children: [
                           Container(
                             width: isLandscape ? 28 : 32,
-                            height: isLandscape ? 28 : 32,
+                            height: isLandscape ? 24 : 28,
                             decoration: BoxDecoration(
                               color: playerService.hasPreviousTrack 
                                   ? Colors.grey.withValues(alpha: 0.3)
@@ -192,7 +202,7 @@ class MiniPlayerWidget extends StatelessWidget {
                           
                           Container(
                             width: isLandscape ? 36 : 40,
-                            height: isLandscape ? 36 : 40,
+                            height: isLandscape ? 30 : 34,
                             decoration: const BoxDecoration(
                               color: AppTheme.primary,
                               shape: BoxShape.circle,
@@ -214,7 +224,7 @@ class MiniPlayerWidget extends StatelessWidget {
                           
                           Container(
                             width: isLandscape ? 28 : 32,
-                            height: isLandscape ? 28 : 32,
+                            height: isLandscape ? 24 : 28,
                             decoration: BoxDecoration(
                               color: playerService.hasNextTrack 
                                   ? Colors.grey.withValues(alpha: 0.3)
@@ -242,7 +252,7 @@ class MiniPlayerWidget extends StatelessWidget {
                       
                       Container(
                         width: isLandscape ? 28 : 32,
-                        height: isLandscape ? 28 : 32,
+                        height: isLandscape ? 24 : 28,
                         decoration: BoxDecoration(
                           color: Colors.grey.withValues(alpha: 0.3),
                           shape: BoxShape.circle,
@@ -272,13 +282,13 @@ class MiniPlayerWidget extends StatelessWidget {
     
     if (duration.inSeconds == 0) {
       return Container(
-        height: 3,
+        height: 2,
         color: AppTheme.primary.withValues(alpha: 0.2),
       );
     }
 
     return SizedBox(
-      height: 3,
+      height: 2,
       child: SliderTheme(
         data: SliderTheme.of(context).copyWith(
           trackHeight: 3,

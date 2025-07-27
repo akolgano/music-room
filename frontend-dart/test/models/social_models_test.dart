@@ -5,7 +5,7 @@ void main() {
   group('Social Models Tests', () {
     group('Friendship', () {
       test('should create Friendship from JSON', () {
-        print('Testing: should create Friendship from JSON');
+        // print('Testing: should create Friendship from JSON');
         final json = {
           'id': '123',
           'from_user': 456,
@@ -24,7 +24,7 @@ void main() {
       });
 
       test('should convert Friendship to JSON', () {
-        print('Testing: should convert Friendship to JSON');
+        // print('Testing: should convert Friendship to JSON');
         final friendship = Friendship(
           id: '123',
           fromUser: 456,
@@ -43,7 +43,7 @@ void main() {
       });
 
       test('should handle different friendship statuses', () {
-        print('Testing: should handle different friendship statuses');
+        // print('Testing: should handle different friendship statuses');
         final statuses = ['pending', 'accepted', 'rejected', 'blocked'];
         
         for (final status in statuses) {
@@ -61,7 +61,7 @@ void main() {
       });
 
       test('should handle integer ID conversion', () {
-        print('Testing: should handle integer ID conversion');
+        // print('Testing: should handle integer ID conversion');
         final json = {
           'id': 123,
           'from_user': 456,
@@ -78,7 +78,7 @@ void main() {
       });
 
       test('should preserve datetime precision', () {
-        print('Testing: should preserve datetime precision');
+        // print('Testing: should preserve datetime precision');
         final originalDate = DateTime.now();
         final friendship = Friendship(
           id: '123',
@@ -97,7 +97,7 @@ void main() {
       });
 
       test('should handle various datetime formats', () {
-        print('Testing: should handle various datetime formats');
+        // print('Testing: should handle various datetime formats');
         final dateFormats = [
           '2023-12-01T10:30:00.000Z',
           '2023-12-01T10:30:00Z',

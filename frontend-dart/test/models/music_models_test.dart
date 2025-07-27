@@ -5,7 +5,7 @@ void main() {
   group('Music Models Tests', () {
     group('User', () {
       test('should create User from JSON', () {
-        print('Testing: should create User from JSON');
+        // print('Testing: should create User from JSON');
         final json = {
           'id': '123',
           'username': 'testuser',
@@ -20,7 +20,7 @@ void main() {
       });
 
       test('should convert User to JSON', () {
-        print('Testing: should convert User to JSON');
+        // print('Testing: should convert User to JSON');
         const user = User(
           id: '123', 
           username: 'testuser', 
@@ -37,7 +37,7 @@ void main() {
 
     group('Track', () {
       test('should create Track from JSON', () {
-        print('Testing: should create Track from JSON');
+        // print('Testing: should create Track from JSON');
         final json = {
           'id': 'track123',
           'name': 'Test Song',
@@ -56,7 +56,7 @@ void main() {
       });
 
       test('should identify Deezer track correctly', () {
-        print('Testing: should identify Deezer track correctly');
+        // print('Testing: should identify Deezer track correctly');
         const track = Track(
           id: 'deezer_123',
           name: 'Test Song',
@@ -72,13 +72,13 @@ void main() {
       });
 
       test('should convert backend ID correctly', () {
-        print('Testing: should convert backend ID correctly');
+        // print('Testing: should convert backend ID correctly');
         expect(Track.toBackendId('deezer_123'), '123');
         expect(Track.toBackendId('regular_track'), 'regular_track');
       });
 
       test('should convert frontend ID correctly', () {
-        print('Testing: should convert frontend ID correctly');
+        // print('Testing: should convert frontend ID correctly');
         expect(Track.toFrontendId('123', isDeezer: true), 'deezer_123');
         expect(Track.toFrontendId('regular_track'), 'regular_track');
       });
@@ -86,7 +86,7 @@ void main() {
 
     group('Playlist', () {
       test('should create Playlist from JSON', () {
-        print('Testing: should create Playlist from JSON');
+        // print('Testing: should create Playlist from JSON');
         final json = {
           'id': 'playlist123',
           'name': 'Test Playlist',
@@ -107,7 +107,7 @@ void main() {
       });
 
       test('should convert Playlist to JSON', () {
-        print('Testing: should convert Playlist to JSON');
+        // print('Testing: should convert Playlist to JSON');
         const playlist = Playlist(
           id: 'playlist123',
           name: 'Test Playlist',
@@ -128,7 +128,7 @@ void main() {
 
     group('PlaylistTrack', () {
       test('should create PlaylistTrack from JSON', () {
-        print('Testing: should create PlaylistTrack from JSON');
+        // print('Testing: should create PlaylistTrack from JSON');
         final json = {
           'track_id': 'track123',
           'name': 'Test Song',
@@ -145,7 +145,7 @@ void main() {
       });
 
       test('should identify when track details are needed', () {
-        print('Testing: should identify when track details are needed');
+        // print('Testing: should identify when track details are needed');
         const track = Track(
           id: 'deezer_123',
           name: 'Test Song',
@@ -166,7 +166,7 @@ void main() {
       });
 
       test('should provide display properties', () {
-        print('Testing: should provide display properties');
+        // print('Testing: should provide display properties');
         const track = Track(
           id: 'track123',
           name: 'Test Song',
@@ -188,7 +188,7 @@ void main() {
       });
 
       test('should copy with new track', () {
-        print('Testing: should copy with new track');
+        // print('Testing: should copy with new track');
         const originalTrack = Track(
           id: 'track123',
           name: 'Original Song',
@@ -224,7 +224,7 @@ void main() {
 
     group('PlaylistInfoWithVotes', () {
       test('should create PlaylistInfoWithVotes from JSON', () {
-        print('Testing: should create PlaylistInfoWithVotes from JSON');
+        // print('Testing: should create PlaylistInfoWithVotes from JSON');
         final json = {
           'id': 123,
           'playlist_name': 'Voting Playlist',
@@ -245,7 +245,7 @@ void main() {
       });
 
       test('should convert PlaylistInfoWithVotes to JSON', () {
-        print('Testing: should convert PlaylistInfoWithVotes to JSON');
+        // print('Testing: should convert PlaylistInfoWithVotes to JSON');
         const playlistInfo = PlaylistInfoWithVotes(
           id: 123,
           playlistName: 'Voting Playlist',

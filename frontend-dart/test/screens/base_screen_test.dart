@@ -4,7 +4,7 @@ import 'package:music_room/screens/base_screen.dart';
 void main() {
   group('Base Screen Tests', () {
     test('BaseScreen should provide common functionality', () {
-      print('Testing: BaseScreen should provide common functionality');
+      // print('Testing: BaseScreen should provide common functionality');
 
       expect(BaseScreen, isA<Type>());
       
@@ -25,7 +25,7 @@ void main() {
     });
 
     test('BaseScreen should handle navigation functionality', () {
-      print('Testing: BaseScreen should handle navigation functionality');
+      // print('Testing: BaseScreen should handle navigation functionality');
 
       const navigationActions = {
         'canNavigateBack': true,
@@ -54,7 +54,7 @@ void main() {
     });
 
     test('BaseScreen should handle loading and error states', () {
-      print('Testing: BaseScreen should handle loading and error states');
+      // print('Testing: BaseScreen should handle loading and error states');
 
       var isLoading = false;
       var hasError = false;
@@ -86,7 +86,7 @@ void main() {
     });
 
     test('BaseScreen should handle screen lifecycle', () {
-      print('Testing: BaseScreen should handle screen lifecycle');
+      // print('Testing: BaseScreen should handle screen lifecycle');
 
       const lifecycleStates = {
         'initialized': true,
@@ -118,7 +118,7 @@ void main() {
     });
 
     test('BaseScreen should handle accessibility features', () {
-      print('Testing: BaseScreen should handle accessibility features');
+      // print('Testing: BaseScreen should handle accessibility features');
 
       const accessibilityConfig = {
         'semanticsEnabled': true,

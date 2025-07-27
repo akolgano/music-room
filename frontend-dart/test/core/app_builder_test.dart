@@ -4,7 +4,7 @@ import 'package:music_room/core/app_builder.dart';
 void main() {
   group('App Builder Tests', () {
     test('AppBuilder should be properly configured', () {
-      print('Testing: AppBuilder should be properly configured');
+      // print('Testing: AppBuilder should be properly configured');
       expect(AppBuilder, isA<Type>());
       
       const appConfig = {
@@ -23,7 +23,7 @@ void main() {
     });
 
     test('AppBuilder should handle theme configuration', () {
-      print('Testing: AppBuilder should handle theme configuration');
+      // print('Testing: AppBuilder should handle theme configuration');
       const themeConfig = {
         'useMaterial3': true,
         'supportsDynamicColor': true,
@@ -47,7 +47,7 @@ void main() {
     });
 
     test('AppBuilder should handle localization setup', () {
-      print('Testing: AppBuilder should handle localization setup');
+      // print('Testing: AppBuilder should handle localization setup');
       const localizationConfig = {
         'defaultLocale': 'en',
         'supportedLocales': ['en', 'es', 'fr', 'de'],
@@ -74,7 +74,7 @@ void main() {
     });
 
     test('AppBuilder should handle navigation configuration', () {
-      print('Testing: AppBuilder should handle navigation configuration');
+      // print('Testing: AppBuilder should handle navigation configuration');
       const navigationConfig = {
         'initialRoute': '/',
         'generateRoutes': true,
@@ -102,7 +102,7 @@ void main() {
     });
 
     test('AppBuilder should handle dependency injection setup', () {
-      print('Testing: AppBuilder should handle dependency injection setup');
+      // print('Testing: AppBuilder should handle dependency injection setup');
       const serviceConfig = {
         'useGetIt': true,
         'lazyServices': true,

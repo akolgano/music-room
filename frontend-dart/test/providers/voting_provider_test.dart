@@ -5,7 +5,7 @@ import 'package:music_room/models/voting_models.dart';
 void main() {
   group('Voting Provider Tests', () {
     test('VotingProvider should handle track voting correctly', () {
-      print('Testing: VotingProvider should handle track voting correctly');
+      // print('Testing: VotingProvider should handle track voting correctly');
       const trackId = 'track_123';
       const voteValue = 1;
       const userId = 'user_456';
@@ -28,7 +28,7 @@ void main() {
     });
 
     test('VotingProvider should calculate points accurately', () {
-      print('Testing: VotingProvider should calculate points accurately');
+      // print('Testing: VotingProvider should calculate points accurately');
       const upvotes = 10;
       const downvotes = 3;
       const totalVotes = upvotes + downvotes;
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('VotingProvider should handle voting permissions', () {
-      print('Testing: VotingProvider should handle voting permissions');
+      // print('Testing: VotingProvider should handle voting permissions');
       const openLicense = VotingRestrictions(
         licenseType: 'open',
         isInvited: true,
@@ -81,7 +81,7 @@ void main() {
     });
 
     test('VotingProvider should handle vote statistics display', () {
-      print('Testing: VotingProvider should handle vote statistics display');
+      // print('Testing: VotingProvider should handle vote statistics display');
       const noVotes = VoteStats(
         totalVotes: 0,
         upvotes: 0,
@@ -114,7 +114,7 @@ void main() {
     });
 
     test('VotingProvider should provide score color indicators', () {
-      print('Testing: VotingProvider should provide score color indicators');
+      // print('Testing: VotingProvider should provide score color indicators');
       const highScore = VoteStats(
         totalVotes: 10,
         upvotes: 8,
@@ -148,7 +148,7 @@ void main() {
     });
 
     test('VotingProvider should extend BaseProvider', () {
-      print('Testing: VotingProvider should extend BaseProvider');
+      // print('Testing: VotingProvider should extend BaseProvider');
       expect(VotingProvider, isA<Type>());
       var isLoading = false;
       String? errorMessage;

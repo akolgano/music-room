@@ -51,7 +51,7 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
   Widget _buildConnectivityBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(4),
       color: _isConnected ? Colors.green : Colors.red,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

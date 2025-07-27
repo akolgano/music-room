@@ -1,5 +1,4 @@
-import 'dart:developer' as developer;
-import 'package:flutter/foundation.dart';
+import '../core/app_logger.dart';
 
 class User {
   final String id;
@@ -179,9 +178,7 @@ class PlaylistTrack {
       try {
         track = Track.fromJson(json['track'] as Map<String, dynamic>);
       } catch (e) {
-        if (kDebugMode) {
-          developer.log('Error parsing nested track: $e', name: 'PlaylistTrack');
-        }
+        AppLogger.error('Error parsing nested track' + ": " + e.toString(), null, null, 'PlaylistTrack');
       }
     } 
     else if (json['deezer_track_id'] != null) {
@@ -244,9 +241,7 @@ class PlaylistTrack {
     final criticalInfoMissing = needsArtist || needsAlbum;
     
     if (criticalInfoMissing) {
-      if (kDebugMode) {
-        developer.log('Track ${track?.name} (Deezer ID: ${track?.deezerTrackId}) needs details: artist=${track?.artist.isEmpty}, album=${track?.album.isEmpty}', name: 'PlaylistTrack');
-      }
+      AppLogger.debug('Track ${track?.name} (Deezer ID: ${track?.deezerTrackId}) needs details: artist=${track?.artist.isEmpty}, album=${track?.album.isEmpty}', 'PlaylistTrack');
     }
     
     return criticalInfoMissing;

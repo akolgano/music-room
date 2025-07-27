@@ -22,19 +22,19 @@ void main() {
     });
 
     test('FriendProvider should extend BaseProvider', () {
-      print('Testing: FriendProvider should extend BaseProvider');
+      // print('Testing: FriendProvider should extend BaseProvider');
       expect(friendProvider, isA<BaseProvider>());
     });
 
     test('FriendProvider should have initial empty state', () {
-      print('Testing: FriendProvider should have initial empty state');
+      // print('Testing: FriendProvider should have initial empty state');
       expect(friendProvider.friends, isEmpty);
       expect(friendProvider.receivedInvitations, isEmpty);
       expect(friendProvider.sentInvitations, isEmpty);
     });
 
     test('FriendProvider should provide unmodifiable lists', () {
-      print('Testing: FriendProvider should provide unmodifiable lists');
+      // print('Testing: FriendProvider should provide unmodifiable lists');
       final friends = friendProvider.friends;
       final received = friendProvider.receivedInvitations;
       final sent = friendProvider.sentInvitations;
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('FriendProvider should clear friends properly', () {
-      print('Testing: FriendProvider should clear friends properly');
+      // print('Testing: FriendProvider should clear friends properly');
       friendProvider.clearFriends();
       
       expect(friendProvider.friends, isEmpty);
@@ -54,7 +54,7 @@ void main() {
     });
 
     test('FriendProvider should extract friendship ID from invitation', () {
-      print('Testing: FriendProvider should extract friendship ID from invitation');
+      // print('Testing: FriendProvider should extract friendship ID from invitation');
       final invitation = {'id': 123, 'status': 'pending'};
       final friendshipId = friendProvider.getFriendshipId(invitation);
       
@@ -62,7 +62,7 @@ void main() {
     });
 
     test('FriendProvider should extract from user ID from invitation', () {
-      print('Testing: FriendProvider should extract from user ID from invitation');
+      // print('Testing: FriendProvider should extract from user ID from invitation');
       final invitation = {'from_user': 456, 'status': 'pending'};
       final fromUserId = friendProvider.getFromUserId(invitation);
       
@@ -70,7 +70,7 @@ void main() {
     });
 
     test('FriendProvider should extract to user ID from invitation', () {
-      print('Testing: FriendProvider should extract to user ID from invitation');
+      // print('Testing: FriendProvider should extract to user ID from invitation');
       final invitation = {'to_user': 789, 'status': 'pending'};
       final toUserId = friendProvider.getToUserId(invitation);
       
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('FriendProvider should extract invitation status', () {
-      print('Testing: FriendProvider should extract invitation status');
+      // print('Testing: FriendProvider should extract invitation status');
       final invitation = {'id': 1, 'status': 'accepted'};
       final status = friendProvider.getInvitationStatus(invitation);
       
@@ -86,7 +86,7 @@ void main() {
     });
 
     test('FriendProvider should extract from username', () {
-      print('Testing: FriendProvider should extract from username');
+      // print('Testing: FriendProvider should extract from username');
       final invitation = {'from_username': 'alice', 'status': 'pending'};
       final fromUsername = friendProvider.getFromUsername(invitation);
       
@@ -94,7 +94,7 @@ void main() {
     });
 
     test('FriendProvider should extract to username', () {
-      print('Testing: FriendProvider should extract to username');
+      // print('Testing: FriendProvider should extract to username');
       final invitation = {'to_username': 'bob', 'status': 'pending'};
       final toUsername = friendProvider.getToUsername(invitation);
       
@@ -102,7 +102,7 @@ void main() {
     });
 
     test('FriendProvider should handle null values in invitation data', () {
-      print('Testing: FriendProvider should handle null values in invitation data');
+      // print('Testing: FriendProvider should handle null values in invitation data');
       final invitation = <String, dynamic>{};
       
       expect(friendProvider.getFriendshipId(invitation), null);

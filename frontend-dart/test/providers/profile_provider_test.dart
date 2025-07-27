@@ -19,12 +19,12 @@ void main() {
     });
 
     test('ProfileProvider should extend BaseProvider', () {
-      print('Testing: ProfileProvider should extend BaseProvider');
+      // print('Testing: ProfileProvider should extend BaseProvider');
       expect(profileProvider, isA<BaseProvider>());
     });
 
     test('ProfileProvider should have initial null values', () {
-      print('Testing: ProfileProvider should have initial null values');
+      // print('Testing: ProfileProvider should have initial null values');
       expect(profileProvider.userId, null);
       expect(profileProvider.username, null);
       expect(profileProvider.userEmail, null);
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('ProfileProvider should have initial profile field values', () {
-      print('Testing: ProfileProvider should have initial profile field values');
+      // print('Testing: ProfileProvider should have initial profile field values');
       expect(profileProvider.avatar, null);
       expect(profileProvider.name, null);
       expect(profileProvider.location, null);
@@ -48,7 +48,7 @@ void main() {
     });
 
     test('ProfileProvider should have initial visibility values', () {
-      print('Testing: ProfileProvider should have initial visibility values');
+      // print('Testing: ProfileProvider should have initial visibility values');
       expect(profileProvider.avatarVisibility, null);
       expect(profileProvider.nameVisibility, null);
       expect(profileProvider.locationVisibility, null);
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('ProfileProvider should reset values correctly', () {
-      print('Testing: ProfileProvider should reset values correctly');
+      // print('Testing: ProfileProvider should reset values correctly');
       profileProvider.resetValues();
       
       expect(profileProvider.userId, null);
@@ -73,14 +73,14 @@ void main() {
     });
 
     test('VisibilityLevel enum should have correct values', () {
-      print('Testing: VisibilityLevel enum should have correct values');
+      // print('Testing: VisibilityLevel enum should have correct values');
       expect(VisibilityLevel.public.value, 'public');
       expect(VisibilityLevel.friends.value, 'friends');
       expect(VisibilityLevel.private.value, 'private');
     });
 
     test('VisibilityLevel should parse from string correctly', () {
-      print('Testing: VisibilityLevel should parse from string correctly');
+      // print('Testing: VisibilityLevel should parse from string correctly');
       expect(VisibilityLevelExtension.fromString('public'), VisibilityLevel.public);
       expect(VisibilityLevelExtension.fromString('friends'), VisibilityLevel.friends);
       expect(VisibilityLevelExtension.fromString('private'), VisibilityLevel.private);
@@ -89,22 +89,22 @@ void main() {
     });
 
     test('ProfileProvider should handle avatar URL correctly', () {
-      print('Testing: ProfileProvider should handle avatar URL correctly');
+      // print('Testing: ProfileProvider should handle avatar URL correctly');
       expect(profileProvider.avatarUrl, null);
     });
 
     test('ProfileProvider should handle base64 avatar URL', () {
-      print('Testing: ProfileProvider should handle base64 avatar URL');
+      // print('Testing: ProfileProvider should handle base64 avatar URL');
       expect(profileProvider.avatarUrl, null);
     });
 
     test('ProfileProvider should handle data URI avatar', () {
-      print('Testing: ProfileProvider should handle data URI avatar');
+      // print('Testing: ProfileProvider should handle data URI avatar');
       expect(profileProvider.avatarUrl, null);
     });
 
     test('ProfileProvider should handle empty avatar string', () {
-      print('Testing: ProfileProvider should handle empty avatar string');
+      // print('Testing: ProfileProvider should handle empty avatar string');
       expect(profileProvider.avatarUrl, null);
     });
   });

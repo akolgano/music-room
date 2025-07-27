@@ -33,7 +33,7 @@ class TrackSortBottomSheet extends StatelessWidget {
           ),
           
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(10),
             child: Row(
               children: [
                 const Icon(Icons.sort, color: AppTheme.primary),

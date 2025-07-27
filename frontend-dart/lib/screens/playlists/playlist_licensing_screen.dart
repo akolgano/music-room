@@ -1,6 +1,5 @@
-import 'dart:developer' as developer;
+import '../../core/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/service_locator.dart'; 
@@ -58,7 +57,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   @override
   Widget buildContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       child: Column(
         children: [
           _buildPlaylistInfo(),
@@ -144,7 +143,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     return GestureDetector(
       onTap: () => setState(() => _licenseType = value),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.1) : AppTheme.surfaceVariant,
           borderRadius: BorderRadius.circular(12),
@@ -156,7 +155,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: isSelected ? color : Colors.grey.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(8),
@@ -360,7 +359,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
         GestureDetector(
           onTap: () => _selectTime(onTimeSelected),
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: AppTheme.surfaceVariant,
               borderRadius: BorderRadius.circular(8),
@@ -398,9 +397,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   Future<void> _loadData() async {
     await runAsyncAction(
       () async {
-        if (kDebugMode) {
-          developer.log('Loading playlist licensing data for ${widget.playlistId}', name: 'PlaylistLicensingScreen');
-        }
+        AppLogger.debug('Loading playlist licensing data for ${widget.playlistId}', 'PlaylistLicensingScreen');
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.fetchFriends(auth.token!);
         setState(() {
@@ -412,9 +409,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             widget.playlistId,
             auth.token!,
           );
-          if (kDebugMode) {
-            developer.log('Loaded existing license settings: ${license.licenseType}', name: 'PlaylistLicensingScreen');
-          }
+          AppLogger.debug('Loaded existing license settings: ${license.licenseType}', 'PlaylistLicensingScreen');
           setState(() {
             _licenseType = license.licenseType;
             _invitedUsers = license.invitedUsers;
@@ -441,9 +436,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
             _radiusController.text = _allowedRadiusMeters?.toString() ?? '100';
           });
         } catch (e) {
-          if (kDebugMode) {
-            developer.log('No existing license found, using defaults: $e', name: 'PlaylistLicensingScreen');
-          }
+          AppLogger.debug('No existing license found, using defaults: $e', 'PlaylistLicensingScreen');
         }
       },
       errorMessage: 'Failed to load playlist settings',
@@ -495,9 +488,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     setState(() => _isLoading = true);
     
     try {
-      if (kDebugMode) {
-        developer.log('Saving playlist license settings: $_licenseType', name: 'PlaylistLicensingScreen');
-      }
+      AppLogger.debug('Saving playlist license settings: $_licenseType', 'PlaylistLicensingScreen');
       
       String? voteStartTimeStr;
       String? voteEndTimeStr;

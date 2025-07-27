@@ -1,6 +1,5 @@
-import 'dart:developer' as developer;
+import '../core/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../core/theme_utils.dart';
 import '../models/voting_models.dart';
@@ -74,7 +73,7 @@ class VoteCounter extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 1),
           Text(
             'Downvotes not supported',
             style: TextStyle(
@@ -195,7 +194,7 @@ class TrackVotingControls extends StatelessWidget {
             children: [
               SizedBox(
                 width: 24,
-                height: 24,
+                height: 20,
                 child: InkWell(
                   onTap: canVote && userVote == null 
                       ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
@@ -252,7 +251,7 @@ class TrackVotingControls extends StatelessWidget {
   ) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 200), 
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(8),
@@ -291,7 +290,7 @@ class TrackVotingControls extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -322,7 +321,7 @@ class TrackVotingControls extends StatelessWidget {
             ],
           ),
           if (!canVote || userVote != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               userVote != null ? 'You have voted' : votingProvider.getVotingStatusMessage(),
               style: TextStyle(color: userVote != null ? Colors.green : Colors.orange, fontSize: 9),
@@ -346,8 +345,8 @@ class TrackVotingControls extends StatelessWidget {
       votingProvider.setUserVote(trackIndex, voteValue);
       final success = await votingProvider.upvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
       if (success && onVoteSubmitted != null) onVoteSubmitted!();
-      if (!success && kDebugMode) {
-        developer.log('Vote failed, should revert UI state', name: 'VotingWidgets');
+      if (!success) {
+        AppLogger.warning('Vote failed, should revert UI state', 'VotingWidgets');
       }
     }
   }
@@ -366,7 +365,7 @@ class PlaylistVotingBanner extends StatelessWidget {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(8),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.blue.withValues(alpha: 0.1),
@@ -418,7 +417,7 @@ class VotingStatsCard extends StatelessWidget {
     });
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: AppTheme.surface,
@@ -442,7 +441,7 @@ class VotingStatsCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -461,7 +460,7 @@ class VotingStatsCard extends StatelessWidget {
     return Column(
       children: [
         Icon(icon, color: AppTheme.primary, size: 20),
-        const SizedBox(height: 4),
+        const SizedBox(height: 3),
         Text(
           value,
           style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
