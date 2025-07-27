@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/screens/playlists/playlist_sharing_screen.dart';
 import 'package:music_room/models/music_models.dart';
-
 void main() {
   group('Playlist Sharing Screen Tests', () {
     test('PlaylistSharingScreen should be instantiable', () {
@@ -15,7 +14,6 @@ void main() {
       final screen = PlaylistSharingScreen(playlist: playlist);
       expect(screen, isA<PlaylistSharingScreen>());
     });
-
     test('PlaylistSharingScreen should handle friend sharing', () {
       ['friend1', 'friend2', 'friend3'];
       final selectedFriends = <String>[];
@@ -33,7 +31,6 @@ void main() {
       expect(friendsCanView, true);
       expect(friendsCanEdit, false);
     });
-
     test('PlaylistSharingScreen should handle public sharing', () {
       var isPublic = false;
       isPublic = true;
@@ -57,7 +54,6 @@ void main() {
       expect(shareCount, 1);
       expect(viewCount, 5);
     });
-
     test('PlaylistSharingScreen should handle sharing permissions', () {
       const permissions = {
         'view': true,
@@ -82,7 +78,6 @@ void main() {
       final canShare = ownerPermissions['share'] == true;
       expect(canShare, true);
     });
-
     test('PlaylistSharingScreen should handle share link generation', () {
       const playlistId = 'abc123def456';
       const baseUrl = 'https://example.com';
@@ -109,7 +104,6 @@ void main() {
       expect(hasPassword, isA<bool>());
       expect(requiresLogin, isA<bool>());
     });
-
     test('PlaylistSharingScreen should handle sharing analytics', () {
       final sharingMetrics = {
         'totalShares': 15,

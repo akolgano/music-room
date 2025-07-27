@@ -5,7 +5,6 @@ import 'package:music_room/services/api_service.dart';
 import 'package:music_room/models/music_models.dart';
 import 'package:music_room/models/result_models.dart';
 import 'package:music_room/models/api_models.dart';
-
 void main() {
   group('Music Service Tests', () {
     test('MusicService should be instantiable', () {
@@ -15,7 +14,6 @@ void main() {
       final musicService = MusicService(apiService);
       expect(musicService, isA<MusicService>());
     });
-
     test('CreatePlaylistRequest should serialize correctly', () {
       const request = CreatePlaylistRequest(
         name: 'Test Playlist',
@@ -28,14 +26,12 @@ void main() {
       expect(json['description'], 'A test playlist');
       expect(json['public'], true);
     });
-
     test('AddTrackRequest should serialize correctly', () {
       const request = AddTrackRequest(trackId: 'track123');
       final json = request.toJson();
       
       expect(json['track_id'], 'track123');
     });
-
     test('MoveTrackRequest should serialize correctly', () {
       const request = MoveTrackRequest(
         rangeStart: 0,
@@ -48,14 +44,12 @@ void main() {
       expect(json['insert_before'], 2);
       expect(json['range_length'], 1);
     });
-
     test('InviteUserRequest should serialize correctly', () {
       const request = InviteUserRequest(userId: 123);
       final json = request.toJson();
       
       expect(json['user_id'], 123);
     });
-
     test('Playlist model should work correctly', () {
       const playlist = Playlist(
         id: '1',
@@ -71,7 +65,6 @@ void main() {
       expect(playlist.isPublic, true);
       expect(playlist.creator, 'testuser');
     });
-
     test('Track model should handle JSON serialization', () {
       const track = Track(
         id: '1',
@@ -88,7 +81,6 @@ void main() {
       expect(json['album'], 'Test Album');
       expect(json['url'], 'http://example.com/track');
     });
-
     test('BatchAddResult should calculate success states', () {
       const completeSuccess = BatchAddResult(
         totalTracks: 5,

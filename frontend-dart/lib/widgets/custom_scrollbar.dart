@@ -20,7 +20,6 @@ class CustomScrollbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Return child without custom scrollbar to use browser default
     return child;
   }
 }

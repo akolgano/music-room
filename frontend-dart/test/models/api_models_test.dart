@@ -1,11 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/api_models.dart';
-
 void main() {
   group('API Models Tests', () {
     group('LoginRequest', () {
       test('should serialize to JSON correctly', () {
-        // print('Testing: should serialize to JSON correctly');
         const request = LoginRequest(username: 'testuser', password: 'testpass');
         final json = request.toJson();
         
@@ -13,19 +11,15 @@ void main() {
         expect(json['password'], 'testpass');
       });
     });
-
     group('SocialLoginRequest', () {
       test('should serialize Facebook login correctly', () {
-        // print('Testing: should serialize Facebook login correctly');
         const request = SocialLoginRequest(fbAccessToken: 'fb_token');
         final json = request.toJson();
         
         expect(json['fbAccessToken'], 'fb_token');
         expect(json.containsKey('idToken'), false);
       });
-
       test('should serialize Google login correctly', () {
-        // print('Testing: should serialize Google login correctly');
         const request = SocialLoginRequest(
           idToken: 'google_token',
           socialId: 'google_id',
@@ -37,19 +31,15 @@ void main() {
         expect(json['socialId'], 'google_id');
         expect(json['socialEmail'], 'test@example.com');
       });
-
       test('should handle null values correctly', () {
-        // print('Testing: should handle null values correctly');
         const request = SocialLoginRequest();
         final json = request.toJson();
         
         expect(json.isEmpty, true);
       });
     });
-
     group('ProfileResponse', () {
       test('should deserialize from JSON correctly', () {
-        // print('Testing: should deserialize from JSON correctly');
         final json = {
           'avatar': 'avatar_url',
           'name': 'John Doe',
@@ -70,9 +60,7 @@ void main() {
         expect(profile.musicPreferencesIds, [1, 2]);
         expect(profile.avatarVisibility, 'public');
       });
-
       test('should handle null values gracefully', () {
-        // print('Testing: should handle null values gracefully');
         final json = <String, dynamic>{};
         final profile = ProfileResponse.fromJson(json);
         
@@ -80,9 +68,7 @@ void main() {
         expect(profile.name, null);
         expect(profile.musicPreferences, null);
       });
-
       test('should serialize to JSON correctly', () {
-        // print('Testing: should serialize to JSON correctly');
         const profile = ProfileResponse(
           avatar: 'avatar_url',
           name: 'John Doe',
@@ -96,10 +82,8 @@ void main() {
         expect(json.containsKey('location'), false);
       });
     });
-
     group('CreatePlaylistRequest', () {
       test('should serialize correctly with device UUID', () {
-        // print('Testing: should serialize correctly with device UUID');
         const request = CreatePlaylistRequest(
           name: 'My Playlist',
           description: 'Test playlist',
@@ -113,9 +97,7 @@ void main() {
         expect(json['public'], true);
         expect(json['device_uuid'], 'device-123');
       });
-
       test('should serialize correctly without device UUID', () {
-        // print('Testing: should serialize correctly without device UUID');
         const request = CreatePlaylistRequest(
           name: 'My Playlist',
           description: 'Test playlist',
@@ -129,10 +111,8 @@ void main() {
         expect(json.containsKey('device_uuid'), false);
       });
     });
-
     group('AuthResult', () {
       test('should deserialize from JSON correctly', () {
-        // print('Testing: should deserialize from JSON correctly');
         final json = {
           'token': 'auth_token_123',
           'user': {
@@ -148,10 +128,8 @@ void main() {
         expect(authResult.user.username, 'testuser');
       });
     });
-
     group('VoteResponse', () {
       test('should deserialize from JSON correctly', () {
-        // print('Testing: should deserialize from JSON correctly');
         final json = {
           'message': 'Vote recorded successfully',
           'playlist': []
@@ -162,9 +140,7 @@ void main() {
         expect(voteResponse.message, 'Vote recorded successfully');
         expect(voteResponse.playlist, isEmpty);
       });
-
       test('should handle missing message field', () {
-        // print('Testing: should handle missing message field');
         final json = {
           'playlist': []
         };
@@ -175,10 +151,8 @@ void main() {
         expect(voteResponse.playlist, isEmpty);
       });
     });
-
     group('PlaylistLicenseRequest', () {
       test('should serialize correctly with all fields', () {
-        // print('Testing: should serialize correctly with all fields');
         const request = PlaylistLicenseRequest(
           licenseType: 'premium',
           invitedUsers: [1, 2, 3],
@@ -198,9 +172,7 @@ void main() {
         expect(json['longitude'], -74.0060);
         expect(json['allowed_radius_meters'], 1000);
       });
-
       test('should serialize correctly with minimal fields', () {
-        // print('Testing: should serialize correctly with minimal fields');
         const request = PlaylistLicenseRequest(licenseType: 'free');
         final json = request.toJson();
         
@@ -209,10 +181,8 @@ void main() {
         expect(json.containsKey('latitude'), false);
       });
     });
-
     group('MusicPreference', () {
       test('should serialize and deserialize correctly', () {
-        // print('Testing: should serialize and deserialize correctly');
         const preference = MusicPreference(id: 1, name: 'Rock');
         final json = preference.toJson();
         final deserialized = MusicPreference.fromJson(json);

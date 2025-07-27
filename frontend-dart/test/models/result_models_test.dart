@@ -1,11 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/result_models.dart';
-
 void main() {
   group('Result Models Tests', () {
     group('BatchLibraryAddResult', () {
       test('should calculate status correctly for complete success', () {
-        // print('Testing: should calculate status correctly for complete success');
         const result = BatchLibraryAddResult(
           totalTracks: 5,
           successCount: 5,
@@ -18,9 +16,7 @@ void main() {
         expect(result.isCompleteSuccess, true);
         expect(result.summaryMessage, 'All 5 tracks added to your library successfully!');
       });
-
       test('should calculate status correctly for partial success', () {
-        // print('Testing: should calculate status correctly for partial success');
         const result = BatchLibraryAddResult(
           totalTracks: 5,
           successCount: 3,
@@ -35,9 +31,7 @@ void main() {
         expect(result.summaryMessage, '3/5 tracks added to your library');
         expect(result.detailedMessage, '3 added, 2 failed');
       });
-
       test('should calculate status correctly for complete failure', () {
-        // print('Testing: should calculate status correctly for complete failure');
         const result = BatchLibraryAddResult(
           totalTracks: 5,
           successCount: 0,
@@ -51,9 +45,7 @@ void main() {
         expect(result.summaryMessage, 'Failed to add tracks to your library');
         expect(result.detailedMessage, '5 failed');
       });
-
       test('should provide sample data correctly', () {
-        // print('Testing: should provide sample data correctly');
         const result = BatchLibraryAddResult(
           totalTracks: 10,
           successCount: 5,
@@ -66,10 +58,8 @@ void main() {
         expect(result.errorSample, ['Error 1', 'Error 2', 'Error 3']);
       });
     });
-
     group('SocialLoginResult', () {
       test('should create success result correctly', () {
-        // print('Testing: should create success result correctly');
         final result = SocialLoginResult.success('token123', 'google');
         
         expect(result.success, true);
@@ -77,9 +67,7 @@ void main() {
         expect(result.provider, 'google');
         expect(result.error, null);
       });
-
       test('should create error result correctly', () {
-        // print('Testing: should create error result correctly');
         final result = SocialLoginResult.error('Login failed');
         
         expect(result.success, false);
@@ -88,10 +76,8 @@ void main() {
         expect(result.error, 'Login failed');
       });
     });
-
     group('AddTrackResult', () {
       test('should create AddTrackResult from JSON', () {
-        // print('Testing: should create AddTrackResult from JSON');
         final json = {
           'success': true,
           'message': 'Track added successfully',
@@ -104,9 +90,7 @@ void main() {
         expect(result.message, 'Track added successfully');
         expect(result.isDuplicate, false);
       });
-
       test('should handle missing is_duplicate field', () {
-        // print('Testing: should handle missing is_duplicate field');
         final json = {
           'success': true,
           'message': 'Track added successfully'
@@ -119,10 +103,8 @@ void main() {
         expect(result.isDuplicate, false);
       });
     });
-
     group('BatchAddResult', () {
       test('should create BatchAddResult from JSON', () {
-        // print('Testing: should create BatchAddResult from JSON');
         final json = {
           'total_tracks': 10,
           'success_count': 7,
@@ -139,9 +121,7 @@ void main() {
         expect(result.failureCount, 1);
         expect(result.errors, ['Error 1']);
       });
-
       test('should calculate status correctly for complete success', () {
-        // print('Testing: should calculate status correctly for complete success');
         const result = BatchAddResult(
           totalTracks: 5,
           successCount: 5,
@@ -154,9 +134,7 @@ void main() {
         expect(result.isCompleteSuccess, true);
         expect(result.summaryMessage, 'All 5 tracks added successfully!');
       });
-
       test('should calculate status correctly for partial success', () {
-        // print('Testing: should calculate status correctly for partial success');
         const result = BatchAddResult(
           totalTracks: 10,
           successCount: 6,
@@ -171,9 +149,7 @@ void main() {
         expect(result.summaryMessage, '6/10 tracks added successfully');
         expect(result.detailedMessage, '6 added, 2 duplicates, 2 failed');
       });
-
       test('should calculate status correctly for complete failure', () {
-        // print('Testing: should calculate status correctly for complete failure');
         const result = BatchAddResult(
           totalTracks: 5,
           successCount: 0,
@@ -188,9 +164,7 @@ void main() {
         expect(result.summaryMessage, 'Failed to add tracks to playlist');
         expect(result.detailedMessage, '5 failed');
       });
-
       test('should handle missing errors field', () {
-        // print('Testing: should handle missing errors field');
         final json = {
           'total_tracks': 5,
           'success_count': 5,

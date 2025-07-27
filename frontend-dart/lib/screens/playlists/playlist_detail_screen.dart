@@ -43,7 +43,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
   Timer? _autoRefreshTimer;
   StreamSubscription<PlaylistUpdateMessage>? _playlistUpdateSubscription;
   
-  // Voting functionality
   bool _isVotingMode = false;
   bool _isPublicVoting = true;
   String _votingLicenseType = 'open';
@@ -601,7 +600,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     try {
       final playerService = getProvider<MusicPlayerService>();
       
-      // Always use sorted tracks to ensure consistent playback order
       await playerService.setPlaylistAndPlay(
         playlist: sortedTracks,
         startIndex: index,
@@ -758,7 +756,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     _fetchingTrackDetails.clear();
   }
 
-  // Voting callback methods
   Future<void> _applyVotingSettings() async {
     _votingInfo = PlaylistVotingInfo(
       playlistId: widget.playlistId,

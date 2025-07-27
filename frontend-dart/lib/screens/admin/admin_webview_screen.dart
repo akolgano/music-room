@@ -33,7 +33,6 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
   void _initializeWebView() {
     String baseUrl;
     if (kIsWeb) {
-      // For web, we need to handle CORS and iframe restrictions
       baseUrl = 'http://localhost:8000';
     } else {
       baseUrl = dotenv.env['API_BASE_URL']?.replaceAll(RegExp(r'/$'), '') ?? 'http://localhost:8000';
@@ -76,7 +75,6 @@ class _AdminWebViewScreenState extends State<AdminWebViewScreen> {
         ),
       );
     } else {
-      // For web platform, add basic navigation handling
       _controller!.setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {

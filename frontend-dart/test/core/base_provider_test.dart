@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/base_provider.dart';
-
 void main() {
   group('Base Provider Tests', () {
     test('BaseProvider should handle loading states correctly', () {
-      // print('Testing: BaseProvider should handle loading states correctly');
       expect(BaseProvider, isA<Type>());
       
       var isLoading = false;
@@ -37,9 +35,7 @@ void main() {
       expect(errorMessage, contains('failed'));
       expect(successMessage, null);
     });
-
     test('BaseProvider should handle error management', () {
-      // print('Testing: BaseProvider should handle error management');
       final errors = <String>[];
       
       errors.add('Network error');
@@ -65,9 +61,7 @@ void main() {
       expect(errorTypes['validation'], contains('Invalid'));
       expect(errorTypes['authentication'], contains('Authentication'));
     });
-
     test('BaseProvider should handle success message management', () {
-      // print('Testing: BaseProvider should handle success message management');
       final successMessages = <String>[];
       
       successMessages.add('Profile updated successfully');
@@ -93,9 +87,7 @@ void main() {
       expect(messageTypes['update'], contains('updated'));
       expect(messageTypes['delete'], contains('deleted'));
     });
-
     test('BaseProvider should handle notification system', () {
-      // print('Testing: BaseProvider should handle notification system');
       const notification = {
         'id': 'notif_1',
         'type': 'info',
@@ -120,9 +112,7 @@ void main() {
       notificationQueue.removeWhere((notif) => notif['id'] == 'notif_1');
       expect(notificationQueue.isEmpty, true);
     });
-
     test('BaseProvider should handle state persistence', () {
-      // print('Testing: BaseProvider should handle state persistence');
       const persistentState = {
         'theme': 'dark',
         'language': 'en',

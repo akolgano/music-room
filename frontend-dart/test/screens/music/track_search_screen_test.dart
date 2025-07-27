@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/screens/music/track_search_screen.dart';
 import 'package:music_room/models/music_models.dart';
-
 void main() {
   group('Track Search Screen Tests', () {
     test('TrackSearchScreen should handle search functionality', () {
@@ -25,7 +24,6 @@ void main() {
       expect(mockTrack.name.toLowerCase(), contains('test'));
       expect(mockTrack.artist.toLowerCase(), contains('test'));
     });
-
     test('TrackSearchScreen should filter search results', () {
       final tracks = [
         const Track(
@@ -57,7 +55,6 @@ void main() {
       expect(filteredByArtist.length, 1);
       expect(filteredByArtist.first.artist, 'Rock Artist');
     });
-
     test('TrackSearchScreen should handle empty search results', () {
       final emptyResults = <Track>[];
       const noResultsMessage = 'No tracks found';
@@ -66,7 +63,6 @@ void main() {
       expect(emptyResults.length, 0);
       expect(noResultsMessage, contains('No tracks'));
     });
-
     test('TrackSearchScreen should handle search loading states', () {
       var isLoading = false;
       var hasResults = false;
@@ -85,7 +81,6 @@ void main() {
       hasError = true;
       expect(hasError, true);
     });
-
     test('TrackSearchScreen should handle track selection', () {
       const selectedTrack = Track(
         id: 'selected_track',
@@ -102,7 +97,6 @@ void main() {
       const canAddToPlaylist = true;
       expect(canAddToPlaylist, true);
     });
-
     test('TrackSearchScreen should handle search history', () {
       final searchHistory = <String>[];
       const newSearch = 'new search term';
@@ -114,7 +108,6 @@ void main() {
       final recentSearches = searchHistory.reversed.take(5).toList();
       expect(recentSearches.isNotEmpty, true);
     });
-
     test('TrackSearchScreen should be instantiable', () {
       const screen = TrackSearchScreen();
       expect(screen, isA<TrackSearchScreen>());
