@@ -109,13 +109,13 @@ class ApiService {
       _postVoid('/users/user_password_change/', request, token: token);
   Future<FriendsResponse> getFriends(String token) => _get('/users/get_friends/', FriendsResponse.fromJson, token: token);
 
-  Future<MessageResponse> sendFriendRequest(int userId, String token) => 
+  Future<MessageResponse> sendFriendRequest(String userId, String token) => 
       _post('/users/send_friend_request/$userId/', {}, MessageResponse.fromJson, token: token);
-  Future<MessageResponse> acceptFriendRequest(int friendshipId, String token) => 
+  Future<MessageResponse> acceptFriendRequest(String friendshipId, String token) => 
       _post('/users/accept_friend_request/$friendshipId/', {}, MessageResponse.fromJson, token: token);
-  Future<MessageResponse> rejectFriendRequest(int friendshipId, String token) => 
+  Future<MessageResponse> rejectFriendRequest(String friendshipId, String token) => 
       _post('/users/reject_friend_request/$friendshipId/', {}, MessageResponse.fromJson, token: token);
-  Future<void> removeFriend(int userId, String token) => _postVoid('/users/remove_friend/$userId/', {}, token: token);
+  Future<void> removeFriend(String userId, String token) => _postVoid('/users/remove_friend/$userId/', {}, token: token);
 
   Future<FriendInvitationsResponse> getReceivedInvitations(String token) => 
       _get('/users/invitations/received/', FriendInvitationsResponse.fromJson, token: token);
@@ -126,7 +126,7 @@ class ApiService {
     return (await _dio.get('/users/check_email/', queryParameters: {'email': email})).data;
   }
 
-  Future<ProfileByIdResponse> getProfileById(int userId, String token) => 
+  Future<ProfileByIdResponse> getProfileById(String userId, String token) => 
       _get('/profile/$userId/', ProfileByIdResponse.fromJson, token: token);
   Future<void> updateProfile(String token, Map<String, dynamic> data) => _patchVoid('/profile/me/', data, token: token);
   Future<ProfileResponse> updateProfileFull(String token, ProfileUpdateRequest request) => 

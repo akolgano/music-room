@@ -8,7 +8,7 @@ import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 
 class UserPageScreen extends StatefulWidget {
-  final int userId;
+  final String userId;
   final String? username;
 
   const UserPageScreen({
@@ -45,7 +45,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
       final apiService = ApiService();
       final userProfile = await apiService.getProfileById(widget.userId, auth.token!);
       
-      _isCurrentUser = auth.userId == widget.userId.toString();
+      _isCurrentUser = auth.userId == widget.userId;
       
       if (!_isCurrentUser) {
         final friendsResponse = await apiService.getFriends(auth.token!);

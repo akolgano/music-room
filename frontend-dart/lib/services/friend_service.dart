@@ -4,27 +4,27 @@ class FriendService {
   final ApiService _api;
   FriendService(this._api);
 
-  Future<List<int>> getFriends(String token) async {
+  Future<List<String>> getFriends(String token) async {
     final response = await _api.getFriends(token); 
     return response.friends;
   }
 
-  Future<String> sendFriendRequest(int userId, String token) async {
+  Future<String> sendFriendRequest(String userId, String token) async {
     final response = await _api.sendFriendRequest(userId, token); 
     return response.message;
   }
 
-  Future<String> acceptFriendRequest(int friendshipId, String token) async {
+  Future<String> acceptFriendRequest(String friendshipId, String token) async {
     final response = await _api.acceptFriendRequest(friendshipId, token); 
     return response.message;
   }
 
-  Future<String> rejectFriendRequest(int friendshipId, String token) async {
+  Future<String> rejectFriendRequest(String friendshipId, String token) async {
     final response = await _api.rejectFriendRequest(friendshipId, token); 
     return response.message;
   }
 
-  Future<void> removeFriend(int friendId, String token) async {
+  Future<void> removeFriend(String friendId, String token) async {
     await _api.removeFriend(friendId, token); 
   }
 

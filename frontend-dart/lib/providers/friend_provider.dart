@@ -5,11 +5,11 @@ import '../services/friend_service.dart';
 class FriendProvider extends BaseProvider {
   final FriendService _friendService = getIt<FriendService>();
   
-  List<int> _friends = [];
+  List<String> _friends = [];
   List<Map<String, dynamic>> _receivedInvitations = [];
   List<Map<String, dynamic>> _sentInvitations = [];
 
-  List<int> get friends => List.unmodifiable(_friends);
+  List<String> get friends => List.unmodifiable(_friends);
   List<Map<String, dynamic>> get receivedInvitations => List.unmodifiable(_receivedInvitations);
   List<Map<String, dynamic>> get sentInvitations => List.unmodifiable(_sentInvitations);
 
@@ -46,7 +46,7 @@ class FriendProvider extends BaseProvider {
     );
   }
 
-  Future<bool> sendFriendRequest(String token, int userId) async {
+  Future<bool> sendFriendRequest(String token, String userId) async {
     return await executeBool(
       () async {
         await _friendService.sendFriendRequest(userId, token);
@@ -57,7 +57,7 @@ class FriendProvider extends BaseProvider {
     );
   }
 
-  Future<bool> acceptFriendRequest(String token, int friendshipId) async {
+  Future<bool> acceptFriendRequest(String token, String friendshipId) async {
     return await executeBool(
       () async {
         await _friendService.acceptFriendRequest(friendshipId, token);
@@ -68,7 +68,7 @@ class FriendProvider extends BaseProvider {
     );
   }
 
-  Future<bool> rejectFriendRequest(String token, int friendshipId) async {
+  Future<bool> rejectFriendRequest(String token, String friendshipId) async {
     return await executeBool(
       () async {
         await _friendService.rejectFriendRequest(friendshipId, token);
@@ -79,7 +79,7 @@ class FriendProvider extends BaseProvider {
     );
   }
 
-  Future<bool> removeFriend(String token, int friendId) async {
+  Future<bool> removeFriend(String token, String friendId) async {
     return await executeBool(
       () async {
         await _friendService.removeFriend(friendId, token);
@@ -97,16 +97,16 @@ class FriendProvider extends BaseProvider {
     notifyListeners();
   }
 
-  int? getFriendshipId(Map<String, dynamic> invitation) {
-    return invitation['id'] as int?;
+  String? getFriendshipId(Map<String, dynamic> invitation) {
+    return invitation['id'] as String?;
   }
 
-  int? getFromUserId(Map<String, dynamic> invitation) {
-    return invitation['from_user'] as int?;
+  String? getFromUserId(Map<String, dynamic> invitation) {
+    return invitation['from_user'] as String?;
   }
 
-  int? getToUserId(Map<String, dynamic> invitation) {
-    return invitation['to_user'] as int?;
+  String? getToUserId(Map<String, dynamic> invitation) {
+    return invitation['to_user'] as String?;
   }
 
   String? getInvitationStatus(Map<String, dynamic> invitation) {

@@ -424,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       color: AppTheme.surface,
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
+                          backgroundColor: ThemeUtils.getColorFromString(friendId),
                           child: const Icon(Icons.person, color: Colors.white),
                         ),
                         title: Text(

@@ -291,7 +291,7 @@ class MusicPreference {
 }
 
 class ProfileByIdResponse {
-  final int id;
+  final String id;
   final String user;
   final String? avatar;
   final String? name;
@@ -314,7 +314,7 @@ class ProfileByIdResponse {
   });
 
   factory ProfileByIdResponse.fromJson(Map<String, dynamic> json) => ProfileByIdResponse(
-    id: json['id'] as int,
+    id: json['id'].toString(),
     user: json['user'] as String,
     avatar: json['avatar'] as String?,
     name: json['name'] as String?,
@@ -434,14 +434,14 @@ class MoveTrackRequest {
 }
 
 class InviteUserRequest {
-  final int userId;
+  final String userId;
   const InviteUserRequest({required this.userId});
   Map<String, dynamic> toJson() => {'user_id': userId};
 }
 
 class PlaylistLicenseRequest {
   final String licenseType;
-  final List<int>? invitedUsers;
+  final List<String>? invitedUsers;
   final String? voteStartTime;
   final String? voteEndTime;
   final double? latitude;
@@ -471,7 +471,7 @@ class PlaylistLicenseRequest {
 
 class PlaylistLicenseResponse {
   final String licenseType;
-  final List<int> invitedUsers;
+  final List<String> invitedUsers;
   final String? voteStartTime;
   final String? voteEndTime;
   final double? latitude;
@@ -491,7 +491,7 @@ class PlaylistLicenseResponse {
   factory PlaylistLicenseResponse.fromJson(Map<String, dynamic> json) => 
       PlaylistLicenseResponse(
         licenseType: json['license_type'] as String,
-        invitedUsers: (json['invited_users'] as List<dynamic>?)?.cast<int>() ?? [],
+        invitedUsers: (json['invited_users'] as List<dynamic>?)?.cast<String>() ?? [],
         voteStartTime: json['vote_start_time'] as String?,
         voteEndTime: json['vote_end_time'] as String?,
         latitude: json['latitude']?.toDouble(),
@@ -521,19 +521,19 @@ class VoteResponse {
 }
 
 class FriendRequestRequest {
-  final int userId;
+  final String userId;
   const FriendRequestRequest({required this.userId});
   Map<String, dynamic> toJson() => {'user_id': userId};
 }
 
 class FriendRequestActionRequest {
-  final int friendshipId;
+  final String friendshipId;
   const FriendRequestActionRequest({required this.friendshipId});
   Map<String, dynamic> toJson() => {'friendship_id': friendshipId};
 }
 
 class RemoveFriendRequest {
-  final int friendId;
+  final String friendId;
   const RemoveFriendRequest({required this.friendId});
   Map<String, dynamic> toJson() => {'friend_id': friendId};
 }
@@ -620,13 +620,13 @@ class PlaylistTracksResponse {
 }
 
 class FriendsResponse {
-  final List<int> friends;
+  final List<String> friends;
   
   const FriendsResponse({required this.friends});
   
   factory FriendsResponse.fromJson(Map<String, dynamic> json) => 
       FriendsResponse(
-        friends: (json['friends'] as List<dynamic>).cast<int>(),
+        friends: (json['friends'] as List<dynamic>).cast<String>(),
       );
 }
 

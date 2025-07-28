@@ -96,7 +96,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
           children: [
             CircleAvatar(
               backgroundColor: fromUserId != null 
-                ? Colors.primaries[fromUserId % Colors.primaries.length]
+                ? ThemeUtils.getColorFromString(fromUserId)
                 : Colors.grey,
               child: const Icon(Icons.person, color: Colors.white),
             ),
@@ -207,7 +207,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
           children: [
             CircleAvatar(
               backgroundColor: toUserId != null 
-                ? Colors.primaries[toUserId % Colors.primaries.length]
+                ? ThemeUtils.getColorFromString(toUserId)
                 : Colors.grey,
               child: const Icon(Icons.person, color: Colors.white),
             ),
@@ -290,7 +290,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     );
   }
 
-  Future<void> _acceptFriendRequest(int friendshipId, FriendProvider friendProvider) async {
+  Future<void> _acceptFriendRequest(String friendshipId, FriendProvider friendProvider) async {
     await runAsyncAction(
       () async {
         await friendProvider.acceptFriendRequest(auth.token!, friendshipId);
@@ -300,7 +300,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     );
   }
 
-  Future<void> _rejectFriendRequest(int friendshipId, FriendProvider friendProvider) async {
+  Future<void> _rejectFriendRequest(String friendshipId, FriendProvider friendProvider) async {
     final confirmed = await showConfirmDialog(
       'Reject Friend Request',
       'Are you sure you want to reject this friend request?',

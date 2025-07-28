@@ -146,7 +146,7 @@ class ProfileProvider extends BaseProvider {
 
         if (_userId != null) {
           try {
-            final profileData = await _apiService.getProfileById(int.parse(_userId!), token);
+            final profileData = await _apiService.getProfileById(_userId!, token);
             _avatar = profileData.avatar;
             _name = profileData.name;
             _location = profileData.location;

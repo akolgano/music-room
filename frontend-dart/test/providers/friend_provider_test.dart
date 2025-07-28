@@ -31,7 +31,7 @@ void main() {
       final received = friendProvider.receivedInvitations;
       final sent = friendProvider.sentInvitations;
       
-      expect(() => friends.add(1), throwsUnsupportedError);
+      expect(() => friends.add('1'), throwsUnsupportedError);
       expect(() => received.add({}), throwsUnsupportedError);
       expect(() => sent.add({}), throwsUnsupportedError);
     });

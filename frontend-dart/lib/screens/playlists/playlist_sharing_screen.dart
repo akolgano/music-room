@@ -16,8 +16,8 @@ class PlaylistSharingScreen extends StatefulWidget {
 }
 
 class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
-  List<int> _friends = [];
-  final Set<int> _selectedFriends = {};
+  List<String> _friends = [];
+  final Set<String> _selectedFriends = {};
   bool _isSharing = false;
 
   @override
@@ -158,7 +158,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
             title: Text('Friend #$friendId', style: const TextStyle(color: Colors.white)),
             subtitle: Text('User ID: $friendId', style: const TextStyle(color: Colors.grey)),
             secondary: CircleAvatar(
-              backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
+              backgroundColor: ThemeUtils.getColorFromString(friendId),
               child: const Icon(Icons.person, color: Colors.white),
             ),
             activeColor: AppTheme.primary,
@@ -198,7 +198,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
     );
   }
 
-  void _toggleFriendSelection(int friendId, bool selected) {
+  void _toggleFriendSelection(String friendId, bool selected) {
     setState(() {
       if (selected) {
         _selectedFriends.add(friendId);
