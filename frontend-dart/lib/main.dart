@@ -9,6 +9,7 @@ import 'core/constants.dart';
 import 'core/service_locator.dart';
 import 'core/app_builder.dart';
 import 'core/app_logger.dart';
+import 'services/user_activity_service.dart';
 import 'providers/dynamic_theme_provider.dart';
 
 void main() async {
@@ -27,6 +28,7 @@ void main() async {
       AppLogger.error('Failed to load .env file' + ": " + e.toString(), null, null, 'Main');
     }
     await setupServiceLocator();
+    await getIt<UserActivityService>().initialize();
     try {
       await SocialLoginUtils.initialize();
     } catch (e) {

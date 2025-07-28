@@ -169,11 +169,17 @@ class MusicPlayerService with ChangeNotifier {
         }
         
         AppLogger.warning('No replacement found for "${track.name}", skipping to next track', 'MusicPlayerService');
-        await playNext();
+        if (hasNextTrack) {
+          _currentIndex++;
+          await _playCurrentTrack();
+        }
       }
     } else {
       AppLogger.warning('No track available for: ${playlistTrack.name}, skipping', 'MusicPlayerService');
-      await playNext();
+      if (hasNextTrack) {
+        _currentIndex++;
+        await _playCurrentTrack();
+      }
     }
   }
 

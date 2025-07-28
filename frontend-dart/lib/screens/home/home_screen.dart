@@ -1,4 +1,5 @@
 import '../../core/app_logger.dart';
+import '../../core/activity_logging_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -20,7 +21,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, ActivityLoggingMixin {
+  @override
+  String get screenName => 'home';
   late TabController _tabController;
   int _currentIndex = 0;
   bool get isLandscape => MediaQuery.of(context).orientation == Orientation.landscape;
@@ -50,11 +53,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           actions: [
             IconButton(
               icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
+              onPressed: () {
+                logButtonTap('search_button');
+                Navigator.pushNamed(context, AppRoutes.trackSearch);
+              },
             ),
             IconButton(
               icon: Icon(Icons.add, size: ThemeUtils.getResponsiveIconSize(context)),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+              onPressed: () {
+                logButtonTap('create_playlist_button');
+                Navigator.pushNamed(context, AppRoutes.playlistEditor);
+              },
             ),
           ],
         ) : null,
@@ -140,11 +149,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           actions: [
             IconButton(
               icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
+              onPressed: () {
+                logButtonTap('search_button');
+                Navigator.pushNamed(context, AppRoutes.trackSearch);
+              },
             ),
             IconButton(
               icon: Icon(Icons.add, size: ThemeUtils.getResponsiveIconSize(context)),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+              onPressed: () {
+                logButtonTap('create_playlist_button');
+                Navigator.pushNamed(context, AppRoutes.playlistEditor);
+              },
             ),
           ],
         ) : null,
@@ -308,6 +323,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               return AppWidgets.playlistCard(
                 playlist: playlist,
                 onTap: () {
+                  logPlaylistAction('view', playlist.id, metadata: {'playlist_name': playlist.name});
                   AppLogger.debug('Navigating to playlist with ID: ${playlist.id}', 'HomeScreen');
                   if (playlist.id.isNotEmpty && playlist.id != 'null') {
                     Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);

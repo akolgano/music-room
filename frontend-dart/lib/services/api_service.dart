@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
 import '../models/result_models.dart';
 import '../models/api_models.dart';
+import '../core/service_locator.dart';
+import 'user_activity_service.dart';
 
 class ApiService {
   final Dio _dio;
@@ -71,6 +73,15 @@ class ApiService {
     }
     
     if (debug && kDebugMode) debugPrint('[ApiService] $method completed: $endpoint');
+    
+    // Log API call to activity service
+    try {
+      if (getIt.isRegistered<UserActivityService>()) {
+        getIt<UserActivityService>().logApiCall(endpoint, method, statusCode: response.statusCode);
+      }
+    } catch (e) {
+      // Don't let logging errors break the API call
+    }
     
     return fromJson != null ? fromJson(response.data) : response.data;
   }

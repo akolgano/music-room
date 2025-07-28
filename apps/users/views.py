@@ -27,6 +27,7 @@ from apps.profile.models import Profile
 from django.contrib.auth.hashers import check_password
 from django.db import transaction
 import re
+import logging
 from drf_spectacular.utils import extend_schema
 from .docs import *
 
@@ -385,3 +386,36 @@ def signup_email_otp(request):
         return JsonResponse({'error': 'Signup OTP email sending failed'}, status=status.HTTP_400_BAD_REQUEST)
 
     return JsonResponse({'email': email}, status=status.HTTP_201_CREATED)
+
+
+logger = logging.getLogger(__name__)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([])
+def log_activity(request):
+    try:
+        logs = request.data.get('logs', [])
+        batch_size = request.data.get('batch_size', len(logs))
+        
+        user_id = None
+        if request.user.is_authenticated:
+            user_id = request.user.id
+        
+        for log_entry in logs:
+            log_message = f"User Activity: {log_entry.get('action', 'unknown')} on {log_entry.get('screen', 'unknown')}"
+            
+            context = {
+                'user_id': user_id or log_entry.get('user_id'),
+                'timestamp': log_entry.get('timestamp'),
+                'platform': log_entry.get('platform', 'mobile'),
+                'metadata': log_entry.get('metadata', {}),
+            }
+            
+            logger.info(log_message, extra={'context': context})
+        
+        return JsonResponse({'status': 'success', 'received_logs': len(logs), 'batch_size': batch_size}, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error processing activity logs: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': 'Failed to process logs'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

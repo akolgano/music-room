@@ -99,73 +99,77 @@ class MiniPlayerWidget extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              currentTrack.name,
-                              style: ThemeUtils.getBodyStyle(context).copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 1),
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    currentTrack.artist,
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                            Flexible(
+                              child: Text(
+                                currentTrack.name,
+                                style: ThemeUtils.getBodyStyle(context).copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                if (playerService.isUsingFullAudio) ...[
-                                  const Text(
-                                    ' • ',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Flexible(
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      currentTrack.artist,
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(3),
-                                      border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 0.5),
-                                    ),
-                                    child: const Text(
-                                      'FULL AUDIO',
+                                  if (playerService.isUsingFullAudio) ...[
+                                    const Text(
+                                      ' • ',
                                       style: TextStyle(
-                                        color: Colors.green,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white70,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  ),
-                                ],
-                                if (playerService.hasPlaylist) ...[
-                                  const Text(
-                                    ' • ',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(3),
+                                        border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 0.5),
+                                      ),
+                                      child: const Text(
+                                        'FULL AUDIO',
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    playerService.currentTrackInfo,
-                                    style: const TextStyle(
-                                      color: AppTheme.primary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
+                                  ],
+                                  if (playerService.hasPlaylist) ...[
+                                    const Text(
+                                      ' • ',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
                                     ),
-                                  ),
+                                    Text(
+                                      playerService.currentTrackInfo,
+                                      style: const TextStyle(
+                                        color: AppTheme.primary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ],
                         ),
