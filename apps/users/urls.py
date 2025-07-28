@@ -20,5 +20,6 @@ urlpatterns = [
     path('invitations/received/', views.get_pending_friend_request, name='get_pending_friend_request'),
     path('invitations/sent/', views.get_sent_friend_request, name='get_sent_friend_request'),
     path('check_email/', views.check_email, name='check_email'),
+    path('log_activity/', views.log_activity, name='log_activity'),
 ]
 
