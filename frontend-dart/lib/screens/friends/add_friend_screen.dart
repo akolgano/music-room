@@ -52,12 +52,10 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                     context: context,
                     controller: _userIdController, 
                     labelText: 'User ID',
-                    hintText: 'e.g., 12',
+                    hintText: 'e.g., 4270552b-1e03-4f35-980c-723b52b91d10',
                     prefixIcon: Icons.person_search,
                     validator: (value) {
                       if (value?.isEmpty ?? true) return 'Please enter a user ID';
-                      final userId = int.tryParse(value!);
-                      if (userId == null || userId <= 0) return 'Please enter a valid user ID';
                       return null;
                     },
                     onChanged: (value) => setState(() {}),
@@ -66,8 +64,8 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                   const SizedBox(height: 16),
                   buildConsumerContent<FriendProvider>(
                     builder: (context, friendProvider) {
-                      final userId = int.tryParse(_userIdController.text.trim());
-                      final showButtons = _userIdController.text.isNotEmpty && userId != null && userId > 0;
+                      final userId = _userIdController.text.trim();
+                      final showButtons = userId.isNotEmpty;
                       
                       return Column(
                         children: [
@@ -109,7 +107,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
     );
   }
 
-  void _viewUserProfile(int userId) {
+  void _viewUserProfile(String userId) {
     Navigator.pushNamed(
       context,
       AppRoutes.userPage,
@@ -131,19 +129,9 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
       return;
     }
 
-    int? userId;
-    try {
-      userId = int.parse(userInput);
-      if (userId <= 0) {
-        showError('Please enter a valid user ID');
-        return;
-      }
-    } catch (e) {
-      showError('User ID must be a number');
-      return;
-    }
+    final userId = userInput;
 
-    if (userId.toString() == auth.userId) {
+    if (userId == auth.userId) {
       showError('You cannot add yourself as a friend');
       return;
     }
@@ -164,7 +152,7 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
         });
         
         if (alreadySent) throw Exception('You already sent a friend request to this user');
-        await friendProvider.sendFriendRequest(auth.token!, userId!);
+        await friendProvider.sendFriendRequest(auth.token!, userId);
         _userIdController.clear();
       },
       successMessage: 'Friend request sent successfully!',

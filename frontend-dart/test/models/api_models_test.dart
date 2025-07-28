@@ -155,7 +155,7 @@ void main() {
       test('should serialize correctly with all fields', () {
         const request = PlaylistLicenseRequest(
           licenseType: 'premium',
-          invitedUsers: [1, 2, 3],
+          invitedUsers: ['1', '2', '3'],
           voteStartTime: '2023-01-01T00:00:00Z',
           voteEndTime: '2023-01-02T00:00:00Z',
           latitude: 40.7128,

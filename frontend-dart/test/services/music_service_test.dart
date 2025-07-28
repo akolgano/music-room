@@ -45,10 +45,10 @@ void main() {
       expect(json['range_length'], 1);
     });
     test('InviteUserRequest should serialize correctly', () {
-      const request = InviteUserRequest(userId: 123);
+      const request = InviteUserRequest(userId: '123');
       final json = request.toJson();
       
-      expect(json['user_id'], 123);
+      expect(json['user_id'], '123');
     });
     test('Playlist model should work correctly', () {
       const playlist = Playlist(

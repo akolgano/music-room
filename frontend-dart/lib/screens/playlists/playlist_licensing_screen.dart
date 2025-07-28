@@ -25,8 +25,8 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   late final ApiService _apiService;
   
   String _licenseType = 'open';
-  List<int> _invitedUsers = [];
-  List<int> _availableFriends = [];
+  List<String> _invitedUsers = [];
+  List<String> _availableFriends = [];
   TimeOfDay? _voteStartTime;
   TimeOfDay? _voteEndTime;
   double? _latitude;
@@ -226,7 +226,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
                 style: const TextStyle(color: Colors.grey),
               ),
               secondary: CircleAvatar(
-                backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
+                backgroundColor: ThemeUtils.getColorFromString(friendId),
                 child: const Icon(Icons.person, color: Colors.white),
               ),
               activeColor: AppTheme.primary,
@@ -443,7 +443,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     );
   }
 
-  void _toggleFriendInvite(int friendId, bool invite) {
+  void _toggleFriendInvite(String friendId, bool invite) {
     setState(() {
       if (invite) {
         _invitedUsers.add(friendId);

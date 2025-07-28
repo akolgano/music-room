@@ -186,6 +186,11 @@ class ThemeUtils {
     );
   }
 
+  static Color getColorFromString(String id) {
+    int hashValue = id.hashCode.abs();
+    return Colors.primaries[hashValue % Colors.primaries.length];
+  }
+
   static Widget buildThemedCard({
     required BuildContext context,
     required Widget child,

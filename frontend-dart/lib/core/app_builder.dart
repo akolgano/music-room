@@ -236,16 +236,15 @@ class AppBuilder {
       final userId = args['userId'];
       final username = args['username'] as String?;
       
-      if (userId is int) {
+      if (userId is String) {
         return UserPageScreen(userId: userId, username: username);
-      } else if (userId is String) {
-        final parsedUserId = int.tryParse(userId);
-        if (parsedUserId != null) {
-          return UserPageScreen(userId: parsedUserId, username: username);
-        }
+      } else if (userId is int) {
+        return UserPageScreen(userId: userId.toString(), username: username);
       }
-    } else if (args is int) {
+    } else if (args is String) {
       return UserPageScreen(userId: args);
+    } else if (args is int) {
+      return UserPageScreen(userId: args.toString());
     }
     
     return _buildErrorScreen('Invalid user data provided');

@@ -66,7 +66,7 @@ class MusicService {
     await _api.moveTrackInPlaylist(playlistId, token, request); 
   }
 
-  Future<void> inviteUserToPlaylist(String playlistId, int userId, String token) async {
+  Future<void> inviteUserToPlaylist(String playlistId, String userId, String token) async {
     final request = InviteUserRequest(userId: userId);
     await _api.inviteUserToPlaylist(playlistId, token, request); 
   }

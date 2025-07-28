@@ -55,7 +55,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
   }
 
   Widget _buildFriendsTab(FriendProvider friendProvider) {
-    return buildListContent<int>(
+    return buildListContent<String>(
       items: friendProvider.friends,
       itemBuilder: (friendId, index) => _buildFriendCard(friendId),
       onRefresh: _loadFriendsData,
@@ -116,14 +116,14 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     );
   }
 
-  Widget _buildFriendCard(int friendId) {
+  Widget _buildFriendCard(String friendId) {
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
       color: AppTheme.surface,
       child: ListTile(
         onTap: () => _navigateToUserPage(friendId),
         leading: CircleAvatar(
-          backgroundColor: Colors.primaries[friendId % Colors.primaries.length],
+          backgroundColor: ThemeUtils.getColorFromString(friendId),
           child: const Icon(Icons.person, color: Colors.white),
         ),
         title: Text(
@@ -176,7 +176,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
             children: [
               CircleAvatar(
                 backgroundColor: fromUserId != null 
-                  ? Colors.primaries[fromUserId % Colors.primaries.length]
+                  ? ThemeUtils.getColorFromString(fromUserId)
                   : Colors.grey,
                 radius: 20,
                 child: const Icon(Icons.person, color: Colors.white, size: 20),
@@ -240,7 +240,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     );
   }
 
-  Future<void> _acceptFriendRequest(int friendshipId, FriendProvider friendProvider) async {
+  Future<void> _acceptFriendRequest(String friendshipId, FriendProvider friendProvider) async {
     await runAsyncAction(
       () async {
         await friendProvider.acceptFriendRequest(auth.token!, friendshipId);
@@ -250,7 +250,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     );
   }
 
-  Future<void> _rejectFriendRequest(int friendshipId, FriendProvider friendProvider) async {
+  Future<void> _rejectFriendRequest(String friendshipId, FriendProvider friendProvider) async {
     await runAsyncAction(
       () async {
         await friendProvider.rejectFriendRequest(auth.token!, friendshipId);
@@ -260,7 +260,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     );
   }
 
-  void _handleFriendAction(String action, int friendId) {
+  void _handleFriendAction(String action, String friendId) {
     switch (action) {
       case 'view_profile':
         _navigateToUserPage(friendId);
@@ -274,7 +274,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     }
   }
 
-  void _navigateToUserPage(int userId) {
+  void _navigateToUserPage(String userId) {
     Navigator.pushNamed(
       context,
       AppRoutes.userPage,
@@ -285,7 +285,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     );
   }
 
-  void _showRemoveDialog(int friendId) async {
+  void _showRemoveDialog(String friendId) async {
     final confirmed = await showConfirmDialog(
       'Remove Friend', 
       'Are you sure you want to remove User ID $friendId from your friends?', isDangerous: true
@@ -293,7 +293,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     if (confirmed) await _removeFriend(friendId);
   }
 
-  Future<void> _removeFriend(int friendId) async {
+  Future<void> _removeFriend(String friendId) async {
     await runAsyncAction(
       () async {
         final friendProvider = getProvider<FriendProvider>();
