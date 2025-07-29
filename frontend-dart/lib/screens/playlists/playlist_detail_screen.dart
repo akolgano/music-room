@@ -110,11 +110,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           onRefresh: _loadData,
           color: ThemeUtils.getPrimary(context),
           child: CustomSingleChildScrollView(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             child: Column(
               children: [
                 PlaylistDetailWidgets.buildThemedPlaylistHeader(context, _playlist!),
-                const SizedBox(height: 12), 
+                const SizedBox(height: 6), 
                 if (_isVotingMode) ...PlaylistVotingWidgets.buildVotingModeHeader(
                   context: context,
                   isOwner: _isOwner,
@@ -129,14 +129,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                   onSelectVotingDateTime: _selectVotingDateTime,
                 ),
                 PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
-                const SizedBox(height: 12), 
+                const SizedBox(height: 6), 
                 PlaylistDetailWidgets.buildThemedPlaylistActions(
                   context, 
                   onPlayAll: _playPlaylist, 
                   onShuffle: _shufflePlaylist,
                   onAddRandomTrack: _isOwner ? _addRandomTrack : null,
                 ),
-                const SizedBox(height: 12), 
+                const SizedBox(height: 6), 
                 _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
                   context: context,
                   tracks: _tracks,
@@ -164,7 +164,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
           elevation: 4,
           shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
           child: Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -191,7 +191,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                   ],
                 ),
                 if (currentSort.field != TrackSortField.position) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   _buildStyledIndicator(
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -218,7 +218,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 if (sortedTracks.isEmpty) 
                   PlaylistDetailWidgets.buildEmptyTracksState(
                     isOwner: _isOwner,
@@ -551,9 +551,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     }
     
     try {
+      musicProvider.shufflePlaylistTracks();
+      
       final playerService = getProvider<MusicPlayerService>();
-      final shuffledTracks = List<PlaylistTrack>.from(sortedTracks);
-      shuffledTracks.shuffle();
+      final shuffledTracks = List<PlaylistTrack>.from(musicProvider.sortedPlaylistTracks);
       
       await playerService.setPlaylistAndPlay(
         playlist: shuffledTracks,
@@ -563,7 +564,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       );
       playerService.toggleShuffle();
       
-      showInfo('Shuffling "${_playlist!.name}"');
+      showInfo('Shuffled "${_playlist!.name}"');
     } catch (e) {
       showError('Failed to shuffle playlist: $e');
     }

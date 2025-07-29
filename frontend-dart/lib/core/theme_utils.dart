@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'responsive_utils.dart' show MusicAppResponsive;
 
 class ThemeUtils {
   static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
@@ -13,55 +14,54 @@ class ThemeUtils {
   static Color getSecondary(BuildContext context) => Theme.of(context).colorScheme.secondary;
 
   static bool isSmallMobile(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    return width <= 360;
+    return MusicAppResponsive.isVerySmall(context);
   }
 
   static bool isMobile(BuildContext context) {
-    return ResponsiveBreakpoints.of(context).isMobile || isSmallMobile(context);
+    return MusicAppResponsive.isMobileSize(context);
   }
 
   static bool isTablet(BuildContext context) {
-    return ResponsiveBreakpoints.of(context).isTablet;
+    return MusicAppResponsive.isTabletSize(context);
   }
 
   static bool isDesktop(BuildContext context) {
-    return ResponsiveBreakpoints.of(context).isDesktop;
+    return MusicAppResponsive.isDesktopSize(context);
   }
 
   static double getResponsivePadding(BuildContext context) {
-    if (isSmallMobile(context)) return 4.0;
-    if (isMobile(context)) return 8.0;
-    if (isTablet(context)) return 12.0;
-    return 16.0;
+    return MusicAppResponsive.getPadding(context,
+      tiny: 2.0, small: 4.0, medium: 6.0, 
+      large: 8.0, xlarge: 12.0, xxlarge: 16.0
+    );
   }
 
   static double getResponsiveMargin(BuildContext context) {
-    if (isSmallMobile(context)) return 2.0;
-    if (isMobile(context)) return 4.0;
-    if (isTablet(context)) return 8.0;
-    return 12.0;
+    return MusicAppResponsive.getMargin(context,
+      tiny: 1.0, small: 2.0, medium: 4.0,
+      large: 6.0, xlarge: 8.0, xxlarge: 12.0
+    );
   }
 
   static double getResponsiveBorderRadius(BuildContext context) {
-    if (isSmallMobile(context)) return 6.0;
-    if (isMobile(context)) return 8.0;
-    if (isTablet(context)) return 12.0;
-    return 16.0;
+    return MusicAppResponsive.getBorderRadius(context,
+      tiny: 3.0, small: 4.0, medium: 6.0,
+      large: 8.0, xlarge: 12.0, xxlarge: 16.0
+    );
   }
 
   static double getResponsiveIconSize(BuildContext context) {
-    if (isSmallMobile(context)) return 20.0;
-    if (isMobile(context)) return 24.0;
-    if (isTablet(context)) return 28.0;
-    return 32.0;
+    return MusicAppResponsive.getIconSize(context,
+      tiny: 14.0, small: 18.0, medium: 20.0,
+      large: 24.0, xlarge: 28.0, xxlarge: 32.0
+    );
   }
 
   static double getResponsiveButtonHeight(BuildContext context) {
-    if (isSmallMobile(context)) return 40.0;
-    if (isMobile(context)) return 48.0;
-    if (isTablet(context)) return 52.0;
-    return 56.0;
+    return MusicAppResponsive.getButtonHeight(context,
+      tiny: 32.0, small: 36.0, medium: 40.0,
+      large: 44.0, xlarge: 48.0, xxlarge: 56.0
+    );
   }
 
   static EdgeInsets getResponsiveCardPadding(BuildContext context) {
@@ -75,14 +75,14 @@ class ThemeUtils {
   }
 
   static int getResponsiveGridColumns(BuildContext context) {
-    if (isSmallMobile(context)) return 1;
-    if (isMobile(context)) return 2;
-    if (isTablet(context)) return 3;
-    return 4;
+    return MusicAppResponsive.getGridColumns(context);
   }
 
   static TextStyle getHeadingStyle(BuildContext context) {
-    final fontSize = isSmallMobile(context) ? 18.0 : (isMobile(context) ? 20.0 : 24.0);
+    final fontSize = MusicAppResponsive.getFontSize(context,
+      tiny: 14.0, small: 16.0, medium: 18.0,
+      large: 20.0, xlarge: 22.0, xxlarge: 24.0
+    );
     return TextStyle(
       color: getOnSurface(context), 
       fontSize: fontSize, 
@@ -91,7 +91,10 @@ class ThemeUtils {
   }
 
   static TextStyle getSubheadingStyle(BuildContext context) {
-    final fontSize = isSmallMobile(context) ? 14.0 : (isMobile(context) ? 16.0 : 18.0);
+    final fontSize = MusicAppResponsive.getFontSize(context,
+      tiny: 12.0, small: 13.0, medium: 14.0,
+      large: 16.0, xlarge: 17.0, xxlarge: 18.0
+    );
     return TextStyle(
       color: getOnSurface(context), 
       fontSize: fontSize, 
@@ -100,7 +103,10 @@ class ThemeUtils {
   }
 
   static TextStyle getBodyStyle(BuildContext context) {
-    final fontSize = isSmallMobile(context) ? 12.0 : (isMobile(context) ? 14.0 : 16.0);
+    final fontSize = MusicAppResponsive.getFontSize(context,
+      tiny: 10.0, small: 11.0, medium: 12.0,
+      large: 14.0, xlarge: 15.0, xxlarge: 16.0
+    );
     return TextStyle(
       color: getOnSurface(context),
       fontSize: fontSize,
@@ -108,7 +114,10 @@ class ThemeUtils {
   }
 
   static TextStyle getCaptionStyle(BuildContext context) {
-    final fontSize = isSmallMobile(context) ? 10.0 : (isMobile(context) ? 12.0 : 14.0);
+    final fontSize = MusicAppResponsive.getFontSize(context,
+      tiny: 8.0, small: 9.0, medium: 10.0,
+      large: 12.0, xlarge: 13.0, xxlarge: 14.0
+    );
     return TextStyle(
       color: getOnSurface(context).withValues(alpha: 0.7),
       fontSize: fontSize,
@@ -121,7 +130,10 @@ class ThemeUtils {
     boxShadow: [
       BoxShadow(
         color: AppTheme.primary.withValues(alpha: 0.1), 
-        blurRadius: isSmallMobile(context) ? 4 : 8,
+        blurRadius: MusicAppResponsive.getElevation(context,
+          tiny: 2.0, small: 3.0, medium: 4.0,
+          large: 6.0, xlarge: 8.0, xxlarge: 10.0
+        ),
         offset: const Offset(0, 2),
       ),
     ],
@@ -130,17 +142,26 @@ class ThemeUtils {
   static ButtonStyle getPrimaryButtonStyle(BuildContext context) => ElevatedButton.styleFrom(
     backgroundColor: AppTheme.primary, 
     foregroundColor: getOnPrimary(context),
-    elevation: isSmallMobile(context) ? 2 : 4,
+    elevation: MusicAppResponsive.getElevation(context,
+      tiny: 1.0, small: 2.0, medium: 3.0,
+      large: 4.0, xlarge: 5.0, xxlarge: 6.0
+    ),
     shadowColor: AppTheme.primary.withValues(alpha: 0.3), 
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
-    minimumSize: Size(88, getResponsiveButtonHeight(context)),
+    minimumSize: Size(MusicAppResponsive.getFontSize(context,
+      tiny: 60.0, small: 70.0, medium: 80.0,
+      large: 88.0, xlarge: 96.0, xxlarge: 104.0
+    ), getResponsiveButtonHeight(context)),
   );
 
   static ButtonStyle getSecondaryButtonStyle(BuildContext context) => OutlinedButton.styleFrom(
     foregroundColor: getOnSurface(context),
     side: BorderSide(color: AppTheme.primary), 
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
-    minimumSize: Size(88, getResponsiveButtonHeight(context)),
+    minimumSize: Size(MusicAppResponsive.getFontSize(context,
+      tiny: 60.0, small: 70.0, medium: 80.0,
+      large: 88.0, xlarge: 96.0, xxlarge: 104.0
+    ), getResponsiveButtonHeight(context)),
   );
 
   static Future<T?> showThemedDialog<T>({
@@ -201,7 +222,10 @@ class ThemeUtils {
   }) {
     return Card(
       color: getSurface(context),
-      elevation: elevation ?? (isSmallMobile(context) ? 2 : 4),
+      elevation: elevation ?? MusicAppResponsive.getElevation(context,
+        tiny: 1.0, small: 2.0, medium: 3.0,
+        large: 4.0, xlarge: 5.0, xxlarge: 6.0
+      ),
       margin: margin ?? getResponsiveCardMargin(context),
       shadowColor: AppTheme.primary.withValues(alpha: 0.2), 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? getResponsiveBorderRadius(context))),
@@ -212,7 +236,10 @@ class ThemeUtils {
   static Widget buildThemedHeaderCard({required BuildContext context, required Widget child}) => buildThemedCard(
     context: context,
     child: child, 
-    elevation: 8
+    elevation: MusicAppResponsive.getElevation(context,
+      tiny: 4.0, small: 5.0, medium: 6.0,
+      large: 7.0, xlarge: 8.0, xxlarge: 10.0
+    )
   );
 
   static InputDecoration getThemedInputDecoration(BuildContext context, {required String labelText, 

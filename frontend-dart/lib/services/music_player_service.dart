@@ -19,6 +19,7 @@ class MusicPlayerService with ChangeNotifier {
   
   List<PlaylistTrack> _playlist = [];
   int _currentIndex = -1;
+  int _lastPlayedIndex = -1;
   String? _playlistId;
   bool _isShuffleMode = false;
   bool _isRepeatMode = false;
@@ -95,6 +96,7 @@ class MusicPlayerService with ChangeNotifier {
       _playlistId = playlistId;
       _authToken = authToken;
       _currentIndex = startIndex.clamp(0, _playlist.length - 1);
+      _lastPlayedIndex = -1;
       _failedTracks.clear();
       
       await _playCurrentTrack();
@@ -150,31 +152,58 @@ class MusicPlayerService with ChangeNotifier {
     if (track != null) {
       try {
         await playTrack(track, track.previewUrl);
+        _lastPlayedIndex = _currentIndex;
+        AppLogger.debug('Successfully played track at index $_currentIndex, updated lastPlayedIndex to $_lastPlayedIndex', 'MusicPlayerService');
       } catch (e) {
         AppLogger.error('Failed to play track "${track.name}": ${e.toString()}', null, null, 'MusicPlayerService');
-        
-        final trackKey = '${track.name}_${track.artist}';
-        if (!_failedTracks.contains(trackKey)) {
-          _failedTracks.add(trackKey);
-          
-          final replacement = await _findEquivalentTrack(track);
-          if (replacement != null && _playlistId != null && _authToken != null) {
-            await _replaceTrackInPlaylist(playlistTrack, replacement);
-            
-            _onTrackReplaced?.call('${track.name} by ${track.artist}', '${replacement.name} by ${replacement.artist}');
-            
-            await _playCurrentTrack(); 
-            return;
-          }
-        }
-        
-        AppLogger.warning('No replacement found for "${track.name}", skipping to next track', 'MusicPlayerService');
-        await playNext();
+        await _handleTrackFailure(playlistTrack, track);
       }
     } else {
       AppLogger.warning('No track available for: ${playlistTrack.name}, skipping', 'MusicPlayerService');
-      await playNext();
+      await _skipCurrentTrack();
     }
+  }
+
+  Future<void> _handleTrackFailure(PlaylistTrack playlistTrack, Track track) async {
+    final trackKey = '${track.name}_${track.artist}';
+    if (!_failedTracks.contains(trackKey)) {
+      _failedTracks.add(trackKey);
+      
+      final replacement = await _findEquivalentTrack(track);
+      if (replacement != null && _playlistId != null && _authToken != null) {
+        try {
+          await _replaceTrackInPlaylist(playlistTrack, replacement);
+          
+          await _playCurrentTrack(); 
+          return;
+        } catch (e) {
+          AppLogger.error('Failed to replace track: ${e.toString()}', null, null, 'MusicPlayerService');
+        }
+      }
+    }
+    
+    AppLogger.warning('No replacement found for "${track.name}", skipping current track', 'MusicPlayerService');
+    await _skipCurrentTrack();
+  }
+
+  Future<void> _skipCurrentTrack() async {
+    int nextIndex = _calculateNextSequentialIndex();
+    
+    if (nextIndex == -1) {
+      if (_isRepeatMode && _playlist.isNotEmpty) {
+        _currentIndex = 0;
+        _lastPlayedIndex = -1;
+        await _playCurrentTrack();
+      } else {
+        AppLogger.debug('No more tracks available, stopping playback', 'MusicPlayerService');
+        await stop();
+      }
+      return;
+    }
+    
+    _currentIndex = nextIndex;
+    await _playCurrentTrack();
+    AppLogger.debug('Skipped to track index $_currentIndex: ${_playlist[_currentIndex].name}', 'MusicPlayerService');
   }
 
   Future<void> playNext() async {
@@ -217,15 +246,48 @@ class MusicPlayerService with ChangeNotifier {
     AppLogger.debug('Track completed: ${_currentTrack?.name ?? "Unknown"}', 'MusicPlayerService');
     
     if (_isRepeatMode && _playlist.isNotEmpty) {
-      AppLogger.debug('Repeat mode enabled, playing next track', 'MusicPlayerService');
-      playNext();
+      AppLogger.debug('Repeat mode enabled, auto-progressing to next track', 'MusicPlayerService');
+      _autoProgressToNext();
     } else if (hasNextTrack) {
-      AppLogger.debug('Auto-playing next track', 'MusicPlayerService');
-      playNext();
+      AppLogger.debug('Auto-progressing to next track', 'MusicPlayerService');
+      _autoProgressToNext();
     } else {
       AppLogger.debug('No more tracks to play, stopping', 'MusicPlayerService');
       stop();
     }
+  }
+
+  Future<void> _autoProgressToNext() async {
+    int nextIndex = _calculateNextSequentialIndex();
+    
+    if (nextIndex == -1) {
+      if (_isRepeatMode && _playlist.isNotEmpty) {
+        _currentIndex = 0;
+        _lastPlayedIndex = -1;
+      } else {
+        return;
+      }
+    } else {
+      _currentIndex = nextIndex;
+    }
+    
+    AppLogger.debug('Auto-progressed from $_lastPlayedIndex to $_currentIndex: ${_playlist[_currentIndex].name}', 'MusicPlayerService');
+    await _playCurrentTrack();
+  }
+
+  int _calculateNextSequentialIndex() {
+    if (_lastPlayedIndex == -1) {
+      return _currentIndex < _playlist.length - 1 ? _currentIndex + 1 : -1;
+    }
+    
+    int expectedNext = _lastPlayedIndex + 1;
+    
+    if (expectedNext >= _playlist.length) {
+      return -1;
+    }
+    
+    AppLogger.debug('Last played: $_lastPlayedIndex, Expected next: $expectedNext', 'MusicPlayerService');
+    return expectedNext;
   }
 
   void toggleShuffle() {
@@ -296,6 +358,7 @@ class MusicPlayerService with ChangeNotifier {
   void clearPlaylist() {
     _playlist.clear();
     _currentIndex = -1;
+    _lastPlayedIndex = -1;
     _playlistId = null;
     _authToken = null;
     _failedTracks.clear();

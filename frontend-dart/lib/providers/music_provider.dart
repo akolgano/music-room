@@ -281,4 +281,9 @@ class MusicProvider extends BaseProvider {
     _playlistTracks = updatedTracks;
     notifyListeners();
   }
+
+  void shufflePlaylistTracks() {
+    _playlistTracks.shuffle();
+    resetToCustomOrder();
+  }
 }

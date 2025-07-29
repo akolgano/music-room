@@ -99,6 +99,7 @@ class MiniPlayerWidget extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               currentTrack.name,
@@ -109,7 +110,6 @@ class MiniPlayerWidget extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 1),
                             Row(
                               children: [
                                 Flexible(
