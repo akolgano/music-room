@@ -282,8 +282,42 @@ class MusicProvider extends BaseProvider {
     notifyListeners();
   }
 
-  void shufflePlaylistTracks() {
-    _playlistTracks.shuffle();
-    resetToCustomOrder();
+  Future<void> shufflePlaylistTracks(String playlistId, String token) async {
+    if (_playlistTracks.isEmpty) return;
+    
+    final shuffledIndices = List.generate(_playlistTracks.length, (index) => index);
+    shuffledIndices.shuffle();
+    
+    try {
+      setLoading(true);
+      
+      for (int targetPos = 0; targetPos < shuffledIndices.length; targetPos++) {
+        final sourcePos = shuffledIndices[targetPos];
+        
+        if (sourcePos != targetPos) {
+          await _musicService.moveTrackInPlaylist(
+            playlistId: playlistId,
+            rangeStart: sourcePos,
+            insertBefore: targetPos,
+            token: token,
+          );
+          
+          for (int i = targetPos + 1; i < shuffledIndices.length; i++) {
+            if (shuffledIndices[i] <= sourcePos) {
+              shuffledIndices[i]++;
+            }
+          }
+        }
+      }
+      
+      await fetchPlaylistTracks(playlistId, token);
+      resetToCustomOrder();
+      setLoading(false);
+      
+    } catch (e) {
+      setLoading(false);
+      setError('Failed to shuffle playlist: $e');
+      rethrow;
+    }
   }
 }

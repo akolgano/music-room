@@ -126,7 +126,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget _buildSearchHeader(MusicProvider musicProvider) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         boxShadow: [
@@ -139,6 +139,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           if (_isAddingToPlaylist) _buildPlaylistBanner(), 
           _buildSearchRow(musicProvider)
@@ -201,7 +202,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -238,7 +239,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       child: Row(
         children: actions.map((action) => Expanded(
           child: Padding(

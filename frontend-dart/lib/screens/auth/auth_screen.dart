@@ -53,9 +53,9 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   Widget buildContent() {
     return Center(
       child: CustomSingleChildScrollView(
-        padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
+        padding: EdgeInsets.all(ThemeUtils.isSmallMobile(context) ? 8 : ThemeUtils.getResponsivePadding(context)),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: ThemeUtils.isSmallMobile(context) ? 280 : 400),
+          constraints: BoxConstraints(maxWidth: ThemeUtils.isSmallMobile(context) ? double.infinity : 400),
           child: Column(
             children: [
               _buildHeader(), 
@@ -80,47 +80,41 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   Widget _buildHeader() => Card(
     color: AppTheme.surface,
     elevation: ThemeUtils.isSmallMobile(context) ? 2 : 4,
-    margin: ThemeUtils.getResponsiveCardMargin(context),
+    margin: ThemeUtils.isSmallMobile(context) ? EdgeInsets.zero : ThemeUtils.getResponsiveCardMargin(context),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
     child: Padding(
-      padding: ThemeUtils.getResponsiveCardPadding(context),
+      padding: ThemeUtils.isSmallMobile(context) ? const EdgeInsets.all(12) : ThemeUtils.getResponsiveCardPadding(context),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.music_note,
-                color: AppTheme.primary,
-                size: ThemeUtils.getResponsiveIconSize(context),
-              ),
-              SizedBox(width: ThemeUtils.isSmallMobile(context) ? 4 : 8),
-              Flexible(
-                child: Text(
-                  _isLogin ? 'Welcome Back' : 'Join Music Room',
-                  style: ThemeUtils.getSubheadingStyle(context).copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+          Text(
+            _isLogin ? 'Welcome Back' : 'Join Music Room',
+            style: ThemeUtils.getSubheadingStyle(context).copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
           Center(
             child: Container(
               padding: EdgeInsets.all(ThemeUtils.isSmallMobile(context) ? 4 : 6),
               decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.1),
+                color: Colors.green.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
               ),
-              child: Icon(
-                Icons.music_note,
-                size: ThemeUtils.isSmallMobile(context) ? 24 : 40,
-                color: AppTheme.primary,
+              child: Image.asset(
+                'assets/images/musicroom.png',
+                width: ThemeUtils.isSmallMobile(context) ? 24 : 40,
+                height: ThemeUtils.isSmallMobile(context) ? 24 : 40,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.music_note,
+                    size: ThemeUtils.isSmallMobile(context) ? 24 : 40,
+                    color: AppTheme.primary,
+                  );
+                },
               ),
             ),
           ),
@@ -135,65 +129,90 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
     ),
   );
 
-  Widget _buildForm() => AppTheme.buildFormCard(
-    title: _isLogin ? 'Sign In' : 'Create Account',
-    child: Form(
-      key: _formKey,
+  Widget _buildForm() => Card(
+    color: AppTheme.surface,
+    elevation: ThemeUtils.isSmallMobile(context) ? 2 : 4,
+    margin: ThemeUtils.isSmallMobile(context) ? EdgeInsets.zero : const EdgeInsets.all(8),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
+    child: Padding(
+      padding: ThemeUtils.isSmallMobile(context) ? const EdgeInsets.all(12) : const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppWidgets.textField(
-            context: context,
-            controller: _usernameController, 
-            labelText: 'Username', 
-            prefixIcon: Icons.person, 
-            validator: AppValidators.username,
-            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
-          ),
-          if (!_isLogin) ...[
-            SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
-            AppWidgets.textField(
-              context: context,
-              controller: _emailController,
-              labelText: 'Email',
-              prefixIcon: Icons.email,
-              validator: AppValidators.email,
-              onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
-            ),
-          ],
-          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
-          AppWidgets.textField(
-            context: context,
-            controller: _passwordController,
-            labelText: 'Password',
-            prefixIcon: Icons.lock,
-            obscureText: true,
-            validator: AppValidators.password,
-            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
-          ),
-          if (_isLogin) ...[
-            SizedBox(height: ThemeUtils.isSmallMobile(context) ? 4 : 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _forgotPassword,
+          Row(
+            children: [
+              Icon(Icons.login, color: AppTheme.primary, size: ThemeUtils.isSmallMobile(context) ? 18 : 20),
+              SizedBox(width: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+              Flexible(
                 child: Text(
-                  'Forgot Password?',
-                  style: ThemeUtils.getCaptionStyle(context).copyWith(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  _isLogin ? 'Sign In' : 'Create Account',
+                  style: ThemeUtils.getSubheadingStyle(context).copyWith(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-          ],
-          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 12 : 24),
-          Consumer<AuthProvider>(
-            builder: (context, authProvider, _) => AppWidgets.primaryButton(
-              context: context,
-              text: _isLogin ? 'Sign In' : 'Sign Up',
-              onPressed: authProvider.isLoading ? null : _submit,
-              isLoading: authProvider.isLoading,
-              icon: _isLogin ? Icons.login : Icons.person_add,
+            ],
+          ),
+          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 12),
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                AppWidgets.textField(
+                  context: context,
+                  controller: _usernameController, 
+                  labelText: 'Username', 
+                  prefixIcon: Icons.person, 
+                  validator: AppValidators.username,
+                  onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
+                ),
+                if (!_isLogin) ...[
+                  SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
+                  AppWidgets.textField(
+                    context: context,
+                    controller: _emailController,
+                    labelText: 'Email',
+                    prefixIcon: Icons.email,
+                    validator: AppValidators.email,
+                    onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
+                  ),
+                ],
+                SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
+                AppWidgets.textField(
+                  context: context,
+                  controller: _passwordController,
+                  labelText: 'Password',
+                  prefixIcon: Icons.lock,
+                  obscureText: true,
+                  validator: AppValidators.password,
+                  onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
+                ),
+                if (_isLogin) ...[
+                  SizedBox(height: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _forgotPassword,
+                      child: Text(
+                        'Forgot Password?',
+                        style: ThemeUtils.getCaptionStyle(context).copyWith(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                SizedBox(height: ThemeUtils.isSmallMobile(context) ? 12 : 24),
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, _) => AppWidgets.primaryButton(
+                    context: context,
+                    text: _isLogin ? 'Sign In' : 'Sign Up',
+                    onPressed: authProvider.isLoading ? null : _submit,
+                    isLoading: authProvider.isLoading,
+                    icon: _isLogin ? Icons.login : Icons.person_add,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -201,9 +220,31 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
     ),
   );
 
-  Widget _buildSocialButtons() => AppTheme.buildFormCard(
-    title: 'Or continue with',
-    child: Consumer<AuthProvider>(
+  Widget _buildSocialButtons() => Card(
+    color: AppTheme.surface,
+    elevation: ThemeUtils.isSmallMobile(context) ? 2 : 4,
+    margin: ThemeUtils.isSmallMobile(context) ? EdgeInsets.zero : const EdgeInsets.all(8),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
+    child: Padding(
+      padding: ThemeUtils.isSmallMobile(context) ? const EdgeInsets.all(12) : const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.login, color: AppTheme.primary, size: ThemeUtils.isSmallMobile(context) ? 18 : 20),
+              SizedBox(width: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+              Flexible(
+                child: Text(
+                  'Or continue with',
+                  style: ThemeUtils.getSubheadingStyle(context).copyWith(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 12),
+          Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         return Column(
           children: [
@@ -269,6 +310,9 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           ],
         );
       },
+    ),
+        ],
+      ),
     ),
   );
 
