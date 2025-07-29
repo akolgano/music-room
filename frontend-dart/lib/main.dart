@@ -96,12 +96,13 @@ class MyApp extends StatelessWidget {
           providers: [...AppBuilder.buildProviders(), ...AppBuilder.buildAdditionalProviders()],
           child: ResponsiveBreakpoints(
             breakpoints: [
-              (0.0, 360.0, 'SMALL_MOBILE'), 
-              (361.0, 450.0, MOBILE), 
-              (451.0, 800.0, TABLET), 
-              (801.0, 1920.0, DESKTOP), 
-              (1921.0, double.infinity, '4K')
-            ].map((data) => Breakpoint(start: data.$1, end: data.$2, name: data.$3)).toList(),
+              const Breakpoint(start: 0, end: 256, name: 'TINY'),
+              const Breakpoint(start: 257, end: 426, name: 'SMALL'),
+              const Breakpoint(start: 427, end: 640, name: MOBILE),
+              const Breakpoint(start: 641, end: 854, name: 'LARGE'),
+              const Breakpoint(start: 855, end: 1280, name: TABLET),
+              const Breakpoint(start: 1281, end: double.infinity, name: DESKTOP),
+            ],
             child: Consumer<DynamicThemeProvider>(
               builder: (context, themeProvider, _) {
                 return MaterialApp(
