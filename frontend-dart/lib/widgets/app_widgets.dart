@@ -568,10 +568,11 @@ class AppWidgets {
     double spacing,
     ThemeData theme
   ) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
       Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
       SizedBox(height: spacing),
       Text(
@@ -626,6 +627,7 @@ class AppWidgets {
             ),
       ],
       ],
+      ),
     );
   }
 

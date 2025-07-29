@@ -541,7 +541,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
     }
   }
 
-  void _shufflePlaylist() async {
+  Future<void> _shufflePlaylist() async {
     final musicProvider = getProvider<MusicProvider>();
     final sortedTracks = musicProvider.sortedPlaylistTracks;
     
@@ -550,24 +550,29 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
       return;
     }
     
-    try {
-      musicProvider.shufflePlaylistTracks();
-      
-      final playerService = getProvider<MusicPlayerService>();
-      final shuffledTracks = List<PlaylistTrack>.from(musicProvider.sortedPlaylistTracks);
-      
-      await playerService.setPlaylistAndPlay(
-        playlist: shuffledTracks,
-        startIndex: 0,
-        playlistId: widget.playlistId,
-        authToken: auth.token,
-      );
-      playerService.toggleShuffle();
-      
-      showInfo('Shuffled "${_playlist!.name}"');
-    } catch (e) {
-      showError('Failed to shuffle playlist: $e');
+    if (!_isOwner) {
+      showError('Only the playlist owner can shuffle tracks');
+      return;
     }
+    
+    await runAsyncAction(
+      () async {
+        await musicProvider.shufflePlaylistTracks(widget.playlistId, auth.token!);
+        
+        final playerService = getProvider<MusicPlayerService>();
+        final shuffledTracks = List<PlaylistTrack>.from(musicProvider.sortedPlaylistTracks);
+        
+        await playerService.setPlaylistAndPlay(
+          playlist: shuffledTracks,
+          startIndex: 0,
+          playlistId: widget.playlistId,
+          authToken: auth.token,
+        );
+        playerService.toggleShuffle();
+      },
+      successMessage: 'Shuffled "${_playlist!.name}"',
+      errorMessage: 'Failed to shuffle playlist',
+    );
   }
 
   Future<void> _addRandomTrack() async {
