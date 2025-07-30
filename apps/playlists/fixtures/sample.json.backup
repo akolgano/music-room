@@ -644,7 +644,7 @@
   },
   {
     "model": "profile.profile",
-    "pk": 1,
+    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b0",
     "fields": {
       "user": [
         "admin"
@@ -667,7 +667,7 @@
   },
   {
     "model": "profile.profile",
-    "pk": 2,
+    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b1",
     "fields": {
       "user": [
         "elina"
@@ -690,7 +690,7 @@
   },
   {
     "model": "profile.profile",
-    "pk": 3,
+    "pk": "a82f7b61-8a2e-4b14-9e2d-53b297ef5a3c",
     "fields": {
       "user": [
         "elena"
@@ -713,7 +713,7 @@
   },
   {
     "model": "profile.profile",
-    "pk": 4,
+    "pk": "d3f1c73a-5e44-4d12-9c3b-1a57f4f07c8a",
     "fields": {
       "user": [
         "anna"
