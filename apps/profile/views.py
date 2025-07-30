@@ -33,7 +33,7 @@ def profile_detail(request, pk):
     is_self = viewer == profile.user
 
     data = {
-        'id': profile.id,
+        'id': pk,
         'user': profile.user.username,
     }
 
@@ -54,8 +54,11 @@ def profile_detail(request, pk):
                 data[field_name] = list(prefs)
             else:
                 value = getattr(profile, field_name)
-                if field_name == 'avatar' and value:
-                    value = request.build_absolute_uri(value.url)
+                if field_name == 'avatar':
+                    if value and getattr(value, 'name', None):
+                        value = request.build_absolute_uri(value.url)
+                    else:
+                        value = None
                 data[field_name] = value
 
     return Response(data)
