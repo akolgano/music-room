@@ -194,18 +194,6 @@ class ThemeUtils {
     );
   }
 
-  static LinearGradient createThemeGradient(BuildContext context, {bool reverse = false}) {
-    final background = getBackground(context);
-    return LinearGradient(
-      begin: reverse ? Alignment.bottomCenter : Alignment.topCenter,
-      end: reverse ? Alignment.topCenter : Alignment.bottomCenter,
-      colors: [
-        AppTheme.primary.withValues(alpha: 0.8), 
-        AppTheme.primary.withValues(alpha: 0.4), 
-        background,
-      ],
-    );
-  }
 
   static Color getColorFromString(String id) {
     int hashValue = id.hashCode.abs();
@@ -465,24 +453,6 @@ class AppTheme {
 
   static ThemeData get darkTheme => _buildTheme();
 
-  static InputDecoration getInputDecoration({required String labelText, String? hintText, IconData? prefixIcon}) => InputDecoration(
-    labelText: labelText,
-    hintText: hintText,
-    prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: onSurfaceVariant) : null,
-    filled: true,
-    fillColor: surfaceVariant,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r),
-      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-    ),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
-      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-    ),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kIsWeb ? 8 : 8.r), 
-      borderSide: const BorderSide(color: primary, width: 2)
-    ),
-    labelStyle: TextStyle(fontSize: kIsWeb ? 16 : 16.sp, color: onSurfaceVariant),
-    hintStyle: TextStyle(fontSize: kIsWeb ? 14 : 14.sp, color: onSurfaceVariant.withValues(alpha: 0.7)),
-  );
 
   static Widget _buildCard({
     required Widget child, 

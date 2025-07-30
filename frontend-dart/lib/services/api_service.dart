@@ -50,7 +50,12 @@ class ApiService {
     if (debug && kDebugMode) debugPrint('[ApiService] $method called: $endpoint with data: $data');
     
     final options = _createAuthOptions(token);
-    final processedData = data?.toJson?.call() ?? data;
+    dynamic processedData;
+    try {
+      processedData = data?.toJson?.call() ?? data;
+    } catch (e) {
+      processedData = data;
+    }
     
     Response response;
     switch (method.toUpperCase()) {
