@@ -62,12 +62,6 @@ class TrackSortingService {
 }
 
 extension PlaylistTrackSorting on List<PlaylistTrack> {
-  void sortInPlace(TrackSortOption sortOption) {
-    sort((a, b) {
-      final comparison = TrackSortingService._getComparison(a, b, sortOption.field);
-      return sortOption.order == SortOrder.ascending ? comparison : -comparison;
-    });
-  }
 
   List<PlaylistTrack> sortedCopy(TrackSortOption sortOption) {
     return TrackSortingService.sortTracks(this, sortOption);
