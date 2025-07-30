@@ -28,7 +28,7 @@ def profile_update(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def profile_detail(request, pk):
-    profile = get_object_or_404(Profile, pk=pk)
+    profile = get_object_or_404(Profile, user=pk)
     viewer = request.user
     is_self = viewer == profile.user
 
