@@ -17,6 +17,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -86,6 +87,16 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             validator: (v) => v?.isEmpty ?? true ? 'Please enter new password' : 
                                       v!.length < 4 ? 'Password must be at least 4 characters' : null,
                             onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
+                          ),
+                          const SizedBox(height: 24),
+                          AppWidgets.textField(
+                            context: context,
+                            controller: _confirmPasswordController,
+                            labelText: 'Confirm New Password',
+                            obscureText: true,
+                            validator: (v) => v?.isEmpty ?? true ? 'Please confirm new password' : 
+                                      v != _newPasswordController.text ? 'Passwords do not match' : null,
+                            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                           ), 
                           const SizedBox(height: 24),
                           profileProvider.isLoading
@@ -136,6 +147,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
   void dispose() {
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 }

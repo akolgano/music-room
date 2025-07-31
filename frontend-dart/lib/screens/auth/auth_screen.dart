@@ -408,84 +408,288 @@ class _ForgotPasswordDialog extends StatefulWidget {
 
 class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
   final _emailController = TextEditingController();
+  final _otpController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+  bool _otpSent = false;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _otpController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _sendResetLink() async {
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final emailValidation = AppValidators.email(_emailController.text);
+    if (emailValidation != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(emailValidation),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success = await authProvider.forgotPassword(_emailController.text);
+      
+      if (success && mounted) {
+        setState(() {
+          _otpSent = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('OTP sent to ${_emailController.text}. Please enter the code and your new password.'),
+            backgroundColor: AppTheme.primary,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Failed to send reset email'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    // Validate OTP
+    if (_otpController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter the OTP code'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!RegExp(r'^\d{6}$').hasMatch(_otpController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('OTP must be exactly 6 digits'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate password
+    if (_passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a new password'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password must be at least 4 characters'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate password confirmation
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Passwords do not match'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success = await authProvider.forgotChangePassword(
+        _emailController.text,
+        _otpController.text,
+        _passwordController.text,
+      );
+      
+      if (success && mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password reset successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Failed to reset password'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppTheme.surface,
-      title: const Text(
-        'Reset Password',
-        style: TextStyle(color: Colors.white),
+      title: Text(
+        _otpSent ? 'Reset Password' : 'Forgot Password',
+        style: const TextStyle(color: Colors.white),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Enter your email address and we\'ll send you instructions to reset your password.',
-            style: TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(height: 16),
-          AppWidgets.textField(
-            context: context,
-            controller: _emailController,
-            labelText: 'Email',
-            prefixIcon: Icons.email,
-            validator: AppValidators.email,
-            onFieldSubmitted: kIsWeb ? (_) {
-              if (_emailController.text.isNotEmpty) {
-                final email = _emailController.text;
-                Navigator.pop(context);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Password reset instructions sent to $email'),
-                      backgroundColor: AppTheme.primary,
-                    ),
-                  );
-                }
-              }
-            } : null,
-          ),
+          if (!_otpSent) ...[
+            const Text(
+              'Enter your email address and we\'ll send you an OTP to reset your password.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 16),
+            AppWidgets.textField(
+              context: context,
+              controller: _emailController,
+              labelText: 'Email',
+              prefixIcon: Icons.email,
+              validator: AppValidators.email,
+            ),
+          ] else ...[
+            Text(
+              'Enter the OTP sent to ${_emailController.text} and your new password.',
+              style: const TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 16),
+            AppWidgets.textField(
+              context: context,
+              controller: _otpController,
+              labelText: 'OTP Code',
+              prefixIcon: Icons.lock,
+              validator: (value) {
+                if (value?.isEmpty ?? true) return 'Please enter OTP';
+                if (!RegExp(r'^\d{6}$').hasMatch(value!)) return 'OTP must be 6 digits';
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AppWidgets.textField(
+              context: context,
+              controller: _passwordController,
+              labelText: 'New Password',
+              prefixIcon: Icons.lock,
+              obscureText: true,
+              validator: (value) {
+                if (value?.isEmpty ?? true) return 'Please enter password';
+                if (value!.length < 4) return 'Password must be at least 4 characters';
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AppWidgets.textField(
+              context: context,
+              controller: _confirmPasswordController,
+              labelText: 'Confirm Password',
+              prefixIcon: Icons.lock,
+              obscureText: true,
+              validator: (value) {
+                if (value?.isEmpty ?? true) return 'Please confirm password';
+                if (value != _passwordController.text) return 'Passwords do not match';
+                return null;
+              },
+            ),
+          ],
         ],
       ),
       actions: [
+        if (_otpSent)
+          TextButton(
+            onPressed: () => setState(() {
+              _otpSent = false;
+              _otpController.clear();
+              _passwordController.clear();
+              _confirmPasswordController.clear();
+            }),
+            child: const Text('Back', style: TextStyle(color: Colors.grey)),
+          ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
         ),
         ElevatedButton(
-          onPressed: () {
-            if (_emailController.text.isNotEmpty) {
-              final email = _emailController.text;
-              Navigator.pop(context);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Password reset instructions sent to $email'),
-                    backgroundColor: AppTheme.primary,
-                  ),
-                );
-              }
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Please enter your email address'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
+          onPressed: _isLoading ? null : (_otpSent ? _resetPassword : _sendResetLink),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primary,
             foregroundColor: Colors.black,
           ),
-          child: const Text('Send Reset Link'),
+          child: _isLoading 
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.black,
+                ),
+              )
+            : Text(_otpSent ? 'Reset Password' : 'Send OTP'),
         ),
       ],
     );
