@@ -23,7 +23,7 @@ from .models import SignupOneTimePasscode
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from apps.remote_auth.models import SocialNetwork
-from apps.profile.models import Profile
+from apps.profile.models import Profile, VisibilityChoices
 from django.contrib.auth.hashers import check_password
 from django.db import transaction
 import re
@@ -157,6 +157,13 @@ def get_friends_list(request):
         friends_list = []
         for fr in friendships:
             friend = fr.to_user if fr.from_user == user else fr.from_user
+            try:
+                profile = Profile.objects.get(user=friend)
+                profile_picture_url = ''
+                if profile.avatar and profile.avatar_visibility in [VisibilityChoices.PUBLIC, VisibilityChoices.FRIENDS]:
+                    profile_picture_url = profile.avatar.url
+            except Profile.DoesNotExist:
+                profile_picture_url = ''
             friends_list.append({
                 'friend_id': friend.id,
                 'friend_username': friend.username,
@@ -194,13 +201,28 @@ def send_friend_request(request, user_id):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_pending_friend_request(request):
-    profile_picture_url = 'TODO'
     friendships = Friendship.objects.filter(to_user=request.user, status='pending')
-    data = [{'friend_id': fr.from_user.id,
-            'friend_username': fr.from_user.username,
+
+    data = []
+    for fr in friendships:
+        from_user = fr.from_user
+
+        profile_picture_url = ''
+        try:
+            profile = Profile.objects.get(user=from_user)
+            if profile.avatar and profile.avatar_visibility == VisibilityChoices.PUBLIC:
+                profile_picture_url = profile.avatar.url
+        except Profile.DoesNotExist:
+            pass
+
+        data.append({
+            'friend_id': from_user.id,
+            'friend_username': from_user.username,
             'friendship_id': fr.id,
-            "profile_picture_url": profile_picture_url,
-            "status": fr.status} for fr in friendships]
+            'profile_picture_url': profile_picture_url,
+            'status': fr.status,
+        })
+
     return JsonResponse({'received_invitations': data}, status=200)
 
 
@@ -208,13 +230,30 @@ def get_pending_friend_request(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_sent_friend_request(request):
-    profile_picture_url = 'TODO'
+
     friendships = Friendship.objects.filter(from_user=request.user, status='pending')
-    data = [{'friend_id': fr.to_user.id,
-            'friend_username': fr.to_user.username,
+
+
+    data = []
+    for fr in friendships:
+        to_user = fr.to_user
+
+        profile_picture_url = ''
+        try:
+            profile = Profile.objects.get(user=to_user)
+            if profile.avatar and profile.avatar_visibility == VisibilityChoices.PUBLIC:
+                profile_picture_url = profile.avatar.url
+        except Profile.DoesNotExist:
+            pass
+
+        data.append({
+            'friend_id': to_user.id,
+            'friend_username': to_user.username,
             'friendship_id': fr.id,
-            "profile_picture_url": profile_picture_url,
-            "status": fr.status} for fr in friendships]
+            'profile_picture_url': profile_picture_url,
+            'status': fr.status,
+        })
+
     return JsonResponse({'sent_invitations': data}, status=200)
 
 
