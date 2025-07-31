@@ -139,7 +139,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                'Forgot Password',
+                                _isGetEmail ? 'Forgot Password' : 'Reset Password',
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -219,7 +219,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    'Submit',
+                                    _isGetEmail ? 'Send OTP' : 'Reset Password',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -276,18 +276,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       if (_isGetEmail) {
-        await Provider.of<AuthProvider>(context, listen: false).forgotPassword(
+        final success = await Provider.of<AuthProvider>(context, listen: false).forgotPassword(
           _emailController.text,
         );
 
-        if (mounted) {
-          AppWidgets.showSnackBar(context, "OTP Sent to your email! Please input OTP and new password in 5 minutes!", backgroundColor: AppTheme.onSurface);
+        if (success && mounted) {
+          AppWidgets.showSnackBar(context, "OTP sent to your email! Please enter the OTP code and your new password within 5 minutes.", backgroundColor: AppTheme.onSurface);
+          setState(() {
+            _isGetOtp = true;
+            _isGetEmail = false;
+          });
         }
-
-        setState(() {
-          _isGetOtp = true;
-          _isGetEmail = false;
-        });
       } else if (_isGetOtp) {
         await Provider.of<AuthProvider>(context, listen: false).forgotChangePassword(
           _emailController.text,
@@ -300,7 +299,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         });
 
         _showSnackBarWithAction(
-          message: "Password changed success !",
+          message: "Password changed successfully!",
           backgroundColor: AppTheme.onSurface,
           actionLabel: 'OK',
         );

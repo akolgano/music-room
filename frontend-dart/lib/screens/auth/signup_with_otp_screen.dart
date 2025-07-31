@@ -21,10 +21,11 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _otpController = TextEditingController();
   
   bool _isLoading = false;
-  bool _otpSent = false;
+  int _currentStep = 0; 
   bool _canResendOtp = true;
   int _resendCountdown = 0;
   Timer? _countdownTimer;
@@ -47,124 +48,241 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   Widget _buildForm() {
     return AppTheme.buildFormCard(
-      title: _otpSent ? 'Verify Email' : 'Create Account',
-      titleIcon: _otpSent ? Icons.email : Icons.person_add,
+      title: _getStepTitle(),
+      titleIcon: _getStepIcon(),
       child: Form(
         key: _formKey,
         child: Column(
           children: [
-            if (!_otpSent) ...[
-              AppWidgets.textField(
-                context: context,
-                controller: _emailController,
-                labelText: 'Email',
-                prefixIcon: Icons.email,
-                validator: AppValidators.email,
-                onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
-              ),
-              const SizedBox(height: 16),
-              AppWidgets.textField(
-                context: context,
-                controller: _usernameController,
-                labelText: 'Username',
-                prefixIcon: Icons.person,
-                validator: AppValidators.username,
-                onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
-              ),
-              const SizedBox(height: 16),
-              AppWidgets.textField(
-                context: context,
-                controller: _passwordController,
-                labelText: 'Password',
-                prefixIcon: Icons.lock,
-                obscureText: true,
-                validator: AppValidators.password,
-                onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
-              ),
-              const SizedBox(height: 24),
-              AppWidgets.primaryButton(
-                context: context,
-                text: 'Send Verification Code',
-                onPressed: _isLoading ? null : _sendOtp,
-                isLoading: _isLoading,
-                icon: Icons.send,
-              ),
-            ] else ...[
-              AppWidgets.infoBanner(
-                title: 'Check Your Email',
-                message: 'We sent a verification code to ${_emailController.text}',
-                icon: Icons.email,
-              ),
-              const SizedBox(height: 16),
-              AppWidgets.textField(
-                context: context,
-                controller: _otpController,
-                labelText: 'Verification Code',
-                prefixIcon: Icons.lock,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Please enter verification code';
-                  if (!RegExp(r'^\d{6}$').hasMatch(value!)) return 'Code must be 6 digits';
-                  return null;
-                },
-                onFieldSubmitted: kIsWeb ? (_) => _signup() : null,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  TextButton(
-                    onPressed: _canResendOtp ? _sendOtp : null,
-                    child: Text(
-                      _canResendOtp ? 'Resend Code' : 'Resend in $_resendCountdown s',
-                      style: TextStyle(color: _canResendOtp ? AppTheme.primary : Colors.grey),
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _otpSent = false;
-                      _otpController.clear();
-                      _stopCountdown();
-                    }),
-                    child: const Text('Change Email', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              AppWidgets.primaryButton(
-                context: context,
-                text: 'Create Account',
-                onPressed: _isLoading ? null : _signup,
-                isLoading: _isLoading,
-                icon: Icons.person_add,
-              ),
-            ],
+            if (_currentStep == 0) ..._buildEmailStep(),
+            if (_currentStep == 1) ..._buildCredentialsStep(),
+            if (_currentStep == 2) ..._buildOtpStep(),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _sendOtp() async {
-    if (!_formKey.currentState!.validate() && !_otpSent) return;
+  String _getStepTitle() {
+    switch (_currentStep) {
+      case 0: return 'Enter Email';
+      case 1: return 'Create Account';
+      case 2: return 'Verify Email';
+      default: return 'Create Account';
+    }
+  }
+
+  IconData _getStepIcon() {
+    switch (_currentStep) {
+      case 0: return Icons.email;
+      case 1: return Icons.person_add;
+      case 2: return Icons.verified_user;
+      default: return Icons.person_add;
+    }
+  }
+
+  List<Widget> _buildEmailStep() {
+    return [
+      const Text(
+        'Enter your email address to get started',
+        style: TextStyle(color: Colors.white70),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 16),
+      AppWidgets.textField(
+        context: context,
+        controller: _emailController,
+        labelText: 'Email',
+        prefixIcon: Icons.email,
+        validator: AppValidators.email,
+        onFieldSubmitted: kIsWeb ? (_) => _validateEmail() : null,
+      ),
+      const SizedBox(height: 24),
+      AppWidgets.primaryButton(
+        context: context,
+        text: 'Continue',
+        onPressed: _isLoading ? null : _validateEmail,
+        isLoading: _isLoading,
+        icon: Icons.arrow_forward,
+      ),
+    ];
+  }
+
+  List<Widget> _buildCredentialsStep() {
+    return [
+      Text(
+        'Create your account for ${_emailController.text}',
+        style: const TextStyle(color: Colors.white70),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 16),
+      AppWidgets.textField(
+        context: context,
+        controller: _usernameController,
+        labelText: 'Username',
+        prefixIcon: Icons.person,
+        validator: AppValidators.username,
+        onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
+      ),
+      const SizedBox(height: 16),
+      AppWidgets.textField(
+        context: context,
+        controller: _passwordController,
+        labelText: 'Password',
+        prefixIcon: Icons.lock,
+        obscureText: true,
+        validator: AppValidators.password,
+        onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
+      ),
+      const SizedBox(height: 16),
+      AppWidgets.textField(
+        context: context,
+        controller: _confirmPasswordController,
+        labelText: 'Confirm Password',
+        prefixIcon: Icons.lock,
+        obscureText: true,
+        validator: (value) {
+          if (value?.isEmpty ?? true) return 'Please confirm your password';
+          if (value != _passwordController.text) return 'Passwords do not match';
+          return null;
+        },
+        onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
+      ),
+      const SizedBox(height: 24),
+      Row(
+        children: [
+          Expanded(
+            child: TextButton(
+              onPressed: () => setState(() {
+                _currentStep = 0;
+              }),
+              child: const Text('Back', style: TextStyle(color: Colors.grey)),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 2,
+            child: AppWidgets.primaryButton(
+              context: context,
+              text: 'Send Verification Code',
+              onPressed: _isLoading ? null : _sendOtp,
+              isLoading: _isLoading,
+              icon: Icons.send,
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  List<Widget> _buildOtpStep() {
+    return [
+      AppWidgets.infoBanner(
+        title: 'Check Your Email',
+        message: 'We sent a verification code to ${_emailController.text}',
+        icon: Icons.email,
+      ),
+      const SizedBox(height: 16),
+      AppWidgets.textField(
+        context: context,
+        controller: _otpController,
+        labelText: 'Verification Code',
+        prefixIcon: Icons.lock,
+        validator: (value) {
+          if (value?.isEmpty ?? true) return 'Please enter verification code';
+          if (!RegExp(r'^\d{6}$').hasMatch(value!)) return 'Code must be 6 digits';
+          return null;
+        },
+        onFieldSubmitted: kIsWeb ? (_) => _signup() : null,
+      ),
+      const SizedBox(height: 16),
+      Row(
+        children: [
+          TextButton(
+            onPressed: _canResendOtp ? _sendOtp : null,
+            child: Text(
+              _canResendOtp ? 'Resend Code' : 'Resend in $_resendCountdown s',
+              style: TextStyle(color: _canResendOtp ? AppTheme.primary : Colors.grey),
+            ),
+          ),
+          const Spacer(),
+          TextButton(
+            onPressed: () => setState(() {
+              _currentStep = 1;
+              _otpController.clear();
+              _stopCountdown();
+            }),
+            child: const Text('Change Details', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      const SizedBox(height: 24),
+      Row(
+        children: [
+          Expanded(
+            child: TextButton(
+              onPressed: () => setState(() {
+                _currentStep = 1;
+                _otpController.clear();
+                _stopCountdown();
+              }),
+              child: const Text('Back', style: TextStyle(color: Colors.grey)),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 2,
+            child: AppWidgets.primaryButton(
+              context: context,
+              text: 'Create Account',
+              onPressed: _isLoading ? null : _signup,
+              isLoading: _isLoading,
+              icon: Icons.person_add,
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  Future<void> _validateEmail() async {
+    if (!_formKey.currentState!.validate()) return;
     
     setState(() => _isLoading = true);
     
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
-      if (!_otpSent) {
-        final isEmailAvailable = await authProvider.checkEmailAvailability(_emailController.text);
-        if (!isEmailAvailable) {
-          _showError('This email is already registered. Please use a different email or try logging in.');
-          setState(() => _isLoading = false);
-          return;
-        }
+      final isEmailAvailable = await authProvider.checkEmailAvailability(_emailController.text);
+      if (!isEmailAvailable) {
+        _showError('This email is already registered. Please use a different email or try logging in.');
+        setState(() => _isLoading = false);
+        return;
       }
+      
+      setState(() {
+        _currentStep = 1;
+      });
+      _showSuccess('Email is available! Please create your account.');
+    } catch (e) {
+      _showError('Error checking email: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _sendOtp() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
       final success = await authProvider.sendSignupEmailOtp(_emailController.text);
       if (success) {
         setState(() {
-          _otpSent = true;
+          _currentStep = 2;
           _canResendOtp = false;
           _resendCountdown = 60;
         });
@@ -254,6 +372,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     _emailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _otpController.dispose();
     super.dispose();
   }

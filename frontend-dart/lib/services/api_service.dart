@@ -128,7 +128,7 @@ class ApiService {
       _get('/users/invitations/sent/', FriendInvitationsResponse.fromJson, token: token);
 
   Future<Map<String, dynamic>> checkEmail(String email) async {
-    return (await _dio.get('/users/check_email/', queryParameters: {'email': email})).data;
+    return (await _dio.post('/users/check_email/', data: {'email': email})).data;
   }
 
   Future<ProfileByIdResponse> getProfileById(String userId, String token) => 
