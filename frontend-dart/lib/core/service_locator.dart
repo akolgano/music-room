@@ -12,6 +12,7 @@ import '../services/music_player_service.dart';
 import '../services/voting_service.dart';
 import '../services/track_cache_service.dart';
 import '../services/websocket_service.dart';
+import '../services/frontend_logging_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 
 final getIt = GetIt.instance;
@@ -121,6 +122,11 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<WebSocketService>(() => 
       WebSocketService());
+
+  getIt.registerLazySingleton<FrontendLoggingService>(() => 
+      FrontendLoggingService());
+
+  await getIt<FrontendLoggingService>().initialize();
 
   if (kDebugMode) {
     debugPrint('[ServiceLocator] Service Locator setup complete with consistent API logging');

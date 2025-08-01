@@ -111,6 +111,7 @@ class MyApp extends StatelessWidget {
                   onGenerateRoute: AppBuilder.generateRoute,
                   initialRoute: '/', 
                   debugShowCheckedModeBanner: false,
+                  navigatorObservers: [AppBuilder.navigationObserver],
                 );
               },
             ),

@@ -4,6 +4,7 @@ import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/auth_service.dart';
 import '../services/websocket_service.dart';
+import '../services/frontend_logging_service.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -12,11 +13,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthProvider extends BaseProvider {
   late final AuthService _authService;
   late final WebSocketService _webSocketService;
+  late final FrontendLoggingService _loggingService;
 
   AuthProvider() {
     try {
       _authService = getIt<AuthService>();
       _webSocketService = getIt<WebSocketService>();
+      _loggingService = getIt<FrontendLoggingService>();
       _initializeAuthState();
     } catch (e) {
       if (kDebugMode) {
@@ -24,6 +27,7 @@ class AuthProvider extends BaseProvider {
       }
       _authService = getIt<AuthService>();
       _webSocketService = getIt<WebSocketService>();
+      _loggingService = getIt<FrontendLoggingService>();
     }
   }
 
@@ -77,6 +81,7 @@ class AuthProvider extends BaseProvider {
     );
     
     if (success && token != null) {
+      _loggingService.updateUserId(userId);
       try {
         await _webSocketService.connect(token!);
         if (kDebugMode) {
@@ -104,11 +109,17 @@ class AuthProvider extends BaseProvider {
       }
     }
     
-    return await executeBool(
+    final success = await executeBool(
       () => _authService.logout(),
       successMessage: 'Logged out successfully',
       errorMessage: 'Logout failed',
     );
+    
+    if (success) {
+      _loggingService.updateUserId(null);
+    }
+    
+    return success;
   }
 
   Future<bool> forgotPassword(String email) async {

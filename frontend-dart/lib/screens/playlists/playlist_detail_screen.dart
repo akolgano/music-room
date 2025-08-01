@@ -14,6 +14,7 @@ import '../../models/music_models.dart';
 import '../../models/sort_models.dart';
 import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
+import '../../core/user_action_logging_mixin.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart'; 
 import '../../widgets/playlist_detail_widgets.dart';
@@ -30,7 +31,7 @@ class PlaylistDetailScreen extends StatefulWidget {
   State<PlaylistDetailScreen> createState() => _PlaylistDetailScreenState();
 }
 
-class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
+class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with UserActionLoggingMixin {
   late final ApiService _apiService;
   late final TrackCacheService _trackCacheService;
   late final WebSocketService _webSocketService;
@@ -82,18 +83,52 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> {
 
   @override
   List<Widget> get actions => [
-    IconButton(
+    buildLoggingIconButton(
       icon: Icon(_isVotingMode ? Icons.edit : Icons.how_to_vote),
-      onPressed: () => setState(() => _isVotingMode = !_isVotingMode),
-      tooltip: _isVotingMode ? 'Edit Mode' : 'Voting Mode',
+      onPressed: () {
+        logButtonClick('toggle_voting_mode', metadata: {
+          'current_mode': _isVotingMode ? 'voting' : 'edit',
+          'switching_to': _isVotingMode ? 'edit' : 'voting',
+          'playlist_id': widget.playlistId,
+        });
+        setState(() => _isVotingMode = !_isVotingMode);
+      },
+      buttonName: 'toggle_voting_mode',
     ),
-    if (_isOwner) IconButton(icon: const Icon(Icons.add), onPressed: _addSongs, tooltip: 'Add Songs'),
-    if (_isOwner) IconButton(icon: const Icon(Icons.settings), onPressed: _openPlaylistSettings, tooltip: 'Playlist Settings'),
-    IconButton(icon: const Icon(Icons.share), onPressed: _sharePlaylist, tooltip: 'Share Playlist'),
-    IconButton(
+    if (_isOwner) buildLoggingIconButton(
+      icon: const Icon(Icons.add), 
+      onPressed: () {
+        logButtonClick('add_songs_to_playlist', metadata: {'playlist_id': widget.playlistId});
+        _addSongs();
+      },
+      buttonName: 'add_songs_button',
+    ),
+    if (_isOwner) buildLoggingIconButton(
+      icon: const Icon(Icons.settings), 
+      onPressed: () {
+        logButtonClick('playlist_settings', metadata: {'playlist_id': widget.playlistId});
+        _openPlaylistSettings();
+      },
+      buttonName: 'playlist_settings_button',
+    ),
+    buildLoggingIconButton(
+      icon: const Icon(Icons.share), 
+      onPressed: () {
+        logButtonClick('share_playlist', metadata: {'playlist_id': widget.playlistId});
+        _sharePlaylist();
+      },
+      buttonName: 'share_playlist_button',
+    ),
+    buildLoggingIconButton(
       icon: Icon(_webSocketService.isConnected ? Icons.refresh : Icons.sync_problem), 
-      onPressed: _refreshWithReconnect, 
-      tooltip: _webSocketService.isConnected ? 'Refresh' : 'Refresh & Reconnect'
+      onPressed: () {
+        logButtonClick('refresh_playlist', metadata: {
+          'playlist_id': widget.playlistId,
+          'websocket_connected': _webSocketService.isConnected,
+        });
+        _refreshWithReconnect();
+      },
+      buttonName: 'refresh_playlist_button',
     ),
   ];
 
