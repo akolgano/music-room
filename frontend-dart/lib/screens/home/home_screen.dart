@@ -7,6 +7,7 @@ import '../../providers/profile_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
+import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/custom_scrollbar.dart';
 import '../../models/music_models.dart';
@@ -20,7 +21,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, UserActionLoggingMixin {
   late TabController _tabController;
   int _currentIndex = 0;
   bool get isLandscape => MediaQuery.of(context).orientation == Orientation.landscape;
@@ -30,7 +31,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.indexIsChanging) setState(() => _currentIndex = _tabController.index);
+      if (_tabController.indexIsChanging) {
+        final newIndex = _tabController.index;
+        final tabNames = ['Home', 'Playlists', 'Search', 'Friends', 'Profile'];
+        logButtonClick('tab_${tabNames[newIndex].toLowerCase()}', metadata: {
+          'previous_tab': _currentIndex,
+          'new_tab': newIndex,
+          'tab_name': tabNames[newIndex],
+        });
+        setState(() => _currentIndex = newIndex);
+      }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
@@ -48,13 +58,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           automaticallyImplyLeading: false,
           toolbarHeight: ThemeUtils.isSmallMobile(context) ? 40 : 48,
           actions: [
-            IconButton(
+            buildLoggingIconButton(
               icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
+              buttonName: 'search_icon_header',
             ),
-            IconButton(
+            buildLoggingIconButton(
               icon: Icon(Icons.add, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+              buttonName: 'add_playlist_icon_header',
             ),
           ],
         ) : null,
@@ -138,13 +150,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           title: Text(AppConstants.appName),
           automaticallyImplyLeading: false,
           actions: [
-            IconButton(
+            buildLoggingIconButton(
               icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
+              buttonName: 'search_icon_header',
             ),
-            IconButton(
+            buildLoggingIconButton(
               icon: Icon(Icons.add, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+              buttonName: 'add_playlist_icon_header',
             ),
           ],
         ) : null,
@@ -203,25 +217,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 title: 'Search Tracks',
                 icon: Icons.search,
                 color: Colors.blue,
-                onTap: () => _tabController.animateTo(2), 
+                onTap: () {
+                  logButtonClick('quick_action_search_tracks', metadata: {'action': 'search_tracks'});
+                  _tabController.animateTo(2);
+                },
               ),
               AppWidgets.quickActionCard(
                 title: 'Create Playlist',
                 icon: Icons.add_circle,
                 color: Colors.green,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+                onTap: () {
+                  logButtonClick('quick_action_create_playlist', metadata: {'action': 'create_playlist'});
+                  Navigator.pushNamed(context, AppRoutes.playlistEditor);
+                },
               ),
               AppWidgets.quickActionCard(
                 title: 'Find Friends',
                 icon: Icons.people,
                 color: Colors.purple,
-                onTap: () => _tabController.animateTo(3), 
+                onTap: () {
+                  logButtonClick('quick_action_find_friends', metadata: {'action': 'find_friends'});
+                  _tabController.animateTo(3);
+                },
               ),
               AppWidgets.quickActionCard(
                 title: 'Public Playlists',
                 icon: Icons.public,
                 color: Colors.orange,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.publicPlaylists),
+                onTap: () {
+                  logButtonClick('quick_action_public_playlists', metadata: {'action': 'public_playlists'});
+                  Navigator.pushNamed(context, AppRoutes.publicPlaylists);
+                },
               ),
             ],
           ),
@@ -360,12 +386,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      TextButton(
+                      buildLoggingTextButton(
                         onPressed: () => Navigator.pushNamed(context, AppRoutes.friendRequests),
                         child: const Text(
                           'View',
                           style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
                         ),
+                        buttonName: 'view_friend_requests_notification',
+                        metadata: {'pending_requests_count': pendingRequests.length},
                       ),
                     ],
                   ),
@@ -374,10 +402,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: buildLoggingElevatedButton(
                       onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Add Friend'),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.person_add),
+                          SizedBox(width: 8),
+                          Text('Add Friend'),
+                        ],
+                      ),
+                      buttonName: 'add_friend_button_friends_section',
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.black,
@@ -387,10 +422,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: buildLoggingElevatedButton(
                       onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
-                      icon: const Icon(Icons.list),
-                      label: const Text('View All'),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.list),
+                          SizedBox(width: 8),
+                          Text('View All'),
+                        ],
+                      ),
+                      buttonName: 'view_all_friends_button',
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.surface,
                         foregroundColor: Colors.white,

@@ -11,6 +11,7 @@ import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
+import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
@@ -24,7 +25,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends BaseScreen<ProfileScreen> {
+class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggingMixin {
   List<Map<String, dynamic>> _musicPreferences = [];
 
   @override

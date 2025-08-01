@@ -1,4 +1,5 @@
 import 'app_logger.dart';
+import 'logging_navigation_observer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -32,6 +33,10 @@ import '../screens/friends/friends_list_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 
 class AppBuilder {
+  static final LoggingNavigationObserver _navigationObserver = LoggingNavigationObserver();
+  
+  static LoggingNavigationObserver get navigationObserver => _navigationObserver;
+  
   static List<SingleChildWidget> buildProviders() {
     return [
       ChangeNotifierProvider<DynamicThemeProvider>(create: (_) => getIt<DynamicThemeProvider>()),

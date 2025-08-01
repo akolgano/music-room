@@ -5,6 +5,7 @@ import '../../providers/music_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../services/track_sorting_service.dart';
 import '../../core/theme_utils.dart';
+import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/sort_button.dart';
 import '../../models/music_models.dart';
@@ -29,7 +30,7 @@ class TrackSearchScreen extends StatefulWidget {
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
 
-class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
+class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserActionLoggingMixin {
   final _searchController = TextEditingController();
   Set<String> _selectedTracks = {};
   bool _isMultiSelectMode = false;
@@ -344,10 +345,18 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _performSearch({bool isAutoSearch = false}) async {
     if (!mounted || _searchController.text.trim().length < _minSearchLength) return;
+    
+    final query = _searchController.text.trim();
+    logSearch(query, metadata: {
+      'is_auto_search': isAutoSearch,
+      'query_length': query.length,
+      'playlist_id': widget.playlistId,
+    });
+    
     await runAsyncAction(
       () async {
         _setLoadingState(LoadingState.searching);
-        await getProvider<MusicProvider>().searchDeezerTracks(_searchController.text);
+        await getProvider<MusicProvider>().searchDeezerTracks(query);
       },
       errorMessage: isAutoSearch ? null : 'Search failed. Please try again.',
     );
@@ -477,6 +486,15 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Future<void> _handleAddTrack(Track track) async {
+    logMusicAction('add', track.id, 
+      playlistId: widget.playlistId,
+      metadata: {
+        'track_name': track.name,
+        'artist': track.artist,
+        'is_adding_to_specific_playlist': _isAddingToPlaylist,
+      }
+    );
+    
     if (_isAddingToPlaylist) {
       await _addTrackObjectToPlaylist(widget.playlistId!, track);
     } else {
@@ -507,6 +525,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Future<void> _playTrack(Track track) async {
+    logMusicAction(_playerService.currentTrack?.id == track.id ? 'pause' : 'play', track.id,
+      metadata: {
+        'track_name': track.name,
+        'artist': track.artist,
+        'is_toggle': _playerService.currentTrack?.id == track.id,
+      }
+    );
+    
     await runAsyncAction(
       () async {
         if (_playerService.currentTrack?.id == track.id) {

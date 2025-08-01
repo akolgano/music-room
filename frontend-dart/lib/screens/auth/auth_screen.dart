@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
+import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/custom_scrollbar.dart';
 import '../base_screen.dart';
@@ -17,7 +18,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMixin {
+class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMixin, UserActionLoggingMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -319,11 +320,13 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   Widget _buildModeToggle() => TextButton(
     onPressed: () {
       if (_isLogin) {
+        logButtonClick('switch_to_signup_button');
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SignupWithOtpScreen()),
         );
       } else {
+        logButtonClick('switch_to_login_button');
         setState(() {
           _isLogin = true;
           _clearForm();
@@ -350,15 +353,23 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      logFormSubmit(_isLogin ? 'login_form' : 'signup_form', success: false, metadata: {'reason': 'validation_failed'});
+      return;
+    }
+    
+    logFormSubmit(_isLogin ? 'login_form' : 'signup_form', metadata: {'username': _usernameController.text});
+    
     await runAsyncAction(
       () async {
         final authProvider = getProvider<AuthProvider>();
         bool success = await authProvider.login(_usernameController.text, _passwordController.text);
         if (success) {
+          logAuthAction(_isLogin ? 'login' : 'signup', success: true, metadata: {'username': _usernameController.text});
           navigateToHome();
         }
         else {
+          logAuthAction(_isLogin ? 'login' : 'signup', success: false, metadata: {'username': _usernameController.text, 'error': authProvider.errorMessage});
           throw Exception(authProvider.errorMessage ?? 'Login failed');
         }
       },
@@ -368,6 +379,8 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   }
 
   Future<void> _socialLogin(String provider) async {
+    logButtonClick('${provider.toLowerCase()}_login_button', metadata: {'provider': provider});
+    
     await runAsyncAction(
       () async {
         final authProvider = getProvider<AuthProvider>();
@@ -379,10 +392,12 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           success = await authProvider.facebookLogin();
         }
         if (success) {
+          logAuthAction('social_login', success: true, metadata: {'provider': provider});
           if (mounted) {
             Navigator.pushReplacementNamed(context, AppRoutes.home);
           }
         } else {
+          logAuthAction('social_login', success: false, metadata: {'provider': provider, 'error': authProvider.errorMessage});
           throw Exception(authProvider.errorMessage ?? '$provider authentication failed');
         }
       },
@@ -391,6 +406,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   }
 
   void _forgotPassword() {
+    logButtonClick('forgot_password_button');
     showDialog(
       context: context,
       builder: (BuildContext context) {
