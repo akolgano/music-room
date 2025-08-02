@@ -754,7 +754,9 @@ class FriendInvitationsResponse {
   const FriendInvitationsResponse({required this.invitations});
   
   factory FriendInvitationsResponse.fromJson(Map<String, dynamic> json) => 
-      FriendInvitationsResponse(invitations: (json['invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? []);
+      FriendInvitationsResponse(invitations: (json['received_invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? 
+                                              (json['sent_invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? 
+                                              (json['invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? []);
 }
 
 

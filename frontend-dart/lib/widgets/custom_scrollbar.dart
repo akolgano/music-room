@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../core/theme_utils.dart';
 
 class CustomScrollbar extends StatelessWidget {
   final Widget child;

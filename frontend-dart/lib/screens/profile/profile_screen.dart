@@ -19,7 +19,7 @@ import 'social_network_link_screen.dart';
 import 'widgets/music_preference_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final bool isEmbedded; 
+  final bool isEmbedded;
   const ProfileScreen({super.key, this.isEmbedded = false});
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();

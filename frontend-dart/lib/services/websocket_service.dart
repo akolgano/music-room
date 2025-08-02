@@ -81,9 +81,6 @@ class WebSocketService {
     await _attemptConnectionToPlaylist(playlistId, token);
   }
 
-  Future<void> _attemptConnection(String token) async {
-    _log('General WebSocket connection not supported - use connectToPlaylist instead');
-  }
 
   Future<void> _attemptConnectionToPlaylist(String playlistId, String token) async {
     try {
@@ -166,8 +163,7 @@ class WebSocketService {
 
   void _scheduleReconnect() {
     if (_reconnectAttempts < _maxReconnectAttempts && _currentToken != null) {
-      
-      _reconnectAttempts++;
+_reconnectAttempts++;
       
       _log('Scheduling reconnect attempt $_reconnectAttempts/$_maxReconnectAttempts in ${_reconnectDelay.inSeconds}s');
       

@@ -26,7 +26,6 @@ class MusicPlayerService with ChangeNotifier {
   bool _isUsingFullAudio = false;
   String? _authToken;
   final Set<String> _failedTracks = {};
-  Function(String originalTrack, String replacementTrack)? _onTrackReplaced;
 
   MusicPlayerService({required this.themeProvider}) {
     _audioPlayer.positionStream.listen((position) {
@@ -81,9 +80,6 @@ class MusicPlayerService with ChangeNotifier {
     return '${_currentIndex + 1} of ${_playlist.length}';
   }
 
-  void setTrackReplacedCallback(Function(String originalTrack, String replacementTrack)? callback) {
-    _onTrackReplaced = callback;
-  }
 
   Future<void> setPlaylistAndPlay({
     required List<PlaylistTrack> playlist,
