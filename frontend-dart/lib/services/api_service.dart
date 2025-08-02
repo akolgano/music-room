@@ -109,7 +109,6 @@ class ApiService {
       _postVoid('/auth/google/link/', request, token: token);
 
   Future<UserResponse> getUser(String token) => _get('/users/get_user/', UserResponse.fromJson, token: token);
-  Future<Map<String, dynamic>> getUserData(String? token) => _get('/users/get_user/', (data) => data, token: token);
   Future<void> userPasswordChange(String token, PasswordChangeRequest request) => 
       _postVoid('/users/user_password_change/', request, token: token);
   Future<FriendsResponse> getFriends(String token) => _get('/users/get_friends/', FriendsResponse.fromJson, token: token);

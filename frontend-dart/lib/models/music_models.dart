@@ -178,7 +178,7 @@ class PlaylistTrack {
       try {
         track = Track.fromJson(json['track'] as Map<String, dynamic>);
       } catch (e) {
-        AppLogger.error('Error parsing nested track' + ": " + e.toString(), null, null, 'PlaylistTrack');
+        AppLogger.error('Error parsing nested track: ${e.toString()}', null, null, 'PlaylistTrack');
       }
     } 
     else if (json['deezer_track_id'] != null) {

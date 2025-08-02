@@ -22,7 +22,7 @@ import '../../widgets/sort_button.dart';
 import '../../widgets/track_sort_bottom_sheet.dart';
 import '../../models/voting_models.dart';
 import '../../widgets/playlist_voting_widgets.dart';
-import '../../widgets/custom_scrollbar.dart';
+import '../../widgets/scrollbar.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
@@ -140,47 +140,43 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
-        return RefreshIndicator(
-          onRefresh: _loadData,
-          color: ThemeUtils.getPrimary(context),
-          child: CustomSingleChildScrollView(
-            padding: const EdgeInsets.all(6),
-            child: Column(
-              children: [
-                PlaylistDetailWidgets.buildThemedPlaylistHeader(context, _playlist!),
-                const SizedBox(height: 6), 
-                if (_isVotingMode) ...PlaylistVotingWidgets.buildVotingModeHeader(
-                  context: context,
-                  isOwner: _isOwner,
-                  isPublicVoting: _isPublicVoting,
-                  votingLicenseType: _votingLicenseType,
-                  votingStartTime: _votingStartTime,
-                  votingEndTime: _votingEndTime,
-                  votingInfo: _votingInfo,
-                  onPublicVotingChanged: (value) => setState(() => _isPublicVoting = value),
-                  onLicenseTypeChanged: (value) => setState(() => _votingLicenseType = value),
-                  onApplyVotingSettings: _applyVotingSettings,
-                  onSelectVotingDateTime: _selectVotingDateTime,
-                ),
-                PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
-                const SizedBox(height: 6), 
-                PlaylistDetailWidgets.buildThemedPlaylistActions(
-                  context, 
-                  onPlayAll: _playPlaylist, 
-                  onShuffle: _shufflePlaylist,
-                  onAddRandomTrack: _isOwner ? _addRandomTrack : null,
-                ),
-                const SizedBox(height: 6), 
-                _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
-                  context: context,
-                  tracks: _tracks,
-                  playlistId: widget.playlistId,
-                  onLoadData: () => _loadData(),
-                  onSuggestTrackForVoting: _suggestTrackForVoting,
-                  votingInfo: _votingInfo,
-                ) : _buildTracksSection(),
-              ],
-            ),
+        return CustomSingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: Column(
+            children: [
+              PlaylistDetailWidgets.buildThemedPlaylistHeader(context, _playlist!),
+              const SizedBox(height: 6),
+              if (_isVotingMode) ...PlaylistVotingWidgets.buildVotingModeHeader(
+                context: context,
+                isOwner: _isOwner,
+                isPublicVoting: _isPublicVoting,
+                votingLicenseType: _votingLicenseType,
+                votingStartTime: _votingStartTime,
+                votingEndTime: _votingEndTime,
+                votingInfo: _votingInfo,
+                onPublicVotingChanged: (value) => setState(() => _isPublicVoting = value),
+                onLicenseTypeChanged: (value) => setState(() => _votingLicenseType = value),
+                onApplyVotingSettings: _applyVotingSettings,
+                onSelectVotingDateTime: _selectVotingDateTime,
+              ),
+              PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
+              const SizedBox(height: 6),
+              PlaylistDetailWidgets.buildThemedPlaylistActions(
+                context, 
+                onPlayAll: _playPlaylist, 
+                onShuffle: _shufflePlaylist,
+                onAddRandomTrack: _isOwner ? _addRandomTrack : null,
+              ),
+              const SizedBox(height: 6),
+              _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
+                context: context,
+                tracks: _tracks,
+                playlistId: widget.playlistId,
+                onLoadData: () => _loadData(),
+                onSuggestTrackForVoting: _suggestTrackForVoting,
+                votingInfo: _votingInfo,
+              ) : _buildTracksSection(),
+            ],
           ),
         );
       },
@@ -198,7 +194,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           elevation: 4,
           shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
           child: Padding(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -416,6 +412,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     });
     
     musicProvider.updatePlaylistTracks(updatedTracks);
+    
+    final trackList = updatedTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
+    musicProvider.updatePlaylistInCache(
+      widget.playlistId,
+      tracks: trackList,
+    );
     
     _initializeVotingIfNeeded();
     
@@ -818,7 +820,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
 
-    if (date != null) {
+    if (date != null && mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),

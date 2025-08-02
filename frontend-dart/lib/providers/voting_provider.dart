@@ -184,7 +184,7 @@ class VotingProvider extends BaseProvider {
       }
       notifyListeners();
     } catch (e) {
-      AppLogger.error('Error updating voting data' + ": " + e.toString(), null, null, 'VotingProvider');
+      AppLogger.error('Error updating voting data: ${e.toString()}', null, null, 'VotingProvider');
     }
   }
 

@@ -12,7 +12,7 @@ import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../core/app_logger.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/custom_scrollbar.dart';
+import '../../widgets/scrollbar.dart';
 import '../base_screen.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
@@ -593,9 +593,18 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       }
       
       final musicProvider = getProvider<MusicProvider>();
+      
+      // Update the playlist in cache with any local changes
+      musicProvider.updatePlaylistInCache(
+        widget.playlistId!,
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        isPublic: _isPublic,
+      );
+      
       await musicProvider.fetchUserPlaylists(auth.token!);
       
-      showSuccess('Playlist visibility updated successfully!');
+      showSuccess('Playlist updated successfully!');
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.playlistDetail, arguments: widget.playlistId);
       }
@@ -611,7 +620,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     try {
       getIt<WebSocketService>();
     } catch (e) {
-      AppLogger.error('WebSocket connection failed' + ": " + e.toString(), null, null, 'PlaylistEditorScreen');
+      AppLogger.error('WebSocket connection failed: ${e.toString()}', null, null, 'PlaylistEditorScreen');
     }
   }
 

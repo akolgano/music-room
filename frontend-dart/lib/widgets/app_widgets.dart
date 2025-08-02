@@ -9,7 +9,7 @@ import '../services/music_player_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';
 import 'dialog_widgets.dart';
-import 'custom_scrollbar.dart';
+import 'scrollbar.dart';
 export 'mini_player_widget.dart';
 
 class AppWidgets {

@@ -7,7 +7,7 @@ import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/custom_scrollbar.dart';
+import '../../widgets/scrollbar.dart';
 import '../base_screen.dart';
 import 'signup_with_otp_screen.dart';
 
@@ -184,7 +184,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                   labelText: 'Password',
                   prefixIcon: Icons.lock,
                   obscureText: true,
-                  validator: AppValidators.password,
+                  validator: (value) => AppValidators.password(value, 8),
                   onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                 ),
                 if (_isLogin) ...[
@@ -536,10 +536,10 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
       return;
     }
 
-    if (_passwordController.text.length < 4) {
+    if (_passwordController.text.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Password must be at least 4 characters'),
+          content: Text('Password must be at least 8 characters'),
           backgroundColor: Colors.red,
         ),
       );
@@ -652,7 +652,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
               obscureText: true,
               validator: (value) {
                 if (value?.isEmpty ?? true) return 'Please enter password';
-                if (value!.length < 4) return 'Password must be at least 4 characters';
+                if (value!.length < 8) return 'Password must be at least 8 characters';
                 return null;
               },
             ),

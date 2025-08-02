@@ -568,6 +568,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
       if (sourceType == null) return;
 
       if (sourceType == 'remove') {
+        if (!mounted) return;
         final auth = context.read<AuthProvider>();
         await profileProvider.deleteAvatar(auth.token);
         showSuccess('Avatar removed successfully!');

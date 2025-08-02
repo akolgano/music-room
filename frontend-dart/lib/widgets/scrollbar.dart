@@ -1,27 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-class CustomScrollbar extends StatelessWidget {
-  final Widget child;
-  final ScrollController? controller;
-  final bool isAlwaysShown;
-  final double thickness;
-  final double radius;
-
-  const CustomScrollbar({
-    super.key,
-    required this.child,
-    this.controller,
-    this.isAlwaysShown = false,
-    this.thickness = 12.0,
-    this.radius = 8.0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return child;
-  }
-}
 
 class CustomListView extends StatefulWidget {
   final List<Widget> children;
@@ -62,9 +41,11 @@ class _CustomListViewState extends State<CustomListView> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollbar(
+    return Scrollbar(
       controller: _scrollController,
-      isAlwaysShown: kIsWeb,
+      thumbVisibility: kIsWeb,
+      thickness: 12.0,
+      radius: const Radius.circular(8.0),
       child: ListView(
         controller: _scrollController,
         scrollDirection: widget.scrollDirection,
@@ -115,9 +96,11 @@ class _CustomSingleChildScrollViewState extends State<CustomSingleChildScrollVie
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollbar(
+    return Scrollbar(
       controller: _scrollController,
-      isAlwaysShown: kIsWeb,
+      thumbVisibility: kIsWeb,
+      thickness: 12.0,
+      radius: const Radius.circular(8.0),
       child: SingleChildScrollView(
         controller: _scrollController,
         scrollDirection: widget.scrollDirection,
