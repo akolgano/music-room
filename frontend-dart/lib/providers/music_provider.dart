@@ -160,6 +160,9 @@ class MusicProvider extends BaseProvider {
     try {
       await _musicService.addTrackToPlaylist(playlistId, trackId, token);
       await fetchPlaylistTracks(playlistId, token);
+      // Update playlist cache with new track list
+      final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
+      updatePlaylistInCache(playlistId, tracks: trackList);
       notifyListeners();
       return AddTrackResult(success: true, message: 'Track added successfully');
     } catch (e) {
@@ -179,6 +182,9 @@ class MusicProvider extends BaseProvider {
     try {
       await _musicService.addRandomTrackToPlaylist(playlistId, token);
       await fetchPlaylistTracks(playlistId, token);
+      // Update playlist cache with new track list
+      final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
+      updatePlaylistInCache(playlistId, tracks: trackList);
       notifyListeners();
       return AddTrackResult(success: true, message: 'Random track added successfully');
     } catch (e) {
@@ -214,6 +220,9 @@ class MusicProvider extends BaseProvider {
       await Future.delayed(const Duration(milliseconds: 100));
     }
     await fetchPlaylistTracks(playlistId, token);
+    // Update playlist cache with new track list
+    final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
+    updatePlaylistInCache(playlistId, tracks: trackList);
     notifyListeners();
     return BatchAddResult(
       totalTracks: trackIds.length, 
@@ -233,6 +242,9 @@ class MusicProvider extends BaseProvider {
       () async {
         await _musicService.removeTrackFromPlaylist(playlistId, trackId, token);
         await fetchPlaylistTracks(playlistId, token);
+        // Update playlist cache with new track list
+        final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
+        updatePlaylistInCache(playlistId, tracks: trackList);
       },
       successMessage: 'Track removed from playlist',
       errorMessage: 'Failed to remove track',
@@ -280,6 +292,28 @@ class MusicProvider extends BaseProvider {
   void updatePlaylistTracks(List<PlaylistTrack> updatedTracks) {
     _playlistTracks = updatedTracks;
     notifyListeners();
+  }
+
+  void updatePlaylistInCache(String playlistId, {
+    String? name,
+    String? description,
+    bool? isPublic,
+    List<Track>? tracks,
+  }) {
+    final index = _playlists.indexWhere((p) => p.id == playlistId);
+    if (index != -1) {
+      final currentPlaylist = _playlists[index];
+      _playlists[index] = Playlist(
+        id: currentPlaylist.id,
+        name: name ?? currentPlaylist.name,
+        description: description ?? currentPlaylist.description,
+        creator: currentPlaylist.creator,
+        isPublic: isPublic ?? currentPlaylist.isPublic,
+        tracks: tracks ?? currentPlaylist.tracks,
+        imageUrl: currentPlaylist.imageUrl,
+      );
+      notifyListeners();
+    }
   }
 
   Future<void> shufflePlaylistTracks(String playlistId, String token) async {

@@ -127,7 +127,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
           child: const Icon(Icons.person, color: Colors.white),
         ),
         title: Text(
-          '$friendId', 
+          friendId, 
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)
         ),
         subtitle: Text(

@@ -205,7 +205,7 @@ class DynamicThemeProvider with ChangeNotifier {
       _colorCache[imageUrl] = colorScheme;
       _applyColorScheme(colorScheme);
     } catch (e) {
-      AppLogger.error('Error extracting color from image' + ": " + e.toString(), null, null, 'DynamicThemeProvider');
+      AppLogger.error('Error extracting color from image: ${e.toString()}', null, null, 'DynamicThemeProvider');
       _resetToDefaultTheme();
     }
 

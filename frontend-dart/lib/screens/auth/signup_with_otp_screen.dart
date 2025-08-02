@@ -7,7 +7,7 @@ import '../../core/theme_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/custom_scrollbar.dart';
+import '../../widgets/scrollbar.dart';
 
 class SignupWithOtpScreen extends StatefulWidget {
   const SignupWithOtpScreen({super.key});

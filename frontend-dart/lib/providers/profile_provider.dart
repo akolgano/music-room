@@ -129,15 +129,15 @@ class ProfileProvider extends BaseProvider {
       () async {
         resetValues();
         
-        final userData = await _apiService.getUserData(token!);
-        _userId = userData['id']?.toString();
-        _username = userData['username'];
-        _userEmail = userData['email'];
-        _isPasswordUsable = userData['is_password_usable'] as bool;
+        final userData = await _apiService.getUser(token!);
+        _userId = userData.id;
+        _username = userData.username;
+        _userEmail = userData.email;
+        _isPasswordUsable = userData.isPasswordUsable ?? false;
 
-        final hasSocialAccount = userData['has_social_account'] as bool;
-        if (hasSocialAccount) {
-          final social = userData['social'] as Map<String, dynamic>;
+        final hasSocialAccount = userData.hasSocialAccount ?? false;
+        if (hasSocialAccount && userData.social != null) {
+          final social = userData.social!;
           _socialType = social['type'];
           _socialEmail = social['social_email'];
           _socialName = social['social_name'];

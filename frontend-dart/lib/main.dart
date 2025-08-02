@@ -24,13 +24,13 @@ void main() async {
         AppLogger.warning('API_BASE_URL not found in .env, using default', 'Main');
       }
     } catch (e) {
-      AppLogger.error('Failed to load .env file' + ": " + e.toString(), null, null, 'Main');
+      AppLogger.error('Failed to load .env file: ${e.toString()}', null, null, 'Main');
     }
     await setupServiceLocator();
     try {
       await SocialLoginUtils.initialize();
     } catch (e) {
-      AppLogger.error('Failed to initialize social login' + ": " + e.toString(), null, null, 'Main');
+      AppLogger.error('Failed to initialize social login: ${e.toString()}', null, null, 'Main');
     }
     runApp(const MyApp());
   } catch (e, _) {

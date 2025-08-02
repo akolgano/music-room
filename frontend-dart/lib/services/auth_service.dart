@@ -28,7 +28,7 @@ class AuthService {
       if (userData != null) { _currentUser = User.fromJson(userData); }
     } catch (e) {
       if (kDebugMode) {
-        AppLogger.error('Error loading stored auth' + ": " + e.toString(), null, null, 'AuthService');
+        AppLogger.error('Error loading stored auth: ${e.toString()}', null, null, 'AuthService');
       }
       await _clearAuth();
     }
@@ -48,7 +48,7 @@ class AuthService {
         await _api.logout(_currentToken!, request);
       } catch (e) {
         if (kDebugMode) {
-          AppLogger.error('Error during logout API call' + ": " + e.toString(), null, null, 'AuthService');
+          AppLogger.error('Error during logout API call: ${e.toString()}', null, null, 'AuthService');
         }
       }
     }

@@ -46,7 +46,7 @@ class TrackCacheService {
 
     AppLogger.debug('Fetching track details for $deezerTrackId from API', 'TrackCacheService');
 
-    final Future<Track?> request = _fetchTrackFromApi(deezerTrackId, token, apiService);
+    final Future<Track?> request = _fetchTrackWithRetry(deezerTrackId, token, apiService);
     _ongoingRequests[deezerTrackId] = request;
 
     try {
@@ -61,9 +61,6 @@ class TrackCacheService {
     }
   }
 
-  Future<Track?> _fetchTrackFromApi(String deezerTrackId, String token, ApiService apiService) async {
-    return await _fetchTrackWithRetry(deezerTrackId, token, apiService);
-  }
 
   Future<Track?> _fetchTrackWithRetry(String deezerTrackId, String token, ApiService apiService) async {
     final currentRetries = _retryCount[deezerTrackId] ?? 0;
@@ -80,7 +77,7 @@ class TrackCacheService {
         throw Exception('API returned null for track $deezerTrackId');
       }
     } catch (e) {
-      AppLogger.error('Error fetching track $deezerTrackId (attempt ${currentRetries + 1})' + ": " + e.toString(), null, null, 'TrackCacheService');
+      AppLogger.error('Error fetching track $deezerTrackId (attempt ${currentRetries + 1}): ${e.toString()}', null, null, 'TrackCacheService');
       
       if (currentRetries < _retryConfig.maxRetries) {
         return await _scheduleRetry(deezerTrackId, token, apiService, currentRetries);
@@ -179,10 +176,6 @@ class TrackCacheService {
     AppLogger.debug('Track cache and retry tracking cleared', 'TrackCacheService');
   }
 
-  void updateTrackInCache(String deezerTrackId, Track track) {
-    _trackCache[deezerTrackId] = track;
-    AppLogger.debug('Track $deezerTrackId updated in cache', 'TrackCacheService');
-  }
 
   void removeFromCache(String deezerTrackId) {
     _trackCache.remove(deezerTrackId);

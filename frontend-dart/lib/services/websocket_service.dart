@@ -6,7 +6,8 @@ import '../models/music_models.dart';
 import '../core/app_logger.dart';
 
 enum PlaylistWebSocketMessageType {
-  playlistUpdate('playlist_update');
+  playlistUpdate('playlist_update'),
+  playlistUpdateDot('playlist.update');
   
   const PlaylistWebSocketMessageType(this.value);
   final String value;
@@ -139,6 +140,7 @@ class WebSocketService {
       
       switch (messageType) {
         case PlaylistWebSocketMessageType.playlistUpdate:
+        case PlaylistWebSocketMessageType.playlistUpdateDot:
           try {
             final updateMessage = PlaylistUpdateMessage.fromJson(data);
             _playlistUpdateController?.add(updateMessage);

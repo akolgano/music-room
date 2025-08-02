@@ -9,7 +9,7 @@ import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
 import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/custom_scrollbar.dart';
+import '../../widgets/scrollbar.dart';
 import '../../models/music_models.dart';
 import '../profile/profile_screen.dart';
 import '../music/track_search_screen.dart';
