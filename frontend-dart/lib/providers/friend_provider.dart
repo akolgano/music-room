@@ -98,15 +98,15 @@ class FriendProvider extends BaseProvider {
   }
 
   String? getFriendshipId(Map<String, dynamic> invitation) {
-    return invitation['id'] as String?;
+    return invitation['friendship_id']?.toString() ?? invitation['id']?.toString();
   }
 
   String? getFromUserId(Map<String, dynamic> invitation) {
-    return invitation['from_user'] as String?;
+    return invitation['friend_id'] as String? ?? invitation['from_user'] as String?;
   }
 
   String? getToUserId(Map<String, dynamic> invitation) {
-    return invitation['to_user'] as String?;
+    return invitation['friend_id'] as String? ?? invitation['to_user'] as String?;
   }
 
   String? getInvitationStatus(Map<String, dynamic> invitation) {
@@ -114,10 +114,10 @@ class FriendProvider extends BaseProvider {
   }
 
   String? getFromUsername(Map<String, dynamic> invitation) {
-    return invitation['from_username'] as String?;
+    return invitation['friend_username'] as String? ?? invitation['from_username'] as String?;
   }
 
   String? getToUsername(Map<String, dynamic> invitation) {
-    return invitation['to_username'] as String?;
+    return invitation['friend_username'] as String? ?? invitation['to_username'] as String?;
   }
 }

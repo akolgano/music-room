@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import '../core/app_logger.dart';
 import '../core/service_locator.dart';
 import 'storage_service.dart';
@@ -73,12 +74,94 @@ class FrontendLoggingService {
 
   final Dio _dio = Dio();
   final List<FrontendLogEvent> _pendingLogs = [];
-  final int _maxPendingLogs = 100;
-  final Duration _batchInterval = const Duration(seconds: 30);
+  final int _maxPendingLogs = 10;
+  final Duration _batchInterval = const Duration(seconds: 2);
   Timer? _batchTimer;
   String? _currentUserId;
   String? _currentRoute;
   bool _isInitialized = false;
+
+  static const List<String> _sensitiveKeys = [
+    'password',
+    'token',
+    'secret',
+    'key',
+    'auth',
+    'credential',
+    'authorization',
+    'bearer',
+    'api_key',
+    'access_token',
+    'refresh_token',
+    'session_id',
+    'cookie',
+    'jwt',
+    'private_key',
+    'client_secret',
+  ];
+
+  @visibleForTesting
+  Map<String, dynamic> sanitizeMetadata(Map<String, dynamic>? metadata) {
+    if (metadata == null) return {};
+    
+    final sanitized = <String, dynamic>{};
+    
+    for (final entry in metadata.entries) {
+      final key = entry.key.toLowerCase();
+      final value = entry.value;
+      
+      if (_sensitiveKeys.any((sensitiveKey) => key.contains(sensitiveKey))) {
+        sanitized[entry.key] = value == null ? null : _maskValue(value);
+      } else if (value is Map<String, dynamic>) {
+        sanitized[entry.key] = sanitizeMetadata(value);
+      } else if (value is List) {
+        sanitized[entry.key] = _sanitizeList(value);
+      } else if (value is String && _containsSensitivePattern(value)) {
+        sanitized[entry.key] = _maskValue(value);
+      } else if (value == null || value == '') {
+        sanitized[entry.key] = value;
+      } else {
+        sanitized[entry.key] = value;
+      }
+    }
+    
+    return sanitized;
+  }
+
+  List<dynamic> _sanitizeList(List<dynamic> list) {
+    return list.map((item) {
+      if (item is Map<String, dynamic>) {
+        return sanitizeMetadata(item);
+      } else if (item is List) {
+        return _sanitizeList(item);
+      } else if (item is String && _containsSensitivePattern(item)) {
+        return _maskValue(item);
+      }
+      return item;
+    }).toList();
+  }
+
+  bool _containsSensitivePattern(String value) {
+    final patterns = [
+      RegExp(r'^[A-Za-z0-9+/=]{20,}$'),
+      RegExp(r'^Bearer\s+', caseSensitive: false),
+      RegExp(r'^Token\s+', caseSensitive: false),
+      RegExp(r'password\s*[:=]\s*\S+', caseSensitive: false),
+      RegExp(r'token\s*[:=]\s*\S+', caseSensitive: false),
+      RegExp(r'secret\s*[:=]\s*\S+', caseSensitive: false),
+      RegExp(r'key\s*[:=]\s*\S+', caseSensitive: false),
+    ];
+    
+    return patterns.any((pattern) => pattern.hasMatch(value));
+  }
+
+  String _maskValue(dynamic value) {
+    if (value == null) return '[MASKED:NULL]';
+    final stringValue = value.toString();
+    if (stringValue.isEmpty) return '[MASKED:EMPTY]';
+    if (stringValue.length <= 3) return '[MASKED]';
+    return '${stringValue.substring(0, 2)}${'*' * (stringValue.length - 4)}${stringValue.substring(stringValue.length - 2)}';
+  }
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -122,13 +205,15 @@ class FrontendLoggingService {
       return;
     }
 
+    final sanitizedMetadata = sanitizeMetadata(metadata);
+
     final event = FrontendLogEvent(
       id: _generateLogId(),
       timestamp: DateTime.now(),
       actionType: actionType,
       description: description,
       level: level,
-      metadata: metadata,
+      metadata: sanitizedMetadata,
       userId: _currentUserId,
       screenName: screenName,
       route: customRoute ?? _currentRoute,
@@ -275,7 +360,7 @@ class FrontendLoggingService {
           'level': log.level.name,
           'route': log.route,
           'app_version': '1.0.0',
-          ...?log.metadata,
+          ...?sanitizeMetadata(log.metadata),
         },
       }).toList();
 

@@ -506,7 +506,6 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
   }
 
   Future<void> _resetPassword() async {
-    // Validate OTP
     if (_otpController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -527,7 +526,6 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
       return;
     }
 
-    // Validate password
     if (_passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -548,7 +546,6 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
       return;
     }
 
-    // Validate password confirmation
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
