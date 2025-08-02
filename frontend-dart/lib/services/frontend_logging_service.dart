@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:meta/meta.dart';
 import '../core/app_logger.dart';
 import '../core/service_locator.dart';
 import 'storage_service.dart';
@@ -360,7 +359,7 @@ class FrontendLoggingService {
           'level': log.level.name,
           'route': log.route,
           'app_version': '1.0.0',
-          ...?sanitizeMetadata(log.metadata),
+          ...sanitizeMetadata(log.metadata),
         },
       }).toList();
 

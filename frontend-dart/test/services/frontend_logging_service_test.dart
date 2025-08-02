@@ -25,7 +25,7 @@ void main() {
 
     test('should sanitize token fields', () {
       final testMetadata = {
-        'auth_token': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+        'auth_token': 'Bearer test_jwt_token_placeholder',
         'access_token': 'abc123def456',
         'refresh_token': 'xyz789uvw012',
         'api_key': 'sk-1234567890abcdef',
@@ -34,7 +34,7 @@ void main() {
       final sanitized = loggingService.sanitizeMetadata(testMetadata);
 
       expect(sanitized['auth_token'], startsWith('Be'));
-      expect(sanitized['auth_token'], endsWith('J9'));
+      expect(sanitized['auth_token'], endsWith('er'));
       expect(sanitized['access_token'], equals('ab********56'));
       expect(sanitized['refresh_token'], equals('xy********12'));
       expect(sanitized['api_key'], startsWith('sk'));
@@ -92,24 +92,24 @@ void main() {
 
     test('should detect sensitive patterns in string values', () {
       final testMetadata = {
-        'header': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+        'header': 'Bearer test_jwt_header_placeholder',
         'auth_header': 'Token abcd1234',
         'config': 'password=mysecret',
         'normal_text': 'This is just normal text',
-        'base64_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ',
+        'base64_token': 'test_base64_token_placeholder_value',
       };
 
       final sanitized = loggingService.sanitizeMetadata(testMetadata);
 
       expect(sanitized['header'], startsWith('Be'));
-      expect(sanitized['header'], endsWith('J9'));
+      expect(sanitized['header'], endsWith('er'));
       expect(sanitized['auth_header'], startsWith('To'));
       expect(sanitized['auth_header'], endsWith('34'));
       expect(sanitized['config'], startsWith('pa'));
       expect(sanitized['config'], endsWith('et'));
       expect(sanitized['normal_text'], equals('This is just normal text'));
       expect(sanitized['base64_token'], startsWith('ey'));
-      expect(sanitized['base64_token'], endsWith('fQ'));
+      expect(sanitized['base64_token'], endsWith('ue'));
     });
 
     test('should handle null and empty values safely', () {

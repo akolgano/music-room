@@ -68,18 +68,6 @@ void main() {
       expect(musicPlayerService.currentIndex, -1);
       expect(musicPlayerService.playlistId, null);
     });
-    test('MusicPlayerService should handle track replacement callback', () {
-      String? originalTrack;
-      String? replacementTrack;
-      
-      musicPlayerService.setTrackReplacedCallback((original, replacement) {
-        originalTrack = original;
-        replacementTrack = replacement;
-      });
-      
-      expect(originalTrack, null);
-      expect(replacementTrack, null);
-    });
     test('MusicPlayerService should dispose properly', () {
       final testService = MusicPlayerService(themeProvider: DynamicThemeProvider());
       expect(() => testService.dispose(), returnsNormally);

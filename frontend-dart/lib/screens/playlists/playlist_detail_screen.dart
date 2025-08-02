@@ -64,7 +64,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       if (mounted) {
         _votingProvider = getProvider<VotingProvider>(listen: false);
         _votingProvider?.setVotingPermission(true);
-        _setupTrackReplacementNotifications();
         _setupWebSocketConnection();
         _loadData();
         _startAutoRefresh();
@@ -337,15 +336,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
 
-  void _setupTrackReplacementNotifications() {
-    final playerService = getProvider<MusicPlayerService>(listen: false);
-    playerService.setTrackReplacedCallback((originalTrack, replacementTrack) {
-      if (mounted) {
-        showSuccess('Replaced unplayable track:\n"$originalTrack"\nwith\n"$replacementTrack"');
-        _loadData();
-      }
-    });
-  }
 
   void _setupWebSocketConnection() {
     _playlistUpdateSubscription = _webSocketService.playlistUpdateStream.listen(

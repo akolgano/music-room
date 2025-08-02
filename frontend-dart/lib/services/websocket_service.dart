@@ -81,9 +81,6 @@ class WebSocketService {
     await _attemptConnectionToPlaylist(playlistId, token);
   }
 
-  Future<void> _attemptConnection(String token) async {
-    _log('General WebSocket connection not supported - use connectToPlaylist instead');
-  }
 
   Future<void> _attemptConnectionToPlaylist(String playlistId, String token) async {
     try {

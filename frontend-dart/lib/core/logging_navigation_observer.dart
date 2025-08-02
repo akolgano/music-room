@@ -4,7 +4,6 @@ import 'app_logger.dart';
 
 class LoggingNavigationObserver extends NavigatorObserver {
   final FrontendLoggingService _loggingService = FrontendLoggingService();
-  String? _previousRoute;
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -49,6 +48,5 @@ class LoggingNavigationObserver extends NavigatorObserver {
       AppLogger.debug('Navigation logged: $fromRoute -> $toRoute ($action)', 'LoggingNavigationObserver');
     }
     
-    _previousRoute = toRoute;
   }
 }

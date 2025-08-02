@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:responsive_framework/responsive_framework.dart';
 import 'responsive_utils.dart' show MusicAppResponsive;
 
 class ThemeUtils {

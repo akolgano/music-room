@@ -16,7 +16,7 @@ void main() {
         'remember_me': true,
         'login_timestamp': '2023-01-01T00:00:00Z',
         'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'auth_header': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+        'auth_header': 'Bearer test_full_jwt_token_placeholder_value',
       };
 
       final sanitized = loggingService.sanitizeMetadata(loginMetadata);
@@ -28,7 +28,7 @@ void main() {
       expect(sanitized['login_timestamp'], equals('2023-01-01T00:00:00Z'));
       expect(sanitized['user_agent'], equals('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'));
       expect(sanitized['auth_header'], startsWith('Be'));
-      expect(sanitized['auth_header'], endsWith('5c'));
+      expect(sanitized['auth_header'], endsWith('ue'));
     });
 
     test('should sanitize API request metadata', () {
