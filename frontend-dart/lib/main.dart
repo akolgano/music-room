@@ -9,6 +9,7 @@ import 'core/constants.dart';
 import 'core/service_locator.dart';
 import 'core/app_builder.dart';
 import 'core/app_logger.dart';
+import 'services/notification_service.dart';
 import 'providers/dynamic_theme_provider.dart';
 
 void main() async {
@@ -112,6 +113,7 @@ class MyApp extends StatelessWidget {
                   initialRoute: '/', 
                   debugShowCheckedModeBanner: false,
                   navigatorObservers: [AppBuilder.navigationObserver],
+                  navigatorKey: getIt<NotificationService>().navigatorKey,
                 );
               },
             ),
