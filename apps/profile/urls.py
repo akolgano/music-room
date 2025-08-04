@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import profile_detail, profile_update, delete_avatar,music_preferences_list
 
+app_name = "profile"
+
 urlpatterns = [
     #path('', profile_list, name='profile-list'), #to do later ?
     path('<uuid:pk>/', profile_detail, name='profile-detail'),
