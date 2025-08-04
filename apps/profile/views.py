@@ -9,7 +9,10 @@ from .utils import can_view_field
 from django.shortcuts import get_object_or_404
 from .models import Profile, MusicPreference
 from rest_framework.decorators import api_view, authentication_classes
+from .docs import *
 
+
+@profile_update_schema
 @api_view(['PUT', 'PATCH'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -24,6 +27,7 @@ def profile_update(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@profile_detail_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -64,6 +68,7 @@ def profile_detail(request, pk):
     return Response(data)
 
 
+@delete_avatar_schema
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -75,6 +80,7 @@ def delete_avatar(request):
     return Response({'detail': 'No avatar to delete.'}, status=400)
 
 
+@music_preferences_list_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
