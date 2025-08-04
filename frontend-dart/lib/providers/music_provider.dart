@@ -1,8 +1,10 @@
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
+import '../core/app_logger.dart';
 import '../services/music_service.dart';
 import '../services/track_cache_service.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../models/music_models.dart';
 import '../models/result_models.dart';
 import '../models/sort_models.dart';
@@ -160,7 +162,6 @@ class MusicProvider extends BaseProvider {
     try {
       await _musicService.addTrackToPlaylist(playlistId, trackId, token);
       await fetchPlaylistTracks(playlistId, token);
-      // Update playlist cache with new track list
       final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
       updatePlaylistInCache(playlistId, tracks: trackList);
       notifyListeners();
@@ -182,7 +183,6 @@ class MusicProvider extends BaseProvider {
     try {
       await _musicService.addRandomTrackToPlaylist(playlistId, token);
       await fetchPlaylistTracks(playlistId, token);
-      // Update playlist cache with new track list
       final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
       updatePlaylistInCache(playlistId, tracks: trackList);
       notifyListeners();
@@ -220,7 +220,6 @@ class MusicProvider extends BaseProvider {
       await Future.delayed(const Duration(milliseconds: 100));
     }
     await fetchPlaylistTracks(playlistId, token);
-    // Update playlist cache with new track list
     final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
     updatePlaylistInCache(playlistId, tracks: trackList);
     notifyListeners();
@@ -242,7 +241,6 @@ class MusicProvider extends BaseProvider {
       () async {
         await _musicService.removeTrackFromPlaylist(playlistId, trackId, token);
         await fetchPlaylistTracks(playlistId, token);
-        // Update playlist cache with new track list
         final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
         updatePlaylistInCache(playlistId, tracks: trackList);
       },
@@ -290,8 +288,95 @@ class MusicProvider extends BaseProvider {
   }
 
   void updatePlaylistTracks(List<PlaylistTrack> updatedTracks) {
+    _log('Updating playlist tracks: ${updatedTracks.length} tracks (WebSocket update)');
     _playlistTracks = updatedTracks;
+    
     notifyListeners();
+    
+    _loadMissingTrackDetailsInBackground();
+    
+    _log('Completed playlist tracks update and triggered UI refresh');
+  }
+
+  void updatePlaylistTracksWithPreload(List<PlaylistTrack> updatedTracks) {
+    _log('Updating playlist tracks with comprehensive preload: ${updatedTracks.length} tracks (WebSocket comprehensive update)');
+    _playlistTracks = updatedTracks;
+    
+    notifyListeners();
+    
+    _preloadTrackDetails(updatedTracks);
+    
+    Future.microtask(() => notifyListeners());
+    
+    _log('Completed comprehensive playlist tracks update with preload and multiple notifications');
+  }
+
+  void _preloadTrackDetails(List<PlaylistTrack> tracks) {
+    try {
+      final trackIdsToPreload = <String>[];
+      for (final playlistTrack in tracks) {
+        final track = playlistTrack.track;
+        if (track?.deezerTrackId != null && 
+            (track?.artist.isEmpty == true || track?.album.isEmpty == true || track?.imageUrl?.isEmpty == true) &&
+            !_trackCacheService.isTrackCached(track!.deezerTrackId!)) {
+          trackIdsToPreload.add(track.deezerTrackId!);
+        }
+      }
+      
+      if (trackIdsToPreload.isNotEmpty) {
+        _log('Preloading ${trackIdsToPreload.length} tracks with missing details');
+        if (getIt.isRegistered<AuthService>()) {
+          final authService = getIt<AuthService>();
+          final token = authService.currentToken;
+          if (token != null) {
+            _trackCacheService.preloadTracks(trackIdsToPreload, token, _apiService).then((_) {
+              _log('Completed preloading tracks, updating tracks with complete details');
+              _updateTracksWithCachedDetails();
+            }).catchError((e) {
+              _log('Error preloading tracks: $e');
+            });
+          }
+        }
+      }
+    } catch (e) {
+      _log('Error in preload track details: $e');
+    }
+  }
+
+  void _updateTracksWithCachedDetails() {
+    bool updated = false;
+    for (int i = 0; i < _playlistTracks.length; i++) {
+      final playlistTrack = _playlistTracks[i];
+      final track = playlistTrack.track;
+      
+      if (track?.deezerTrackId != null && _trackCacheService.isTrackCached(track!.deezerTrackId!)) {
+        final cachedTrack = _trackCacheService.getCachedTrack(track.deezerTrackId!);
+        if (cachedTrack != null && 
+            (cachedTrack.artist != track.artist || 
+             cachedTrack.album != track.album || 
+             cachedTrack.imageUrl != track.imageUrl)) {
+          
+          _playlistTracks[i] = playlistTrack.copyWithTrack(cachedTrack);
+          updated = true;
+          _log('Updated track ${track.name} with cached details');
+        }
+      }
+    }
+    
+    if (updated) {
+      _log('Refreshing UI with updated track details');
+      notifyListeners();
+    }
+  }
+
+  void _loadMissingTrackDetailsInBackground() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _preloadTrackDetails(_playlistTracks);
+    });
+  }
+
+  void _log(String message) {
+    AppLogger.debug(message, 'MusicProvider');
   }
 
   void updatePlaylistInCache(String playlistId, {

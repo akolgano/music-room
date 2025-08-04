@@ -42,6 +42,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   bool _isOwner = false;
   VotingProvider? _votingProvider;
   Timer? _autoRefreshTimer;
+  Timer? _trackCountValidationTimer;
   StreamSubscription<PlaylistUpdateMessage>? _playlistUpdateSubscription;
   
   bool _isVotingMode = false;
@@ -67,6 +68,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         _setupWebSocketConnection();
         _loadData();
         _startAutoRefresh();
+        _startTrackCountValidation();
       }
     });
   }
@@ -75,6 +77,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   void dispose() {
     _cancelPendingOperations();
     _stopAutoRefresh();
+    _stopTrackCountValidation();
     _playlistUpdateSubscription?.cancel();
     _webSocketService.disconnect();
     super.dispose();
@@ -404,24 +407,13 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) {
-    final musicProvider = _getMountedProvider<MusicProvider>();
-    if (musicProvider == null) return;
+    AppLogger.debug('Handling playlist update - WebSocket received', 'PlaylistDetailScreen');
     
-    setState(() {
-      _tracks = updatedTracks;
-    });
+    if (mounted) {
+      _loadData();
+    }
     
-    musicProvider.updatePlaylistTracks(updatedTracks);
-    
-    final trackList = updatedTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
-    musicProvider.updatePlaylistInCache(
-      widget.playlistId,
-      tracks: trackList,
-    );
-    
-    _initializeVotingIfNeeded();
-    
-    AppLogger.debug('Updated playlist tracks via WebSocket: ${_tracks.length} tracks', 'PlaylistDetailScreen');
+    AppLogger.debug('Triggered data reload via WebSocket update', 'PlaylistDetailScreen');
   }
 
   Future<void> _loadData() async {
@@ -779,6 +771,33 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   void _stopAutoRefresh() {
     _autoRefreshTimer?.cancel();
     _autoRefreshTimer = null;
+  }
+
+  void _startTrackCountValidation() {
+    _trackCountValidationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        _validateTrackCounts();
+      }
+    });
+  }
+
+  void _stopTrackCountValidation() {
+    _trackCountValidationTimer?.cancel();
+    _trackCountValidationTimer = null;
+  }
+
+  void _validateTrackCounts() {
+    final musicProvider = _getMountedProvider<MusicProvider>();
+    if (musicProvider == null) return;
+
+    final displayedTracks = musicProvider.sortedPlaylistTracks;
+    final localTracksCount = _tracks.length;
+    final displayedTracksCount = displayedTracks.length;
+
+    if (localTracksCount != displayedTracksCount) {
+      AppLogger.debug('Track count mismatch detected: local=$localTracksCount, displayed=$displayedTracksCount - triggering hard refresh', 'PlaylistDetailScreen');
+      _loadData();
+    }
   }
 
   void _cancelPendingOperations() {

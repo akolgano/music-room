@@ -13,7 +13,10 @@ import '../services/voting_service.dart';
 import '../services/track_cache_service.dart';
 import '../services/websocket_service.dart';
 import '../services/frontend_logging_service.dart';
+import '../services/notification_service.dart';
 import '../providers/dynamic_theme_provider.dart';
+import '../providers/music_provider.dart';
+import '../providers/voting_provider.dart';
 
 final getIt = GetIt.instance;
 
@@ -114,6 +117,12 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<DynamicThemeProvider>(() => 
       DynamicThemeProvider());
 
+  getIt.registerLazySingleton<MusicProvider>(() => 
+      MusicProvider());
+
+  getIt.registerLazySingleton<VotingProvider>(() => 
+      VotingProvider());
+
   getIt.registerLazySingleton<MusicPlayerService>(() => 
       MusicPlayerService(themeProvider: getIt<DynamicThemeProvider>()));
 
@@ -125,6 +134,8 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<FrontendLoggingService>(() => 
       FrontendLoggingService());
+
+  getIt.registerSingleton<NotificationService>(NotificationService());
 
   await getIt<FrontendLoggingService>().initialize();
 

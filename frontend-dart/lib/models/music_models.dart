@@ -216,8 +216,8 @@ class PlaylistTrack {
     }
 
     return PlaylistTrack(
-      trackId: json['track_id'].toString(),
-      name: json['name'] as String,
+      trackId: (json['track_id'] ?? json['id']).toString(),
+      name: (json['name'] ?? track?.name ?? '').toString(),
       position: json['position'] as int,
       points: json['points'] as int? ?? 0, 
       track: track,

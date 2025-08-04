@@ -4,6 +4,10 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
 import '../core/app_logger.dart';
+import '../core/service_locator.dart';
+import '../providers/music_provider.dart';
+import '../providers/voting_provider.dart';
+import 'notification_service.dart';
 
 enum PlaylistWebSocketMessageType {
   playlistUpdate('playlist_update'),
@@ -136,6 +140,10 @@ class WebSocketService {
       
       _rawMessageController?.add(data);
       
+      if (getIt.isRegistered<NotificationService>()) {
+        getIt<NotificationService>().showWebSocketNotification(messageData: data);
+      }
+      
       final messageType = PlaylistWebSocketMessageType.fromString(data['type']);
       
       switch (messageType) {
@@ -145,6 +153,8 @@ class WebSocketService {
             final updateMessage = PlaylistUpdateMessage.fromJson(data);
             _playlistUpdateController?.add(updateMessage);
             _log('Parsed playlist update: ${updateMessage.tracks.length} tracks');
+            
+            _updateProvidersWithPlaylistData(updateMessage);
           } catch (e) {
             _log('Error parsing playlist update: $e');
           }
@@ -231,6 +241,44 @@ _reconnectAttempts++;
       }
     } else {
       _log('Cannot send message: not connected');
+    }
+  }
+
+  void _updateProvidersWithPlaylistData(PlaylistUpdateMessage updateMessage) {
+    try {
+      _log('Updating providers for comprehensive cross-tab sync: ${updateMessage.tracks.length} tracks for playlist ${updateMessage.playlistId}');
+      
+      if (_currentPlaylistId != updateMessage.playlistId) {
+        _log('Ignoring update for playlist ${updateMessage.playlistId} (current: $_currentPlaylistId)');
+        return;
+      }
+      
+      if (getIt.isRegistered<MusicProvider>()) {
+        final musicProvider = getIt<MusicProvider>();
+        
+        musicProvider.updatePlaylistTracksWithPreload(updateMessage.tracks);
+        
+        final trackList = updateMessage.tracks
+            .map((pt) => pt.track)
+            .where((t) => t != null)
+            .cast<Track>()
+            .toList();
+        
+        if (trackList.isNotEmpty) {
+          musicProvider.updatePlaylistInCache(updateMessage.playlistId, tracks: trackList);
+        }
+        
+        _log('Comprehensively updated MusicProvider with ${updateMessage.tracks.length} playlist tracks including preload and cache');
+      }
+      
+      if (getIt.isRegistered<VotingProvider>()) {
+        final votingProvider = getIt<VotingProvider>();
+        votingProvider.refreshVotingData(updateMessage.tracks);
+        _log('Updated VotingProvider with new track points for ${updateMessage.tracks.length} tracks');
+      }
+      
+    } catch (e) {
+      _log('Error updating providers with playlist data: $e');
     }
   }
 

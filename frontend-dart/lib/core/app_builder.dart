@@ -41,10 +41,10 @@ class AppBuilder {
     return [
       ChangeNotifierProvider<DynamicThemeProvider>(create: (_) => getIt<DynamicThemeProvider>()),
       ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-      ChangeNotifierProvider<MusicProvider>(create: (_) => MusicProvider()),
+      ChangeNotifierProvider<MusicProvider>(create: (_) => getIt<MusicProvider>()),
       ChangeNotifierProvider<FriendProvider>(create: (_) => FriendProvider()),
       ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
-      ChangeNotifierProvider<VotingProvider>(create: (_) => VotingProvider()),
+      ChangeNotifierProvider<VotingProvider>(create: (_) => getIt<VotingProvider>()),
     ];
   }
 

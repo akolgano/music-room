@@ -114,6 +114,10 @@ class TrackCacheService {
     return _trackCache.containsKey(deezerTrackId);
   }
 
+  Track? getCachedTrack(String deezerTrackId) {
+    return _trackCache[deezerTrackId];
+  }
+
   Future<void> preloadTracks(List<String> deezerTrackIds, String token, ApiService apiService) async {
     final List<Future<Track?>> futures = [];
     
