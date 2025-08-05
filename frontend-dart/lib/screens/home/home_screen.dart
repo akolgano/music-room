@@ -6,6 +6,7 @@ import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/theme_utils.dart';
+import '../../core/responsive_utils.dart';
 import '../../core/constants.dart';
 import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
@@ -56,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
           backgroundColor: AppTheme.background,
           title: Text(AppConstants.appName),
           automaticallyImplyLeading: false,
-          toolbarHeight: ThemeUtils.isSmallMobile(context) ? 40 : 48,
+          toolbarHeight: MusicAppResponsive.isVerySmall(context) ? 40 : 48,
           actions: [
             buildLoggingIconButton(
               icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
@@ -263,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         backgroundColor: AppTheme.background,
         title: const Text('Your Library'),
         automaticallyImplyLeading: false,
-        toolbarHeight: isLandscape ? (ThemeUtils.isSmallMobile(context) ? 40 : 48) : null,
+        toolbarHeight: isLandscape ? (MusicAppResponsive.isVerySmall(context) ? 40 : 48) : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -289,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         backgroundColor: AppTheme.background,
         title: const Text('Friends'),
         automaticallyImplyLeading: false,
-        toolbarHeight: isLandscape ? (ThemeUtils.isSmallMobile(context) ? 40 : 48) : null,
+        toolbarHeight: isLandscape ? (MusicAppResponsive.isVerySmall(context) ? 40 : 48) : null,
         actions: [
           TextButton.icon(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),

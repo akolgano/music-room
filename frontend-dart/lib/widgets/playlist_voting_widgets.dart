@@ -210,7 +210,7 @@ class PlaylistVotingWidgets {
     required PlaylistVotingInfo? votingInfo,
   }) {
     return Card(
-      color: ThemeUtils.getSurface(context),
+      color: Theme.of(context).colorScheme.surface,
       elevation: 4,
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(

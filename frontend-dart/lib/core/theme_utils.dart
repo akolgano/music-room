@@ -5,28 +5,8 @@ import 'responsive_utils.dart' show MusicAppResponsive;
 
 class ThemeUtils {
   static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
-  static Color getSurface(BuildContext context) => Theme.of(context).colorScheme.surface;
-  static Color getBackground(BuildContext context) => Theme.of(context).colorScheme.surface;
   static Color getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
-  static Color getOnPrimary(BuildContext context) => Theme.of(context).colorScheme.onPrimary;
-  static Color getError(BuildContext context) => Theme.of(context).colorScheme.error;
   static Color getSecondary(BuildContext context) => Theme.of(context).colorScheme.secondary;
-
-  static bool isSmallMobile(BuildContext context) {
-    return MusicAppResponsive.isVerySmall(context);
-  }
-
-  static bool isMobile(BuildContext context) {
-    return MusicAppResponsive.isMobileSize(context);
-  }
-
-  static bool isTablet(BuildContext context) {
-    return MusicAppResponsive.isTabletSize(context);
-  }
-
-  static bool isDesktop(BuildContext context) {
-    return MusicAppResponsive.isDesktopSize(context);
-  }
 
   static double getResponsivePadding(BuildContext context) {
     return MusicAppResponsive.getPadding(context,
@@ -123,24 +103,9 @@ class ThemeUtils {
     );
   }
 
-  static BoxDecoration getCardDecoration(BuildContext context, {double? borderRadius}) => BoxDecoration(
-    color: getSurface(context),
-    borderRadius: BorderRadius.circular(borderRadius ?? getResponsiveBorderRadius(context)),
-    boxShadow: [
-      BoxShadow(
-        color: AppTheme.primary.withValues(alpha: 0.1), 
-        blurRadius: MusicAppResponsive.getElevation(context,
-          tiny: 2.0, small: 3.0, medium: 4.0,
-          large: 6.0, xlarge: 8.0, xxlarge: 10.0
-        ),
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
-
   static ButtonStyle getPrimaryButtonStyle(BuildContext context) => ElevatedButton.styleFrom(
     backgroundColor: AppTheme.primary, 
-    foregroundColor: getOnPrimary(context),
+    foregroundColor: Theme.of(context).colorScheme.onPrimary,
     elevation: MusicAppResponsive.getElevation(context,
       tiny: 1.0, small: 2.0, medium: 3.0,
       large: 4.0, xlarge: 5.0, xxlarge: 6.0
@@ -163,37 +128,6 @@ class ThemeUtils {
     ), getResponsiveButtonHeight(context)),
   );
 
-  static Future<T?> showThemedDialog<T>({
-    required BuildContext context,
-    required Widget child,
-  }) {
-    return showDialog<T>(
-      context: context,
-      builder: (context) => Theme(
-        data: Theme.of(context),
-        child: child,
-      ),
-    );
-  }
-
-  static Future<T?> showThemedBottomSheet<T>({
-    required BuildContext context,
-    required Widget Function(BuildContext) builder,
-  }) {
-    return showModalBottomSheet<T>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: getSurface(context),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: builder(context),
-      ),
-    );
-  }
-
-
   static Color getColorFromString(String id) {
     int hashValue = id.hashCode.abs();
     return Colors.primaries[hashValue % Colors.primaries.length];
@@ -208,7 +142,7 @@ class ThemeUtils {
     double? borderRadius,
   }) {
     return Card(
-      color: getSurface(context),
+      color: Theme.of(context).colorScheme.surface,
       elevation: elevation ?? MusicAppResponsive.getElevation(context,
         tiny: 1.0, small: 2.0, medium: 3.0,
         large: 4.0, xlarge: 5.0, xxlarge: 6.0
@@ -238,7 +172,7 @@ class ThemeUtils {
       hintText: hintText,
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppTheme.primary) : null, 
       filled: true,
-      fillColor: getSurface(context),
+      fillColor: Theme.of(context).colorScheme.surface,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), 
         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
       ),
@@ -252,11 +186,11 @@ class ThemeUtils {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: getError(context), width: 2),
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: getError(context), width: 2),
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
       ),
       disabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),

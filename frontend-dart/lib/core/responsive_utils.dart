@@ -174,12 +174,6 @@ class MusicAppResponsive {
     }
   }
 
-  static bool isTiny(BuildContext context) => getScreenSize(context) == ScreenSize.tiny;
-  static bool isSmall(BuildContext context) => getScreenSize(context) == ScreenSize.small;
-  static bool isMedium(BuildContext context) => getScreenSize(context) == ScreenSize.medium;
-  static bool isLarge(BuildContext context) => getScreenSize(context) == ScreenSize.large;
-  static bool isXLarge(BuildContext context) => getScreenSize(context) == ScreenSize.xlarge;
-  static bool isXXLarge(BuildContext context) => getScreenSize(context) == ScreenSize.xxlarge;
 
   static bool isVerySmall(BuildContext context) {
     final size = getScreenSize(context);
@@ -221,41 +215,4 @@ class MusicAppResponsive {
     }
   }
 
-  static Widget getVerticalSpacing(BuildContext context, {
-    double? tiny,
-    double? small,
-    double? medium,
-    double? large,
-    double? xlarge,
-    double? xxlarge,
-  }) {
-    final height = getFontSize(context,
-      tiny: tiny ?? 4.0,
-      small: small ?? 6.0,
-      medium: medium ?? 8.0,
-      large: large ?? 12.0,
-      xlarge: xlarge ?? 16.0,
-      xxlarge: xxlarge ?? 20.0,
-    );
-    return SizedBox(height: height);
-  }
-
-  static Widget getHorizontalSpacing(BuildContext context, {
-    double? tiny,
-    double? small,
-    double? medium,
-    double? large,
-    double? xlarge,
-    double? xxlarge,
-  }) {
-    final width = getFontSize(context,
-      tiny: tiny ?? 4.0,
-      small: small ?? 6.0,
-      medium: medium ?? 8.0,
-      large: large ?? 12.0,
-      xlarge: xlarge ?? 16.0,
-      xxlarge: xxlarge ?? 20.0,
-    );
-    return SizedBox(width: width);
-  }
 }

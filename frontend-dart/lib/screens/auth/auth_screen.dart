@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
+import '../../core/responsive_utils.dart';
 import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../core/user_action_logging_mixin.dart';
@@ -54,17 +55,17 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   Widget buildContent() {
     return Center(
       child: CustomSingleChildScrollView(
-        padding: EdgeInsets.all(ThemeUtils.isSmallMobile(context) ? 8 : ThemeUtils.getResponsivePadding(context)),
+        padding: EdgeInsets.all(MusicAppResponsive.isVerySmall(context) ? 8 : ThemeUtils.getResponsivePadding(context)),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: ThemeUtils.isSmallMobile(context) ? double.infinity : 400),
+          constraints: BoxConstraints(maxWidth: MusicAppResponsive.isVerySmall(context) ? double.infinity : 400),
           child: Column(
             children: [
               _buildHeader(), 
-              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 16 : 32),
+              SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 16 : 32),
               _buildForm(), 
-              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 12 : 24),
+              SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 12 : 24),
               _buildSocialButtons(), 
-              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16), 
+              SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 8 : 16), 
               _buildModeToggle(),
             ],
           ),
@@ -80,11 +81,11 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   Widget _buildHeader() => Card(
     color: AppTheme.surface,
-    elevation: ThemeUtils.isSmallMobile(context) ? 2 : 4,
-    margin: ThemeUtils.isSmallMobile(context) ? EdgeInsets.zero : ThemeUtils.getResponsiveCardMargin(context),
+    elevation: MusicAppResponsive.isVerySmall(context) ? 2 : 4,
+    margin: MusicAppResponsive.isVerySmall(context) ? EdgeInsets.zero : ThemeUtils.getResponsiveCardMargin(context),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
     child: Padding(
-      padding: ThemeUtils.isSmallMobile(context) ? const EdgeInsets.all(12) : ThemeUtils.getResponsiveCardPadding(context),
+      padding: MusicAppResponsive.isVerySmall(context) ? const EdgeInsets.all(12) : ThemeUtils.getResponsiveCardPadding(context),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -96,30 +97,30 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
+          SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 8 : 16),
           Center(
             child: Container(
-              padding: EdgeInsets.all(ThemeUtils.isSmallMobile(context) ? 4 : 6),
+              padding: EdgeInsets.all(MusicAppResponsive.isVerySmall(context) ? 4 : 6),
               decoration: BoxDecoration(
                 color: Colors.green.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
               ),
               child: Image.asset(
                 'assets/images/musicroom.png',
-                width: ThemeUtils.isSmallMobile(context) ? 24 : 40,
-                height: ThemeUtils.isSmallMobile(context) ? 24 : 40,
+                width: MusicAppResponsive.isVerySmall(context) ? 24 : 40,
+                height: MusicAppResponsive.isVerySmall(context) ? 24 : 40,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return Icon(
                     Icons.music_note,
-                    size: ThemeUtils.isSmallMobile(context) ? 24 : 40,
+                    size: MusicAppResponsive.isVerySmall(context) ? 24 : 40,
                     color: AppTheme.primary,
                   );
                 },
               ),
             ),
           ),
-          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
+          SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 8 : 16),
           Text(
             _isLogin ? 'Sign in to continue your musical journey' : 'Create an account to start sharing music',
             style: ThemeUtils.getCaptionStyle(context).copyWith(color: Colors.white70),
@@ -132,18 +133,18 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   Widget _buildForm() => Card(
     color: AppTheme.surface,
-    elevation: ThemeUtils.isSmallMobile(context) ? 2 : 4,
-    margin: ThemeUtils.isSmallMobile(context) ? EdgeInsets.zero : const EdgeInsets.all(8),
+    elevation: MusicAppResponsive.isVerySmall(context) ? 2 : 4,
+    margin: MusicAppResponsive.isVerySmall(context) ? EdgeInsets.zero : const EdgeInsets.all(8),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
     child: Padding(
-      padding: ThemeUtils.isSmallMobile(context) ? const EdgeInsets.all(12) : const EdgeInsets.all(16),
+      padding: MusicAppResponsive.isVerySmall(context) ? const EdgeInsets.all(12) : const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.login, color: AppTheme.primary, size: ThemeUtils.isSmallMobile(context) ? 18 : 20),
-              SizedBox(width: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+              Icon(Icons.login, color: AppTheme.primary, size: MusicAppResponsive.isVerySmall(context) ? 18 : 20),
+              SizedBox(width: MusicAppResponsive.isVerySmall(context) ? 4 : 8),
               Flexible(
                 child: Text(
                   _isLogin ? 'Sign In' : 'Create Account',
@@ -153,7 +154,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
               ),
             ],
           ),
-          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 12),
+          SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 8 : 12),
           Form(
             key: _formKey,
             child: Column(
@@ -167,7 +168,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                   onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                 ),
                 if (!_isLogin) ...[
-                  SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
+                  SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 8 : 16),
                   AppWidgets.textField(
                     context: context,
                     controller: _emailController,
@@ -177,7 +178,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                     onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                   ),
                 ],
-                SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 16),
+                SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 8 : 16),
                 AppWidgets.textField(
                   context: context,
                   controller: _passwordController,
@@ -188,7 +189,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                   onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                 ),
                 if (_isLogin) ...[
-                  SizedBox(height: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+                  SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 4 : 8),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -203,7 +204,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                     ),
                   ),
                 ],
-                SizedBox(height: ThemeUtils.isSmallMobile(context) ? 12 : 24),
+                SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 12 : 24),
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, _) => AppWidgets.primaryButton(
                     context: context,
@@ -223,18 +224,18 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
 
   Widget _buildSocialButtons() => Card(
     color: AppTheme.surface,
-    elevation: ThemeUtils.isSmallMobile(context) ? 2 : 4,
-    margin: ThemeUtils.isSmallMobile(context) ? EdgeInsets.zero : const EdgeInsets.all(8),
+    elevation: MusicAppResponsive.isVerySmall(context) ? 2 : 4,
+    margin: MusicAppResponsive.isVerySmall(context) ? EdgeInsets.zero : const EdgeInsets.all(8),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
     child: Padding(
-      padding: ThemeUtils.isSmallMobile(context) ? const EdgeInsets.all(12) : const EdgeInsets.all(16),
+      padding: MusicAppResponsive.isVerySmall(context) ? const EdgeInsets.all(12) : const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.login, color: AppTheme.primary, size: ThemeUtils.isSmallMobile(context) ? 18 : 20),
-              SizedBox(width: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+              Icon(Icons.login, color: AppTheme.primary, size: MusicAppResponsive.isVerySmall(context) ? 18 : 20),
+              SizedBox(width: MusicAppResponsive.isVerySmall(context) ? 4 : 8),
               Flexible(
                 child: Text(
                   'Or continue with',
@@ -244,7 +245,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
               ),
             ],
           ),
-          SizedBox(height: ThemeUtils.isSmallMobile(context) ? 8 : 12),
+          SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 8 : 12),
           Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         return Column(
@@ -256,8 +257,8 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                   onPressed: authProvider.isLoading ? null : () => _socialLogin('Google'),
                   icon: authProvider.isLoading 
                     ? SizedBox(
-                        width: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
-                        height: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
+                        width: MusicAppResponsive.isVerySmall(context) ? 12 : 16, 
+                        height: MusicAppResponsive.isVerySmall(context) ? 12 : 16, 
                         child: const CircularProgressIndicator(
                           strokeWidth: 2, 
                           color: Colors.red,
@@ -274,11 +275,11 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.red),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
-                    elevation: ThemeUtils.isSmallMobile(context) ? 1 : 2,
+                    elevation: MusicAppResponsive.isVerySmall(context) ? 1 : 2,
                   ),
                 ),
               ),
-            SizedBox(height: ThemeUtils.isSmallMobile(context) ? 6 : 12),
+            SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 6 : 12),
             SizedBox(
               width: double.infinity,
               height: ThemeUtils.getResponsiveButtonHeight(context),
@@ -286,8 +287,8 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                 onPressed: authProvider.isLoading ? null : () => _socialLogin('Facebook'),
                 icon: authProvider.isLoading 
                   ? SizedBox(
-                      width: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
-                      height: ThemeUtils.isSmallMobile(context) ? 12 : 16, 
+                      width: MusicAppResponsive.isVerySmall(context) ? 12 : 16, 
+                      height: MusicAppResponsive.isVerySmall(context) ? 12 : 16, 
                       child: const CircularProgressIndicator(
                         strokeWidth: 2, 
                         color: Colors.blue,
@@ -304,7 +305,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
                   foregroundColor: Colors.white,
                   side: const BorderSide(color: Colors.blue),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
-                  elevation: ThemeUtils.isSmallMobile(context) ? 1 : 2,
+                  elevation: MusicAppResponsive.isVerySmall(context) ? 1 : 2,
                 ),
               ),
             ),

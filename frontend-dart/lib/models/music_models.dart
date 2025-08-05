@@ -41,11 +41,6 @@ class Track {
     return deezerTrackId != null || id.startsWith('deezer_');
   }
 
-  static String toBackendId(String trackId) {
-    if (trackId.startsWith('deezer_')) { return trackId.substring(7); }
-    return trackId;
-  }
-
   static String toFrontendId(String trackId, {bool isDeezer = false}) {
     if (isDeezer && !trackId.startsWith('deezer_')) { return 'deezer_$trackId'; }
     return trackId;
