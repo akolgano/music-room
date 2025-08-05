@@ -4,6 +4,7 @@ import '../../providers/dynamic_theme_provider.dart';
 import '../../providers/voting_provider.dart';
 import '../models/music_models.dart';
 import '../core/theme_utils.dart';
+import '../core/responsive_utils.dart';
 import '../services/track_cache_service.dart';
 import '../core/service_locator.dart';
 
@@ -16,8 +17,8 @@ class PlaylistDetailWidgets {
           child: Column(
             children: [
               Container(
-                width: ThemeUtils.isSmallMobile(context) ? 80 : 120,
-                height: ThemeUtils.isSmallMobile(context) ? 70 : 100,
+                width: MusicAppResponsive.isVerySmall(context) ? 80 : 120,
+                height: MusicAppResponsive.isVerySmall(context) ? 70 : 100,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
                   gradient: LinearGradient(
@@ -26,7 +27,7 @@ class PlaylistDetailWidgets {
                     colors: [AppTheme.primary.withValues(alpha: 0.8), AppTheme.primary.withValues(alpha: 0.4)],
                   ),
                   boxShadow: [
-                    BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: ThemeUtils.isSmallMobile(context) ? 10 : 20, offset: const Offset(0, 8)),
+                    BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: MusicAppResponsive.isVerySmall(context) ? 10 : 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: playlist.imageUrl?.isNotEmpty == true
@@ -36,12 +37,12 @@ class PlaylistDetailWidgets {
                         playlist.imageUrl!, 
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => 
-                          Icon(Icons.library_music, size: ThemeUtils.isSmallMobile(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
+                          Icon(Icons.library_music, size: MusicAppResponsive.isVerySmall(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
                       ),
                     )
-                  : Icon(Icons.library_music, size: ThemeUtils.isSmallMobile(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
+                  : Icon(Icons.library_music, size: MusicAppResponsive.isVerySmall(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
               ),
-              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 6 : 12),
+              SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 6 : 12),
               Text(
                 playlist.name,
                 style: ThemeUtils.getHeadingStyle(context),
@@ -49,7 +50,7 @@ class PlaylistDetailWidgets {
                 overflow: TextOverflow.ellipsis,
                 maxLines: 2,
               ),
-              SizedBox(height: ThemeUtils.isSmallMobile(context) ? 3 : 6),
+              SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 3 : 6),
               if (playlist.description.isNotEmpty) ...[
                 Text(
                   playlist.description,
@@ -58,9 +59,9 @@ class PlaylistDetailWidgets {
                   overflow: TextOverflow.ellipsis,
                   maxLines: 3,
                 ),
-                SizedBox(height: ThemeUtils.isSmallMobile(context) ? 4 : 8),
+                SizedBox(height: MusicAppResponsive.isVerySmall(context) ? 4 : 8),
               ],
-              if (ThemeUtils.isSmallMobile(context))
+              if (MusicAppResponsive.isVerySmall(context))
                 Column(
                   children: [
                     Text('Created by ${playlist.creator}', style: ThemeUtils.getCaptionStyle(context)),
@@ -77,29 +78,6 @@ class PlaylistDetailWidgets {
                     buildThemedVisibilityChip(context, playlist.isPublic),
                   ],
                 ),
-              SizedBox(height: ThemeUtils.getResponsivePadding(context)),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: ThemeUtils.getResponsivePadding(context), vertical: ThemeUtils.isSmallMobile(context) ? 4 : 6),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context)),
-                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.refresh, color: Colors.blue, size: ThemeUtils.isSmallMobile(context) ? 12 : 16),
-                    SizedBox(width: ThemeUtils.isSmallMobile(context) ? 3 : 6),
-                    Flexible(
-                      child: Text(
-                        ThemeUtils.isSmallMobile(context) ? 'Pull to refresh' : 'Pull down to refresh • Auto-refresh every 30s',
-                        style: ThemeUtils.getCaptionStyle(context).copyWith(color: Colors.blue, fontWeight: FontWeight.w500),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         );
@@ -108,9 +86,9 @@ class PlaylistDetailWidgets {
   }
 
   static Widget buildThemedPlaylistStats(BuildContext context, List<PlaylistTrack> tracks) {
-    final totalDuration = tracks.length * 3;
+    final totalDuration = tracks.length * 0.5;
     return Card(
-      color: ThemeUtils.getSurface(context),
+      color: Theme.of(context).colorScheme.surface,
       elevation: 4,
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
@@ -133,7 +111,7 @@ class PlaylistDetailWidgets {
     VoidCallback? onAddRandomTrack,
   }) {
     return Card(
-      color: ThemeUtils.getSurface(context),
+      color: Theme.of(context).colorScheme.surface,
       elevation: 4,
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
@@ -252,7 +230,7 @@ class PlaylistDetailWidgets {
             ],
             const SizedBox(width: 8),
             SizedBox(
-              width: 32, 
+              width: 70, 
               child: buildActionButtons(context, onPlay, onRemove, isOwner),
             ),
           ],
@@ -303,7 +281,7 @@ class PlaylistDetailWidgets {
   }
 
   static Widget buildActionButtons(BuildContext context, VoidCallback onPlay, VoidCallback? onRemove, bool isOwner) {
-    return Column(
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         GestureDetector(
@@ -318,7 +296,7 @@ class PlaylistDetailWidgets {
           ),
         ),
         if (isOwner && onRemove != null) ...[
-          const SizedBox(height: 4),
+          const SizedBox(width: 4),
           GestureDetector(
             onTap: onRemove,
             child: Container(
@@ -331,6 +309,8 @@ class PlaylistDetailWidgets {
             ),
           ),
         ],
+        const SizedBox(width: 4),
+        const Icon(Icons.drag_handle, color: Colors.grey, size: 16),
       ],
     );
   }

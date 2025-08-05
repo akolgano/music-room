@@ -473,6 +473,20 @@ class MusicPlayerService with ChangeNotifier {
     }
   }
 
+  void updatePlaylist(List<PlaylistTrack> updatedPlaylist) {
+    if (_playlistId == null) return;
+    
+    final oldLength = _playlist.length;
+    _playlist = List.from(updatedPlaylist);
+    
+    if (_currentIndex >= _playlist.length) {
+      _currentIndex = _playlist.isEmpty ? -1 : _playlist.length - 1;
+    }
+    
+    notifyListeners();
+    AppLogger.debug('Playlist updated: $oldLength -> ${_playlist.length} tracks', 'MusicPlayerService');
+  }
+
   @override
   void dispose() {
     _disposed = true;

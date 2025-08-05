@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/music_player_service.dart';
 import '../core/theme_utils.dart';
+import '../core/responsive_utils.dart';
 import '../models/music_models.dart';
 import '../screens/music/track_detail_screen.dart';
 
@@ -18,7 +19,7 @@ class MiniPlayerWidget extends StatelessWidget {
         if (currentTrack == null) return const SizedBox.shrink();
 
         return Container(
-          height: ThemeUtils.isSmallMobile(context) 
+          height: MusicAppResponsive.isVerySmall(context) 
             ? (isLandscape ? 45 : 60) 
             : (isLandscape ? 50 : 80),
           decoration: BoxDecoration(
@@ -32,7 +33,7 @@ class MiniPlayerWidget extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: ThemeUtils.isSmallMobile(context) ? 4 : 8,
+                blurRadius: MusicAppResponsive.isVerySmall(context) ? 4 : 8,
                 offset: const Offset(0, -2),
               ),
             ],
@@ -46,17 +47,17 @@ class MiniPlayerWidget extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: ThemeUtils.getResponsivePadding(context) * 2, 
-                      vertical: ThemeUtils.isSmallMobile(context) 
+                      vertical: MusicAppResponsive.isVerySmall(context) 
                         ? (isLandscape ? 2 : 4) 
                         : (isLandscape ? 4 : 8)
                     ),
                     child: Row(
                       children: [
                       Container(
-                        width: ThemeUtils.isSmallMobile(context) 
+                        width: MusicAppResponsive.isVerySmall(context) 
                           ? (isLandscape ? 32 : 40) 
                           : (isLandscape ? 40 : 56),
-                        height: ThemeUtils.isSmallMobile(context) 
+                        height: MusicAppResponsive.isVerySmall(context) 
                           ? (isLandscape ? 24 : 32) 
                           : (isLandscape ? 32 : 48),
                         decoration: BoxDecoration(

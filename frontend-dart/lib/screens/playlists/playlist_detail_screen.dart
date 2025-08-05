@@ -45,6 +45,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   Timer? _trackCountValidationTimer;
   StreamSubscription<PlaylistUpdateMessage>? _playlistUpdateSubscription;
   
+  // Mapping from track_id (from HTTP API) to PlaylistTrack.id (from WebSocket) for deletion
+  final Map<String, String> _trackIdToPlaylistTrackId = {};
+  
   bool _isVotingMode = false;
   bool _isPublicVoting = true;
   String _votingLicenseType = 'open';
@@ -193,7 +196,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         final currentSort = musicProvider.currentSortOption;
         
         return Card(
-          color: ThemeUtils.getSurface(context),
+          color: Theme.of(context).colorScheme.surface,
           elevation: 4,
           shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
           child: Padding(
@@ -243,7 +246,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                         GestureDetector(
                           onTap: () {
                             musicProvider.resetToCustomOrder();
-                            if (mounted) showInfo('Restored to custom order');
                           },
                           child: const Icon(Icons.close, size: 14, color: AppTheme.primary),
                         ),
@@ -361,6 +363,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
     setState(() => _tracks = musicProvider.playlistTracks);
     _initializeVotingIfNeeded();
+    
+    final playerService = _getMountedProvider<MusicPlayerService>();
+    if (playerService != null && playerService.playlistId == widget.playlistId) {
+      playerService.updatePlaylist(_tracks);
+    }
   }
 
   bool _needsTrackDetailsFetch(Track? track) {
@@ -406,8 +413,23 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
            (track != null && !_trackHasMissingDetails(track));
   }
 
+  void _updateTrackIdMapping(List<PlaylistTrack> webSocketTracks) {
+    // WebSocket tracks have PlaylistTrack.id in trackId field
+    // We need to map track.id (Track.id) to PlaylistTrack.id for deletion
+    for (final playlistTrack in webSocketTracks) {
+      final track = playlistTrack.track;
+      if (track != null) {
+        _trackIdToPlaylistTrackId[track.id] = playlistTrack.trackId;
+        AppLogger.debug('Mapped Track.id ${track.id} -> PlaylistTrack.id ${playlistTrack.trackId}', 'PlaylistDetailScreen');
+      }
+    }
+  }
+
   void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) {
     AppLogger.debug('Handling playlist update - WebSocket received', 'PlaylistDetailScreen');
+    
+    // Update the mapping with WebSocket data which has the correct PlaylistTrack.id
+    _updateTrackIdMapping(updatedTracks);
     
     if (mounted) {
       _loadData();
@@ -542,7 +564,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final sortedTracks = musicProvider.sortedPlaylistTracks;
     
     if (sortedTracks.isEmpty) {
-      showInfo('No tracks to play');
       return;
     }
     
@@ -554,9 +575,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         playlistId: widget.playlistId,
         authToken: auth.token,
       );
-      showInfo('Playing "${_playlist!.name}"');
     } catch (e) {
-      showError('Failed to play playlist: $e');
     }
   }
 
@@ -565,12 +584,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final sortedTracks = musicProvider.sortedPlaylistTracks;
     
     if (sortedTracks.isEmpty) {
-      showInfo('No tracks to shuffle');
       return;
     }
     
     if (!_isOwner) {
-      showError('Only the playlist owner can shuffle tracks');
       return;
     }
     
@@ -596,7 +613,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   Future<void> _addRandomTrack() async {
     if (auth.token == null) {
-      showError('Authentication required');
       return;
     }
 
@@ -606,10 +622,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         final result = await musicProvider.addRandomTrackToPlaylist(widget.playlistId, auth.token!);
         
         if (result.success) {
-          showInfo('Random track added successfully!');
           await _refreshTracksFromProvider();
         } else {
-          showError(result.message);
         }
       },
       errorMessage: 'Failed to add random track',
@@ -634,10 +648,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       
       final track = sortedTracks[index].track;
       if (track != null) {
-        showSuccess('Playing "${track.name}"');
       }
     } catch (e) {
-      showError('Failed to play track: $e');
     }
   }
 
@@ -650,9 +662,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       await runAsyncAction(
         () async {
           final musicProvider = getProvider<MusicProvider>();
+          
+          // Use the mapped PlaylistTrack.id if available, otherwise fallback to trackId
+          final playlistTrackId = _trackIdToPlaylistTrackId[trackId] ?? trackId;
+          AppLogger.debug('Removing track: Track.id=$trackId, using PlaylistTrack.id=$playlistTrackId', 'PlaylistDetailScreen');
+          
           await musicProvider.removeTrackFromPlaylist(
             playlistId: widget.playlistId, 
-            trackId: trackId, 
+            trackId: playlistTrackId, 
             token: auth.token!
           );
           await _refreshTracksFromProvider();
@@ -687,7 +704,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       _updateTrackOrder(oldIndex, newIndex);
     } catch (e) {
       _logError('reordering tracks', e);
-      if (mounted) showError('Failed to reorder tracks: $e');
     }
   }
 
@@ -707,7 +723,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     } catch (e) {
       _logError('updating track order', e);
       if (mounted) {
-        showError('Failed to update track order: $e');
         await _loadData();
       }
     }
@@ -722,7 +737,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         musicProvider.setSortOption(sortOption);
         final isCustomOrder = sortOption.field == TrackSortField.position;
         if (mounted) {
-          showInfo(isCustomOrder ? 'Tracks restored to custom order' : 'Tracks sorted by ${sortOption.displayName}');
         }
       },
     );
@@ -806,6 +820,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
     _pendingOperations.clear();
     _fetchingTrackDetails.clear();
+    _trackIdToPlaylistTrackId.clear();
   }
 
   Future<void> _applyVotingSettings() async {
@@ -821,7 +836,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     );
     
     setState(() {});
-    showSuccess('Voting settings applied!');
   }
 
   bool _isInVotingTimeWindow() {
@@ -882,9 +896,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         );
         
         await _loadData();
-        showSuccess('Track suggested for voting!');
       } catch (e) {
-        showError('Failed to suggest track: $e');
       }
     }
   }
