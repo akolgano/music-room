@@ -142,10 +142,6 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
               child: Row(children: [Icon(Icons.person, size: 16), SizedBox(width: 8), Text('Profile')])
             ),
             const PopupMenuItem(
-              value: 'share', 
-              child: Row(children: [Icon(Icons.playlist_play, size: 16), SizedBox(width: 8), Text('Share')])
-            ),
-            const PopupMenuItem(
               value: 'remove', 
               child: Row(children: [
                 Icon(Icons.person_remove, size: 16, color: Colors.red), 
@@ -264,9 +260,6 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     switch (action) {
       case 'view_profile':
         _navigateToUserPage(friendId);
-        break;
-      case 'share': 
-        showInfo('Playlist sharing coming soon!'); 
         break;
       case 'remove': 
         _showRemoveDialog(friendId); 

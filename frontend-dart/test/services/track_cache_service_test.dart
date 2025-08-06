@@ -23,7 +23,6 @@ void main() {
       
       expect(cacheService.isTrackCached(testTrackId), false);
       
-      // Test removeFromCache on non-existent track (should not throw)
       cacheService.removeFromCache(testTrackId);
       expect(cacheService.isTrackCached(testTrackId), false);
     });
@@ -55,13 +54,8 @@ void main() {
       expect(cacheService.retryConfig.maxDelayMs, 15000);
       expect(cacheService.retryConfig.jitterFactor, 0.2);
     });
-    test('TrackCacheService should provide cache statistics', () {
-      final stats = cacheService.getCacheStats();
-      
-      expect(stats, containsPair('cached_tracks', isA<int>()));
-      expect(stats, containsPair('ongoing_requests', isA<int>()));
-      expect(stats, containsPair('tracks_retrying', isA<int>()));
-      expect(stats, containsPair('retry_details', isA<Map>()));
+    test('TrackCacheService should track retrying tracks status', () {
+      expect(cacheService.hasRetryingTracks(), false);
     });
     test('TrackCacheService should cancel retries', () {
       const testTrackId = 'test_track_123';
@@ -72,13 +66,9 @@ void main() {
       expect(cacheService.getRetryCount(testTrackId), 0);
     });
     test('TrackCacheService should clear cache properly', () {
-      // Test that clearCache doesn't throw and resets internal state
       cacheService.clearCache();
       
-      final stats = cacheService.getCacheStats();
-      expect(stats['cached_tracks'], 0);
-      expect(stats['ongoing_requests'], 0);
-      expect(stats['tracks_retrying'], 0);
+      expect(cacheService.hasRetryingTracks(), false);
     });
     test('TrackRetryConfig should have predefined configurations', () {
       expect(TrackRetryConfig.standard.maxRetries, 5);

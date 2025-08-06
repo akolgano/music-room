@@ -107,10 +107,12 @@ class MiniPlayerWidget extends StatelessWidget {
                               style: ThemeUtils.getBodyStyle(context).copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
+                                height: 1.0,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 1),
                             Row(
                               children: [
                                 Flexible(
@@ -119,6 +121,7 @@ class MiniPlayerWidget extends StatelessWidget {
                                     style: const TextStyle(
                                       color: Colors.white70,
                                       fontSize: 12,
+                                      height: 1.0,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -133,18 +136,19 @@ class MiniPlayerWidget extends StatelessWidget {
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
                                     decoration: BoxDecoration(
                                       color: Colors.green.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(3),
+                                      borderRadius: BorderRadius.circular(2),
                                       border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 0.5),
                                     ),
                                     child: const Text(
-                                      'FULL AUDIO',
+                                      'FULL',
                                       style: TextStyle(
                                         color: Colors.green,
-                                        fontSize: 9,
+                                        fontSize: 8,
                                         fontWeight: FontWeight.bold,
+                                        height: 1.0,
                                       ),
                                     ),
                                   ),
@@ -248,6 +252,47 @@ class MiniPlayerWidget extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(width: 8),
+                      
+                      Container(
+                        width: isLandscape ? 28 : 32,
+                        height: isLandscape ? 24 : 28,
+                        decoration: BoxDecoration(
+                          color: playerService.playbackSpeed != 1.0 
+                              ? Colors.blue.withValues(alpha: 0.3)
+                              : Colors.grey.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          onPressed: () => playerService.cyclePlaybackSpeed(),
+                          icon: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(
+                                Icons.speed,
+                                color: playerService.playbackSpeed != 1.0 
+                                    ? Colors.blue 
+                                    : Colors.white,
+                                size: 14,
+                              ),
+                              if (playerService.playbackSpeed != 1.0)
+                                Positioned(
+                                  bottom: -2,
+                                  child: Text(
+                                    '${playerService.playbackSpeed}x',
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: 6,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          padding: EdgeInsets.zero,
+                          tooltip: 'Speed: ${playerService.playbackSpeed}x',
+                        ),
                       ),
                       const SizedBox(width: 8),
                       

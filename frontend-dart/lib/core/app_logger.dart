@@ -2,9 +2,10 @@ import 'package:logger/logger.dart';
 import 'package:flutter/foundation.dart';
 
 class AppLogger {
-  static late final Logger _logger;
+  static Logger? _logger;
   
   static void initialize() {
+    if (_logger != null) return;
     _logger = Logger(
       printer: PrettyPrinter(
         methodCount: 0,
@@ -19,27 +20,32 @@ class AppLogger {
   }
   
   static void debug(String message, [String? tag]) {
+    if (_logger == null) return;
     final logMessage = tag != null ? '[$tag] $message' : message;
-    _logger.d(logMessage);
+    _logger!.d(logMessage);
   }
   
   static void info(String message, [String? tag]) {
+    if (_logger == null) return;
     final logMessage = tag != null ? '[$tag] $message' : message;
-    _logger.i(logMessage);
+    _logger!.i(logMessage);
   }
   
   static void warning(String message, [String? tag]) {
+    if (_logger == null) return;
     final logMessage = tag != null ? '[$tag] $message' : message;
-    _logger.w(logMessage);
+    _logger!.w(logMessage);
   }
   
   static void error(String message, [dynamic error, StackTrace? stackTrace, String? tag]) {
+    if (_logger == null) return;
     final logMessage = tag != null ? '[$tag] $message' : message;
-    _logger.e(logMessage, error: error, stackTrace: stackTrace);
+    _logger!.e(logMessage, error: error, stackTrace: stackTrace);
   }
   
   static void trace(String message, [String? tag]) {
+    if (_logger == null) return;
     final logMessage = tag != null ? '[$tag] $message' : message;
-    _logger.t(logMessage);
+    _logger!.t(logMessage);
   }
 }

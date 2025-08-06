@@ -67,8 +67,4 @@ extension PlaylistTrackSorting on List<PlaylistTrack> {
     return TrackSortingService.sortTracks(this, sortOption);
   }
 
-  List<PlaylistTrack> thenSortBy(TrackSortField field, [SortOrder order = SortOrder.ascending]) {
-    final option = TrackSortOption(field: field, order: order, displayName: '', icon: Icons.sort);
-    return sortedCopy(option);
-  }
 }

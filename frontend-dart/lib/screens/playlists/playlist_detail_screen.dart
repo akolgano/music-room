@@ -45,7 +45,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   Timer? _trackCountValidationTimer;
   StreamSubscription<PlaylistUpdateMessage>? _playlistUpdateSubscription;
   
-  // Mapping from track_id (from HTTP API) to PlaylistTrack.id (from WebSocket) for deletion
   final Map<String, String> _trackIdToPlaylistTrackId = {};
   
   bool _isVotingMode = false;
@@ -402,7 +401,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   void _initializeVotingIfNeeded() {
     if (_votingProvider != null) {
-      _votingProvider!.initializeTrackPoints(_tracks);
+      _votingProvider!.refreshVotingData(_tracks);
     }
   }
 
@@ -414,8 +413,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   void _updateTrackIdMapping(List<PlaylistTrack> webSocketTracks) {
-    // WebSocket tracks have PlaylistTrack.id in trackId field
-    // We need to map track.id (Track.id) to PlaylistTrack.id for deletion
     for (final playlistTrack in webSocketTracks) {
       final track = playlistTrack.track;
       if (track != null) {
@@ -428,7 +425,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) {
     AppLogger.debug('Handling playlist update - WebSocket received', 'PlaylistDetailScreen');
     
-    // Update the mapping with WebSocket data which has the correct PlaylistTrack.id
     _updateTrackIdMapping(updatedTracks);
     
     if (mounted) {
@@ -453,8 +449,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           await _refreshTracksFromProvider();
           
           if (_votingProvider != null) {
-            _votingProvider!.clearVotingData();
             _votingProvider!.setVotingPermission(true);
+            _votingProvider!.initializeVotingForPlaylist(_tracks);
           }
           
           if (_playlist!.imageUrl?.isNotEmpty == true) {
@@ -663,7 +659,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         () async {
           final musicProvider = getProvider<MusicProvider>();
           
-          // Use the mapped PlaylistTrack.id if available, otherwise fallback to trackId
           final playlistTrackId = _trackIdToPlaylistTrackId[trackId] ?? trackId;
           AppLogger.debug('Removing track: Track.id=$trackId, using PlaylistTrack.id=$playlistTrackId', 'PlaylistDetailScreen');
           
@@ -768,8 +763,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted) {
         final trackCacheService = getIt<TrackCacheService>();
-        final cacheStats = trackCacheService.getCacheStats();
-        final hasRetryingTracks = cacheStats['tracks_retrying'] > 0;
+        final hasRetryingTracks = trackCacheService.hasRetryingTracks();
         
         if (hasRetryingTracks) {
           _refreshPlaylistData();

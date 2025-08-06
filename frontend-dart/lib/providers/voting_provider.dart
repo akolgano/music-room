@@ -11,7 +11,8 @@ class VotingProvider extends BaseProvider {
   Map<String, VoteStats> get trackVotes => Map.unmodifiable(_trackVotes);
   bool _canVote = true;
   bool get canVote => _canVote;
-  final Map<int, int> _userVotesByIndex = {};
+  bool _hasUserVotedForPlaylist = false;
+  bool get hasUserVotedForPlaylist => _hasUserVotedForPlaylist;
   final Map<int, int> _trackPoints = {};
   Map<int, int> get trackPoints => Map.unmodifiable(_trackPoints);
 
@@ -22,22 +23,9 @@ class VotingProvider extends BaseProvider {
     return _trackVotes[trackKey];
   }
 
-  bool hasUserVoted(String trackId) {
-    final stats = _trackVotes[trackId];
-    return stats?.userHasVoted ?? false;
-  }
 
   bool hasUserVotedByIndex(int index) {
-    return _userVotesByIndex.containsKey(index);
-  }
-
-  int? getUserVote(String trackId) {
-    final stats = _trackVotes[trackId];
-    return stats?.userVoteValue;
-  }
-
-  int? getUserVoteByIndex(int index) {
-    return _userVotesByIndex[index];
+    return _hasUserVotedForPlaylist;
   }
 
   int getTrackPoints(int index) {
@@ -52,8 +40,9 @@ class VotingProvider extends BaseProvider {
       totalVotes: points,
       upvotes: points,
       downvotes: 0,
-      userHasVoted: _userVotesByIndex.containsKey(index),
-      userVoteValue: _userVotesByIndex[index], voteScore: points.toDouble(),
+      userHasVoted: _hasUserVotedForPlaylist,
+      userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
+      voteScore: points.toDouble(),
     );
     notifyListeners();
   }
@@ -70,8 +59,8 @@ class VotingProvider extends BaseProvider {
         totalVotes: points,
         upvotes: points,
         downvotes: 0,
-        userHasVoted: _userVotesByIndex.containsKey(i),
-        userVoteValue: _userVotesByIndex[i],
+        userHasVoted: _hasUserVotedForPlaylist,
+        userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
         voteScore: points.toDouble(),
       );
       AppLogger.debug('Track $i (${tracks[i].name}): $points points', 'VotingProvider');
@@ -90,21 +79,26 @@ class VotingProvider extends BaseProvider {
     required int trackIndex,
     required String token
   }) async {
+    AppLogger.debug('VoteForTrackByIndex called - playlistId: $playlistId, trackIndex: $trackIndex, canVote: $canVote, hasUserVoted: $_hasUserVotedForPlaylist', 'VotingProvider');
+    
     if (!canVote) {
+      AppLogger.warning('Voting not allowed - canVote: $canVote', 'VotingProvider');
       setError('Voting not allowed');
       return false;
     }
-    if (_userVotesByIndex.containsKey(trackIndex)) {
-      setError('You have already voted for this track');
+    if (_hasUserVotedForPlaylist) {
+      AppLogger.warning('User has already voted for playlist', 'VotingProvider');
+      setError('You have already voted for this playlist');
       return false;
     }
-    AppLogger.debug('Voting for track at index $trackIndex', 'VotingProvider');
+    AppLogger.debug('Proceeding with vote for track at index $trackIndex', 'VotingProvider');
     return await executeBool(
       () async {
-        _userVotesByIndex[trackIndex] = 1;
+        _hasUserVotedForPlaylist = true;
         final currentPoints = _trackPoints[trackIndex] ?? 0;
         final newPoints = currentPoints + 1;
         updateTrackPoints(trackIndex, newPoints);
+        
         try {
           final response = await _votingService.voteForTrack(
             playlistId: playlistId,
@@ -117,7 +111,7 @@ class VotingProvider extends BaseProvider {
           AppLogger.info('Vote successful for track $trackIndex, new points: $newPoints', 'VotingProvider');
         } catch (e) {
           AppLogger.error('Vote failed, reverting', e, null, 'VotingProvider');
-          _userVotesByIndex.remove(trackIndex);
+          _hasUserVotedForPlaylist = false;
           updateTrackPoints(trackIndex, currentPoints);
           rethrow;
         }
@@ -127,25 +121,6 @@ class VotingProvider extends BaseProvider {
     );
   }
 
-  Future<bool> upvoteTrackByIndex(String playlistId, int trackIndex, String token) async {
-    return await voteForTrackByIndex(
-      playlistId: playlistId,
-      trackIndex: trackIndex,
-      token: token
-    );
-  }
-
-  Future<bool> upvoteTrack(String playlistId, String trackId, String token) async {
-    int trackIndex = 0;
-    if (trackId.startsWith('track_')) {
-      trackIndex = int.tryParse(trackId.split('_').last) ?? 0;
-    }
-    return await voteForTrackByIndex(
-      playlistId: playlistId,
-      trackIndex: trackIndex,
-      token: token
-    );
-  }
 
   void _updateVotingDataFromPlaylist(List<PlaylistInfoWithVotes> playlistData) {
     AppLogger.debug('Updating voting data from ${playlistData.length} playlist(s)', 'VotingProvider');
@@ -159,24 +134,22 @@ class VotingProvider extends BaseProvider {
           if (track.containsKey('points')) {
             final points = track['points'] as int? ?? 0;
             _trackPoints[j] = points;
-            final userHasVoted = _userVotesByIndex.containsKey(j);
-            final userVoteValue = _userVotesByIndex[j];
             _trackVotes[trackKey] = VoteStats(
               totalVotes: points.abs(),
               upvotes: points > 0 ? points : 0,
               downvotes: 0,
-              userHasVoted: userHasVoted,
-              userVoteValue: userVoteValue,
+              userHasVoted: _hasUserVotedForPlaylist,
+              userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
               voteScore: points.toDouble(),
             );
-            AppLogger.debug('Updated track $j: $points points, voted: $userHasVoted', 'VotingProvider');
+            AppLogger.debug('Updated track $j: $points points, voted: $_hasUserVotedForPlaylist', 'VotingProvider');
           } else {
             _trackVotes[trackKey] = VoteStats(
               totalVotes: 0,
               upvotes: 0,
               downvotes: 0,
-              userHasVoted: _userVotesByIndex.containsKey(j),
-              userVoteValue: _userVotesByIndex[j],
+              userHasVoted: _hasUserVotedForPlaylist,
+              userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
               voteScore: 0.0,
             );
           }
@@ -191,47 +164,31 @@ class VotingProvider extends BaseProvider {
   void clearVotingData() {
     AppLogger.debug('Clearing all voting data', 'VotingProvider');
     _trackVotes.clear();
-    _userVotesByIndex.clear();
+    _hasUserVotedForPlaylist = false;
     _trackPoints.clear();
     notifyListeners();
   }
 
-  String getVotingStatusMessage() {
-    return _canVote ? 'You can vote on this playlist' : 'Voting is not allowed';
-  }
-
-  void setUserVote(int trackIndex, int voteValue) {
-    AppLogger.debug('Setting user vote for track $trackIndex: $voteValue', 'VotingProvider');
-    if (voteValue <= 0) {
-      AppLogger.warning('Invalid vote value: $voteValue', 'VotingProvider');
-      return;
-    }
-    _userVotesByIndex[trackIndex] = voteValue;
-    final trackKey = 'track_$trackIndex';
-    final currentPoints = _trackPoints[trackIndex] ?? 0;
-    final newPoints = currentPoints + voteValue;
-    _trackPoints[trackIndex] = newPoints;
-    final currentStats = _trackVotes[trackKey];
-    _trackVotes[trackKey] = VoteStats(
-      totalVotes: (currentStats?.totalVotes ?? 0) + 1,
-      upvotes: voteValue > 0 ? (currentStats?.upvotes ?? 0) + 1 : (currentStats?.upvotes ?? 0),
-      downvotes: 0, 
-      userHasVoted: true,
-      userVoteValue: voteValue,
-      voteScore: newPoints.toDouble(),
-    );
+  void initializeVotingForPlaylist(List<PlaylistTrack> tracks) {
+    AppLogger.debug('Initializing voting for playlist with ${tracks.length} tracks', 'VotingProvider');
+    clearVotingData();
+    initializeTrackPoints(tracks);
+    _hasUserVotedForPlaylist = false;
     notifyListeners();
   }
 
-  int getTotalPoints() {
-    return _trackPoints.values.fold(0, (sum, points) => sum + points);
+  String getVotingStatusMessage() {
+    if (_hasUserVotedForPlaylist) {
+      return 'You have already voted on this playlist';
+    }
+    return _canVote ? 'Select a track to vote for' : 'Voting is not allowed';
   }
 
-  List<int> getVotedTrackIndices() {
-    return _trackPoints.entries
-        .where((entry) => entry.value > 0)
-        .map((entry) => entry.key)
-        .toList();
+
+  void setHasUserVotedForPlaylist(bool hasVoted) {
+    AppLogger.debug('Setting user voted for playlist: $hasVoted', 'VotingProvider');
+    _hasUserVotedForPlaylist = hasVoted;
+    notifyListeners();
   }
 
   void refreshVotingData(List<PlaylistTrack> tracks) {

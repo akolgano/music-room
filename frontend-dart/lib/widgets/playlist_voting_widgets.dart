@@ -22,7 +22,7 @@ class PlaylistVotingWidgets {
     return [
       AppWidgets.infoBanner(
         title: 'Voting Mode Active',
-        message: 'Collaborative voting for track order. ${isOwner ? 'Configure voting settings below.' : 'Vote for your favorite tracks!'}',
+        message: 'Vote for one track to boost its ranking! ${isOwner ? 'Configure voting settings below.' : 'Choose your favorite track.'}',
         icon: Icons.how_to_vote,
       ),
       const SizedBox(height: 12),
@@ -313,62 +313,59 @@ class PlaylistVotingWidgets {
     return Card(
       margin: const EdgeInsets.only(bottom: 4),
       child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(8),
+        child: Row(
           children: [
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: track.imageUrl != null 
-                    ? Image.network(
-                        track.imageUrl!,
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
-                      )
-                    : _buildDefaultAlbumArt(),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        track.name,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        track.artist,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      if (track.album.isNotEmpty) ...[
-                        const SizedBox(height: 1),
-                        Text(
-                          track.album,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: track.imageUrl != null 
+                ? Image.network(
+                    track.imageUrl!,
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
+                  )
+                : _buildDefaultAlbumArt(),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    track.name,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    track.artist,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  if (track.album.isNotEmpty) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      track.album,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
             TrackVotingControls(
               playlistId: playlistId,
               trackId: track.id,
+              trackIndex: index,
+              isCompact: true,
               stats: VoteStats(
                 totalVotes: playlistTrack.points.toInt(),
                 upvotes: playlistTrack.points.toInt(),

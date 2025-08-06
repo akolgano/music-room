@@ -76,7 +76,6 @@ class ProfileProvider extends BaseProvider {
   String? get socialEmail => _socialEmail;
   String? get socialName => _socialName;
   String? get socialType => _socialType;
-  String? get socialId => _socialId;
   bool get isPasswordUsable => _isPasswordUsable;
 
   String? get avatar => _avatar;

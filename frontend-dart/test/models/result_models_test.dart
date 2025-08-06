@@ -55,7 +55,7 @@ void main() {
         );
         
         expect(result.successSample, ['track1', 'track2', 'track3']);
-        expect(result.errorSample, ['Error 1', 'Error 2', 'Error 3']);
+        expect(result.errors.take(3).toList(), ['Error 1', 'Error 2', 'Error 3']);
       });
     });
     group('SocialLoginResult', () {

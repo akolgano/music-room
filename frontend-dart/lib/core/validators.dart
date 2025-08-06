@@ -29,8 +29,6 @@ class AppValidators {
     }
   }
   
-  static String? playlistName(String? value) =>
-      ValidationBuilder().maxLength(100, 'Playlist name must be less than 100 characters').build()(value);
   
   static String? description(String? value) =>
       value != null && value.length > 500 ? 'Description must be less than 500 characters' : null;

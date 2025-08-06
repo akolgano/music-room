@@ -133,19 +133,8 @@ class TrackCacheService {
     }
   }
 
-  Map<String, dynamic> getCacheStats() {
-    return {
-      'cached_tracks': _trackCache.length,
-      'ongoing_requests': _ongoingRequests.length,
-      'tracks_retrying': _retryCount.length,
-      'retry_details': Map.fromEntries(_retryCount.entries.map((entry) => MapEntry(
-        entry.key, 
-        {
-          'retry_count': entry.value,
-          'last_retry': _lastRetryTime[entry.key]?.toIso8601String(),
-        }
-      ))),
-    };
+  bool hasRetryingTracks() {
+    return _retryCount.isNotEmpty;
   }
 
   bool isTrackRetrying(String deezerTrackId) {

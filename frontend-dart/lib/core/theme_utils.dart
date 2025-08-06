@@ -6,7 +6,6 @@ import 'responsive_utils.dart' show MusicAppResponsive;
 class ThemeUtils {
   static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
   static Color getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
-  static Color getSecondary(BuildContext context) => Theme.of(context).colorScheme.secondary;
 
   static double getResponsivePadding(BuildContext context) {
     return MusicAppResponsive.getPadding(context,

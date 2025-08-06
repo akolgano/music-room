@@ -67,7 +67,6 @@ class SocialLoginUtils {
     }
   }
 
-  static GoogleSignIn? get googleSignInInstance => _googleSignIn;
   static bool get isInitialized => _isInitialized;
   static bool get isFacebookInitialized => _facebookInitialized;
 

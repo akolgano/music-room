@@ -47,26 +47,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  void _showSnackBarWithAction({
-    required String message,
-    required Color backgroundColor,
-    required String actionLabel,
-  }) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: backgroundColor,
-          duration: Duration(seconds: 5),
-          action: SnackBarAction(
-            label: actionLabel,
-            textColor: Colors.white,
-            onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-          ),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -298,22 +278,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _isGetOtp = false;
         });
 
-        _showSnackBarWithAction(
-          message: "Password changed successfully!",
-          backgroundColor: AppTheme.onSurface,
-          actionLabel: 'OK',
-        );
+        AppWidgets.showSnackBar(context, "Password changed successfully!", backgroundColor: AppTheme.onSurface);
 
         if (mounted) {
           Navigator.pop(context);
         }
       }
     } catch (error) {
-      _showSnackBarWithAction(
-        message: error.toString(),
-        backgroundColor: AppTheme.error,
-        actionLabel: 'DISMISS',
-      );
+      AppWidgets.showSnackBar(context, error.toString(), backgroundColor: AppTheme.error);
     }
 
     setState(() {

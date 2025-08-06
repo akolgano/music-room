@@ -6,7 +6,6 @@ void main() {
     test('SocialLoginUtils should have correct initial state', () {
       expect(SocialLoginUtils.isInitialized, false);
       expect(SocialLoginUtils.isFacebookInitialized, false);
-      expect(SocialLoginUtils.googleSignInInstance, null);
     });
   });
   group('SocialLoginButton Tests', () {

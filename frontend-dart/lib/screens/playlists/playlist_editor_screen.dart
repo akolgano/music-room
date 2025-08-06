@@ -117,7 +117,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             controller: _nameController,
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
-            validator: AppValidators.playlistName,
+            validator: AppValidators.name,
             onFieldSubmitted: kIsWeb ? (_) => (_isEditMode ? _saveChanges() : _createPlaylist()) : null,
           ),
           const SizedBox(height: 16),
@@ -594,7 +594,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       
       final musicProvider = getProvider<MusicProvider>();
       
-      // Update the playlist in cache with any local changes
       musicProvider.updatePlaylistInCache(
         widget.playlistId!,
         name: _nameController.text.trim(),

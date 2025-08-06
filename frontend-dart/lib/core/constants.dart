@@ -10,7 +10,6 @@ class AppConstants {
 class AppStrings {
   static const String confirmLogout = 'Are you sure you want to sign out?';
   static const String networkError = 'Network error. Please check your connection.';
-  static const String unknownError = 'An unknown error occurred.';
 }
 
 class AppRoutes {

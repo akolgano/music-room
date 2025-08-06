@@ -143,9 +143,7 @@ class TrackVotingControls extends StatelessWidget {
           effectiveIndex = int.tryParse(trackId.split('_').last);
         }
 
-        final userVote = effectiveIndex != null 
-            ? votingProvider.getUserVoteByIndex(effectiveIndex)
-            : votingProvider.getUserVote(trackId);
+        final userHasVoted = votingProvider.hasUserVotedForPlaylist;
         final trackStats = stats ?? (effectiveIndex != null 
             ? votingProvider.getTrackVotesByIndex(effectiveIndex)
             : votingProvider.getTrackVotes(trackId));
@@ -155,19 +153,19 @@ class TrackVotingControls extends StatelessWidget {
           totalVotes: 0,
           upvotes: 0,
           downvotes: 0,
-          userHasVoted: userVote != null,
-          userVoteValue: userVote,
+          userHasVoted: userHasVoted,
+          userVoteValue: userHasVoted ? 1 : null,
           voteScore: currentPoints.toDouble(),
         );
 
         if (isCompact) {
           return _buildCompactControls(
-            context, votingProvider, authProvider, canVote, userVote, effectiveStats, effectiveIndex, currentPoints
+            context, votingProvider, authProvider, canVote, userHasVoted, effectiveStats, effectiveIndex, currentPoints
           );
         }
 
         return _buildFullControls(
-          context, votingProvider, authProvider, canVote, userVote, effectiveStats, effectiveIndex, currentPoints
+          context, votingProvider, authProvider, canVote, userHasVoted, effectiveStats, effectiveIndex, currentPoints
         );
       },
     );
@@ -178,33 +176,29 @@ class TrackVotingControls extends StatelessWidget {
     VotingProvider votingProvider,
     AuthProvider authProvider,
     bool canVote,
-    int? userVote,
+    bool userHasVoted,
     VoteStats trackStats,
     int? trackIndex,
     int currentPoints,
   ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth > 0 ? constraints.maxWidth : 80.0;
-        
-        return SizedBox(
-          width: maxWidth,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+    return SizedBox(
+      width: 80.0,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
               SizedBox(
                 width: 24,
                 height: 20,
                 child: InkWell(
-                  onTap: canVote && userVote == null 
+                  onTap: canVote && !userHasVoted 
                       ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
                       : null,
                   borderRadius: BorderRadius.circular(12),
                   child: Icon(
-                    userVote == 1 ? Icons.thumb_up : Icons.thumb_up_outlined,
-                    color: userVote == 1 
+                    userHasVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    color: userHasVoted 
                         ? Colors.green 
-                        : (canVote && userVote == null ? _getPointsColor(currentPoints) : Colors.grey),
+                        : (canVote && !userHasVoted ? _getPointsColor(currentPoints) : Colors.grey),
                     size: 16,
                   ),
                 ),
@@ -232,10 +226,8 @@ class TrackVotingControls extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -244,7 +236,7 @@ class TrackVotingControls extends StatelessWidget {
     VotingProvider votingProvider,
     AuthProvider authProvider,
     bool canVote,
-    int? userVote,
+    bool userHasVoted,
     VoteStats trackStats,
     int? trackIndex,
     int currentPoints,
@@ -296,17 +288,17 @@ class TrackVotingControls extends StatelessWidget {
             children: [
               VoteButton(
                 voteType: VoteType.upvote,
-                isSelected: userVote == 1,
-                isEnabled: canVote && userVote == null,
-                onPressed: canVote && userVote == null 
+                isSelected: userHasVoted,
+                isEnabled: canVote && !userHasVoted,
+                onPressed: canVote && !userHasVoted 
                     ? () => _handleVote(votingProvider, authProvider, trackIndex, 1) 
                     : null,
               ),
               Flexible(
                 child: Text(
-                  userVote != null ? 'You voted' : 'Vote for this track',
+                  userHasVoted ? 'Voted' : 'Vote',
                   style: TextStyle(
-                    color: userVote != null ? Colors.green : Colors.white70,
+                    color: userHasVoted ? Colors.green : Colors.white70,
                     fontSize: 10,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -320,11 +312,11 @@ class TrackVotingControls extends StatelessWidget {
               ),
             ],
           ),
-          if (!canVote || userVote != null) ...[
+          if (!canVote || userHasVoted) ...[
             const SizedBox(height: 6),
             Text(
-              userVote != null ? 'You have voted' : votingProvider.getVotingStatusMessage(),
-              style: TextStyle(color: userVote != null ? Colors.green : Colors.orange, fontSize: 9),
+              userHasVoted ? 'You have voted for this playlist' : votingProvider.getVotingStatusMessage(),
+              style: TextStyle(color: userHasVoted ? Colors.green : Colors.orange, fontSize: 9),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
@@ -341,13 +333,21 @@ class TrackVotingControls extends StatelessWidget {
   }
 
   void _handleVote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex, int voteValue) async {
+    print('VotingWidgets: _handleVote called - trackIndex: $trackIndex, voteValue: $voteValue, playlistId: $playlistId');
     if (trackIndex != null && voteValue > 0) { 
-      votingProvider.setUserVote(trackIndex, voteValue);
-      final success = await votingProvider.upvoteTrackByIndex(playlistId, trackIndex, authProvider.token!);
+      print('VotingWidgets: Calling votingProvider.voteForTrackByIndex');
+      final success = await votingProvider.voteForTrackByIndex(
+        playlistId: playlistId,
+        trackIndex: trackIndex,
+        token: authProvider.token!
+      );
+      print('VotingWidgets: Vote result - success: $success');
       if (success && onVoteSubmitted != null) onVoteSubmitted!();
       if (!success) {
         AppLogger.warning('Vote failed, should revert UI state', 'VotingWidgets');
       }
+    } else {
+      print('VotingWidgets: Invalid trackIndex ($trackIndex) or voteValue ($voteValue)');
     }
   }
 }
@@ -378,7 +378,7 @@ class PlaylistVotingBanner extends StatelessWidget {
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  'Upvoting Available', 
+                  'One Vote Per Playlist', 
                   style: TextStyle(
                     color: Colors.blue,
                     fontSize: 16,
