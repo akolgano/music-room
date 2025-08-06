@@ -33,5 +33,4 @@ class StorageService {
 
   bool containsKey(String key) => _box.containsKey(key);
 
-  List<String> get keys => _box.keys.cast<String>().toList();
 }

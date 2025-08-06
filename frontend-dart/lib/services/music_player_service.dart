@@ -26,6 +26,7 @@ class MusicPlayerService with ChangeNotifier {
   bool _isUsingFullAudio = false;
   String? _authToken;
   final Set<String> _failedTracks = {};
+  double _playbackSpeed = 1.0;
 
   MusicPlayerService({required this.themeProvider}) {
     _audioPlayer.positionStream.listen((position) {
@@ -74,6 +75,7 @@ class MusicPlayerService with ChangeNotifier {
   bool get hasNextTrack => _currentIndex >= 0 && _currentIndex < _playlist.length - 1;
   bool get isUsingFullAudio => _isUsingFullAudio;
   bool get canPlayFullAudio => false;
+  double get playbackSpeed => _playbackSpeed;
 
   String get currentTrackInfo {
     if (_currentTrack == null) return '';
@@ -119,6 +121,7 @@ class MusicPlayerService with ChangeNotifier {
       AppLogger.debug('Using preview audio for: ${track.name}', 'MusicPlayerService');
       
       await _audioPlayer.setUrl(audioUrl);
+      await _audioPlayer.setSpeed(_playbackSpeed);
       await _audioPlayer.play();
       
       if (track.imageUrl != null) {
@@ -189,7 +192,14 @@ class MusicPlayerService with ChangeNotifier {
       if (_isRepeatMode && _playlist.isNotEmpty) {
         _currentIndex = 0;
         _lastPlayedIndex = -1;
-        await _playCurrentTrack();
+        int playableIndex = _findNextPlayableTrack(0);
+        if (playableIndex != -1) {
+          _currentIndex = playableIndex;
+          await _playCurrentTrack();
+        } else {
+          AppLogger.warning('All tracks failed, stopping playback', 'MusicPlayerService');
+          await stop();
+        }
       } else {
         AppLogger.debug('No more tracks available, stopping playback', 'MusicPlayerService');
         await stop();
@@ -197,9 +207,30 @@ class MusicPlayerService with ChangeNotifier {
       return;
     }
     
-    _currentIndex = nextIndex;
-    await _playCurrentTrack();
-    AppLogger.debug('Skipped to track index $_currentIndex: ${_playlist[_currentIndex].name}', 'MusicPlayerService');
+    int playableIndex = _findNextPlayableTrack(nextIndex);
+    if (playableIndex != -1) {
+      _currentIndex = playableIndex;
+      await _playCurrentTrack();
+      AppLogger.debug('Skipped to track index $_currentIndex: ${_playlist[_currentIndex].name}', 'MusicPlayerService');
+    } else {
+      AppLogger.warning('No playable tracks remaining, stopping playback', 'MusicPlayerService');
+      await stop();
+    }
+  }
+
+  int _findNextPlayableTrack(int startIndex) {
+    for (int i = startIndex; i < _playlist.length; i++) {
+      final playlistTrack = _playlist[i];
+      final track = playlistTrack.track;
+      
+      if (track != null) {
+        final trackKey = '${track.name}_${track.artist}';
+        if (!_failedTracks.contains(trackKey) && track.previewUrl != null) {
+          return i;
+        }
+      }
+    }
+    return -1; 
   }
 
   Future<void> playNext() async {
@@ -288,6 +319,31 @@ class MusicPlayerService with ChangeNotifier {
 
   void toggleShuffle() {
     _isShuffleMode = !_isShuffleMode;
+    
+    if (_isShuffleMode && _playlist.isNotEmpty) {
+      PlaylistTrack? currentTrack = _currentIndex >= 0 && _currentIndex < _playlist.length 
+          ? _playlist[_currentIndex] 
+          : null;
+      
+      final shuffledPlaylist = List<PlaylistTrack>.from(_playlist);
+      shuffledPlaylist.shuffle();
+      
+      if (currentTrack != null) {
+        shuffledPlaylist.remove(currentTrack);
+        shuffledPlaylist.insert(0, currentTrack);
+      }
+      
+      _playlist = shuffledPlaylist;
+      _currentIndex = 0;
+      _lastPlayedIndex = -1;
+      
+      _playCurrentTrack();
+      
+      AppLogger.debug('Playlist shuffled and playing first track', 'MusicPlayerService');
+    } else {
+      AppLogger.debug('Shuffle mode disabled', 'MusicPlayerService');
+    }
+    
     notifyListeners();
     AppLogger.debug('Shuffle mode: $_isShuffleMode', 'MusicPlayerService');
   }
@@ -349,6 +405,25 @@ class MusicPlayerService with ChangeNotifier {
       AppLogger.error('Error seeking to position: ${e.toString()}', null, null, 'MusicPlayerService');
       rethrow;
     }
+  }
+
+  Future<void> setPlaybackSpeed(double speed) async {
+    try {
+      _playbackSpeed = speed.clamp(0.25, 3.0); 
+      await _audioPlayer.setSpeed(_playbackSpeed);
+      notifyListeners();
+      AppLogger.debug('Playback speed set to ${_playbackSpeed}x', 'MusicPlayerService');
+    } catch (e) {
+      AppLogger.error('Error setting playback speed: ${e.toString()}', null, null, 'MusicPlayerService');
+      rethrow;
+    }
+  }
+
+  void cyclePlaybackSpeed() {
+    final speeds = [1.0, 1.25, 1.5, 2.0, 0.75];
+    final currentIndex = speeds.indexOf(_playbackSpeed);
+    final nextIndex = (currentIndex + 1) % speeds.length;
+    setPlaybackSpeed(speeds[nextIndex]);
   }
 
   void clearPlaylist() {
@@ -478,6 +553,11 @@ class MusicPlayerService with ChangeNotifier {
     
     final oldLength = _playlist.length;
     _playlist = List.from(updatedPlaylist);
+    
+    if (_playlist.length > oldLength) {
+      _failedTracks.clear();// Limit speed between 0.25x and 3.0x
+      AppLogger.debug('Cleared failed tracks cache due to playlist update', 'MusicPlayerService');
+    }
     
     if (_currentIndex >= _playlist.length) {
       _currentIndex = _playlist.isEmpty ? -1 : _playlist.length - 1;

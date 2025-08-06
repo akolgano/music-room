@@ -13,7 +13,6 @@ void main() {
     });
 
     tearDown(() {
-      notificationService.dispose();
     });
 
     test('NotificationService should be instantiable', () {
@@ -24,9 +23,6 @@ void main() {
       expect(notificationService.navigatorKey, isA<GlobalKey<NavigatorState>>());
     });
 
-    test('dispose should not throw', () {
-      expect(() => notificationService.dispose(), returnsNormally);
-    });
 
     test('should handle WebSocket playlist update message data correctly', () {
       final testData = {
@@ -37,7 +33,6 @@ void main() {
         ]
       };
 
-      // Test internal methods for message parsing
       expect(testData['type'], equals('playlist_update'));
       expect(testData['playlist_id'], equals('test-123'));
       expect(testData['data'], isA<List>());

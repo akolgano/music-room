@@ -28,9 +28,6 @@ class BatchLibraryAddResult {
     return successfulTracks.take(3).toList();
   }
 
-  List<String> get errorSample {
-    return errors.take(3).toList();
-  }
 }
 
 class SocialLoginResult {

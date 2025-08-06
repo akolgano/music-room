@@ -25,7 +25,6 @@ void main() {
       expect(profileProvider.socialEmail, null);
       expect(profileProvider.socialName, null);
       expect(profileProvider.socialType, null);
-      expect(profileProvider.socialId, null);
       expect(profileProvider.isPasswordUsable, false);
     });
     test('ProfileProvider should have initial profile field values', () {

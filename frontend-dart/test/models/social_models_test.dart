@@ -20,23 +20,6 @@ void main() {
         expect(friendship.status, 'pending');
         expect(friendship.createdAt, DateTime.parse('2023-12-01T10:30:00.000Z'));
       });
-      test('should convert Friendship to JSON', () {
-        final friendship = Friendship(
-          id: '123',
-          fromUser: 456,
-          toUser: 789,
-          status: 'accepted',
-          createdAt: DateTime.parse('2023-12-01T10:30:00.000Z')
-        );
-        
-        final json = friendship.toJson();
-        
-        expect(json['id'], '123');
-        expect(json['from_user'], 456);
-        expect(json['to_user'], 789);
-        expect(json['status'], 'accepted');
-        expect(json['created_at'], '2023-12-01T10:30:00.000Z');
-      });
       test('should handle different friendship statuses', () {
         final statuses = ['pending', 'accepted', 'rejected', 'blocked'];
         
@@ -67,22 +50,6 @@ void main() {
         expect(friendship.id, '123');
         expect(friendship.fromUser, 456);
         expect(friendship.toUser, 789);
-      });
-      test('should preserve datetime precision', () {
-        final originalDate = DateTime.now();
-        final friendship = Friendship(
-          id: '123',
-          fromUser: 456,
-          toUser: 789,
-          status: 'pending',
-          createdAt: originalDate
-        );
-        
-        final json = friendship.toJson();
-        final recreated = Friendship.fromJson(json);
-        
-        expect(recreated.createdAt.millisecondsSinceEpoch, 
-               originalDate.millisecondsSinceEpoch);
       });
       test('should handle various datetime formats', () {
         final dateFormats = [

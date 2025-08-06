@@ -4,7 +4,6 @@ class DialogWidgets {
   static ColorScheme _getColorScheme(BuildContext context) => Theme.of(context).colorScheme;
   static Color _getPrimary(BuildContext context) => _getColorScheme(context).primary;
   static Color _getSurface(BuildContext context) => _getColorScheme(context).surface;
-  static Color _getBackground(BuildContext context) => _getColorScheme(context).surface;
   static Color _getOnSurface(BuildContext context) => _getColorScheme(context).onSurface;
   static Color _getError(BuildContext context) => _getColorScheme(context).error;
 
@@ -37,7 +36,7 @@ class DialogWidgets {
             decoration: InputDecoration(
               hintText: hintText,
               filled: true,
-              fillColor: _getBackground(context),
+              fillColor: _getSurface(context),
               border: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
               enabledBorder: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
               focusedBorder: _createBorder(_getPrimary(context), 2),
@@ -132,6 +131,33 @@ class DialogWidgets {
             child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
           ),
         ],
+      ),
+    );
+  }
+
+  static Widget buildStyledTextField({
+    required TextEditingController controller,
+    String? hintText,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return Builder(
+      builder: (context) => TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: hintText,
+          filled: true,
+          fillColor: _getSurface(context),
+          border: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
+          enabledBorder: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
+          focusedBorder: _createBorder(_getPrimary(context), 2),
+          errorBorder: _createBorder(_getError(context), 2),
+          focusedErrorBorder: _createBorder(_getError(context), 2),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        style: TextStyle(color: _getOnSurface(context)),
+        maxLines: maxLines,
+        validator: validator,
       ),
     );
   }

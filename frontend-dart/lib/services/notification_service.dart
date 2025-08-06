@@ -291,10 +291,4 @@ class NotificationService {
     }
   }
 
-  void dispose() {
-    _retryTimer?.cancel();
-    _retryTimer = null;
-    _hideCurrentNotification();
-    _pendingNotifications.clear();
-  }
 }

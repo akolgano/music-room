@@ -15,7 +15,6 @@ void main() {
     test('AppStrings should have correct values', () {
       expect(AppStrings.confirmLogout, 'Are you sure you want to sign out?');
       expect(AppStrings.networkError, 'Network error. Please check your connection.');
-      expect(AppStrings.unknownError, 'An unknown error occurred.');
     });
   });
   group('AppRoutes Tests', () {

@@ -15,7 +15,4 @@ class Friendship {
     createdAt: DateTime.parse(json['created_at'] as String),
   );
 
-  Map<String, dynamic> toJson() => {'id': id, 'from_user': fromUser, 'to_user': toUser, 'status': status,
-    'created_at': createdAt.toIso8601String(),
-  };
 }

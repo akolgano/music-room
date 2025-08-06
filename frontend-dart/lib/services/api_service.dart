@@ -277,5 +277,4 @@ class ApiService {
 
   void updateAuthToken(String token) => 
       _dio.options.headers['Authorization'] = 'Token $token';
-  void clearAuthToken() => _dio.options.headers.remove('Authorization');
 }

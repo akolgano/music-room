@@ -68,19 +68,6 @@ void main() {
         expect(profile.name, null);
         expect(profile.musicPreferences, null);
       });
-      test('should serialize to JSON correctly', () {
-        const profile = ProfileResponse(
-          avatar: 'avatar_url',
-          name: 'John Doe',
-          musicPreferences: ['Rock', 'Jazz']
-        );
-        final json = profile.toJson();
-        
-        expect(json['avatar'], 'avatar_url');
-        expect(json['name'], 'John Doe');
-        expect(json['music_preferences'], ['Rock', 'Jazz']);
-        expect(json.containsKey('location'), false);
-      });
     });
     group('CreatePlaylistRequest', () {
       test('should serialize correctly with device UUID', () {

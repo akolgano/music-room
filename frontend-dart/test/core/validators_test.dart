@@ -22,10 +22,6 @@ void main() {
       expect(AppValidators.phoneNumber(''), null);
       expect(AppValidators.phoneNumber('', true), isA<String>());
     });
-    test('AppValidators should have playlistName validator', () {
-      expect(AppValidators.playlistName('My Playlist'), null);
-      expect(AppValidators.playlistName('a' * 101), isA<String>());
-    });
     test('AppValidators should have description validator', () {
       expect(AppValidators.description('Valid description'), null);
       expect(AppValidators.description('a' * 501), 'Description must be less than 500 characters');

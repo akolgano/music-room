@@ -194,25 +194,5 @@ class MusicAppResponsive {
     return getScreenSize(context) == ScreenSize.xxlarge;
   }
 
-  static EdgeInsets getEdgeInsets(BuildContext context, {
-    EdgeInsets? tiny,
-    EdgeInsets? small,
-    EdgeInsets? medium,
-    EdgeInsets? large,
-    EdgeInsets? xlarge,
-    EdgeInsets? xxlarge,
-  }) {
-    final defaultPadding = getPadding(context);
-    final defaultInsets = EdgeInsets.all(defaultPadding);
-    
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny ?? defaultInsets;
-      case ScreenSize.small: return small ?? defaultInsets;
-      case ScreenSize.medium: return medium ?? defaultInsets;
-      case ScreenSize.large: return large ?? defaultInsets;
-      case ScreenSize.xlarge: return xlarge ?? defaultInsets;
-      case ScreenSize.xxlarge: return xxlarge ?? defaultInsets;
-    }
-  }
 
 }

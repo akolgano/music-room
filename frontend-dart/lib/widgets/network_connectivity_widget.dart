@@ -15,15 +15,11 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
   bool _showBanner = false;
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
-    _checkConnectivity();
-    Connectivity().onConnectivityChanged.listen(_onConnectivityChanged);
-  }
-
-  Future<void> _checkConnectivity() async {
     final results = await Connectivity().checkConnectivity();
     _onConnectivityChanged(results);
+    Connectivity().onConnectivityChanged.listen(_onConnectivityChanged);
   }
 
   void _onConnectivityChanged(List<ConnectivityResult> results) {
