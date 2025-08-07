@@ -9,10 +9,6 @@ class FriendService {
     return response.friends;
   }
 
-  Future<String> sendFriendRequest(String userId, String token) async {
-    final response = await _api.sendFriendRequest(userId, token); 
-    return response.message;
-  }
 
   Future<String> acceptFriendRequest(String friendshipId, String token) async {
     final response = await _api.acceptFriendRequest(friendshipId, token); 

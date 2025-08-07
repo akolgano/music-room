@@ -20,85 +20,87 @@ import '../providers/voting_provider.dart';
 
 final getIt = GetIt.instance;
 
+Dio _createConfiguredDio() {
+  final dio = Dio();
+  
+  String baseUrl;
+  final envBaseUrl = dotenv.env['API_BASE_URL'];
+  if (envBaseUrl != null && envBaseUrl.isNotEmpty) {
+    baseUrl = envBaseUrl;
+  } else {
+    baseUrl = 'http://localhost:8000';
+  }
+  
+  if (baseUrl.endsWith('/')) baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+  
+  dio.options.baseUrl = baseUrl;
+  dio.options.headers = {'Content-Type': 'application/json', 'Accept': 'application/json'};
+  dio.options.connectTimeout = const Duration(seconds: 10);
+  dio.options.receiveTimeout = const Duration(seconds: 10);
+  dio.options.sendTimeout = const Duration(seconds: 10);
+
+  dio.interceptors.add(PrettyDioLogger(
+    requestHeader: true,
+    requestBody: true,
+    responseBody: true,
+    responseHeader: false,
+    error: true,
+    compact: true,
+    maxWidth: 120,
+  ));
+
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) {
+      final token = getIt.isRegistered<AuthService>() 
+          ? getIt<AuthService>().currentToken 
+          : null;
+      if (token != null) {
+        options.headers['Authorization'] = 'Token $token';
+      }
+      
+      if (kDebugMode) {
+        debugPrint('[ServiceLocator] API Request: ${options.method} ${options.uri}');
+      }
+      if (options.data != null && kDebugMode) {
+        debugPrint('[ServiceLocator] Request Data: ${options.data}');
+      }
+      
+      handler.next(options);
+    },
+    onResponse: (response, handler) {
+      if (kDebugMode) {
+        debugPrint('[ServiceLocator] API Response: ${response.statusCode} ${response.requestOptions.uri}');
+      }
+      handler.next(response);
+    },
+    onError: (error, handler) {
+      if (kDebugMode) {
+        debugPrint('[ServiceLocator] API Error: ${error.response?.statusCode} ${error.requestOptions.uri}');
+      }
+      if (kDebugMode) {
+        debugPrint('[ServiceLocator] Error details: ${error.message}');
+      }
+      
+      if (error.response?.statusCode == 401) {
+        if (kDebugMode) {
+          debugPrint('[ServiceLocator] Unauthorized - triggering logout');
+        }
+        if (getIt.isRegistered<AuthService>()) {
+          getIt<AuthService>().logout();
+        }
+      }
+      handler.next(error);
+    },
+  ));
+
+  return dio;
+}
+
 Future<void> setupServiceLocator() async {
   final storageService = await StorageService.init();
   getIt.registerSingleton<StorageService>(storageService);
 
-  getIt.registerLazySingleton<Dio>(() {
-    final dio = Dio();
-    
-    String baseUrl;
-    final envBaseUrl = dotenv.env['API_BASE_URL'];
-    if (envBaseUrl != null && envBaseUrl.isNotEmpty) {
-      baseUrl = envBaseUrl;
-    } else {
-      baseUrl = 'http://localhost:8000';
-    }
-    
-    if (baseUrl.endsWith('/')) baseUrl = baseUrl.substring(0, baseUrl.length - 1);
-    
-    dio.options.baseUrl = baseUrl;
-    dio.options.headers = {'Content-Type': 'application/json', 'Accept': 'application/json'};
-    dio.options.connectTimeout = const Duration(seconds: 10);
-    dio.options.receiveTimeout = const Duration(seconds: 10);
-    dio.options.sendTimeout = const Duration(seconds: 10);
-
-    dio.interceptors.add(PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
-      responseHeader: false,
-      error: true,
-      compact: true,
-      maxWidth: 120,
-    ));
-
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
-        final token = getIt.isRegistered<AuthService>() 
-            ? getIt<AuthService>().currentToken 
-            : null;
-        if (token != null) {
-          options.headers['Authorization'] = 'Token $token';
-        }
-        
-        if (kDebugMode) {
-          debugPrint('[ServiceLocator] API Request: ${options.method} ${options.uri}');
-        }
-        if (options.data != null && kDebugMode) {
-          debugPrint('[ServiceLocator] Request Data: ${options.data}');
-        }
-        
-        handler.next(options);
-      },
-      onResponse: (response, handler) {
-        if (kDebugMode) {
-          debugPrint('[ServiceLocator] API Response: ${response.statusCode} ${response.requestOptions.uri}');
-        }
-        handler.next(response);
-      },
-      onError: (error, handler) {
-        if (kDebugMode) {
-          debugPrint('[ServiceLocator] API Error: ${error.response?.statusCode} ${error.requestOptions.uri}');
-        }
-        if (kDebugMode) {
-          debugPrint('[ServiceLocator] Error details: ${error.message}');
-        }
-        
-        if (error.response?.statusCode == 401) {
-          if (kDebugMode) {
-            debugPrint('[ServiceLocator] Unauthorized - triggering logout');
-          }
-          if (getIt.isRegistered<AuthService>()) {
-            getIt<AuthService>().logout();
-          }
-        }
-        handler.next(error);
-      },
-    ));
-
-    return dio;
-  });
+  getIt.registerLazySingleton<Dio>(() => _createConfiguredDio());
 
   getIt.registerLazySingleton<ApiService>(() => ApiService(getIt<Dio>()));
 

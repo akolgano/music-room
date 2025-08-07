@@ -19,6 +19,7 @@ class MusicProvider extends BaseProvider {
   List<Track> _searchResults = [];
   List<PlaylistTrack> _playlistTracks = [];
   bool _hasConnectionError = false;
+  
 
   List<Playlist> get playlists => List.unmodifiable(_playlists);
   List<Track> get searchResults => List.unmodifiable(_searchResults);
@@ -99,6 +100,7 @@ class MusicProvider extends BaseProvider {
     );
     return result;
   }
+
 
   Future<void> searchDeezerTracks(String query) async {
     final result = await executeAsync(

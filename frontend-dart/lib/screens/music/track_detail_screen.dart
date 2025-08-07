@@ -6,6 +6,7 @@ import '../../providers/dynamic_theme_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../models/music_models.dart';
 import '../../core/theme_utils.dart';
+import '../../core/constants.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/voting_widgets.dart';
 import '../base_screen.dart';
@@ -277,17 +278,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     );
   }
 
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-    
-    if (hours > 0) {
-      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    } else {
-      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
-  }
 
   Widget _buildProgressBar(MusicPlayerService playerService) {
     return Column(
@@ -307,12 +297,12 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
             Text(
-              _formatDuration(playerService.position),
+              FormatUtils.formatDuration(playerService.position),
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
 
             Text(
-              _formatDuration(playerService.duration),
+              FormatUtils.formatDuration(playerService.duration),
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
             ],
