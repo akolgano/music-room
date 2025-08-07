@@ -1,9 +1,11 @@
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
 import '../services/friend_service.dart';
+import '../services/api_service.dart';
 
 class FriendProvider extends BaseProvider {
   final FriendService _friendService = getIt<FriendService>();
+  final ApiService _apiService = getIt<ApiService>();
   
   List<String> _friends = [];
   List<Map<String, dynamic>> _receivedInvitations = [];
@@ -49,7 +51,7 @@ class FriendProvider extends BaseProvider {
   Future<bool> sendFriendRequest(String token, String userId) async {
     return await executeBool(
       () async {
-        await _friendService.sendFriendRequest(userId, token);
+        await _apiService.sendFriendRequest(userId, token);
         await fetchSentInvitations(token);
       },
       successMessage: 'Friend request sent!',

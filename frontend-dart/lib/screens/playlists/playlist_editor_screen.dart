@@ -40,7 +40,10 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   bool _showCollaborationFeatures = false;
 
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
-  bool get _canEdit => true; 
+  bool get _canEdit {
+    if (_playlist == null) return true; 
+    return _playlist!.isPublic || _playlist!.creator == auth.username;
+  } 
 
   @override
   String get screenTitle => _isEditMode ? 'Edit Playlist' : 'Create Playlist';
@@ -584,6 +587,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           auth.token!, 
           visibilityRequest
         );
+        
       }
       
       if (_playlist != null && 

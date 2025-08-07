@@ -3,9 +3,9 @@ import 'logging_navigation_observer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-import '../core/theme_utils.dart';
 import '../core/constants.dart';
 import '../core/service_locator.dart';
+import '../widgets/app_widgets.dart';
 import '../providers/auth_provider.dart';
 import '../providers/music_provider.dart';
 import '../providers/friend_provider.dart';
@@ -133,7 +133,7 @@ class AppBuilder {
 
     return MaterialPageRoute(
       settings: settings,
-      builder: (context) => _buildErrorScreen('Page not found'),
+      builder: (context) => AppWidgets.buildErrorScreen('Page not found'),
     );
   }
 
@@ -174,7 +174,7 @@ class AppBuilder {
       case AppRoutes.playlistSharing:
         return _buildPlaylistSharing(settings);
       default:
-        return _buildErrorScreen('Page not found');
+        return AppWidgets.buildErrorScreen('Page not found');
     }
   }
 
@@ -189,7 +189,7 @@ class AppBuilder {
     
     if (args == null) {
       AppLogger.warning('No arguments provided for playlist detail', 'AppBuilder');
-      return _buildErrorScreen('No playlist ID provided');
+      return AppWidgets.buildErrorScreen('No playlist ID provided');
     }
 
     String? playlistId;
@@ -199,12 +199,12 @@ class AppBuilder {
       playlistId = args['id'].toString();
     } else {
       AppLogger.error('Invalid arguments type for playlist detail: ${args.runtimeType}', null, null, 'AppBuilder');
-      return _buildErrorScreen('Invalid playlist ID format');
+      return AppWidgets.buildErrorScreen('Invalid playlist ID format');
     }
 
     if (playlistId.isEmpty || playlistId == 'null') {
       AppLogger.error('Invalid playlist ID: $playlistId', null, null, 'AppBuilder');
-      return _buildErrorScreen('Invalid playlist ID');
+      return AppWidgets.buildErrorScreen('Invalid playlist ID');
     }
 
     AppLogger.debug('Building PlaylistDetailScreen with ID: $playlistId', 'AppBuilder');
@@ -225,13 +225,13 @@ class AppBuilder {
     } else if (args is Track) {
       return TrackDetailScreen(track: args);
     }
-    return _buildErrorScreen('Invalid track data');
+    return AppWidgets.buildErrorScreen('Invalid track data');
   }
 
   static Widget _buildPlaylistSharing(RouteSettings settings) {
     final args = settings.arguments;
     if (args is Playlist) return PlaylistSharingScreen(playlist: args);
-    return _buildErrorScreen('Invalid playlist data');
+    return AppWidgets.buildErrorScreen('Invalid playlist data');
   }
 
   static Widget _buildUserPage(RouteSettings settings) {
@@ -252,32 +252,8 @@ class AppBuilder {
       return UserPageScreen(userId: args.toString());
     }
     
-    return _buildErrorScreen('Invalid user data provided');
+    return AppWidgets.buildErrorScreen('Invalid user data provided');
   }
 
 
-  static Widget _buildErrorScreen(String message) {
-    return Builder(
-      builder: (context) => Scaffold(
-        backgroundColor: AppTheme.background,
-        appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Error')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, size: 64, color: AppTheme.error),
-              const SizedBox(height: 16),
-              Text(message, style: const TextStyle(color: Colors.white, fontSize: 18), textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.black),
-                child: const Text('Go Back'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

@@ -12,6 +12,168 @@ import 'dialog_widgets.dart';
 import 'scrollbar.dart';
 export 'mini_player_widget.dart';
 
+class TrackActionsWidget extends StatelessWidget {
+  final bool showAddButton;
+  final bool showPlayButton;
+  final VoidCallback? onAdd;
+  final VoidCallback? onPlay;
+  final VoidCallback? onRemove;
+  final bool trackIsPlaying;
+  final bool isInPlaylist;
+
+  const TrackActionsWidget({
+    super.key,
+    required this.showAddButton,
+    required this.showPlayButton,
+    this.onAdd,
+    this.onPlay,
+    this.onRemove,
+    required this.trackIsPlaying,
+    required this.isInPlaylist,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final actions = <Widget>[];
+    
+    if (showPlayButton && onPlay != null) {
+      actions.add(AppWidgets._buildStyledIconButton(
+        trackIsPlaying ? Icons.pause : Icons.play_arrow, 
+        colorScheme.primary, 
+        20.0, 
+        onPlay!
+      ));
+    }
+    
+    if (showAddButton && onAdd != null && !isInPlaylist) {
+      actions.add(AppWidgets._buildStyledIconButton(
+        Icons.add_circle_outline, 
+        colorScheme.onSurface, 
+        18.0, 
+        onAdd!, 
+        tooltip: 'Add to Playlist'
+      ));
+    }
+    
+    if (isInPlaylist) {
+      actions.add(Padding(
+        padding: EdgeInsets.all(AppWidgets._responsiveWidth(4.0)),
+        child: Icon(
+          Icons.check_circle, 
+          color: Colors.green, 
+          size: AppWidgets._responsiveValue(18.0) 
+        ),
+      ));
+    }
+    
+    if (onRemove != null) {
+      actions.add(AppWidgets._buildStyledIconButton(
+        Icons.remove_circle_outline, 
+        colorScheme.error, 
+        18.0, 
+        onRemove!
+      ));
+    }
+    
+    if (actions.isEmpty) return const SizedBox.shrink();
+    final displayedActions = actions.take(2).toList();
+    return Row(mainAxisSize: MainAxisSize.min, children: displayedActions);
+  }
+}
+
+class EmptyStateContentWidget extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final String? buttonText;
+  final VoidCallback? onButtonPressed;
+  final bool isConstrained;
+  final double iconSize;
+  final double titleSize;
+  final double spacing;
+
+  const EmptyStateContentWidget({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.buttonText,
+    this.onButtonPressed,
+    required this.isConstrained,
+    required this.iconSize,
+    required this.titleSize,
+    required this.spacing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+          SizedBox(height: spacing),
+          Text(
+            title, 
+            style: AppWidgets._primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
+            textAlign: TextAlign.center,
+            maxLines: isConstrained ? 2 : null,
+            overflow: isConstrained ? TextOverflow.ellipsis : null,
+          ),
+          if (subtitle != null) ...[
+            SizedBox(height: spacing / 2), 
+            Text(
+              subtitle!, 
+              style: AppWidgets._secondaryStyle(context).copyWith(
+                fontSize: isConstrained ? AppWidgets._responsiveValue(10.0) : null,
+              ), 
+              textAlign: TextAlign.center,
+              maxLines: isConstrained ? 1 : null,
+              overflow: isConstrained ? TextOverflow.ellipsis : null,
+            )
+          ],
+          if (buttonText != null && onButtonPressed != null) ...[
+            SizedBox(height: isConstrained ? spacing / 2 : spacing),
+            isConstrained 
+              ? TextButton(
+                  onPressed: onButtonPressed,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppWidgets._responsiveWidth(8.0),
+                      vertical: AppWidgets._responsiveHeight(2.0),
+                    ),
+                    minimumSize: Size.zero,
+                  ),
+                  child: Text(
+                    buttonText!,
+                    style: TextStyle(
+                      fontSize: AppWidgets._responsiveValue(10.0),
+                      color: theme.colorScheme.primary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                )
+              : ElevatedButton(
+                  onPressed: onButtonPressed, 
+                  child: Text(
+                    buttonText!, 
+                    style: TextStyle(fontSize: AppWidgets._responsiveValue(14.0)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class AppWidgets {
   static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
 
@@ -116,127 +278,147 @@ class AppWidgets {
     );
   }
 
-  static Widget trackCard({Key? key,
-    required BuildContext context,
-    required Track track,
-    bool isSelected = false,
-    bool isInPlaylist = false,
-    bool showAddButton = true,
-    bool showPlayButton = true,
-    bool showVotingControls = false,
-    String? playlistContext,
-    String? playlistId,
-    VoidCallback? onTap,
-    VoidCallback? onAdd,
-    VoidCallback? onPlay,
-    VoidCallback? onRemove,
-    VoidCallback? onAddToLibrary,
-    ValueChanged<bool?>? onSelectionChanged,
-  }) => Consumer2<MusicPlayerService, DynamicThemeProvider>(
-    key: key,
-    builder: (context, playerService, themeProvider, _) {
-      final theme = Theme.of(context);
-      final colorScheme = theme.colorScheme;
-      final isCurrentTrack = playerService.currentTrack?.id == track.id;
-      final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-      
-      String displayArtist = track.artist;
-      if (displayArtist.isEmpty && track.deezerTrackId != null) {
-        displayArtist = 'Loading artist info...';
-      } else if (displayArtist.isEmpty) {
-        displayArtist = 'Unknown Artist';
-      }
-      
-      return AnimationConfiguration.staggeredList(
-        position: 0,
-        duration: const Duration(milliseconds: 375),
-        child: SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: Container(
-              margin: EdgeInsets.symmetric(
-                horizontal: _responsiveWidth(16.0), 
-                vertical: _responsiveHeight(2.0)
-              ),
-              decoration: BoxDecoration(
-                color: _getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
-                borderRadius: BorderRadius.circular(_responsiveWidth(12.0)),
-                border: isCurrentTrack ? Border.all(color: colorScheme.primary, width: 2) : null,
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(_responsiveWidth(12.0)),
-                child: Row(
-                  children: [
-                    if (onSelectionChanged != null)
-                      SizedBox(
-                        width: 56,
-                        child: Checkbox(
-                          value: isSelected, 
-                          onChanged: onSelectionChanged, 
-                          activeColor: colorScheme.primary
-                        ),
-                      )
-                    else
-                      _buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
-                    SizedBox(width: _responsiveWidth(12.0)),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  track.name, 
-                                  style: _primaryStyle(context), 
-                                  maxLines: 1, 
-                                  overflow: TextOverflow.ellipsis
-                                ),
-                                Text(
-                                  displayArtist, 
-                                  style: _secondaryStyle(context), 
-                                  maxLines: 1, 
-                                  overflow: TextOverflow.ellipsis
-                                ),
-                              ],
-                            ),
+class TrackCardWidget extends StatelessWidget {
+  final Track track;
+  final bool isSelected;
+  final bool isInPlaylist;
+  final bool showAddButton;
+  final bool showPlayButton;
+  final bool showVotingControls;
+  final String? playlistContext;
+  final String? playlistId;
+  final VoidCallback? onTap;
+  final VoidCallback? onAdd;
+  final VoidCallback? onPlay;
+  final VoidCallback? onRemove;
+  final VoidCallback? onAddToLibrary;
+  final ValueChanged<bool?>? onSelectionChanged;
+
+  const TrackCardWidget({
+    super.key,
+    required this.track,
+    this.isSelected = false,
+    this.isInPlaylist = false,
+    this.showAddButton = true,
+    this.showPlayButton = true,
+    this.showVotingControls = false,
+    this.playlistContext,
+    this.playlistId,
+    this.onTap,
+    this.onAdd,
+    this.onPlay,
+    this.onRemove,
+    this.onAddToLibrary,
+    this.onSelectionChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<MusicPlayerService, DynamicThemeProvider>(
+      builder: (context, playerService, themeProvider, _) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        final isCurrentTrack = playerService.currentTrack?.id == track.id;
+        final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
+        
+        String displayArtist = track.artist;
+        if (displayArtist.isEmpty && track.deezerTrackId != null) {
+          displayArtist = 'Loading artist info...';
+        } else if (displayArtist.isEmpty) {
+          displayArtist = 'Unknown Artist';
+        }
+        
+        return AnimationConfiguration.staggeredList(
+          position: 0,
+          duration: const Duration(milliseconds: 375),
+          child: SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(
+              child: Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: AppWidgets._responsiveWidth(16.0), 
+                  vertical: AppWidgets._responsiveHeight(2.0)
+                ),
+                decoration: BoxDecoration(
+                  color: AppWidgets._getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
+                  borderRadius: BorderRadius.circular(AppWidgets._responsiveWidth(12.0)),
+                  border: isCurrentTrack ? Border.all(color: colorScheme.primary, width: 2) : null,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(AppWidgets._responsiveWidth(12.0)),
+                  child: Row(
+                    children: [
+                      if (onSelectionChanged != null)
+                        SizedBox(
+                          width: 56,
+                          child: Checkbox(
+                            value: isSelected, 
+                            onChanged: onSelectionChanged, 
+                            activeColor: colorScheme.primary
                           ),
-                          if (showVotingControls && playlistId != null)
-                            Container(
-                              constraints: const BoxConstraints(maxWidth: 80),
-                              child: TrackVotingControls(
-                                playlistId: playlistId,
-                                trackId: track.id,
-                                isCompact: true,
+                        )
+                      else
+                        AppWidgets._buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
+                      SizedBox(width: AppWidgets._responsiveWidth(12.0)),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    track.name, 
+                                    style: AppWidgets._primaryStyle(context), 
+                                    maxLines: 1, 
+                                    overflow: TextOverflow.ellipsis
+                                  ),
+                                  Text(
+                                    displayArtist, 
+                                    style: AppWidgets._secondaryStyle(context), 
+                                    maxLines: 1, 
+                                    overflow: TextOverflow.ellipsis
+                                  ),
+                                ],
                               ),
                             ),
-                          if (onSelectionChanged == null)
-                            Container(
-                              constraints: const BoxConstraints(maxWidth: 100),
-                              child: _buildTrackActions(
-                                context, 
-                                showAddButton, 
-                                showPlayButton, 
-                                onAdd, 
-                                onPlay, 
-                                onRemove, 
-                                trackIsPlaying, 
-                                isInPlaylist
+                            if (showVotingControls && playlistId != null)
+                              Container(
+                                constraints: const BoxConstraints(maxWidth: 80),
+                                child: TrackVotingControls(
+                                  playlistId: playlistId!,
+                                  trackId: track.id,
+                                  isCompact: true,
+                                ),
                               ),
-                            ),
-                        ],
+                            if (onSelectionChanged == null)
+                              Container(
+                                constraints: const BoxConstraints(maxWidth: 100),
+                                child: TrackActionsWidget(
+                                  showAddButton: showAddButton,
+                                  showPlayButton: showPlayButton,
+                                  onAdd: onAdd,
+                                  onPlay: onPlay,
+                                  onRemove: onRemove,
+                                  trackIsPlaying: trackIsPlaying,
+                                  isInPlaylist: isInPlaylist,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
+  }
+}
 
   static Widget _buildImage(
     BuildContext context,
@@ -265,62 +447,6 @@ class AppWidgets {
     );
   }
 
-  static Widget _buildTrackActions(
-    BuildContext context,
-    bool showAddButton, 
-    bool showPlayButton, 
-    VoidCallback? onAdd, 
-    VoidCallback? onPlay, 
-    VoidCallback? onRemove, 
-    bool trackIsPlaying, 
-    bool isInPlaylist
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final actions = <Widget>[];
-    
-    if (showPlayButton && onPlay != null) {
-      actions.add(_buildStyledIconButton(
-        trackIsPlaying ? Icons.pause : Icons.play_arrow, 
-        colorScheme.primary, 
-        20.0, 
-        onPlay
-      ));
-    }
-    
-    if (showAddButton && onAdd != null && !isInPlaylist) {
-      actions.add(_buildStyledIconButton(
-        Icons.add_circle_outline, 
-        colorScheme.onSurface, 
-        18.0, 
-        onAdd, 
-        tooltip: 'Add to Playlist'
-      ));
-    }
-    
-    if (isInPlaylist) {
-      actions.add(Padding(
-        padding: EdgeInsets.all(_responsiveWidth(4.0)),
-        child: Icon(
-          Icons.check_circle, 
-          color: Colors.green, 
-          size: _responsiveValue(18.0) 
-        ),
-      ));
-    }
-    
-    if (onRemove != null) {
-      actions.add(_buildStyledIconButton(
-        Icons.remove_circle_outline, 
-        colorScheme.error, 
-        18.0, 
-        onRemove
-      ));
-    }
-    
-    if (actions.isEmpty) return const SizedBox.shrink();
-    final displayedActions = actions.take(2).toList();
-    return Row(mainAxisSize: MainAxisSize.min, children: displayedActions);
-  }
 
   static Widget loading([String? message]) {
     return _buildWithTheme((context, theme, colorScheme) {
@@ -554,81 +680,6 @@ class AppWidgets {
     ));
   }
 
-  static Widget _buildEmptyStateContent(
-    BuildContext context, 
-    IconData icon, 
-    String title, 
-    String? subtitle, 
-    String? buttonText, 
-    VoidCallback? onButtonPressed,
-    bool isConstrained,
-    double iconSize,
-    double titleSize,
-    double spacing,
-    ThemeData theme
-  ) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-      Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-      SizedBox(height: spacing),
-      Text(
-        title, 
-        style: _primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
-        textAlign: TextAlign.center,
-        maxLines: isConstrained ? 2 : null,
-        overflow: isConstrained ? TextOverflow.ellipsis : null,
-      ),
-      if (subtitle != null) ...[
-        SizedBox(height: spacing / 2), 
-        Text(
-          subtitle, 
-          style: _secondaryStyle(context).copyWith(
-            fontSize: isConstrained ? (_responsiveValue(10.0)) : null,
-          ), 
-          textAlign: TextAlign.center,
-          maxLines: isConstrained ? 1 : null,
-          overflow: isConstrained ? TextOverflow.ellipsis : null,
-        )
-      ],
-      if (buttonText != null && onButtonPressed != null) ...[
-        SizedBox(height: isConstrained ? spacing / 2 : spacing),
-        isConstrained 
-          ? TextButton(
-              onPressed: onButtonPressed,
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  horizontal: _responsiveWidth(8.0),
-                  vertical: _responsiveHeight(2.0),
-                ),
-                minimumSize: Size.zero,
-              ),
-              child: Text(
-                buttonText,
-                style: TextStyle(
-                  fontSize: _responsiveValue(10.0),
-                  color: theme.colorScheme.primary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            )
-          : ElevatedButton(
-              onPressed: onButtonPressed, 
-              child: Text(
-                buttonText, 
-                style: TextStyle(fontSize: _responsiveValue(14.0)),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
-            ),
-      ],
-      ],
-      ),
-    );
-  }
 
 static Widget emptyState({
     required IconData icon,
@@ -638,7 +689,6 @@ static Widget emptyState({
     VoidCallback? onButtonPressed,
   }) {
     return Builder(builder: (context) {
-      final theme = Theme.of(context);
       return LayoutBuilder(
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
@@ -650,35 +700,17 @@ static Widget emptyState({
           
           Widget content = Padding(
             padding: EdgeInsets.all(padding),
-            child: isConstrained
-                ? SingleChildScrollView(
-                    child: _buildEmptyStateContent(
-                      context,
-                      icon,
-                      title,
-                      subtitle,
-                      buttonText,
-                      onButtonPressed,
-                      isConstrained,
-                      iconSize,
-                      titleSize,
-                      spacing,
-                      theme,
-                    ),
-                  )
-                : _buildEmptyStateContent(
-                    context,
-                    icon,
-                    title,
-                    subtitle,
-                    buttonText,
-                    onButtonPressed,
-                    isConstrained,
-                    iconSize,
-                    titleSize,
-                    spacing,
-                    theme,
-                  ),
+            child: EmptyStateContentWidget(
+              icon: icon,
+              title: title,
+              subtitle: subtitle,
+              buttonText: buttonText,
+              onButtonPressed: onButtonPressed,
+              isConstrained: isConstrained,
+              iconSize: iconSize,
+              titleSize: titleSize,
+              spacing: spacing,
+            ),
           );
           
           if (!hasFiniteHeight) {
@@ -983,4 +1015,35 @@ static Widget emptyState({
     required List<T> items,
     required String Function(T) itemTitle,
   }) => DialogWidgets.showSelectionDialog<T>(context: context, title: title, items: items, itemTitle: itemTitle);
+
+  static Widget buildErrorScreen(String message) {
+    return Builder(
+      builder: (context) => Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: const Text('Error'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
+              const SizedBox(height: 16),
+              Text(
+                message,
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

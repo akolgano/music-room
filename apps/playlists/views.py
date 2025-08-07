@@ -30,7 +30,7 @@ def create_new_playlist(request):
     name = request.data.get('name')
     description = request.data.get('description', '')
     public = request.data.get('public', True)
-    public = True
+    # public = True
     if not name:
         return JsonResponse({"error": "Playlist name is required."}, status=400)
     playlist = Playlist.objects.create(

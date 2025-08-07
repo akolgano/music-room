@@ -413,8 +413,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
 
   Widget _buildTrackItem(Track track) {
     final isInPlaylist = _isTrackInPlaylist(track.id);
-    return AppWidgets.trackCard(
-      context: context,
+    return TrackCardWidget(
       track: track,
       isSelected: _selectedTracks.contains(track.id),
       isInPlaylist: isInPlaylist,
