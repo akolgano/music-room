@@ -8,7 +8,7 @@ import 'core/social_login.dart';
 import 'core/constants.dart';
 import 'core/service_locator.dart';
 import 'core/app_builder.dart';
-import 'core/app_logger.dart';
+import 'core/logging_navigation_observer.dart';
 import 'services/notification_service.dart';
 import 'providers/dynamic_theme_provider.dart';
 

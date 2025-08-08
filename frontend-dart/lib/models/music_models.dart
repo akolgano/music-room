@@ -1,4 +1,4 @@
-import '../core/app_logger.dart';
+import '../core/logging_navigation_observer.dart';
 
 class User {
   final String id;

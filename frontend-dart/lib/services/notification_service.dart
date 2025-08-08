@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../core/app_logger.dart';
+import '../core/logging_navigation_observer.dart';
 
 class _PendingNotification {
   final String message;

@@ -1,4 +1,4 @@
-import '../core/app_logger.dart';
+import '../core/logging_navigation_observer.dart';
 import 'dart:math' as math;
 import '../models/music_models.dart';
 import '../services/api_service.dart';

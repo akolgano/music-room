@@ -6,10 +6,7 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/music_service.dart';
-import '../services/friend_service.dart';
-import '../services/storage_service.dart';
 import '../services/music_player_service.dart';
-import '../services/voting_service.dart';
 import '../services/track_cache_service.dart';
 import '../services/websocket_service.dart';
 import '../services/frontend_logging_service.dart';
@@ -17,6 +14,7 @@ import '../services/notification_service.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../providers/music_provider.dart';
 import '../providers/voting_provider.dart';
+import '../providers/friend_provider.dart';
 
 final getIt = GetIt.instance;
 

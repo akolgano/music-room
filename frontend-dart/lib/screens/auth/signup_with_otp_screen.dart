@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
-import '../../core/validators.dart';
 import '../../core/constants.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/scrollbar.dart';
