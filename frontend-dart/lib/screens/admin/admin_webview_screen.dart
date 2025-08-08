@@ -3,7 +3,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/theme_utils.dart';
-import '../../core/app_logger.dart';
+import '../../core/logging_navigation_observer.dart';
 
 class AdminWebViewScreen extends StatefulWidget {
   final String routePath;

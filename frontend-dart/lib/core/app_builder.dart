@@ -1,4 +1,3 @@
-import 'app_logger.dart';
 import 'logging_navigation_observer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

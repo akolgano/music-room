@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/models/social_models.dart';
+import 'package:music_room/models/api_models.dart';
 void main() {
   group('Social Models Tests', () {
     group('Friendship', () {

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../core/app_logger.dart';
+import '../core/logging_navigation_observer.dart';
 import '../core/service_locator.dart';
-import 'storage_service.dart';
+import 'auth_service.dart';
 
 enum LogLevel { info, warning, error, debug }
 

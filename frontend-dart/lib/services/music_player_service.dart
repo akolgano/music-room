@@ -1,4 +1,4 @@
-import '../core/app_logger.dart';
+import '../core/logging_navigation_observer.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:just_audio/just_audio.dart';
 import '../models/music_models.dart';

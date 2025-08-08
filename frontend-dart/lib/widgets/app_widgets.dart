@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/music_models.dart';
@@ -10,6 +9,8 @@ import '../providers/dynamic_theme_provider.dart';
 import '../widgets/voting_widgets.dart';
 import 'dialog_widgets.dart';
 import 'scrollbar.dart';
+import 'form_widgets.dart';
+import 'state_widgets.dart';
 export 'mini_player_widget.dart';
 
 class TrackActionsWidget extends StatelessWidget {
@@ -174,110 +175,6 @@ class EmptyStateContentWidget extends StatelessWidget {
   }
 }
 
-class AppWidgets {
-  static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
-
-  static Widget _buildWithTheme(Widget Function(BuildContext context, ThemeData theme, ColorScheme colorScheme) builder) {
-    return Builder(
-      builder: (context) {
-        final theme = Theme.of(context);
-        final colorScheme = theme.colorScheme;
-        return builder(context, theme, colorScheme);
-      },
-    );
-  }
-
-  static IconButton _buildStyledIconButton(
-    IconData icon,
-    Color color,
-    double size,
-    VoidCallback onPressed, {
-    String? tooltip,
-  }) => IconButton(
-    icon: Icon(icon, color: color, size: _responsiveValue(size)),
-    onPressed: onPressed,
-    tooltip: tooltip,
-    padding: EdgeInsets.all(_responsiveWidth(4.0)),
-    constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
-  );
-  
-  static TextStyle _primaryStyle(BuildContext context) => TextStyle(
-    color: _colorScheme(context).onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
-  );
-  
-  static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
-    color: _colorScheme(context).onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
-  );
-
-  static OutlineInputBorder _createBorder(Color color, double width) =>
-      OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: color, width: width),
-      );
-
-  static double _responsiveSize(double webSize, double mobileSize) => kIsWeb ? webSize : mobileSize.sp.toDouble();
-  static double _responsiveWidth(double size) => _responsive(size, type: 'w');
-  static double _responsiveHeight(double size) => _responsive(size, type: 'h');
-  static double _responsiveValue(double value) => _responsive(value);
-  
-  static double _responsive(double value, {String type = 'sp'}) {
-    if (kIsWeb) return value;
-    switch (type) {
-      case 'w': return value.w.toDouble();
-      case 'h': return value.h.toDouble();
-      case 'sp': default: return value.sp.toDouble();
-    }
-  }
-
-  static Color _getTrackCardColor(ColorScheme colorScheme, bool isSelected, bool isCurrentTrack) {
-    if (isSelected) return colorScheme.primary.withValues(alpha: 0.2);
-    if (isCurrentTrack) return colorScheme.primary.withValues(alpha: 0.1);
-    return colorScheme.surface;
-  }
-
-  static Widget textField({required BuildContext context, 
-    required TextEditingController controller,
-    required String labelText,
-    String? hintText,
-    IconData? prefixIcon,
-    bool obscureText = false,
-    String? Function(String?)? validator, 
-    ValueChanged<String>? onChanged, 
-    ValueChanged<String>? onFieldSubmitted,
-    int minLines = 1, 
-    int maxLines = 1
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      onChanged: onChanged,
-      onFieldSubmitted: onFieldSubmitted,
-      minLines: minLines, 
-      maxLines: maxLines,
-      style: _primaryStyle(context),
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: _colorScheme(context).primary) : null,
-        filled: true,
-        fillColor: _colorScheme(context).surface,
-        border: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-        enabledBorder: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-        focusedBorder: _createBorder(_colorScheme(context).primary, 2),
-        errorBorder: _createBorder(_colorScheme(context).error, 2),
-        focusedErrorBorder: _createBorder(_colorScheme(context).error, 2),
-        disabledBorder: _createBorder(Colors.grey.withValues(alpha: 0.2), 1),
-        labelStyle: TextStyle(fontSize: 16, color: _colorScheme(context).onSurface.withValues(alpha: 0.7)),
-        hintStyle: TextStyle(fontSize: 14, color: _colorScheme(context).onSurface.withValues(alpha: 0.5)),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: _responsiveWidth(16.0), 
-          vertical: _responsiveHeight(6.0)
-        ),
-      ),
-    );
-  }
-
 class TrackCardWidget extends StatelessWidget {
   final Track track;
   final bool isSelected;
@@ -319,98 +216,96 @@ class TrackCardWidget extends StatelessWidget {
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
         final isCurrentTrack = playerService.currentTrack?.id == track.id;
-        final trackIsPlaying = isCurrentTrack && playerService.isPlaying;
-        
+
         String displayArtist = track.artist;
         if (displayArtist.isEmpty && track.deezerTrackId != null) {
-          displayArtist = 'Loading artist info...';
-        } else if (displayArtist.isEmpty) {
           displayArtist = 'Unknown Artist';
         }
-        
-        return AnimationConfiguration.staggeredList(
-          position: 0,
-          duration: const Duration(milliseconds: 375),
-          child: SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(
-              child: Container(
-                margin: EdgeInsets.symmetric(
-                  horizontal: AppWidgets._responsiveWidth(16.0), 
-                  vertical: AppWidgets._responsiveHeight(2.0)
-                ),
-                decoration: BoxDecoration(
-                  color: AppWidgets._getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
-                  borderRadius: BorderRadius.circular(AppWidgets._responsiveWidth(12.0)),
-                  border: isCurrentTrack ? Border.all(color: colorScheme.primary, width: 2) : null,
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(AppWidgets._responsiveWidth(12.0)),
-                  child: Row(
-                    children: [
-                      if (onSelectionChanged != null)
-                        SizedBox(
-                          width: 56,
-                          child: Checkbox(
-                            value: isSelected, 
-                            onChanged: onSelectionChanged, 
-                            activeColor: colorScheme.primary
-                          ),
-                        )
-                      else
-                        AppWidgets._buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
-                      SizedBox(width: AppWidgets._responsiveWidth(12.0)),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    track.name, 
-                                    style: AppWidgets._primaryStyle(context), 
-                                    maxLines: 1, 
-                                    overflow: TextOverflow.ellipsis
-                                  ),
-                                  Text(
-                                    displayArtist, 
-                                    style: AppWidgets._secondaryStyle(context), 
-                                    maxLines: 1, 
-                                    overflow: TextOverflow.ellipsis
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (showVotingControls && playlistId != null)
-                              Container(
-                                constraints: const BoxConstraints(maxWidth: 80),
-                                child: TrackVotingControls(
-                                  playlistId: playlistId!,
-                                  trackId: track.id,
-                                  isCompact: true,
-                                ),
-                              ),
-                            if (onSelectionChanged == null)
-                              Container(
-                                constraints: const BoxConstraints(maxWidth: 100),
-                                child: TrackActionsWidget(
-                                  showAddButton: showAddButton,
-                                  showPlayButton: showPlayButton,
-                                  onAdd: onAdd,
-                                  onPlay: onPlay,
-                                  onRemove: onRemove,
-                                  trackIsPlaying: trackIsPlaying,
-                                  isInPlaylist: isInPlaylist,
-                                ),
-                              ),
-                          ],
-                        ),
+
+        return Container(
+          margin: EdgeInsets.symmetric(
+            vertical: AppWidgets._responsiveHeight(2.0),
+            horizontal: AppWidgets._responsiveWidth(4.0),
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.0),
+            color: AppWidgets._getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8.0),
+            onTap: onTap,
+            child: Padding(
+              padding: EdgeInsets.all(AppWidgets._responsiveWidth(8.0)),
+              child: Row(
+                children: [
+                  if (onSelectionChanged != null)
+                    Container(
+                      margin: EdgeInsets.only(right: AppWidgets._responsiveWidth(8.0)),
+                      child: Checkbox(
+                        value: isSelected,
+                        onChanged: onSelectionChanged,
                       ),
+                    ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6.0),
+                    child: SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: AppWidgets._buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
+                    ),
+                  ),
+                  SizedBox(width: AppWidgets._responsiveWidth(12.0)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          track.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: AppWidgets._responsiveValue(14.0),
+                            color: colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (displayArtist.isNotEmpty)
+                          Text(
+                            displayArtist,
+                            style: TextStyle(
+                              fontSize: AppWidgets._responsiveValue(12.0),
+                              color: colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (showVotingControls && playlistId != null)
+                        Container(
+                          margin: EdgeInsets.only(bottom: AppWidgets._responsiveHeight(4.0)),
+                          child: TrackVotingControls(
+                            playlistId: playlistId!,
+                            trackId: track.id,
+                          ),
+                        ),
+                      if (onSelectionChanged == null)
+                        TrackActionsWidget(
+                          trackIsPlaying: isCurrentTrack,
+                          showAddButton: showAddButton,
+                          showPlayButton: showPlayButton,
+                          onAdd: onAdd,
+                          onPlay: onPlay,
+                          onRemove: onRemove,
+                          isInPlaylist: isInPlaylist,
+                        ),
                     ],
                   ),
-                ),
+                ],
               ),
             ),
           ),
@@ -419,6 +314,87 @@ class TrackCardWidget extends StatelessWidget {
     );
   }
 }
+
+class AppWidgets {
+  static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
+
+  static Widget _buildWithTheme(Widget Function(BuildContext context, ThemeData theme, ColorScheme colorScheme) builder) {
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return builder(context, theme, colorScheme);
+      },
+    );
+  }
+
+  static IconButton _buildStyledIconButton(
+    IconData icon,
+    Color color,
+    double size,
+    VoidCallback onPressed, {
+    String? tooltip,
+  }) => IconButton(
+    icon: Icon(icon, color: color, size: _responsiveValue(size)),
+    onPressed: onPressed,
+    tooltip: tooltip,
+    padding: EdgeInsets.all(_responsiveWidth(4.0)),
+    constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
+  );
+  
+  static TextStyle _primaryStyle(BuildContext context) => TextStyle(
+    color: _colorScheme(context).onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
+  );
+  
+  static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
+    color: _colorScheme(context).onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
+  );
+
+
+  static double _responsiveSize(double webSize, double mobileSize) => kIsWeb ? webSize : mobileSize.sp.toDouble();
+  static double _responsiveWidth(double size) => _responsive(size, type: 'w');
+  static double _responsiveHeight(double size) => _responsive(size, type: 'h');
+  static double _responsiveValue(double value) => _responsive(value);
+  
+  static double _responsive(double value, {String type = 'sp'}) {
+    if (kIsWeb) return value;
+    switch (type) {
+      case 'w': return value.w.toDouble();
+      case 'h': return value.h.toDouble();
+      case 'sp': default: return value.sp.toDouble();
+    }
+  }
+
+  static Color _getTrackCardColor(ColorScheme colorScheme, bool isSelected, bool isCurrentTrack) {
+    if (isSelected) return colorScheme.primary.withValues(alpha: 0.2);
+    if (isCurrentTrack) return colorScheme.primary.withValues(alpha: 0.1);
+    return colorScheme.surface;
+  }
+
+  static Widget textField({required BuildContext context, 
+    required TextEditingController controller,
+    required String labelText,
+    String? hintText,
+    IconData? prefixIcon,
+    bool obscureText = false,
+    String? Function(String?)? validator, 
+    ValueChanged<String>? onChanged, 
+    ValueChanged<String>? onFieldSubmitted,
+    int minLines = 1, 
+    int maxLines = 1
+  }) => FormWidgets.textField(
+    context: context,
+    controller: controller,
+    labelText: labelText,
+    hintText: hintText,
+    prefixIcon: prefixIcon,
+    obscureText: obscureText,
+    validator: validator,
+    onChanged: onChanged,
+    onFieldSubmitted: onFieldSubmitted,
+    minLines: minLines,
+    maxLines: maxLines,
+  );
 
   static Widget _buildImage(
     BuildContext context,
@@ -448,22 +424,7 @@ class TrackCardWidget extends StatelessWidget {
   }
 
 
-  static Widget loading([String? message]) {
-    return _buildWithTheme((context, theme, colorScheme) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: colorScheme.primary),
-            if (message != null) ...[
-              SizedBox(height: _responsiveHeight(12.0)), 
-              Text(message, style: _secondaryStyle(context))
-            ],
-          ],
-        ),
-      );
-    });
-  }
+  static Widget loading([String? message]) => StateWidgets.loading(message);
 
   static Widget primaryButton({
     required BuildContext context,
@@ -472,49 +433,14 @@ class TrackCardWidget extends StatelessWidget {
     IconData? icon,
     bool isLoading = false,
     bool fullWidth = true,
-  }) {
-    final theme = Theme.of(context);
-    final content = isLoading 
-      ? SizedBox(
-          width: _responsiveWidth(16.0), 
-          height: _responsiveHeight(16.0), 
-          child: CircularProgressIndicator(
-            strokeWidth: 2, 
-            color: theme.colorScheme.onPrimary
-          )
-        )
-      : Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: _responsiveValue(16.0)), 
-              SizedBox(width: _responsiveWidth(8.0))
-            ],
-            Flexible(
-              child: Text(
-                text, 
-                style: TextStyle(fontSize: _responsiveValue(14.0)), 
-                overflow: TextOverflow.visible,
-                textAlign: TextAlign.center, 
-                maxLines: 1
-              )
-            ),
-          ],
-        );
-    
-    final button = ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      style: theme.elevatedButtonTheme.style,
-      child: content,
-    );
-    
-    return fullWidth ? SizedBox(
-      width: double.infinity, 
-      height: _responsiveHeight(40.0), 
-      child: button
-    ) : button;
-  }
+  }) => FormWidgets.primaryButton(
+    context: context,
+    text: text,
+    onPressed: onPressed,
+    icon: icon,
+    isLoading: isLoading,
+    fullWidth: fullWidth,
+  );
 
   static Widget secondaryButton({
     required BuildContext context, 
@@ -522,40 +448,13 @@ class TrackCardWidget extends StatelessWidget {
     required VoidCallback? onPressed, 
     IconData? icon, 
     bool fullWidth = true,
-  }) {
-    final theme = Theme.of(context);
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: _responsiveValue(16.0)), 
-          SizedBox(width: _responsiveWidth(6.0))
-        ],
-        Flexible(
-          child: Text(
-            text, 
-            style: TextStyle(fontSize: _responsiveValue(13.0)), 
-            overflow: TextOverflow.visible,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-          )
-        ),
-      ],
-    );
-    
-    final button = OutlinedButton(
-      onPressed: onPressed,
-      style: theme.outlinedButtonTheme.style,
-      child: content,
-    );
-    
-    return fullWidth ? SizedBox(
-      width: double.infinity, 
-      height: _responsiveHeight(40.0), 
-      child: button
-    ) : button;
-  }
+  }) => FormWidgets.secondaryButton(
+    context: context,
+    text: text,
+    onPressed: onPressed,
+    icon: icon,
+    fullWidth: fullWidth,
+  );
 
   static Widget infoBanner({
     required String title,

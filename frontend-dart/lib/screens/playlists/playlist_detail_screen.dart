@@ -1,5 +1,5 @@
 import 'dart:async';
-import '../../core/app_logger.dart';
+import '../../core/logging_navigation_observer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'playlist_licensing_screen.dart';
@@ -18,7 +18,6 @@ import '../../core/user_action_logging_mixin.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart'; 
 import '../../widgets/playlist_detail_widgets.dart';
-import '../../widgets/sort_button.dart';
 import '../../widgets/track_sort_bottom_sheet.dart';
 import '../../models/voting_models.dart';
 import '../../widgets/playlist_voting_widgets.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:music_room/widgets/network_connectivity_widget.dart';
+import 'package:music_room/widgets/state_widgets.dart';
 
 void main() {
   group('Network Connectivity Widget Tests', () {

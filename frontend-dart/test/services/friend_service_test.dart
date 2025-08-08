@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
-import 'package:music_room/services/friend_service.dart';
+import 'package:music_room/providers/friend_provider.dart';
 import 'package:music_room/services/api_service.dart';
 void main() {
   group('Friend Service Tests', () {

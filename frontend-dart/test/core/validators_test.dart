@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/validators.dart';
+import 'package:music_room/core/constants.dart';
 void main() {
   group('AppValidators Tests', () {
     test('AppValidators should have required validator', () {

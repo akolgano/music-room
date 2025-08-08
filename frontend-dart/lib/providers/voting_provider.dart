@@ -1,9 +1,28 @@
-import '../core/app_logger.dart';
+import '../core/logging_navigation_observer.dart';
 import '../core/base_provider.dart';
 import '../core/service_locator.dart';
-import '../services/voting_service.dart';
+import '../services/api_service.dart';
+import '../models/api_models.dart';
 import '../models/music_models.dart';
 import '../models/voting_models.dart';
+
+class VotingService {
+  final ApiService _api;
+  
+  VotingService(this._api);
+
+  Future<VoteResponse> voteForTrack({ 
+    required String playlistId, 
+    required int trackIndex, 
+    required String token 
+  }) async {
+    print('VotingService: Making vote API call - playlistId: $playlistId, trackIndex: $trackIndex');
+    final request = VoteRequest(rangeStart: trackIndex);
+    final response = await _api.voteForTrack(playlistId, token, request);
+    print('VotingService: Vote API call successful');
+    return response;
+  }
+}
 
 class VotingProvider extends BaseProvider {
   final VotingService _votingService = getIt<VotingService>();

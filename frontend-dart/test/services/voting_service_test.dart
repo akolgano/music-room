@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
-import 'package:music_room/services/voting_service.dart';
+import 'package:music_room/providers/voting_provider.dart';
 import 'package:music_room/services/api_service.dart';
 import 'package:music_room/models/api_models.dart';
 void main() {

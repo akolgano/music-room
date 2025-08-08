@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:music_room/screens/profile/user_password_change_screen.dart';
-import 'package:music_room/core/validators.dart';
+import 'package:music_room/core/constants.dart';
 
 void main() {
   group('User Password Change Screen Tests', () {

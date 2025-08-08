@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/app_logger.dart';
+import 'package:music_room/core/logging_navigation_observer.dart';
 
 void main() {
   group('AppLogger Tests', () {

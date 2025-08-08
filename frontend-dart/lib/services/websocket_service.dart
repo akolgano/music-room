@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
-import '../core/app_logger.dart';
+import '../core/logging_navigation_observer.dart';
 import '../core/service_locator.dart';
 import '../providers/music_provider.dart';
 import '../providers/voting_provider.dart';
