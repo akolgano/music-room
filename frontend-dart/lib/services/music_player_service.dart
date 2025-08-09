@@ -555,7 +555,7 @@ class MusicPlayerService with ChangeNotifier {
     _playlist = List.from(updatedPlaylist);
     
     if (_playlist.length > oldLength) {
-      _failedTracks.clear();// Limit speed between 0.25x and 3.0x
+      _failedTracks.clear();
       AppLogger.debug('Cleared failed tracks cache due to playlist update', 'MusicPlayerService');
     }
     

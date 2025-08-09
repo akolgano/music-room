@@ -198,7 +198,7 @@ class TrackVotingControls extends StatelessWidget {
                     userHasVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
                     color: userHasVoted 
                         ? Colors.green 
-                        : (canVote && !userHasVoted ? _getPointsColor(currentPoints) : Colors.grey),
+                        : (canVote && !userHasVoted ? (currentPoints > 0 ? Colors.green : Colors.grey) : Colors.grey),
                     size: 16,
                   ),
                 ),
@@ -210,14 +210,14 @@ class TrackVotingControls extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
-                    color: _getPointsColor(currentPoints).withValues(alpha: 0.2),
+                    color: (currentPoints > 0 ? Colors.green : Colors.grey).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: _getPointsColor(currentPoints).withValues(alpha: 0.5)),
+                    border: Border.all(color: (currentPoints > 0 ? Colors.green : Colors.grey).withValues(alpha: 0.5)),
                   ),
                   child: Text(
                     '+$currentPoints', 
                     style: TextStyle(
-                      color: _getPointsColor(currentPoints),
+                      color: currentPoints > 0 ? Colors.green : Colors.grey,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
@@ -255,16 +255,16 @@ class TrackVotingControls extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: _getPointsColor(currentPoints).withValues(alpha: 0.2),
+              color: (currentPoints > 0 ? Colors.green : Colors.grey).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _getPointsColor(currentPoints).withValues(alpha: 0.3)),
+              border: Border.all(color: (currentPoints > 0 ? Colors.green : Colors.grey).withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.trending_up,
-                  color: _getPointsColor(currentPoints),
+                  color: currentPoints > 0 ? Colors.green : Colors.grey,
                   size: 16,
                 ),
                 const SizedBox(width: 4),
@@ -272,7 +272,7 @@ class TrackVotingControls extends StatelessWidget {
                   child: Text(
                     '+$currentPoints points', 
                     style: TextStyle(
-                      color: _getPointsColor(currentPoints),
+                      color: currentPoints > 0 ? Colors.green : Colors.grey,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -327,10 +327,6 @@ class TrackVotingControls extends StatelessWidget {
     );
   }
 
-  Color _getPointsColor(int points) {
-    if (points > 0) return Colors.green;
-    return Colors.grey; 
-  }
 
   void _handleVote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex, int voteValue) async {
     print('VotingWidgets: _handleVote called - trackIndex: $trackIndex, voteValue: $voteValue, playlistId: $playlistId');

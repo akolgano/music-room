@@ -5,7 +5,6 @@ void main() {
   group('SocialLoginUtils Tests', () {
     test('SocialLoginUtils should have correct initial state', () {
       expect(SocialLoginUtils.isInitialized, false);
-      expect(SocialLoginUtils.isFacebookInitialized, false);
     });
   });
   group('SocialLoginButton Tests', () {

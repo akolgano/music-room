@@ -91,17 +91,17 @@ abstract class BaseProvider extends ChangeNotifier {
   
   String _extractErrorMessage(dynamic error) {
     if (error is DioException) {
-      // Check for connection issues
+
       if (error.type == DioExceptionType.connectionTimeout ||
           error.type == DioExceptionType.receiveTimeout ||
           error.type == DioExceptionType.sendTimeout ||
           error.type == DioExceptionType.connectionError) {
-        // Update connectivity provider
+
         try {
           final connectivity = getIt<ConnectivityProvider>();
           connectivity.forceCheck();
         } catch (e) {
-          // Ignore if service not available
+
         }
         return 'No connection to server. Please check your internet connection.';
       }

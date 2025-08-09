@@ -50,7 +50,6 @@ class ProfileProvider extends BaseProvider {
   String? _socialEmail;
   String? _socialName;
   String? _socialType;
-  String? _socialId;
   bool _isPasswordUsable = false;
 
   String? _avatar;
@@ -105,7 +104,6 @@ class ProfileProvider extends BaseProvider {
     _socialType = null;
     _socialEmail = null;
     _socialName = null;
-    _socialId = null;
     _avatar = null;
     _name = null;
     _location = null;
@@ -140,7 +138,6 @@ class ProfileProvider extends BaseProvider {
           _socialType = social['type'];
           _socialEmail = social['social_email'];
           _socialName = social['social_name'];
-          _socialId = social['social_id'];
         }
 
         if (_userId != null) {

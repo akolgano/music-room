@@ -16,10 +16,8 @@ class VotingService {
     required int trackIndex, 
     required String token 
   }) async {
-    print('VotingService: Making vote API call - playlistId: $playlistId, trackIndex: $trackIndex');
     final request = VoteRequest(rangeStart: trackIndex);
     final response = await _api.voteForTrack(playlistId, token, request);
-    print('VotingService: Vote API call successful');
     return response;
   }
 }

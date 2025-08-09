@@ -11,7 +11,6 @@ class FormWidgets {
     return (baseHeight * textScaleFactor).clamp(32.0, 72.0);
   }
   
-  static TextStyle _primaryStyle(BuildContext context) => Theme.of(context).textTheme.bodyLarge!;
   
   static OutlineInputBorder _createBorder(Color color, double width) => OutlineInputBorder(
     borderRadius: BorderRadius.circular(8.0),
@@ -39,7 +38,7 @@ class FormWidgets {
       onFieldSubmitted: onFieldSubmitted,
       minLines: minLines, 
       maxLines: maxLines,
-      style: _primaryStyle(context),
+      style: Theme.of(context).textTheme.bodyLarge!,
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,

@@ -65,7 +65,6 @@ class SocialLoginUtils {
   }
 
   static bool get isInitialized => _isInitialized;
-  static bool get isFacebookInitialized => _facebookInitialized;
 
   static Future<SocialLoginResult> loginWithFacebook() async {
     try {

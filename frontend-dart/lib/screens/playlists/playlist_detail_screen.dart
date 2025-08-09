@@ -372,6 +372,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     if (musicProvider == null) return;
     await musicProvider.fetchPlaylistTracks(widget.playlistId, auth.token!);
     setState(() => _tracks = musicProvider.playlistTracks);
+    _updateTrackIdMapping(_tracks);
     _initializeVotingIfNeeded();
     
     final playerService = _getMountedProvider<MusicPlayerService>();
@@ -671,7 +672,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           final musicProvider = getProvider<MusicProvider>();
           
           final playlistTrackId = _trackIdToPlaylistTrackId[trackId] ?? trackId;
-          AppLogger.debug('Removing track: Track.id=$trackId, using PlaylistTrack.id=$playlistTrackId', 'PlaylistDetailScreen');
+          AppLogger.debug('Removing track: Track.id=$trackId, using PlaylistTrackId=$playlistTrackId', 'PlaylistDetailScreen');
+          AppLogger.debug('TrackId mapping size: ${_trackIdToPlaylistTrackId.length}', 'PlaylistDetailScreen');
+          
+          // Validate that the track ID can be parsed as an integer
+          try {
+            int.parse(playlistTrackId);
+            AppLogger.debug('PlaylistTrackId $playlistTrackId is valid integer', 'PlaylistDetailScreen');
+          } catch (e) {
+            AppLogger.error('PlaylistTrackId $playlistTrackId is not a valid integer', e, null, 'PlaylistDetailScreen');
+          }
           
           await musicProvider.removeTrackFromPlaylist(
             playlistId: widget.playlistId, 

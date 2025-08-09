@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:provider/provider.dart';
+import 'package:form_validator/form_validator.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
@@ -774,7 +775,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
     initialValue: profileProvider.location,
     hintText: 'Enter your location (max 100 characters)',
     successMessage: 'Location',
-    validator: AppValidators.location,
+    validator: (value) => ValidationBuilder().maxLength(100, 'Location must be less than 100 characters').build()(value),
     updateFunction: (value) => profileProvider.updateProfile(auth.token, location: value),
   );
 
