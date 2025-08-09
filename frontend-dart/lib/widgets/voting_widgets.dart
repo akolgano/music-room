@@ -445,10 +445,40 @@ class VotingStatsCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Total Upvotes', totalVotes.toString(), Icons.thumb_up), 
-              _buildStatItem('Tracks', trackVotes.length.toString(), Icons.music_note),
+              Column(
+                children: [
+                  Icon(Icons.thumb_up, color: AppTheme.primary, size: 20),
+                  const SizedBox(height: 3),
+                  Text(
+                    totalVotes.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text('Total Upvotes', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                ],
+              ),
+              Column(
+                children: [
+                  Icon(Icons.music_note, color: AppTheme.primary, size: 20),
+                  const SizedBox(height: 3),
+                  Text(
+                    trackVotes.length.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text('Tracks', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                ],
+              ),
               if (topTrack != null) 
-                _buildStatItem('Top Score', topTrack.value.voteScore.toStringAsFixed(1), Icons.star),
+                Column(
+                  children: [
+                    Icon(Icons.star, color: AppTheme.primary, size: 20),
+                    const SizedBox(height: 3),
+                    Text(
+                      topTrack.value.voteScore.toStringAsFixed(1),
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text('Top Score', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
             ],
           ),
         ],
@@ -456,17 +486,4 @@ class VotingStatsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: AppTheme.primary, size: 20),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-      ],
-    );
-  }
 }

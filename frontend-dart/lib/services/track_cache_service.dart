@@ -170,8 +170,4 @@ class TrackCacheService {
   }
 
 
-  void removeFromCache(String deezerTrackId) {
-    _trackCache.remove(deezerTrackId);
-    AppLogger.debug('Track $deezerTrackId removed from cache', 'TrackCacheService');
-  }
 }

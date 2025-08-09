@@ -12,8 +12,12 @@ class PlaylistDetailWidgets {
   static Widget buildThemedPlaylistHeader(BuildContext context, Playlist playlist) {
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
-        return ThemeUtils.buildThemedHeaderCard(
+        return ThemeUtils.buildThemedCard(
           context: context,
+          elevation: MusicAppResponsive.getElevation(context,
+            tiny: 4.0, small: 5.0, medium: 6.0,
+            large: 7.0, xlarge: 8.0, xxlarge: 10.0
+          ),
           child: Column(
             children: [
               Container(
@@ -92,7 +96,7 @@ class PlaylistDetailWidgets {
       elevation: 4,
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: ThemeUtils.getResponsiveCardPadding(context),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -115,7 +119,7 @@ class PlaylistDetailWidgets {
       elevation: 4,
       shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: ThemeUtils.getResponsiveCardPadding(context),
         child: Column(
           children: [
             Row(
@@ -125,28 +129,22 @@ class PlaylistDetailWidgets {
                     onPressed: onPlayAll,
                     icon: const Icon(Icons.play_arrow),
                     label: const Text('Play All'),
-                    style: ThemeUtils.getPrimaryButtonStyle(context).copyWith(
-                      padding: WidgetStateProperty.all(
-                        const EdgeInsets.symmetric(vertical: 12)
-                      ),
-                    ),
+                    style: ThemeUtils.getPrimaryButtonStyle(context),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: MusicAppResponsive.getSpacing(context)),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onShuffle,
                     icon: const Icon(Icons.shuffle),
                     label: const Text('Shuffle'),
-                    style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
-                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
-                    ),
+                    style: ThemeUtils.getSecondaryButtonStyle(context),
                   ),
                 ),
               ],
             ),
             if (onAddRandomTrack != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 8.0)),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -154,7 +152,6 @@ class PlaylistDetailWidgets {
                   icon: const Icon(Icons.casino),
                   label: const Text('Add Random Track'),
                   style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
-                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12)),
                     foregroundColor: WidgetStateProperty.all(ThemeUtils.getPrimary(context)),
                     side: WidgetStateProperty.all(BorderSide(color: ThemeUtils.getPrimary(context))),
                   ),
@@ -182,18 +179,21 @@ class PlaylistDetailWidgets {
 
     return Container(
       key: key,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: EdgeInsets.symmetric(
+        horizontal: MusicAppResponsive.getPadding(context, tiny: 8.0, small: 12.0, medium: 16.0),
+        vertical: MusicAppResponsive.getPadding(context, tiny: 2.0, small: 3.0, medium: 4.0)
+      ),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(6),
+        padding: EdgeInsets.all(MusicAppResponsive.getPadding(context, tiny: 4.0, small: 5.0, medium: 6.0)),
         child: Row(
           children: [
             buildTrackImage(track),
-            const SizedBox(width: 12),
+            SizedBox(width: MusicAppResponsive.getSpacing(context)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,13 +222,13 @@ class PlaylistDetailWidgets {
               ),
             ),
             if (playlistId != null) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 7.0, medium: 8.0)),
               SizedBox(
                 width: 60,
                 child: buildCompactVotingSection(context, index, playlistTrack),
               ),
             ],
-            const SizedBox(width: 8),
+            SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 7.0, medium: 8.0)),
             SizedBox(
               width: 70, 
               child: buildActionButtons(context, onPlay, onRemove, isOwner),

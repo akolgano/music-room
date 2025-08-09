@@ -52,9 +52,6 @@ class ThemeUtils {
     return EdgeInsets.all(margin);
   }
 
-  static int getResponsiveGridColumns(BuildContext context) {
-    return MusicAppResponsive.getGridColumns(context);
-  }
 
   static TextStyle getHeadingStyle(BuildContext context) {
     final fontSize = MusicAppResponsive.getFontSize(context,
@@ -102,30 +99,56 @@ class ThemeUtils {
     );
   }
 
-  static ButtonStyle getPrimaryButtonStyle(BuildContext context) => ElevatedButton.styleFrom(
-    backgroundColor: AppTheme.primary, 
-    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-    elevation: MusicAppResponsive.getElevation(context,
-      tiny: 1.0, small: 2.0, medium: 3.0,
-      large: 4.0, xlarge: 5.0, xxlarge: 6.0
-    ),
-    shadowColor: AppTheme.primary.withValues(alpha: 0.3), 
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
-    minimumSize: Size(MusicAppResponsive.getFontSize(context,
-      tiny: 60.0, small: 70.0, medium: 80.0,
-      large: 88.0, xlarge: 96.0, xxlarge: 104.0
-    ), getResponsiveButtonHeight(context)),
-  );
+  static ButtonStyle getPrimaryButtonStyle(BuildContext context) {
+    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
+    final baseHeight = getResponsiveButtonHeight(context);
+    final scaledHeight = (baseHeight * textScaleFactor).clamp(32.0, 72.0);
+    
+    return ElevatedButton.styleFrom(
+      backgroundColor: AppTheme.primary, 
+      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      elevation: MusicAppResponsive.getElevation(context,
+        tiny: 1.0, small: 2.0, medium: 3.0,
+        large: 4.0, xlarge: 5.0, xxlarge: 6.0
+      ),
+      shadowColor: AppTheme.primary.withValues(alpha: 0.3), 
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
+      minimumSize: Size(MusicAppResponsive.getFontSize(context,
+        tiny: 60.0, small: 70.0, medium: 80.0,
+        large: 88.0, xlarge: 96.0, xxlarge: 104.0
+      ) * textScaleFactor, scaledHeight),
+      padding: EdgeInsets.symmetric(
+        horizontal: MusicAppResponsive.getButtonPadding(context).horizontal * textScaleFactor,
+        vertical: MusicAppResponsive.getButtonPadding(context).vertical * textScaleFactor,
+      ).clamp(
+        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+      ),
+    );
+  }
 
-  static ButtonStyle getSecondaryButtonStyle(BuildContext context) => OutlinedButton.styleFrom(
-    foregroundColor: getOnSurface(context),
-    side: BorderSide(color: AppTheme.primary), 
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
-    minimumSize: Size(MusicAppResponsive.getFontSize(context,
-      tiny: 60.0, small: 70.0, medium: 80.0,
-      large: 88.0, xlarge: 96.0, xxlarge: 104.0
-    ), getResponsiveButtonHeight(context)),
-  );
+  static ButtonStyle getSecondaryButtonStyle(BuildContext context) {
+    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
+    final baseHeight = getResponsiveButtonHeight(context);
+    final scaledHeight = (baseHeight * textScaleFactor).clamp(32.0, 72.0);
+    
+    return OutlinedButton.styleFrom(
+      foregroundColor: getOnSurface(context),
+      side: BorderSide(color: AppTheme.primary), 
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
+      minimumSize: Size(MusicAppResponsive.getFontSize(context,
+        tiny: 60.0, small: 70.0, medium: 80.0,
+        large: 88.0, xlarge: 96.0, xxlarge: 104.0
+      ) * textScaleFactor, scaledHeight),
+      padding: EdgeInsets.symmetric(
+        horizontal: MusicAppResponsive.getButtonPadding(context).horizontal * textScaleFactor,
+        vertical: MusicAppResponsive.getButtonPadding(context).vertical * textScaleFactor,
+      ).clamp(
+        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+      ),
+    );
+  }
 
   static Color getColorFromString(String id) {
     int hashValue = id.hashCode.abs();
@@ -153,14 +176,6 @@ class ThemeUtils {
     );
   }
 
-  static Widget buildThemedHeaderCard({required BuildContext context, required Widget child}) => buildThemedCard(
-    context: context,
-    child: child, 
-    elevation: MusicAppResponsive.getElevation(context,
-      tiny: 4.0, small: 5.0, medium: 6.0,
-      large: 7.0, xlarge: 8.0, xxlarge: 10.0
-    )
-  );
 
   static InputDecoration getThemedInputDecoration(BuildContext context, {required String labelText, 
     String? hintText, 
@@ -267,14 +282,19 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.black,
-          minimumSize: const Size(88, 40), 
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       ),
       textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: primary)),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: BorderSide(color: primary)),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white, 
+          side: BorderSide(color: primary),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

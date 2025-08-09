@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 enum TrackSortField { name, artist, album, position, dateAdded }
 
+enum PlaylistSortField { name, creator, trackCount, dateCreated }
+
 enum SortOrder { ascending, descending }
 
 class TrackSortOption {
@@ -93,6 +95,96 @@ class TrackSortOption {
     ),
     TrackSortOption(
       field: TrackSortField.dateAdded,
+      order: SortOrder.ascending,
+      displayName: 'Oldest First',
+      icon: Icons.schedule,
+    ),
+  ];
+}
+
+class PlaylistSortOption {
+  final PlaylistSortField field;
+  final SortOrder order;
+  final String displayName;
+  final IconData icon;
+
+  const PlaylistSortOption({
+    required this.field,
+    required this.order,
+    required this.displayName,
+    required this.icon,
+  });
+
+  PlaylistSortOption copyWith({
+    PlaylistSortField? field,
+    SortOrder? order,
+    String? displayName,
+    IconData? icon,
+  }) {
+    return PlaylistSortOption(
+      field: field ?? this.field,
+      order: order ?? this.order,
+      displayName: displayName ?? this.displayName,
+      icon: icon ?? this.icon,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlaylistSortOption &&
+          runtimeType == other.runtimeType &&
+          field == other.field &&
+          order == other.order;
+
+  @override
+  int get hashCode => field.hashCode ^ order.hashCode;
+
+  static const List<PlaylistSortOption> defaultOptions = [
+    PlaylistSortOption(
+      field: PlaylistSortField.name,
+      order: SortOrder.ascending,
+      displayName: 'Name (A-Z)',
+      icon: Icons.sort_by_alpha,
+    ),
+    PlaylistSortOption(
+      field: PlaylistSortField.name,
+      order: SortOrder.descending,
+      displayName: 'Name (Z-A)',
+      icon: Icons.sort_by_alpha,
+    ),
+    PlaylistSortOption(
+      field: PlaylistSortField.creator,
+      order: SortOrder.ascending,
+      displayName: 'Creator (A-Z)',
+      icon: Icons.person,
+    ),
+    PlaylistSortOption(
+      field: PlaylistSortField.creator,
+      order: SortOrder.descending,
+      displayName: 'Creator (Z-A)',
+      icon: Icons.person,
+    ),
+    PlaylistSortOption(
+      field: PlaylistSortField.trackCount,
+      order: SortOrder.descending,
+      displayName: 'Most Tracks',
+      icon: Icons.music_note,
+    ),
+    PlaylistSortOption(
+      field: PlaylistSortField.trackCount,
+      order: SortOrder.ascending,
+      displayName: 'Fewest Tracks',
+      icon: Icons.music_note,
+    ),
+    PlaylistSortOption(
+      field: PlaylistSortField.dateCreated,
+      order: SortOrder.descending,
+      displayName: 'Recently Created',
+      icon: Icons.schedule,
+    ),
+    PlaylistSortOption(
+      field: PlaylistSortField.dateCreated,
       order: SortOrder.ascending,
       displayName: 'Oldest First',
       icon: Icons.schedule,

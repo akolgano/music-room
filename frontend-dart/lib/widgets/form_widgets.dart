@@ -4,9 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class FormWidgets {
   static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
   
-  static double _responsiveValue(double value) => value.sp;
-  static double _responsiveWidth(double value) => value.w;
-  static double _responsiveHeight(double value) => value.h;
+  
+  static double _getScaledButtonHeight(BuildContext context) {
+    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
+    const baseHeight = 40.0;
+    return (baseHeight * textScaleFactor).clamp(32.0, 72.0);
+  }
   
   static TextStyle _primaryStyle(BuildContext context) => Theme.of(context).textTheme.bodyLarge!;
   
@@ -52,8 +55,8 @@ class FormWidgets {
         labelStyle: TextStyle(fontSize: 16, color: _colorScheme(context).onSurface.withValues(alpha: 0.7)),
         hintStyle: TextStyle(fontSize: 14, color: _colorScheme(context).onSurface.withValues(alpha: 0.5)),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: _responsiveWidth(16.0), 
-          vertical: _responsiveHeight(6.0)
+          horizontal: 16.0.w, 
+          vertical: 6.0.h
         ),
       ),
     );
@@ -68,10 +71,13 @@ class FormWidgets {
     bool fullWidth = true,
   }) {
     final theme = Theme.of(context);
+    final scaledHeight = _getScaledButtonHeight(context);
+    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
+    
     final content = isLoading 
       ? SizedBox(
-          width: _responsiveWidth(16.0), 
-          height: _responsiveHeight(16.0), 
+          width: (16.0 * textScaleFactor).clamp(12.0, 24.0), 
+          height: (16.0 * textScaleFactor).clamp(12.0, 24.0), 
           child: CircularProgressIndicator(
             strokeWidth: 2, 
             color: theme.colorScheme.onPrimary
@@ -82,13 +88,12 @@ class FormWidgets {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: _responsiveValue(16.0)), 
-              SizedBox(width: _responsiveWidth(8.0))
+              Icon(icon, size: (16.0 * textScaleFactor).clamp(14.0, 22.0)), 
+              SizedBox(width: 8.0.w)
             ],
             Flexible(
               child: Text(
                 text, 
-                style: TextStyle(fontSize: _responsiveValue(14.0)), 
                 overflow: TextOverflow.visible,
                 textAlign: TextAlign.center, 
                 maxLines: 1
@@ -99,13 +104,19 @@ class FormWidgets {
     
     final button = ElevatedButton(
       onPressed: isLoading ? null : onPressed,
-      style: theme.elevatedButtonTheme.style,
+      style: theme.elevatedButtonTheme.style?.copyWith(
+        minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
+        padding: WidgetStateProperty.all(EdgeInsets.symmetric(
+          horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
+          vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
+        )),
+      ),
       child: content,
     );
     
     return fullWidth ? SizedBox(
       width: double.infinity, 
-      height: _responsiveHeight(40.0), 
+      height: scaledHeight, 
       child: button
     ) : button;
   }
@@ -118,18 +129,20 @@ class FormWidgets {
     bool fullWidth = true,
   }) {
     final theme = Theme.of(context);
+    final scaledHeight = _getScaledButtonHeight(context);
+    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
+    
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: _responsiveValue(16.0)), 
-          SizedBox(width: _responsiveWidth(6.0))
+          Icon(icon, size: (16.0 * textScaleFactor).clamp(14.0, 22.0)), 
+          SizedBox(width: 6.0.w)
         ],
         Flexible(
           child: Text(
             text, 
-            style: TextStyle(fontSize: _responsiveValue(13.0)), 
             overflow: TextOverflow.visible,
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -140,13 +153,19 @@ class FormWidgets {
     
     final button = OutlinedButton(
       onPressed: onPressed, 
-      style: theme.outlinedButtonTheme.style,
+      style: theme.outlinedButtonTheme.style?.copyWith(
+        minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
+        padding: WidgetStateProperty.all(EdgeInsets.symmetric(
+          horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
+          vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
+        )),
+      ),
       child: content,
     );
     
     return fullWidth ? SizedBox(
       width: double.infinity, 
-      height: _responsiveHeight(40.0), 
+      height: scaledHeight, 
       child: button
     ) : button;
   }

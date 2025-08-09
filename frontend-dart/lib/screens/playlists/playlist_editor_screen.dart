@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:async';
 import '../../providers/music_provider.dart';
+import '../../providers/connectivity_provider.dart';
 import '../../core/service_locator.dart';
 import '../../services/api_service.dart';
 import '../../services/websocket_service.dart';
@@ -26,7 +27,7 @@ class PlaylistEditorScreen extends StatefulWidget {
 class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _isPublic = false;
+  bool _isPublic = true;
   bool _isLoading = false;
   String _licenseType = 'open';
   
@@ -41,7 +42,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
   bool get _canEdit {
     if (_playlist == null) return true; 
-    return _playlist!.isPublic || _playlist!.creator == auth.username;
+    return _playlist!.creator == auth.username;
   } 
 
   @override
@@ -129,7 +130,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             labelText: 'Description (optional)',
             prefixIcon: Icons.description,
             maxLines: 3,
-            validator: AppValidators.description,
+            validator: (value) => value != null && value.length > 500 ? 'Description must be less than 500 characters' : null,
           ),
           const SizedBox(height: 16),
           AppWidgets.switchTile(
@@ -563,7 +564,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       showSuccess('Playlist created successfully!');
       navigateTo(AppRoutes.playlistDetail, arguments: playlistId);
     } catch (e) {
-      showError('Failed to create playlist: $e');
+      AppLogger.error('Failed to create playlist', e, null, 'PlaylistEditorScreen');
+      showError('Failed to create playlist: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -579,20 +581,23 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     try {
       final apiService = getIt<ApiService>();
       
-      if (_playlist != null && _playlist!.isPublic != _isPublic) {
+      final hasNameOrDescriptionChanged = _playlist != null && 
+          (_playlist!.name != _nameController.text.trim() || 
+           _playlist!.description != _descriptionController.text.trim());
+      final hasVisibilityChanged = _playlist != null && _playlist!.isPublic != _isPublic;
+      
+      if (hasVisibilityChanged) {
         final visibilityRequest = VisibilityRequest(public: _isPublic);
-        await apiService.changePlaylistVisibility(
-          widget.playlistId!, 
-          auth.token!, 
-          visibilityRequest
-        );
-        
+        await apiService.changePlaylistVisibility(widget.playlistId!, auth.token!, visibilityRequest);
       }
       
-      if (_playlist != null && 
-          (_playlist!.name != _nameController.text.trim() || 
-           _playlist!.description != _descriptionController.text.trim())) {
-        showInfo('Note: Name and description changes are only saved locally. API enhancement needed for server persistence.');
+      if (hasNameOrDescriptionChanged) {
+        final connectivity = getProvider<ConnectivityProvider>();
+        if (connectivity.isDisconnected) {
+          showInfo('Changes saved locally - will sync when connection is restored');
+        } else {
+          showInfo('Name and description changes are saved locally only');
+        }
       }
       
       final musicProvider = getProvider<MusicProvider>();
@@ -611,7 +616,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         Navigator.pushReplacementNamed(context, AppRoutes.playlistDetail, arguments: widget.playlistId);
       }
     } catch (e) {
-      showError('Failed to update playlist: $e');
+      AppLogger.error('Failed to update playlist', e, null, 'PlaylistEditorScreen');
+      showError('Failed to update playlist: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -656,7 +662,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
         showSuccess('Track added to playlist!');
       } catch (e) {
-        showError('Failed to add track: $e');
+        AppLogger.error('Failed to add track', e, null, 'PlaylistEditorScreen');
+        showError('Failed to add track: ${e.toString()}');
       }
     }
   }
@@ -675,7 +682,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     try {
       getProvider<MusicProvider>();
     } catch (e) {
-      showError('Failed to save track order: $e');
+      AppLogger.error('Failed to save track order', e, null, 'PlaylistEditorScreen');
+      showError('Failed to save track order: ${e.toString()}');
     }
   }
 
@@ -715,7 +723,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
       showSuccess('Track removed from playlist!');
     } catch (e) {
-      showError('Failed to remove track: $e');
+      AppLogger.error('Failed to remove track', e, null, 'PlaylistEditorScreen');
+      showError('Failed to remove track: ${e.toString()}');
     }
   }
 
@@ -748,7 +757,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
         showSuccess('Playlist cleared!');
       } catch (e) {
-        showError('Failed to clear playlist: $e');
+        AppLogger.error('Failed to clear playlist', e, null, 'PlaylistEditorScreen');
+        showError('Failed to clear playlist: ${e.toString()}');
       }
     }
   }

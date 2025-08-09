@@ -35,7 +35,6 @@ class Track {
     return id;
   }
 
-  String get frontendId => id;
 
   bool get isDeezerTrack {
     return deezerTrackId != null || id.startsWith('deezer_');

@@ -190,9 +190,82 @@ class MusicAppResponsive {
     return size == ScreenSize.large || size == ScreenSize.xlarge;
   }
 
-  static bool isDesktopSize(BuildContext context) {
-    return getScreenSize(context) == ScreenSize.xxlarge;
+
+  static EdgeInsets getButtonPadding(BuildContext context, {
+    EdgeInsets? tiny,
+    EdgeInsets? small,
+    EdgeInsets? medium,
+    EdgeInsets? large,
+    EdgeInsets? xlarge,
+    EdgeInsets? xxlarge,
+  }) {
+    final defaults = {
+      ScreenSize.tiny: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      ScreenSize.small: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      ScreenSize.medium: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ScreenSize.large: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      ScreenSize.xlarge: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      ScreenSize.xxlarge: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+    };
+
+    final values = {
+      ScreenSize.tiny: tiny ?? defaults[ScreenSize.tiny]!,
+      ScreenSize.small: small ?? defaults[ScreenSize.small]!,
+      ScreenSize.medium: medium ?? defaults[ScreenSize.medium]!,
+      ScreenSize.large: large ?? defaults[ScreenSize.large]!,
+      ScreenSize.xlarge: xlarge ?? defaults[ScreenSize.xlarge]!,
+      ScreenSize.xxlarge: xxlarge ?? defaults[ScreenSize.xxlarge]!,
+    };
+
+    return values[getScreenSize(context)]!;
   }
 
+  static double getCardWidth(BuildContext context, {
+    double? tiny,
+    double? small,
+    double? medium,
+    double? large,
+    double? xlarge,
+    double? xxlarge,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final defaults = {
+      ScreenSize.tiny: screenWidth * 0.9,
+      ScreenSize.small: screenWidth * 0.85,
+      ScreenSize.medium: screenWidth * 0.8,
+      ScreenSize.large: screenWidth * 0.75,
+      ScreenSize.xlarge: screenWidth * 0.7,
+      ScreenSize.xxlarge: screenWidth * 0.65,
+    };
+
+    final values = {
+      ScreenSize.tiny: tiny ?? defaults[ScreenSize.tiny]!,
+      ScreenSize.small: small ?? defaults[ScreenSize.small]!,
+      ScreenSize.medium: medium ?? defaults[ScreenSize.medium]!,
+      ScreenSize.large: large ?? defaults[ScreenSize.large]!,
+      ScreenSize.xlarge: xlarge ?? defaults[ScreenSize.xlarge]!,
+      ScreenSize.xxlarge: xxlarge ?? defaults[ScreenSize.xxlarge]!,
+    };
+
+    return values[getScreenSize(context)]!;
+  }
+
+  static double getSpacing(BuildContext context, {
+    double tiny = 4.0,
+    double small = 6.0,
+    double medium = 8.0,
+    double large = 12.0,
+    double xlarge = 16.0,
+    double xxlarge = 20.0,
+  }) {
+    switch (getScreenSize(context)) {
+      case ScreenSize.tiny: return tiny;
+      case ScreenSize.small: return small;
+      case ScreenSize.medium: return medium;
+      case ScreenSize.large: return large;
+      case ScreenSize.xlarge: return xlarge;
+      case ScreenSize.xxlarge: return xxlarge;
+    }
+  }
 
 }

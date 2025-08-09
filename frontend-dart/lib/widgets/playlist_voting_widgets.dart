@@ -4,6 +4,7 @@ import '../models/voting_models.dart';
 import '../widgets/app_widgets.dart';
 import '../widgets/voting_widgets.dart';
 import '../core/theme_utils.dart';
+import '../core/responsive_utils.dart';
 
 class PlaylistVotingWidgets {
   static List<Widget> buildVotingModeHeader({
@@ -25,7 +26,7 @@ class PlaylistVotingWidgets {
         message: 'Vote for one track to boost its ranking! ${isOwner ? 'Configure voting settings below.' : 'Choose your favorite track.'}',
         icon: Icons.how_to_vote,
       ),
-      const SizedBox(height: 12),
+      SizedBox(height: MusicAppResponsive.getSpacing(context)),
       if (isOwner) _buildVotingSettings(
         context: context,
         isPublicVoting: isPublicVoting,

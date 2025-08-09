@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 
 class DialogWidgets {
-  static ColorScheme _getColorScheme(BuildContext context) => Theme.of(context).colorScheme;
-  static Color _getPrimary(BuildContext context) => _getColorScheme(context).primary;
-  static Color _getSurface(BuildContext context) => _getColorScheme(context).surface;
-  static Color _getOnSurface(BuildContext context) => _getColorScheme(context).onSurface;
-  static Color _getError(BuildContext context) => _getColorScheme(context).error;
-
-  static OutlineInputBorder _createBorder(Color color, double width) =>
-      OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: color, width: width),
-      );
+  static Color _getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
+  static Color _getSurface(BuildContext context) => Theme.of(context).colorScheme.surface;
+  static Color _getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
+  static Color _getError(BuildContext context) => Theme.of(context).colorScheme.error;
 
   static Future<String?> showTextInputDialog(
     BuildContext context, {
@@ -37,11 +30,26 @@ class DialogWidgets {
               hintText: hintText,
               filled: true,
               fillColor: _getSurface(context),
-              border: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-              enabledBorder: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-              focusedBorder: _createBorder(_getPrimary(context), 2),
-              errorBorder: _createBorder(_getError(context), 2),
-              focusedErrorBorder: _createBorder(_getError(context), 2),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: _getPrimary(context), width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: _getError(context), width: 2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: _getError(context), width: 2),
+              ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             style: TextStyle(color: _getOnSurface(context)),
@@ -135,30 +143,4 @@ class DialogWidgets {
     );
   }
 
-  static Widget buildStyledTextField({
-    required TextEditingController controller,
-    String? hintText,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return Builder(
-      builder: (context) => TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: hintText,
-          filled: true,
-          fillColor: _getSurface(context),
-          border: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-          enabledBorder: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-          focusedBorder: _createBorder(_getPrimary(context), 2),
-          errorBorder: _createBorder(_getError(context), 2),
-          focusedErrorBorder: _createBorder(_getError(context), 2),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-        style: TextStyle(color: _getOnSurface(context)),
-        maxLines: maxLines,
-        validator: validator,
-      ),
-    );
-  }
 }

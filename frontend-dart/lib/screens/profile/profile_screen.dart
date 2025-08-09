@@ -12,6 +12,7 @@ import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
 import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/connection_status_widget.dart';
 import '../base_screen.dart';
 import 'user_password_change_screen.dart';
 import 'social_network_link_screen.dart';
@@ -70,6 +71,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
               children: [
                 _buildProfileHeader(profileProvider), 
                 SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
+                const ConnectionStatusCard(),
                 _buildAccountInfoSection(profileProvider), 
                 SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
                 _buildPublicInfoSection(profileProvider), 

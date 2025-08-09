@@ -5,12 +5,16 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/friend_provider.dart';
+import '../../providers/connectivity_provider.dart';
+import '../../services/music_player_service.dart';
+import '../../core/service_locator.dart';
 import '../../core/theme_utils.dart';
 import '../../core/responsive_utils.dart';
 import '../../core/constants.dart';
 import '../../core/user_action_logging_mixin.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/scrollbar.dart';
+import '../../widgets/connection_status_widget.dart';
 import '../../models/music_models.dart';
 import '../profile/profile_screen.dart';
 import '../music/track_search_screen.dart';
@@ -51,7 +55,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     final auth = Provider.of<AuthProvider>(context, listen: false);
     
     if (isLandscape) {
-      return Scaffold(
+      return ConnectionStatusBanner(
+        child: Scaffold(
         backgroundColor: AppTheme.background,
         appBar: _currentIndex == 0 ? AppBar(
           backgroundColor: AppTheme.background,
@@ -59,6 +64,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
           automaticallyImplyLeading: false,
           toolbarHeight: MusicAppResponsive.isVerySmall(context) ? 40 : 48,
           actions: [
+            const ConnectionStatusIndicator(showText: false),
+            const SizedBox(width: 8),
             buildLoggingIconButton(
               icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
@@ -142,15 +149,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
             ),
           ],
         ),
+        ),
       );
     } else {
-      return Scaffold(
+      return ConnectionStatusBanner(
+        child: Scaffold(
         backgroundColor: AppTheme.background,
         appBar: _currentIndex == 0 ? AppBar(
           backgroundColor: AppTheme.background,
           title: Text(AppConstants.appName),
           automaticallyImplyLeading: false,
           actions: [
+            const ConnectionStatusIndicator(showText: false),
+            const SizedBox(width: 8),
             buildLoggingIconButton(
               icon: Icon(Icons.search, size: ThemeUtils.getResponsiveIconSize(context)),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.trackSearch),
@@ -197,6 +208,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
             const MiniPlayerWidget(),
           ],
         ),
+        ),
       );
     }
   }
@@ -210,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: ThemeUtils.getResponsiveGridColumns(context),
+            crossAxisCount: MusicAppResponsive.getGridColumns(context),
             mainAxisSpacing: ThemeUtils.getResponsiveMargin(context),
             crossAxisSpacing: ThemeUtils.getResponsiveMargin(context),
             children: [
@@ -242,8 +254,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                 },
               ),
               AppWidgets.quickActionCard(
-                title: 'Public Playlists',
-                icon: Icons.public,
+                title: 'All Playlists',
+                icon: Icons.playlist_play,
                 color: Colors.orange,
                 onTap: () {
                   logButtonClick('quick_action_public_playlists', metadata: {'action': 'public_playlists'});
@@ -328,24 +340,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         return RefreshIndicator(
           onRefresh: _loadData,
           color: AppTheme.primary,
-          child: CustomListView(
+          child: CustomSingleChildScrollView(
             padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
-            children: music.playlists.map((playlist) {
-              AppLogger.debug('Playlist ID: ${playlist.id}, Name: ${playlist.name}', 'HomeScreen');
-              return AppWidgets.playlistCard(
-                playlist: playlist,
-                onTap: () {
-                  AppLogger.debug('Navigating to playlist with ID: ${playlist.id}', 'HomeScreen');
-                  if (playlist.id.isNotEmpty && playlist.id != 'null') {
-                    Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
-                  } else {
-                    _showError('Invalid playlist ID');
-                  }
-                },
-                onPlay: () => _playPlaylist(playlist),
-                showPlayButton: true,
-              );
-            }).toList(),
+            child: Column(
+              children: music.playlists.map((playlist) {
+                AppLogger.debug('Playlist ID: ${playlist.id}, Name: ${playlist.name}', 'HomeScreen');
+                return AppWidgets.playlistCard(
+                  playlist: playlist,
+                  onTap: () {
+                    AppLogger.debug('Navigating to playlist with ID: ${playlist.id}', 'HomeScreen');
+                    if (playlist.id.isNotEmpty && playlist.id != 'null') {
+                      Navigator.pushNamed(context, AppRoutes.playlistDetail, arguments: playlist.id);
+                    } else {
+                      _showError('Invalid playlist ID');
+                    }
+                  },
+                  onPlay: () => _playPlaylist(playlist),
+                  showPlayButton: true,
+                );
+              }).toList(),
+            ),
           ),
         );
       },
@@ -508,22 +522,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
       if (auth.isLoggedIn && auth.token != null) {
         await Future.wait([
-          music.fetchUserPlaylists(auth.token!), 
+          music.fetchAllPlaylists(auth.token!), 
           profileProvider.loadProfile(auth.token),
           friendProvider.fetchAllFriendData(auth.token!),
         ]);
       }
     } catch (e) {
-      _showError('Failed to load data: $e');
+      AppLogger.error('Failed to load data', e, null, 'HomeScreen');
+      _showError('Failed to load data: ${e.toString()}');
     }
   }
 
-  void _playPlaylist(Playlist playlist) {
-    _showInfo('Playing "${playlist.name}"');
+  void _playPlaylist(Playlist playlist) async {
+    if (playlist.tracks?.isNotEmpty != true) {
+      _showInfo('This playlist is empty or tracks are not loaded');
+      return;
+    }
+
+    try {
+      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+      await musicProvider.fetchPlaylistTracks(playlist.id, Provider.of<AuthProvider>(context, listen: false).token!);
+      
+      final playlistTracks = musicProvider.playlistTracks;
+      if (playlistTracks.isEmpty) {
+        _showInfo('This playlist has no tracks to play');
+        return;
+      }
+
+      final musicPlayerService = getIt<MusicPlayerService>();
+      await musicPlayerService.setPlaylistAndPlay(
+        playlist: playlistTracks,
+        startIndex: 0,
+        playlistId: playlist.id,
+        authToken: Provider.of<AuthProvider>(context, listen: false).token,
+      );
+      
+      _showSuccess('Playing ${playlist.name}');
+    } catch (e) {
+      AppLogger.error('Failed to play playlist', e, null, 'HomeScreen');
+      _showError('Failed to play playlist: ${e.toString()}');
+    }
   }
 
   void _showInfo(String message) {
     AppWidgets.showSnackBar(context, message);
+  }
+
+  void _showSuccess(String message) {
+    AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
   }
 
   void _showError(String message) {

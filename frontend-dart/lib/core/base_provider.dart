@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:dio/dio.dart';
+import 'service_locator.dart';
+import '../providers/connectivity_provider.dart';
 
 abstract class BaseProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -89,6 +91,21 @@ abstract class BaseProvider extends ChangeNotifier {
   
   String _extractErrorMessage(dynamic error) {
     if (error is DioException) {
+      // Check for connection issues
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.connectionError) {
+        // Update connectivity provider
+        try {
+          final connectivity = getIt<ConnectivityProvider>();
+          connectivity.forceCheck();
+        } catch (e) {
+          // Ignore if service not available
+        }
+        return 'No connection to server. Please check your internet connection.';
+      }
+
       if (error.response?.data is Map) {
         final data = error.response!.data as Map<String, dynamic>;
         

@@ -182,7 +182,7 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) {
-              final isDesktop = MusicAppResponsive.isDesktopSize(context);
+              final isDesktop = MusicAppResponsive.getScreenSize(context) == ScreenSize.xxlarge;
               return Scaffold(
                 body: Text('Desktop: $isDesktop'),
               );

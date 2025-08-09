@@ -15,6 +15,7 @@ import '../providers/dynamic_theme_provider.dart';
 import '../providers/music_provider.dart';
 import '../providers/voting_provider.dart';
 import '../providers/friend_provider.dart';
+import '../providers/connectivity_provider.dart';
 
 final getIt = GetIt.instance;
 
@@ -122,6 +123,9 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<VotingProvider>(() => 
       VotingProvider());
+
+  getIt.registerLazySingleton<ConnectivityProvider>(() => 
+      ConnectivityProvider());
 
   getIt.registerLazySingleton<MusicPlayerService>(() => 
       MusicPlayerService(themeProvider: getIt<DynamicThemeProvider>()));

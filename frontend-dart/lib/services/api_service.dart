@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
-import '../models/result_models.dart';
 import '../models/api_models.dart';
 
 class ApiService {
@@ -34,9 +33,6 @@ class ApiService {
     return dio;
   }
 
-  Options? _createAuthOptions(String? token) {
-    return token != null ? Options(headers: {'Authorization': 'Token $token'}) : null;
-  }
 
   Future<T> _request<T>(
     String method, 
@@ -49,7 +45,7 @@ class ApiService {
   }) async {
     if (debug && kDebugMode) debugPrint('[ApiService] $method called: $endpoint with data: $data');
     
-    final options = _createAuthOptions(token);
+    final options = token != null ? Options(headers: {'Authorization': 'Token $token'}) : null;
     dynamic processedData;
     try {
       processedData = data?.toJson?.call() ?? data;
