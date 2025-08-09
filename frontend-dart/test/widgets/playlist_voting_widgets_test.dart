@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:music_room/widgets/playlist_voting_widgets.dart';
-import 'package:music_room/providers/voting_provider.dart';
+import 'package:music_room/widgets/votes_widgets.dart';
+import 'package:music_room/providers/voting_providers.dart';
 import 'package:music_room/models/music_models.dart';
 
 void main() {
@@ -22,7 +22,7 @@ void main() {
             name: 'Test Track 1',
             artist: 'Test Artist 1',
             album: 'Test Album 1',
-            url: 'https://localhost:8001'
+            url: 'https://localhost:8001',
             deezerTrackId: '123',
           ),
         ),
@@ -35,7 +35,7 @@ void main() {
             name: 'Test Track 2',
             artist: 'Test Artist 2',
             album: 'Test Album 2',
-            url: 'https://localhost:8001'
+            url: 'https://localhost:8001',
             deezerTrackId: '456',
           ),
         ),

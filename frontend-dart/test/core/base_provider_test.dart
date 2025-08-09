@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/base_provider.dart';
+import 'package:music_room/core/provider_core.dart';
 void main() {
   group('Base Provider Tests', () {
     test('BaseProvider should handle loading states correctly', () {

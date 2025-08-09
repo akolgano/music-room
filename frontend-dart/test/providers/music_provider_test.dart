@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:music_room/providers/music_provider.dart';
+import 'package:music_room/providers/music_providers.dart';
 import 'package:music_room/models/music_models.dart';
 import 'package:music_room/models/api_models.dart';
 import 'package:music_room/models/sort_models.dart';
@@ -40,7 +40,7 @@ void main() {
       expect(track.name, 'Test Song');
       expect(track.artist, 'Test Artist');
       expect(track.album, 'Test Album');
-      expect(track.url, 'http://localhost:8000'
+      expect(track.url, 'http://localhost:8000');
     });
     test('PlaylistTrack model should work correctly', () {
       const track = Track(
@@ -118,7 +118,7 @@ void main() {
         name: 'Deezer Song',
         artist: 'Artist',
         album: 'Album',
-        url: 'http://localhost:8000'
+        url: 'http://localhost:8000',
         deezerTrackId: '123'
       );
       

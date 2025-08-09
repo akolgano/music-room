@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/home/home_screen.dart';
+import 'package:music_room/screens/home/home_screens.dart';
 void main() {
   group('Home Screen Tests', () {
     test('HomeScreen should be instantiable', () {

@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
-import 'package:music_room/services/track_cache_service.dart';
-import 'package:music_room/services/api_service.dart';
+import 'package:music_room/services/cache_services.dart';
+import 'package:music_room/services/api_services.dart';
 void main() {
   group('Track Cache Service Tests', () {
     late TrackCacheService cacheService;
     setUp(() {
       cacheService = TrackCacheService();
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       ApiService(dio);
       cacheService.clearCache();
     });
@@ -22,7 +22,7 @@ void main() {
       const testTrackId = 'test_track_123';
       
       expect(cacheService.isTrackCached(testTrackId), false);
-      expect(cacheService.getCachedTrack(testTrackId), null);
+      expect(cacheService.hasRetryingTracks(), false);
     });
     test('TrackCacheService should implement retry logic with exponential backoff', () {
       expect(cacheService.retryConfig.maxRetries, 5);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/admin/admin_dashboard_screen.dart';
+import 'package:music_room/screens/admin/dashboard_admin.dart';
 
 void main() {
   group('AdminDashboardScreen Tests', () {

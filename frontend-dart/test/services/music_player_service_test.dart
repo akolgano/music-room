@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:music_room/services/music_player_service.dart';
-import 'package:music_room/providers/dynamic_theme_provider.dart';
-import 'package:music_room/services/api_service.dart';
-import 'package:music_room/services/music_service.dart';
+import 'package:music_room/services/player_services.dart';
+import 'package:music_room/providers/theme_providers.dart';
+import 'package:music_room/services/api_services.dart';
+import 'package:music_room/services/music_services.dart';
 void main() {
   group('Music Player Service Tests', () {
     late MusicPlayerService musicPlayerService;
@@ -14,7 +14,7 @@ void main() {
       GetIt.instance.reset();
       
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       final musicService = MusicService(apiService);
       

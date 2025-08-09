@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:music_room/screens/profile/user_page_screen.dart';
-import 'package:music_room/providers/profile_provider.dart';
-import 'package:music_room/providers/auth_provider.dart';
+import 'package:music_room/screens/profile/user_profile.dart';
+import 'package:music_room/providers/profile_providers.dart';
+import 'package:music_room/providers/auth_providers.dart';
 
 void main() {
   group('UserPageScreen Tests', () {

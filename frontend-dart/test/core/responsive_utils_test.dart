@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/responsive_utils.dart';
+import 'package:music_room/core/responsive_core.dart';
 
 void main() {
   group('MusicAppResponsive Tests', () {
@@ -78,7 +78,7 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) {
-              final margin = MusicAppResponsive.getMargin(context);
+              final margin = MusicAppResponsive.getPadding(context);
               return Scaffold(
                 body: Text('Margin: $margin'),
               );
@@ -148,7 +148,7 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) {
-              final isVerySmall = MusicAppResponsive.isVerySmall(context);
+              final isVerySmall = MusicAppResponsive.isSmallScreen(context);
               return Scaffold(
                 body: Text('Very Small: $isVerySmall'),
               );

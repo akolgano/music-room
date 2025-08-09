@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/playlists/playlist_licensing_screen.dart';
+import 'package:music_room/screens/playlists/licensing_playlists.dart';
 
 void main() {
   group('Playlist Licensing Screen Tests', () {

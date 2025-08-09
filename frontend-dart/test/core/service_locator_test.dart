@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/service_locator.dart';
+import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 void main() {
   group('Service Locator Tests', () {

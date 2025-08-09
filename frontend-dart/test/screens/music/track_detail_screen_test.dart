@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/music/track_detail_screen.dart';
+import 'package:music_room/screens/music/detail_music.dart';
 import 'package:music_room/models/music_models.dart';
 void main() {
   group('Track Detail Screen Tests', () {

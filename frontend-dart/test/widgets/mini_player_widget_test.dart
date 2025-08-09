@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:music_room/widgets/mini_player_widget.dart';
+import 'package:music_room/widgets/player_widgets.dart';
 
 void main() {
   group('Mini Player Widget Tests', () {

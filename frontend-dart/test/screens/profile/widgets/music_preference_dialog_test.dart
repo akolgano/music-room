@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/profile/profile_screen.dart';
+import 'package:music_room/widgets/sections_widgets.dart';
 
 void main() {
   group('MusicPreferenceDialog Tests', () {

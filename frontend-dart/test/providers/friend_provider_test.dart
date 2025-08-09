@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:music_room/providers/friend_provider.dart';
-import 'package:music_room/core/base_provider.dart';
-import 'package:music_room/services/api_service.dart';
+import 'package:music_room/providers/friend_providers.dart';
+import 'package:music_room/core/provider_core.dart';
+import 'package:music_room/services/api_services.dart';
 void main() {
   group('Friend Provider Tests', () {
     late FriendProvider friendProvider;
     setUp(() {
       GetIt.instance.reset();
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       final friendService = FriendService(apiService);
       GetIt.instance.registerSingleton<ApiService>(apiService);

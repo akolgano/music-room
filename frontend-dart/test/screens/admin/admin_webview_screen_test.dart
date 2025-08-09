@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/admin/admin_webview_screen.dart';
+import 'package:music_room/screens/admin/webview_admin.dart';
 
 void main() {
   group('AdminWebViewScreen Tests', () {

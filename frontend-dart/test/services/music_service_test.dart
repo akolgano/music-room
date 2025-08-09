@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
-import 'package:music_room/services/music_service.dart';
-import 'package:music_room/services/api_service.dart';
+import 'package:music_room/services/music_services.dart';
+import 'package:music_room/services/api_services.dart';
 import 'package:music_room/models/music_models.dart';
 import 'package:music_room/models/api_models.dart';
 void main() {
   group('Music Service Tests', () {
     test('MusicService should be instantiable', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       final musicService = MusicService(apiService);
       expect(musicService, isA<MusicService>());
@@ -78,7 +78,7 @@ void main() {
       expect(json['name'], 'Test Song');
       expect(json['artist'], 'Test Artist');
       expect(json['album'], 'Test Album');
-      expect(json['url'], 'http://localhost:8000'
+      expect(json['url'], 'http://localhost:8000');
     });
     test('BatchAddResult should calculate success states', () {
       const completeSuccess = BatchAddResult(

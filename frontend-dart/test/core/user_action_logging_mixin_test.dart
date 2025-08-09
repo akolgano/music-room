@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/user_action_logging_mixin.dart';
+import 'package:music_room/core/logging_core.dart';
 
 class TestWidgetWithLogging extends StatefulWidget {
   const TestWidgetWithLogging({super.key});

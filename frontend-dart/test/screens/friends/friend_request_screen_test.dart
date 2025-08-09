@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/friends/friend_request_screen.dart';
+import 'package:music_room/screens/friends/request_friends.dart';
 
 void main() {
   group('Friend Request Screen Tests', () {

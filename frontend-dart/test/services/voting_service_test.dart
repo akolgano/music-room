@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
-import 'package:music_room/providers/voting_provider.dart';
-import 'package:music_room/services/api_service.dart';
+import 'package:music_room/providers/voting_providers.dart';
+import 'package:music_room/services/api_services.dart';
 import 'package:music_room/models/api_models.dart';
 void main() {
   group('Voting Service Tests', () {
     test('VotingService should be instantiable', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       final votingService = VotingService(apiService);
       expect(votingService, isA<VotingService>());
@@ -48,7 +48,7 @@ void main() {
     });
     test('VotingService should work with ApiService dependency', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       final votingService = VotingService(apiService);
       
