@@ -113,7 +113,7 @@ class AdminDashboardScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           onTap: () async {
             if (kIsWeb) {
-              final url = 'http://localhost:8000$route';
+              final url = 'http://localhost:8000';
               if (await canLaunchUrl(Uri.parse(url))) {
                 await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               } else {

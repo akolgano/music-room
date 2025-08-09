@@ -20,7 +20,7 @@ void main() {
           'id': 'user_1',
           'username': 'alice_wonder',
           'displayName': 'Alice Wonderland',
-          'profilePicture': 'https://example.com/alice1.jpg',
+          'profilePicture': 'https://localhost:8001'
           'isFriend': false,
           'hasPendingRequest': false,
         },
@@ -28,7 +28,7 @@ void main() {
           'id': 'user_2',
           'username': 'alice_smith',
           'displayName': 'Alice Smith',
-          'profilePicture': 'https://example.com/alice2.jpg',
+          'profilePicture': 'https://localhost:8001'
           'isFriend': true,
           'hasPendingRequest': false,
         },

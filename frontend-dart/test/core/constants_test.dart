@@ -5,7 +5,7 @@ void main() {
     test('AppConstants should have correct values', () {
       expect(AppConstants.appName, 'Music Room');
       expect(AppConstants.version, '1.0.0');
-      expect(AppConstants.defaultApiBaseUrl, 'http://localhost:8000');
+      expect(AppConstants.defaultApiBaseUrl, 'http://localhost:8000'
       expect(AppConstants.contentTypeJson, 'application/json');
       expect(AppConstants.authorizationPrefix, 'Token');
       expect(AppConstants.minPasswordLength, 4);

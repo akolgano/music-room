@@ -103,7 +103,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
           GestureDetector(
             onTap: profileProvider.isLoading 
                 ? null 
-                : () => _editAvatar(profileProvider),
+                : () => _showAvatarOptions(profileProvider),
             child: Stack(
               children: [
               Container(
@@ -175,6 +175,55 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
               ],
             ),
           ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Avatar Privacy:',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(width: 8),
+              _buildVisibilityIcon(profileProvider.avatarVisibility),
+              const SizedBox(width: 4),
+              PopupMenuButton<VisibilityLevel>(
+                icon: const Icon(Icons.settings, color: Colors.white70, size: 16),
+                onSelected: (visibility) => _updateVisibility(profileProvider, 'avatarVisibility', visibility),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: VisibilityLevel.public,
+                    child: Row(
+                      children: [
+                        Icon(Icons.public, color: Colors.green, size: 16),
+                        SizedBox(width: 8),
+                        Text('Public'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: VisibilityLevel.friends,
+                    child: Row(
+                      children: [
+                        Icon(Icons.people, color: Colors.blue, size: 16),
+                        SizedBox(width: 8),
+                        Text('Friends Only'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: VisibilityLevel.private,
+                    child: Row(
+                      children: [
+                        Icon(Icons.lock, color: Colors.orange, size: 16),
+                        SizedBox(width: 8),
+                        Text('Private'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -191,7 +240,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
                 ),
               ),
               const SizedBox(width: 8),
-              _buildVisibilityIcon(profileProvider.avatarVisibility),
+              _buildVisibilityIcon(profileProvider.nameVisibility),
             ],
           ),
           const SizedBox(height: 8),
@@ -206,9 +255,12 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
               children: [
                 const Icon(Icons.tag, color: Colors.white, size: 14),
                 const SizedBox(width: 4),
-                Text(
-                  'ID: ${profileProvider.userId ?? auth.userId ?? "Unknown"}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12),
+                Flexible(
+                  child: Text(
+                    'ID: ${profileProvider.userId ?? auth.userId ?? "Unknown"}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -576,7 +628,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
         return;
       }
 
-      Uint8List imageBytes;
+      Uint8List imageBytes = Uint8List(0);
       String mimeType = 'image/jpeg';
 
       if (sourceType == 'random_cat') {
@@ -588,47 +640,71 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
         
         try {
           http.Response? response;
+          String? imageUrl;
           
+          // Try different cat APIs
           final catApis = [
-            'https://cataas.com/cat?width=512&height=512',
-            'https://placekitten.com/512/512',
-            'https://loremflickr.com/512/512/cat',
+            {'url': 'https://api.thecatapi.com/v1/images/search', 'type': 'json'},
+            {'url': 'https://cataas.com/cat', 'type': 'direct'},
+            {'url': 'https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg', 'type': 'direct'},
           ];
           
-          for (String apiUrl in catApis) {
+          for (final api in catApis) {
             try {
               if (kDebugMode) {
-                debugPrint('[ProfileScreen] Trying cat API: $apiUrl');
+                debugPrint('[ProfileScreen] Trying cat API: ${api['url']}');
               }
               
               response = await http.get(
-                Uri.parse(apiUrl),
+                Uri.parse(api['url']!),
                 headers: {'User-Agent': 'Music Room App'},
-              ).timeout(const Duration(seconds: 10));
+              ).timeout(const Duration(seconds: 15));
               
-              if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
-                if (kDebugMode) {
-                  debugPrint('[ProfileScreen] Success with API: $apiUrl');
+              if (response.statusCode == 200) {
+                if (api['type'] == 'json') {
+                  // Parse JSON response to get image URL
+                  final jsonData = jsonDecode(response.body);
+                  if (jsonData is List && jsonData.isNotEmpty) {
+                    imageUrl = jsonData[0]['url'];
+                    if (imageUrl != null) {
+                      // Fetch the actual image
+                      final imageResponse = await http.get(
+                        Uri.parse(imageUrl),
+                        headers: {'User-Agent': 'Music Room App'},
+                      ).timeout(const Duration(seconds: 15));
+                      
+                      if (imageResponse.statusCode == 200 && imageResponse.bodyBytes.isNotEmpty) {
+                        imageBytes = imageResponse.bodyBytes;
+                        mimeType = 'image/jpeg';
+                        if (kDebugMode) {
+                          debugPrint('[ProfileScreen] Successfully fetched cat picture from JSON API: ${imageBytes.length} bytes');
+                        }
+                        break;
+                      }
+                    }
+                  }
+                } else {
+                  // Direct image response
+                  if (response.bodyBytes.isNotEmpty) {
+                    imageBytes = response.bodyBytes;
+                    mimeType = 'image/jpeg';
+                    if (kDebugMode) {
+                      debugPrint('[ProfileScreen] Successfully fetched cat picture from direct API: ${imageBytes.length} bytes');
+                    }
+                    break;
+                  }
                 }
-                break;
               }
             } catch (e) {
               if (kDebugMode) {
-                debugPrint('[ProfileScreen] Failed with API $apiUrl: $e');
+                debugPrint('[ProfileScreen] Failed with API ${api['url']}: $e');
               }
               continue;
             }
           }
           
-          if (response?.statusCode == 200 && response?.bodyBytes.isNotEmpty == true) {
-            imageBytes = response!.bodyBytes;
-            mimeType = 'image/jpeg';
-            
-            if (kDebugMode) {
-              debugPrint('[ProfileScreen] Successfully fetched cat picture: ${imageBytes.length} bytes');
-            }
-          } else {
-            throw Exception('All cat picture APIs failed');
+          if (imageBytes.isEmpty) {
+            throw Exception('All cat picture APIs failed to return valid images');
           }
         } catch (e) {
           if (kDebugMode) {
@@ -681,7 +757,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
 
       if (success) {
         showSuccess('Avatar updated successfully!');
-        await profileProvider.loadProfile(auth.token);
       } else {
         showError('Failed to update avatar - check network connection and try again');
       }
@@ -754,6 +829,114 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showAvatarOptions(ProfileProvider profileProvider) async {
+    final hasAvatar = profileProvider.avatarUrl?.isNotEmpty == true;
+    
+    final String? action = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.surface,
+          title: const Text(
+            'Profile Picture',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hasAvatar) ...[
+                ListTile(
+                  leading: const Icon(Icons.fullscreen, color: AppTheme.primary),
+                  title: const Text(
+                    'View Full Size',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: () => Navigator.pop(context, 'view'),
+                ),
+              ],
+              ListTile(
+                leading: const Icon(Icons.edit, color: AppTheme.primary),
+                title: const Text(
+                  'Change Picture',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () => Navigator.pop(context, 'edit'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (action == 'view') {
+      _showEnlargedAvatar(profileProvider);
+    } else if (action == 'edit') {
+      _editAvatar(profileProvider);
+    }
+  }
+
+  void _showEnlargedAvatar(ProfileProvider profileProvider) {
+    if (profileProvider.avatarUrl?.isEmpty == true) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: profileProvider.avatarUrl!.startsWith('data:')
+                          ? Image.memory(
+                              base64Decode(profileProvider.avatarUrl!.split(',')[1]),
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _buildInitialsAvatar(profileProvider),
+                            )
+                          : Image.network(
+                              profileProvider.avatarUrl!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _buildInitialsAvatar(profileProvider),
+                            ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                      onPressed: () => Navigator.pop(context),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black54,
+                        shape: const CircleBorder(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
@@ -837,7 +1020,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
 
   void _handleUpdateSuccess(String fieldName, ProfileProvider profileProvider) {
     showSuccess('$fieldName updated successfully');
-    profileProvider.loadProfile(auth.token);
   }
 
   Future<void> _editField({
@@ -865,6 +1047,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
 
   Future<void> _updateVisibility(ProfileProvider profileProvider, String field, VisibilityLevel visibility) async {
     final success = await profileProvider.updateVisibility(auth.token, 
+      avatarVisibility: field == 'avatarVisibility' ? visibility : null,
       nameVisibility: field == 'nameVisibility' ? visibility : null,
       locationVisibility: field == 'locationVisibility' ? visibility : null,
       bioVisibility: field == 'bioVisibility' ? visibility : null,
@@ -874,11 +1057,14 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
     );
     if (success) {
       final fieldNames = {
-        'nameVisibility': 'Name', 'locationVisibility': 'Location', 'bioVisibility': 'Bio',
+        'avatarVisibility': 'Avatar', 'nameVisibility': 'Name', 'locationVisibility': 'Location', 'bioVisibility': 'Bio',
         'phoneVisibility': 'Phone', 'friendInfoVisibility': 'Friend info', 'musicPreferencesVisibility': 'Music preferences',
       };
       showSuccess('${fieldNames[field]} visibility updated');
-      profileProvider.loadProfile(auth.token);
+      
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 

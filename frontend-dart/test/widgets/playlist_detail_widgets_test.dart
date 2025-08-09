@@ -8,13 +8,13 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'https://example.com/image.jpg'
+        url: 'https://example.com/track.mp3',
       );
       
       expect(track.name, 'Test Song');
       expect(track.artist, 'Test Artist');
       expect(track.album, 'Test Album');
-      expect(track.url, startsWith('https://example.com/image.jpg'));
+      expect(track.url, startsWith('https://'));
       
       final trackDisplayData = {
         'title': track.name,

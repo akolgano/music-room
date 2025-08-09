@@ -283,6 +283,14 @@ class ProfileByIdResponse {
   final String? phone;
   final String? friendInfo;
   final List<String>? musicPreferences;
+  final List<int>? musicPreferencesIds;
+  final String? avatarVisibility;
+  final String? nameVisibility;
+  final String? locationVisibility;
+  final String? bioVisibility;
+  final String? phoneVisibility;
+  final String? friendInfoVisibility;
+  final String? musicPreferencesVisibility;
 
   const ProfileByIdResponse({
     required this.id,
@@ -294,6 +302,14 @@ class ProfileByIdResponse {
     this.phone,
     this.friendInfo,
     this.musicPreferences,
+    this.musicPreferencesIds,
+    this.avatarVisibility,
+    this.nameVisibility,
+    this.locationVisibility,
+    this.bioVisibility,
+    this.phoneVisibility,
+    this.friendInfoVisibility,
+    this.musicPreferencesVisibility,
   });
 
   factory ProfileByIdResponse.fromJson(Map<String, dynamic> json) => ProfileByIdResponse(
@@ -306,6 +322,14 @@ class ProfileByIdResponse {
     phone: json['phone'] as String?,
     friendInfo: json['friend_info'] as String?,
     musicPreferences: (json['music_preferences'] as List<dynamic>?)?.cast<String>(),
+    musicPreferencesIds: (json['music_preferences_ids'] as List<dynamic>?)?.cast<int>(),
+    avatarVisibility: json['avatar_visibility'] as String?,
+    nameVisibility: json['name_visibility'] as String?,
+    locationVisibility: json['location_visibility'] as String?,
+    bioVisibility: json['bio_visibility'] as String?,
+    phoneVisibility: json['phone_visibility'] as String?,
+    friendInfoVisibility: json['friend_info_visibility'] as String?,
+    musicPreferencesVisibility: json['music_preferences_visibility'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -318,6 +342,14 @@ class ProfileByIdResponse {
     if (phone != null) 'phone': phone,
     if (friendInfo != null) 'friend_info': friendInfo,
     if (musicPreferences != null) 'music_preferences': musicPreferences,
+    if (musicPreferencesIds != null) 'music_preferences_ids': musicPreferencesIds,
+    if (avatarVisibility != null) 'avatar_visibility': avatarVisibility,
+    if (nameVisibility != null) 'name_visibility': nameVisibility,
+    if (locationVisibility != null) 'location_visibility': locationVisibility,
+    if (bioVisibility != null) 'bio_visibility': bioVisibility,
+    if (phoneVisibility != null) 'phone_visibility': phoneVisibility,
+    if (friendInfoVisibility != null) 'friend_info_visibility': friendInfoVisibility,
+    if (musicPreferencesVisibility != null) 'music_preferences_visibility': musicPreferencesVisibility,
   };
 }
 

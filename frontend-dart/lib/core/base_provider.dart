@@ -100,7 +100,7 @@ abstract class BaseProvider extends ChangeNotifier {
 
         try {
           final connectivity = getIt<ConnectivityProvider>();
-          connectivity.forceCheck();
+          connectivity.checkConnection();
         } catch (e) {
           AppLogger.debug('Failed to force connectivity check', 'BaseProvider');
         }

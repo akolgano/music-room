@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FormWidgets {
-  static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
-  
   
   static double _getScaledButtonHeight(BuildContext context) {
     final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
@@ -12,11 +10,6 @@ class FormWidgets {
   }
   
   
-  static OutlineInputBorder _createBorder(Color color, double width) => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8.0),
-    borderSide: BorderSide(color: color, width: width),
-  );
-
   static Widget textField({
     required BuildContext context, 
     required TextEditingController controller,
@@ -42,17 +35,35 @@ class FormWidgets {
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: _colorScheme(context).primary) : null,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Theme.of(context).colorScheme.primary) : null,
         filled: true,
-        fillColor: _colorScheme(context).surface,
-        border: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-        enabledBorder: _createBorder(Colors.white.withValues(alpha: 0.3), 1),
-        focusedBorder: _createBorder(_colorScheme(context).primary, 2),
-        errorBorder: _createBorder(_colorScheme(context).error, 2),
-        focusedErrorBorder: _createBorder(_colorScheme(context).error, 2),
-        disabledBorder: _createBorder(Colors.grey.withValues(alpha: 0.2), 1),
-        labelStyle: TextStyle(fontSize: 16, color: _colorScheme(context).onSurface.withValues(alpha: 0.7)),
-        hintStyle: TextStyle(fontSize: 14, color: _colorScheme(context).onSurface.withValues(alpha: 0.5)),
+        fillColor: Theme.of(context).colorScheme.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
+        ),
+        labelStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+        hintStyle: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16.0.w, 
           vertical: 6.0.h

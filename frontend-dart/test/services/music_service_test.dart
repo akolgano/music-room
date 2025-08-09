@@ -8,7 +8,7 @@ void main() {
   group('Music Service Tests', () {
     test('MusicService should be instantiable', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000';
+      dio.options.baseUrl = 'http://localhost:8000'
       final apiService = ApiService(dio);
       final musicService = MusicService(apiService);
       expect(musicService, isA<MusicService>());
@@ -70,7 +70,7 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'http://example.com/track'
+        url: 'http://localhost:8000'
       );
       
       final json = track.toJson();
@@ -78,7 +78,7 @@ void main() {
       expect(json['name'], 'Test Song');
       expect(json['artist'], 'Test Artist');
       expect(json['album'], 'Test Album');
-      expect(json['url'], 'http://example.com/track');
+      expect(json['url'], 'http://localhost:8000'
     });
     test('BatchAddResult should calculate success states', () {
       const completeSuccess = BatchAddResult(
