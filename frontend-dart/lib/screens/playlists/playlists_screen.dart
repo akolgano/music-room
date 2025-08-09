@@ -110,7 +110,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
   void _viewPlaylist(Playlist playlist) => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id); 
   
   void _playPlaylist(Playlist playlist) async {
-    if (playlist.tracks?.isNotEmpty != true) {
+    if (playlist.tracks.isNotEmpty != true) {
       showInfo('This playlist is empty or tracks are not loaded');
       return;
     }
@@ -175,8 +175,8 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
         
       case PlaylistSortField.trackCount:
         _sortedPlaylists.sort((a, b) {
-          final aCount = a.tracks?.length ?? 0;
-          final bCount = b.tracks?.length ?? 0;
+          final aCount = a.tracks.length;
+          final bCount = b.tracks.length;
           final comparison = aCount.compareTo(bCount);
           return _currentSort.order == SortOrder.ascending ? comparison : -comparison;
         });

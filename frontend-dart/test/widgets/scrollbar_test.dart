@@ -3,12 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/widgets/scrollbar.dart';
 
 void main() {
-  group('CustomScrollbar Tests', () {
+  group('CustomSingleChildScrollView Tests', () {
     testWidgets('should create scrollbar with child', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: CustomScrollbar(
+            body: CustomSingleChildScrollView(
               child: ListView.builder(
                 itemCount: 10,
                 itemBuilder: (context, index) => ListTile(
@@ -20,7 +20,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(CustomScrollbar), findsOneWidget);
+      expect(find.byType(CustomSingleChildScrollView), findsOneWidget);
       expect(find.text('Item 0'), findsOneWidget);
       expect(find.text('Item 1'), findsOneWidget);
     });
@@ -29,7 +29,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: CustomScrollbar(
+            body: CustomSingleChildScrollView(
               child: ListView.builder(
                 itemCount: 50,
                 itemBuilder: (context, index) => SizedBox(
@@ -59,7 +59,7 @@ void main() {
           home: Scaffold(
             body: SizedBox(
               height: 200,
-              child: CustomScrollbar(
+              child: CustomSingleChildScrollView(
                 child: ListView.builder(
                   itemCount: 20,
                   itemBuilder: (context, index) => SizedBox(
@@ -81,7 +81,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: CustomScrollbar(
+            body: CustomSingleChildScrollView(
               child: ListView.builder(
                 itemCount: 0,
                 itemBuilder: (context, index) => ListTile(
@@ -93,7 +93,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(CustomScrollbar), findsOneWidget);
+      expect(find.byType(CustomSingleChildScrollView), findsOneWidget);
       expect(find.byType(ListView), findsOneWidget);
       expect(find.byType(ListTile), findsNothing);
     });
@@ -102,7 +102,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: CustomScrollbar(
+            body: CustomSingleChildScrollView(
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: 10,
@@ -116,7 +116,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(CustomScrollbar), findsOneWidget);
+      expect(find.byType(CustomSingleChildScrollView), findsOneWidget);
       expect(find.text('Item 0'), findsOneWidget);
     });
   });

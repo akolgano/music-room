@@ -147,7 +147,9 @@ class NotificationService {
     final title = _getNotificationTitle(messageType);
     final message = _getNotificationMessage(messageType, messageData);
     final icon = _getNotificationIcon(messageType);
-    final color = _getNotificationColor(messageType);
+    final color = messageType == 'playlist_update' || messageType == 'playlist.update'
+        ? Colors.blue.withValues(alpha: 0.9)
+        : null;
 
     showNotification(
       title: title,
@@ -189,16 +191,6 @@ class NotificationService {
         return Icons.playlist_play;
       default:
         return Icons.notifications;
-    }
-  }
-
-  Color? _getNotificationColor(String messageType) {
-    switch (messageType) {
-      case 'playlist_update':
-      case 'playlist.update':
-        return Colors.blue.withValues(alpha: 0.9);
-      default:
-        return null;
     }
   }
 

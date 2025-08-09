@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:music_room/widgets/playlist_voting_widgets.dart';
 import 'package:music_room/providers/voting_provider.dart';
 import 'package:music_room/models/music_models.dart';
-import 'package:music_room/models/voting_models.dart';
 
 void main() {
   group('PlaylistVotingWidgets Tests', () {

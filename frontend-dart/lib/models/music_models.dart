@@ -120,6 +120,7 @@ class Playlist {
   final String creator;
   final List<Track> tracks;
   final String? imageUrl;
+  final String licenseType;
 
   const Playlist({
     required this.id,
@@ -129,6 +130,7 @@ class Playlist {
     required this.creator,
     this.tracks = const [],
     this.imageUrl,
+    this.licenseType = 'open',
   });
 
   factory Playlist.fromJson(Map<String, dynamic> json) => Playlist(
@@ -139,14 +141,24 @@ class Playlist {
     creator: json['creator'] as String,
     tracks: (json['tracks'] as List<dynamic>?) ?.map((t) => Track.fromJson(t as Map<String, dynamic>)).toList() ?? [],
     imageUrl: json['image_url'] as String?,
+    licenseType: json['license_type'] as String? ?? 'open',
   );
+
+  bool canEdit(String? username) {
+    if (username == creator) return true;
+    if (licenseType == 'open') return true;
+    return false;
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
     'description': description,
     'public': isPublic,
-    'creator': creator, 'tracks': tracks.map((t) => t.toJson()).toList(), 'image_url': imageUrl
+    'creator': creator, 
+    'tracks': tracks.map((t) => t.toJson()).toList(), 
+    'image_url': imageUrl,
+    'license_type': licenseType,
   };
 }
 

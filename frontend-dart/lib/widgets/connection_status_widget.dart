@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/connectivity_provider.dart';
-import '../core/theme_utils.dart';
 
 class ConnectionStatusBanner extends StatelessWidget {
   final Widget child;
@@ -95,9 +94,9 @@ class ConnectionStatusIndicator extends StatelessWidget {
               vertical: 6,
             ),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withOpacity(0.3)),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

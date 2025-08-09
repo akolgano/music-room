@@ -40,6 +40,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
   bool _isOwner = false;
+  bool _canEditPlaylist = false;
   VotingProvider? _votingProvider;
   Timer? _autoRefreshTimer;
   Timer? _trackCountValidationTimer;
@@ -99,7 +100,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       },
       buttonName: 'toggle_voting_mode',
     ),
-    if (_isOwner) buildLoggingIconButton(
+    if (_canEditPlaylist) buildLoggingIconButton(
       icon: const Icon(Icons.add), 
       onPressed: () {
         logButtonClick('add_songs_to_playlist', metadata: {'playlist_id': widget.playlistId});
@@ -107,7 +108,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       },
       buttonName: 'add_songs_button',
     ),
-    if (_isOwner) buildLoggingIconButton(
+    if (_canEditPlaylist) buildLoggingIconButton(
       icon: const Icon(Icons.edit), 
       onPressed: () {
         logButtonClick('edit_playlist', metadata: {'playlist_id': widget.playlistId});
@@ -181,7 +182,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 context, 
                 onPlayAll: _playPlaylist, 
                 onShuffle: _shufflePlaylist,
-                onAddRandomTrack: _isOwner ? _addRandomTrack : null,
+                onAddRandomTrack: _canEditPlaylist ? _addRandomTrack : null,
               ),
               SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
               _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
@@ -266,7 +267,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 const SizedBox(height: 8),
                 if (sortedTracks.isEmpty) 
                   PlaylistDetailWidgets.buildEmptyTracksState(
-                    isOwner: _isOwner,
+                    isOwner: _canEditPlaylist,
                     onAddTracks: () => navigateTo(AppRoutes.trackSearch, arguments: widget.playlistId),
                   )
                 else 
@@ -300,23 +301,15 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
-    final canReorder = currentSort.field == TrackSortField.position && _isOwner;
-    AppLogger.debug('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}', 'PlaylistDetailScreen');
+    final canReorder = currentSort.field == TrackSortField.position && _canEditPlaylist;
+    AppLogger.debug('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}, _canEditPlaylist=$_canEditPlaylist', 'PlaylistDetailScreen');
     
-    return canReorder
-      ? ReorderableListView.builder(
-          shrinkWrap: true, 
-          physics: const NeverScrollableScrollPhysics(), 
-          itemCount: tracks.length,
-          onReorder: _onReorderTracks,
-          itemBuilder: (context, index) => _buildTrackItemSafely(tracks, index, needsKey: true),
-        )
-      : ListView.builder(
-          shrinkWrap: true, 
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: tracks.length,
-          itemBuilder: (context, index) => _buildTrackItemSafely(tracks, index),
-        );
+    return ListView.builder(
+      shrinkWrap: true, 
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: tracks.length,
+      itemBuilder: (context, index) => _buildTrackItemSafely(tracks, index),
+    );
   }
 
   Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
@@ -334,13 +327,19 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       return PlaylistDetailWidgets.buildLoadingTrackItem(key, playlistTrack, index);
     }
 
+    final musicProvider = getProvider<MusicProvider>();
+    final sortedTracks = musicProvider.sortedPlaylistTracks;
+    
     return PlaylistDetailWidgets.buildTrackItem(
       context: context,
       playlistTrack: playlistTrack,
       index: index,
-      isOwner: _isOwner,
+      isOwner: _canEditPlaylist,
       onPlay: () => _playTrackAt(index),
-      onRemove: _isOwner ? () => _removeTrack(playlistTrack.trackId) : null,
+      onRemove: _canEditPlaylist ? () => _removeTrack(playlistTrack.trackId) : null,
+      onMoveUp: _canEditPlaylist && index > 0 ? () => _moveTrackWithSortCheck(index, index - 1) : null,
+      onMoveDown: _canEditPlaylist && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
+      canReorder: _canEditPlaylist,
       playlistId: widget.playlistId,
       key: key,
     );
@@ -456,6 +455,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         if (_playlist != null) {
           setState(() {
             _isOwner = _playlist!.creator == auth.username;
+            _canEditPlaylist = _playlist!.canEdit(auth.username);
           });
           
           await _refreshTracksFromProvider();
@@ -584,6 +584,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         authToken: auth.token,
       );
     } catch (e) {
+      AppLogger.error('Failed to play playlist', e, null, 'PlaylistDetailScreen');
     }
   }
 
@@ -595,7 +596,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       return;
     }
     
-    if (!_isOwner) {
+    if (!_canEditPlaylist) {
       return;
     }
     
@@ -656,13 +657,15 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       
       final track = sortedTracks[index].track;
       if (track != null) {
+        AppLogger.debug('Playing track: ${track.name}', 'PlaylistDetailScreen');
       }
     } catch (e) {
+      AppLogger.error('Failed to play track at index $index', e, null, 'PlaylistDetailScreen');
     }
   }
 
   Future<void> _removeTrack(String trackId) async {
-    if (!_isOwner) return;
+    if (!_canEditPlaylist) return;
     
     final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
     
@@ -696,40 +699,81 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
   }
 
-  void _onReorderTracks(int oldIndex, int newIndex) {
-    if (!mounted) return;
+  Future<void> _moveTrackWithSortCheck(int fromIndex, int toIndex) async {
+    if (!_canEditPlaylist) return;
+    
+    final musicProvider = getProvider<MusicProvider>();
+    final currentSort = musicProvider.currentSortOption;
+    
+    // If not in custom order, switch to it first
+    if (currentSort.field != TrackSortField.position) {
+      musicProvider.resetToCustomOrder();
+      
+      // Show a brief message to the user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Switched to Custom Order to enable track reordering'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+        );
+      }
+      
+      // Wait a frame for the UI to update
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    
+    // Now perform the move
+    await _moveTrack(fromIndex, toIndex);
+  }
+
+  Future<void> _moveTrack(int fromIndex, int toIndex) async {
+    if (!mounted || fromIndex == toIndex || fromIndex < 0 || toIndex < 0) return;
+    
+    final musicProvider = getProvider<MusicProvider>();
+    final sortedTracks = musicProvider.sortedPlaylistTracks;
+    
+    if (fromIndex >= sortedTracks.length || toIndex >= sortedTracks.length) return;
     
     try {
       setState(() {
-        if (newIndex > oldIndex) newIndex -= 1;
-        final musicProvider = getProvider<MusicProvider>();
-        final tracks = List<PlaylistTrack>.from(musicProvider.playlistTracks);
-        final item = tracks.removeAt(oldIndex);
-        tracks.insert(newIndex, item);
+        final tracks = List<PlaylistTrack>.from(sortedTracks);
+        final item = tracks.removeAt(fromIndex);
+        tracks.insert(toIndex, item);
         
         for (int i = 0; i < tracks.length; i++) {
           tracks[i] = PlaylistTrack(
             trackId: tracks[i].trackId, 
             name: tracks[i].name, 
             position: i, 
-            track: tracks[i].track
+            track: tracks[i].track,
+            points: tracks[i].points,
           );
         }
         _tracks = tracks;
       });
-      _updateTrackOrder(oldIndex, newIndex);
+      await _updateTrackOrder(fromIndex, toIndex);
     } catch (e) {
-      _logError('reordering tracks', e);
+      _logError('moving track', e);
     }
   }
 
   Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
     try {
       final musicProvider = getProvider<MusicProvider>();
+      
+      // When moving down, we need to adjust the insertBefore index
+      // because after removing the item at oldIndex, all subsequent indices shift down by 1
+      int adjustedInsertBefore = newIndex;
+      if (newIndex > oldIndex) {
+        adjustedInsertBefore = newIndex + 1;
+      }
+      
       await musicProvider.moveTrackInPlaylist(
         playlistId: widget.playlistId, 
         rangeStart: oldIndex, 
-        insertBefore: newIndex,
+        insertBefore: adjustedInsertBefore,
         token: auth.token!,
       );
       
@@ -751,7 +795,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       onSortChanged: (sortOption) {
         final musicProvider = getProvider<MusicProvider>();
         musicProvider.setSortOption(sortOption);
-        final isCustomOrder = sortOption.field == TrackSortField.position;
         if (mounted) {
         }
       },
@@ -922,6 +965,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         
         await _loadData();
       } catch (e) {
+        AppLogger.error('Failed to suggest track for voting', e, null, 'PlaylistDetailScreen');
       }
     }
   }

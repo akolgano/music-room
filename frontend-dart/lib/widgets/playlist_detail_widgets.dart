@@ -177,6 +177,9 @@ class PlaylistDetailWidgets {
     required bool isOwner,
     required VoidCallback onPlay,
     required VoidCallback? onRemove,
+    VoidCallback? onMoveUp,
+    VoidCallback? onMoveDown,
+    bool canReorder = false,
     String? playlistId,
     Key? key,
   }) {
@@ -187,7 +190,7 @@ class PlaylistDetailWidgets {
       key: key,
       margin: EdgeInsets.symmetric(
         horizontal: MusicAppResponsive.getPadding(context, tiny: 8.0, small: 12.0, medium: 16.0),
-        vertical: MusicAppResponsive.getPadding(context, tiny: 2.0, small: 3.0, medium: 4.0)
+        vertical: MusicAppResponsive.getPadding(context, tiny: 1.0, small: 1.5, medium: 2.0)
       ),
       decoration: BoxDecoration(
         color: AppTheme.surface,
@@ -195,7 +198,7 @@ class PlaylistDetailWidgets {
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
-        padding: EdgeInsets.all(MusicAppResponsive.getPadding(context, tiny: 4.0, small: 5.0, medium: 6.0)),
+        padding: EdgeInsets.all(MusicAppResponsive.getPadding(context, tiny: 8.0, small: 10.0, medium: 12.0)),
         child: Row(
           children: [
             buildTrackImage(track),
@@ -236,8 +239,16 @@ class PlaylistDetailWidgets {
             ],
             SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 7.0, medium: 8.0)),
             SizedBox(
-              width: 70, 
-              child: buildActionButtons(context, onPlay, onRemove, isOwner),
+              width: canReorder ? 110 : 70, 
+              child: buildActionButtons(
+                context, 
+                onPlay, 
+                onRemove, 
+                isOwner,
+                onMoveUp: onMoveUp,
+                onMoveDown: onMoveDown,
+                canReorder: canReorder,
+              ),
             ),
           ],
         ),
@@ -286,10 +297,46 @@ class PlaylistDetailWidgets {
     );
   }
 
-  static Widget buildActionButtons(BuildContext context, VoidCallback onPlay, VoidCallback? onRemove, bool isOwner) {
+  static Widget buildActionButtons(
+    BuildContext context, 
+    VoidCallback onPlay, 
+    VoidCallback? onRemove, 
+    bool isOwner, {
+    VoidCallback? onMoveUp,
+    VoidCallback? onMoveDown,
+    bool canReorder = false,
+  }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (canReorder && onMoveUp != null) ...[
+          GestureDetector(
+            onTap: onMoveUp,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.keyboard_arrow_up, color: AppTheme.primary, size: 14),
+            ),
+          ),
+          const SizedBox(width: 2),
+        ],
+        if (canReorder && onMoveDown != null) ...[
+          GestureDetector(
+            onTap: onMoveDown,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.keyboard_arrow_down, color: AppTheme.primary, size: 14),
+            ),
+          ),
+          const SizedBox(width: 2),
+        ],
         GestureDetector(
           onTap: onPlay,
           child: Container(
@@ -315,8 +362,6 @@ class PlaylistDetailWidgets {
             ),
           ),
         ],
-        const SizedBox(width: 4),
-        const Icon(Icons.drag_handle, color: Colors.grey, size: 16),
       ],
     );
   }
@@ -401,8 +446,8 @@ class PlaylistDetailWidgets {
 
   static Widget buildTrackImage(Track track) {
     return Container(
-      width: 48, 
-      height: 40,
+      width: 56, 
+      height: 50,
       decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
       child: track.imageUrl?.isNotEmpty == true
           ? ClipRRect(
@@ -410,13 +455,13 @@ class PlaylistDetailWidgets {
               child: Image.network(
                 track.imageUrl!, 
                 fit: BoxFit.cover,
-                width: 48,
-                height: 40,
+                width: 56,
+                height: 50,
                 errorBuilder: (context, error, stackTrace) => 
-                  const Icon(Icons.music_note, color: Colors.white, size: 20),
+                  const Icon(Icons.music_note, color: Colors.white, size: 24),
               ),
             )
-          : const Icon(Icons.music_note, color: Colors.white, size: 20),
+          : const Icon(Icons.music_note, color: Colors.white, size: 24),
     );
   }
 
@@ -433,8 +478,8 @@ class PlaylistDetailWidgets {
       ),
       child: ListTile(
         leading: Container(
-          width: 48,
-          height: 40,
+          width: 56,
+          height: 50,
           decoration: BoxDecoration(
             color: trackCacheService.isTrackRetrying(trackId) 
                 ? Colors.orange.withValues(alpha: 0.3) 
@@ -493,8 +538,8 @@ class PlaylistDetailWidgets {
       ),
       child: ListTile(
         leading: Container(
-          width: 48,
-          height: 40,
+          width: 56,
+          height: 50,
           decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(8)),
           child: const Stack(
             alignment: Alignment.center,
