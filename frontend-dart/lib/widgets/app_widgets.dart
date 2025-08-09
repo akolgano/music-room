@@ -691,11 +691,13 @@ static Widget emptyState({
                 );
               },
             )
-          : CustomListView(
+          : CustomSingleChildScrollView(
               padding: padding,
-              children: items.asMap().entries.map((entry) => 
-                itemBuilder(entry.value, entry.key)
-              ).toList(),
+              child: Column(
+                children: items.asMap().entries.map((entry) => 
+                  itemBuilder(entry.value, entry.key)
+                ).toList(),
+              ),
             ),
     );
   }

@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class StateWidgets {
-  static double _responsiveValue(double value) => value.sp;
   static double _responsiveWidth(double value) => value.w;
   static double _responsiveHeight(double value) => value.h;
   static double _responsiveSize(double webValue, int appValue) => 
@@ -107,11 +106,11 @@ class StateWidgets {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: _responsiveValue(64.0), color: colorScheme.error),
+              Icon(Icons.error_outline, size: 64.0.sp, color: colorScheme.error),
               SizedBox(height: _responsiveHeight(12.0)),
               Text(
                 message,
-                style: TextStyle(color: colorScheme.onSurface, fontSize: _responsiveValue(18.0),
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 18.0.sp,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,

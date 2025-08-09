@@ -517,7 +517,8 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
       showSuccess('Playlist access control updated successfully!');
       navigateBack();
     } catch (e) {
-      showError('Failed to update playlist settings: $e');
+      AppLogger.error('Failed to update playlist settings', e, null, 'PlaylistLicensingScreen');
+      showError('Failed to update playlist settings: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }

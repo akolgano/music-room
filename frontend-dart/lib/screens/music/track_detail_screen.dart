@@ -7,6 +7,7 @@ import '../../services/music_player_service.dart';
 import '../../models/music_models.dart';
 import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
+import '../../core/logging_navigation_observer.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/voting_widgets.dart';
 import '../base_screen.dart';
@@ -507,7 +508,8 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         showError('No preview available for this track');
       }
     } catch (e) {
-      showError('Failed to play track: $e');
+      AppLogger.error('Failed to play track', e, null, 'TrackDetailScreen');
+      showError('Failed to play track: ${e.toString()}');
     }
   }
 

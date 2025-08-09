@@ -15,6 +15,7 @@ import '../../models/sort_models.dart';
 import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
 import '../../core/user_action_logging_mixin.dart';
+import '../../core/responsive_utils.dart';
 import '../base_screen.dart';
 import '../../providers/voting_provider.dart'; 
 import '../../widgets/playlist_detail_widgets.dart';
@@ -107,6 +108,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       buttonName: 'add_songs_button',
     ),
     if (_isOwner) buildLoggingIconButton(
+      icon: const Icon(Icons.edit), 
+      onPressed: () {
+        logButtonClick('edit_playlist', metadata: {'playlist_id': widget.playlistId});
+        _openPlaylistEditor();
+      },
+      buttonName: 'edit_playlist_button',
+    ),
+    if (_isOwner) buildLoggingIconButton(
       icon: const Icon(Icons.settings), 
       onPressed: () {
         logButtonClick('playlist_settings', metadata: {'playlist_id': widget.playlistId});
@@ -145,11 +154,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
         return CustomSingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          padding: EdgeInsets.symmetric(
+            vertical: MusicAppResponsive.getPadding(context, tiny: 4.0, small: 5.0, medium: 6.0),
+            horizontal: MusicAppResponsive.getPadding(context, tiny: 1.0, small: 1.5, medium: 2.0)
+          ),
           child: Column(
             children: [
               PlaylistDetailWidgets.buildThemedPlaylistHeader(context, _playlist!),
-              const SizedBox(height: 6),
+              SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
               if (_isVotingMode) ...PlaylistVotingWidgets.buildVotingModeHeader(
                 context: context,
                 isOwner: _isOwner,
@@ -164,14 +176,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 onSelectVotingDateTime: _selectVotingDateTime,
               ),
               PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
-              const SizedBox(height: 6),
+              SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
               PlaylistDetailWidgets.buildThemedPlaylistActions(
                 context, 
                 onPlayAll: _playPlaylist, 
                 onShuffle: _shufflePlaylist,
                 onAddRandomTrack: _isOwner ? _addRandomTrack : null,
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
               _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
                 context: context,
                 tracks: _tracks,
@@ -734,6 +746,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         }
       },
     );
+  }
+
+  void _openPlaylistEditor() {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.playlistEditor,
+      arguments: widget.playlistId,
+    ).then((_) {
+      if (mounted) _loadData();
+    });
   }
 
   void _openPlaylistSettings() {

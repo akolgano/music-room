@@ -628,7 +628,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
           final playlistId = await getProvider<MusicProvider>().createPlaylist(
             playlistName!, 
             'Created while adding "${track.name}"', 
-            false, 
+            true, 
             auth.token!,
           );
         if (playlistId?.isNotEmpty == true) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../providers/friend_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
+import '../../core/logging_navigation_observer.dart';
 import '../../models/music_models.dart';
 import '../../widgets/app_widgets.dart';
 import '../base_screen.dart';
@@ -219,7 +220,8 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      showError('Failed to share playlist: $e');
+      AppLogger.error('Failed to share playlist', e, null, 'PlaylistSharingScreen');
+      showError('Failed to share playlist: ${e.toString()}');
     } finally {
       setState(() => _isSharing = false);
     }

@@ -79,8 +79,6 @@ class AppValidators {
   }
   
   
-  static String? description(String? value) =>
-      value != null && value.length > 500 ? 'Description must be less than 500 characters' : null;
   
   static String? name(String? value) =>
       ValidationBuilder().maxLength(100, 'Name must be less than 100 characters').build()(value);

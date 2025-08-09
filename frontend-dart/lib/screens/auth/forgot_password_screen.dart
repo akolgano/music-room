@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
+import '../../core/logging_navigation_observer.dart';
 import '../../widgets/app_widgets.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -285,6 +286,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         }
       }
     } catch (error) {
+      AppLogger.error('Error during password reset', error, null, 'ForgotPasswordScreen');
       AppWidgets.showSnackBar(context, error.toString(), backgroundColor: AppTheme.error);
     }
 

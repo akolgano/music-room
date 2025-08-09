@@ -22,9 +22,7 @@ void main() {
       const testTrackId = 'test_track_123';
       
       expect(cacheService.isTrackCached(testTrackId), false);
-      
-      cacheService.removeFromCache(testTrackId);
-      expect(cacheService.isTrackCached(testTrackId), false);
+      expect(cacheService.getCachedTrack(testTrackId), null);
     });
     test('TrackCacheService should implement retry logic with exponential backoff', () {
       expect(cacheService.retryConfig.maxRetries, 5);

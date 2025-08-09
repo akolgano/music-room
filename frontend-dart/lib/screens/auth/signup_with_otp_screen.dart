@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme_utils.dart';
 import '../../core/constants.dart';
+import '../../core/logging_navigation_observer.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/scrollbar.dart';
 
@@ -264,7 +265,8 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       });
       _showSuccess('Email is available! Please create your account.');
     } catch (e) {
-      _showError('Error checking email: $e');
+      AppLogger.error('Error checking email', e, null, 'SignupWithOtpScreen');
+      _showError('Error checking email: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -291,7 +293,8 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         _showError('Failed to send verification code');
       }
     } catch (e) {
-      _showError('Error: $e');
+      AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
+      _showError('Error: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -319,7 +322,8 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         _showError('Signup failed. Please check your verification code.');
       }
     } catch (e) {
-      _showError('Error: $e');
+      AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
+      _showError('Error: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }

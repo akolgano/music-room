@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import '../models/sort_models.dart';
+import '../core/logging_navigation_observer.dart';
 
 class TrackSortingService {
   static List<PlaylistTrack> sortTracks(List<PlaylistTrack> tracks, TrackSortOption sortOption) {
@@ -73,7 +74,9 @@ class MusicService {
   }
 
   Future<List<Playlist>> getPublicPlaylists(String token) async {
+    AppLogger.debug('MusicService: Calling API to get public playlists', 'MusicService');
     final response = await _api.getPublicPlaylists(token); 
+    AppLogger.debug('MusicService: API returned ${response.playlists.length} public playlists', 'MusicService');
     return response.playlists;
   }
 

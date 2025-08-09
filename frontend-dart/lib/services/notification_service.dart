@@ -31,9 +31,6 @@ class NotificationService {
   Timer? _retryTimer;
   final List<_PendingNotification> _pendingNotifications = [];
 
-  void _log(String message) {
-    AppLogger.debug(message, 'NotificationService');
-  }
 
   void showNotification({
     required String message,
@@ -63,7 +60,7 @@ class NotificationService {
 
   void _queueNotification(String message, String? title, Map<String, dynamic>? data, 
                          Duration duration, Color? backgroundColor, IconData? icon) {
-    _log('Queueing notification until overlay is available: $title - $message');
+    AppLogger.debug('Queueing notification until overlay is available: $title - $message', 'NotificationService');
     
     _pendingNotifications.clear();
     _pendingNotifications.add(_PendingNotification(
@@ -108,7 +105,7 @@ class NotificationService {
                            Duration duration, Color? backgroundColor, IconData? icon) {
     final context = navigatorKey.currentContext;
     if (context == null) {
-      _log('Cannot show notification: no context available');
+      AppLogger.debug('Cannot show notification: no context available', 'NotificationService');
       return;
     }
 
@@ -116,7 +113,7 @@ class NotificationService {
 
     final overlay = Overlay.maybeOf(context);
     if (overlay == null) {
-      _log('Cannot show notification: no Overlay widget found in context');
+      AppLogger.debug('Cannot show notification: no Overlay widget found in context', 'NotificationService');
       return;
     }
     
@@ -135,7 +132,7 @@ class NotificationService {
     );
 
     overlay.insert(_currentOverlay!);
-    _log('Showing notification: $title - $message');
+    AppLogger.debug('Showing notification: $title - $message', 'NotificationService');
 
     _hideTimer = Timer(duration, () {
       _hideCurrentNotification();
@@ -287,7 +284,7 @@ class NotificationService {
     if (_currentOverlay != null) {
       _currentOverlay!.remove();
       _currentOverlay = null;
-      _log('Notification hidden');
+      AppLogger.debug('Notification hidden', 'NotificationService');
     }
   }
 

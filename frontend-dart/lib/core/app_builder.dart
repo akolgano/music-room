@@ -11,6 +11,7 @@ import '../providers/friend_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/dynamic_theme_provider.dart';
 import '../providers/voting_provider.dart';
+import '../providers/connectivity_provider.dart';
 import '../services/music_player_service.dart';
 import '../models/music_models.dart';
 import '../screens/auth/auth_screen.dart';
@@ -39,6 +40,7 @@ class AppBuilder {
   static List<SingleChildWidget> buildProviders() {
     return [
       ChangeNotifierProvider<DynamicThemeProvider>(create: (_) => getIt<DynamicThemeProvider>()),
+      ChangeNotifierProvider<ConnectivityProvider>(create: (_) => getIt<ConnectivityProvider>()),
       ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
       ChangeNotifierProvider<MusicProvider>(create: (_) => getIt<MusicProvider>()),
       ChangeNotifierProvider<FriendProvider>(create: (_) => FriendProvider()),
@@ -147,7 +149,7 @@ class AppBuilder {
       case AppRoutes.trackSearch:
         return const TrackSearchScreen();
       case AppRoutes.publicPlaylists:
-        return const PublicPlaylistsScreen();
+        return const AllPlaylistsScreen();
       case AppRoutes.friends:
         return const FriendsListScreen();
       case AppRoutes.addFriend:

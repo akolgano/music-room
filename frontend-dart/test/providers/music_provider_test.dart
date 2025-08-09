@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:music_room/providers/music_provider.dart';
 import 'package:music_room/models/music_models.dart';
-import 'package:music_room/models/result_models.dart';
+import 'package:music_room/models/api_models.dart';
 import 'package:music_room/models/sort_models.dart';
 void main() {
   group('Music Provider Tests', () {
@@ -124,7 +124,7 @@ void main() {
       
       expect(deezerTrack.isDeezerTrack, true);
       expect(deezerTrack.backendId, '123');
-      expect(deezerTrack.frontendId, 'deezer_123');
+      expect(deezerTrack.id, 'deezer_123');
     });
   });
 }

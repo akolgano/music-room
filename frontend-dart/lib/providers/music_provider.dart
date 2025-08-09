@@ -6,7 +6,7 @@ import '../services/track_cache_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../models/music_models.dart';
-import '../models/result_models.dart';
+import '../models/api_models.dart';
 import '../models/sort_models.dart';
 
 class MusicProvider extends BaseProvider {
@@ -62,10 +62,53 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<void> fetchPublicPlaylists(String token) async {
+    AppLogger.debug('MusicProvider: Fetching public playlists', 'MusicProvider');
     await _fetchPlaylists(
       () => _musicService.getPublicPlaylists(token),
       'Failed to load public playlists',
     );
+    AppLogger.debug('MusicProvider: Fetched ${_playlists.length} public playlists', 'MusicProvider');
+  }
+
+  Future<void> fetchAllPlaylists(String token) async {
+    AppLogger.debug('MusicProvider: Fetching all playlists (user + public)', 'MusicProvider');
+    final result = await executeAsync(
+      () async {
+        // Fetch both user's saved playlists and all public playlists
+        final userPlaylistsFuture = _musicService.getUserPlaylists(token);
+        final publicPlaylistsFuture = _musicService.getPublicPlaylists(token);
+        
+        final results = await Future.wait([userPlaylistsFuture, publicPlaylistsFuture]);
+        final userPlaylists = results[0];
+        final publicPlaylists = results[1];
+        
+        // Combine playlists, avoiding duplicates
+        final allPlaylists = <String, Playlist>{};
+        
+        // Add all user's saved playlists first (includes their own playlists)
+        for (final playlist in userPlaylists) {
+          allPlaylists[playlist.id] = playlist;
+        }
+        
+        // Add public playlists from other users (skip if already added from user's saved)
+        for (final playlist in publicPlaylists) {
+          if (!allPlaylists.containsKey(playlist.id)) {
+            allPlaylists[playlist.id] = playlist;
+          }
+        }
+        
+        return allPlaylists.values.toList();
+      },
+      errorMessage: 'Failed to load playlists',
+    );
+    
+    if (result != null) {
+      _playlists = result;
+      _hasConnectionError = false;
+      AppLogger.debug('MusicProvider: Combined ${_playlists.length} total playlists', 'MusicProvider');
+    } else {
+      _hasConnectionError = true;
+    }
   }
 
   Future<Playlist?> getPlaylistDetails(String id, String token) async {
@@ -86,12 +129,15 @@ class MusicProvider extends BaseProvider {
     String token, 
     [String? deviceUuid]
   ) async {
+    AppLogger.debug('Creating playlist: $name (public: $isPublic)', 'MusicProvider');
     final result = await executeAsync(
       () async {
         final id = await _musicService.createPlaylist(
           name, description, isPublic, token, deviceUuid
         );
-        await fetchUserPlaylists(token);
+        AppLogger.debug('Playlist created with ID: $id', 'MusicProvider');
+        // Refresh the combined playlists list to include the new playlist
+        await fetchAllPlaylists(token);
         return id;
       },
       successMessage: 'Playlist created successfully!',
@@ -159,7 +205,7 @@ class MusicProvider extends BaseProvider {
     return _playlistTracks.any((pt) => pt.trackId == trackId || pt.track?.id == trackId);
   }
 
-  Future<AddTrackResult> _addTrackToPlaylistInternal(String playlistId, String trackId, String token) async {
+  Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     try {
       await _musicService.addTrackToPlaylist(playlistId, trackId, token);
       await fetchPlaylistTracks(playlistId, token);
@@ -172,12 +218,8 @@ class MusicProvider extends BaseProvider {
     }
   }
 
-  Future<AddTrackResult> addTrackToPlaylist(String playlistId, String trackId, String token) async {
-    return _addTrackToPlaylistInternal(playlistId, trackId, token);
-  }
-
   Future<AddTrackResult> addTrackObjectToPlaylist(String playlistId, Track track, String token) async {
-    return _addTrackToPlaylistInternal(playlistId, track.backendId, token);
+    return addTrackToPlaylist(playlistId, track.backendId, token);
   }
 
   Future<AddTrackResult> addRandomTrackToPlaylist(String playlistId, String token) async {
