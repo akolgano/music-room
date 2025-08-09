@@ -20,10 +20,8 @@ class FakeVotingProvider extends ChangeNotifier implements VotingProvider {
     notifyListeners();
   }
   
-  @override
   int? getUserVote(String trackId) => _userVotes[trackId];
   
-  @override
   int? getUserVoteByIndex(int index) => _userVotes['track_$index'];
   
   @override
@@ -37,13 +35,11 @@ class FakeVotingProvider extends ChangeNotifier implements VotingProvider {
   
   int getTrackPointsById(String trackId) => _trackPoints[trackId] ?? 0;
   
-  @override
   void setUserVote(int trackIndex, int vote) {
     _userVotes['track_$trackIndex'] = vote;
     notifyListeners();
   }
   
-  @override
   Future<bool> upvoteTrackByIndex(String playlistId, int trackIndex, String token) async {
     _trackPoints['track_$trackIndex'] = (_trackPoints['track_$trackIndex'] ?? 0) + 1;
     notifyListeners();

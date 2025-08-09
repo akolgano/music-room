@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:dio/dio.dart';
 import 'service_locator.dart';
 import '../providers/connectivity_provider.dart';
+import 'logging_navigation_observer.dart';
 
 abstract class BaseProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -101,7 +102,7 @@ abstract class BaseProvider extends ChangeNotifier {
           final connectivity = getIt<ConnectivityProvider>();
           connectivity.forceCheck();
         } catch (e) {
-
+          AppLogger.debug('Failed to force connectivity check', 'BaseProvider');
         }
         return 'No connection to server. Please check your internet connection.';
       }

@@ -5,7 +5,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/music_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/friend_provider.dart';
-import '../../providers/connectivity_provider.dart';
 import '../../services/music_player_service.dart';
 import '../../core/service_locator.dart';
 import '../../core/theme_utils.dart';
@@ -534,14 +533,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   }
 
   void _playPlaylist(Playlist playlist) async {
-    if (playlist.tracks?.isNotEmpty != true) {
+    if (playlist.tracks.isNotEmpty != true) {
       _showInfo('This playlist is empty or tracks are not loaded');
       return;
     }
 
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.token;
+    
     try {
       final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      await musicProvider.fetchPlaylistTracks(playlist.id, Provider.of<AuthProvider>(context, listen: false).token!);
+      await musicProvider.fetchPlaylistTracks(playlist.id, token!);
       
       final playlistTracks = musicProvider.playlistTracks;
       if (playlistTracks.isEmpty) {
@@ -554,13 +556,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         playlist: playlistTracks,
         startIndex: 0,
         playlistId: playlist.id,
-        authToken: Provider.of<AuthProvider>(context, listen: false).token,
+        authToken: token,
       );
       
-      _showSuccess('Playing ${playlist.name}');
+      if (mounted) {
+        _showSuccess('Playing ${playlist.name}');
+      }
     } catch (e) {
       AppLogger.error('Failed to play playlist', e, null, 'HomeScreen');
-      _showError('Failed to play playlist: ${e.toString()}');
+      if (mounted) {
+        _showError('Failed to play playlist: ${e.toString()}');
+      }
     }
   }
 

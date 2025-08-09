@@ -16,7 +16,6 @@ void main() {
     });
 
     testWidgets('should observe navigation events', (WidgetTester tester) async {
-      bool navigationDetected = false;
       
       await tester.pumpWidget(
         MaterialApp(

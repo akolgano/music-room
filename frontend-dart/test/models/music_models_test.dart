@@ -60,7 +60,7 @@ void main() {
         
         expect(track.isDeezerTrack, true);
         expect(track.backendId, '123');
-        expect(track.frontendId, 'deezer_123');
+        expect(track.id, 'deezer_123');
       });
       test('should convert frontend ID correctly', () {
         expect(Track.toFrontendId('123', isDeezer: true), 'deezer_123');

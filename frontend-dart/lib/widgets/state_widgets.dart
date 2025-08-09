@@ -6,7 +6,7 @@ class StateWidgets {
   static double _responsiveWidth(double value) => value.w;
   static double _responsiveHeight(double value) => value.h;
   static double _responsiveSize(double webValue, int appValue) => 
-      (webValue is double && webValue.isFinite) ? webValue : appValue.toDouble();
+      webValue.isFinite ? webValue : appValue.toDouble();
   
   static TextStyle _secondaryStyle(BuildContext context) => 
       Theme.of(context).textTheme.bodyMedium!.copyWith(

@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:music_room/providers/friend_provider.dart';
 import 'package:music_room/core/base_provider.dart';
 import 'package:music_room/services/api_service.dart';
-import 'package:music_room/services/friend_service.dart';
 void main() {
   group('Friend Provider Tests', () {
     late FriendProvider friendProvider;

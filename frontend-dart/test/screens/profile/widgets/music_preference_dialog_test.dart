@@ -75,7 +75,6 @@ void main() {
     });
 
     testWidgets('should handle selection changes', (WidgetTester tester) async {
-      List<int>? selectedIds;
       
       await tester.pumpWidget(
         MaterialApp(

@@ -42,7 +42,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
   bool get _canEdit {
     if (_playlist == null) return true; 
-    return _playlist!.creator == auth.username;
+    return _playlist!.canEdit(auth.username);
   } 
 
   @override
@@ -355,26 +355,14 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       );
     }
 
-    if (_canEdit) {
-      return ReorderableListView.builder(
-        padding: const EdgeInsets.all(4),
-        itemCount: _playlistTracks.length,
-        onReorder: (oldIndex, newIndex) => _reorderTracks(oldIndex, newIndex),
-        itemBuilder: (context, index) {
-          final track = _playlistTracks[index];
-          return _buildTrackCard(track, index, key: ValueKey(track.id));
-        },
-      );
-    } else {
-      return ListView.builder(
-        padding: const EdgeInsets.all(4),
-        itemCount: _playlistTracks.length,
-        itemBuilder: (context, index) {
-          final track = _playlistTracks[index];
-          return _buildTrackCard(track, index, key: ValueKey(track.id));
-        },
-      );
-    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(4),
+      itemCount: _playlistTracks.length,
+      itemBuilder: (context, index) {
+        final track = _playlistTracks[index];
+        return _buildTrackCard(track, index, key: ValueKey(track.id));
+      },
+    );
   }
 
   Widget _buildTrackCard(Track track, int index, {required Key key}) {
@@ -390,28 +378,17 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         ? Colors.blue.withValues(alpha: 0.1) 
         : null,
       child: ListTile(
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_canEdit)
-              ReorderableDragStartListener(
-                index: index,
-                child: const Icon(Icons.drag_handle, color: Colors.grey),
-              ),
-            const SizedBox(width: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: track.imageUrl != null 
-                ? Image.network(
-                    track.imageUrl!,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
-                  )
-                : _buildDefaultAlbumArt(),
-            ),
-          ],
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: track.imageUrl != null 
+            ? Image.network(
+                track.imageUrl!,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
+              )
+            : _buildDefaultAlbumArt(),
         ),
         title: Text(
           track.name,
@@ -435,24 +412,41 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           ],
         ),
         trailing: _canEdit 
-          ? PopupMenuButton<String>(
-              onSelected: (action) => _handleTrackAction(action, track, index),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'play',
-                  child: ListTile(
-                    leading: Icon(Icons.play_arrow),
-                    title: Text('Play'),
-                    contentPadding: EdgeInsets.zero,
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (index > 0)
+                  IconButton(
+                    icon: const Icon(Icons.keyboard_arrow_up),
+                    onPressed: () => _moveTrack(index, index - 1),
+                    tooltip: 'Move up',
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'remove',
-                  child: ListTile(
-                    leading: Icon(Icons.remove, color: Colors.red),
-                    title: Text('Remove', style: TextStyle(color: Colors.red)),
-                    contentPadding: EdgeInsets.zero,
+                if (index < _playlistTracks.length - 1)
+                  IconButton(
+                    icon: const Icon(Icons.keyboard_arrow_down),
+                    onPressed: () => _moveTrack(index, index + 1),
+                    tooltip: 'Move down',
                   ),
+                PopupMenuButton<String>(
+                  onSelected: (action) => _handleTrackAction(action, track, index),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'play',
+                      child: ListTile(
+                        leading: Icon(Icons.play_arrow),
+                        title: Text('Play'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'remove',
+                      child: ListTile(
+                        leading: Icon(Icons.remove, color: Colors.red),
+                        title: Text('Remove', style: TextStyle(color: Colors.red)),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             )
@@ -668,22 +662,32 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     }
   }
 
-  Future<void> _reorderTracks(int oldIndex, int newIndex) async {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
+  Future<void> _moveTrack(int fromIndex, int toIndex) async {
+    if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || 
+        fromIndex >= _playlistTracks.length || toIndex >= _playlistTracks.length) {
+      return;
     }
 
-    final track = _playlistTracks.removeAt(oldIndex);
-    _playlistTracks.insert(newIndex, track);
+    final track = _playlistTracks.removeAt(fromIndex);
+    _playlistTracks.insert(toIndex, track);
 
-    _playlistTracks.map((t) => t.id).toList();
     setState(() {});
 
     try {
-      getProvider<MusicProvider>();
+      final musicProvider = getProvider<MusicProvider>();
+      await musicProvider.moveTrackInPlaylist(
+        playlistId: widget.playlistId!, 
+        rangeStart: fromIndex, 
+        insertBefore: toIndex,
+        token: auth.token!,
+      );
     } catch (e) {
       AppLogger.error('Failed to save track order', e, null, 'PlaylistEditorScreen');
       showError('Failed to save track order: ${e.toString()}');
+      
+      final restoredTrack = _playlistTracks.removeAt(toIndex);
+      _playlistTracks.insert(fromIndex, restoredTrack);
+      setState(() {});
     }
   }
 

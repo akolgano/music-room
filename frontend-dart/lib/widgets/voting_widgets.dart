@@ -329,21 +329,16 @@ class TrackVotingControls extends StatelessWidget {
 
 
   void _handleVote(VotingProvider votingProvider, AuthProvider authProvider, int? trackIndex, int voteValue) async {
-    print('VotingWidgets: _handleVote called - trackIndex: $trackIndex, voteValue: $voteValue, playlistId: $playlistId');
     if (trackIndex != null && voteValue > 0) { 
-      print('VotingWidgets: Calling votingProvider.voteForTrackByIndex');
       final success = await votingProvider.voteForTrackByIndex(
         playlistId: playlistId,
         trackIndex: trackIndex,
         token: authProvider.token!
       );
-      print('VotingWidgets: Vote result - success: $success');
       if (success && onVoteSubmitted != null) onVoteSubmitted!();
       if (!success) {
         AppLogger.warning('Vote failed, should revert UI state', 'VotingWidgets');
       }
-    } else {
-      print('VotingWidgets: Invalid trackIndex ($trackIndex) or voteValue ($voteValue)');
     }
   }
 }
