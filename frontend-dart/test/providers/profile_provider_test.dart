@@ -10,7 +10,7 @@ void main() {
     setUp(() {
       GetIt.instance.reset();
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000';
+      dio.options.baseUrl = 'http://localhost:8000'
       final apiService = ApiService(dio);
       GetIt.instance.registerSingleton<ApiService>(apiService);
       profileProvider = ProfileProvider();

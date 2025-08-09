@@ -37,7 +37,7 @@ void main() {
           'name': 'Test Song',
           'artist': 'Test Artist',
           'album': 'Test Album',
-          'url': 'http://example.com/track123'
+          'url': 'http://localhost:8000'
         };
         
         final track = Track.fromJson(json);
@@ -46,7 +46,7 @@ void main() {
         expect(track.name, 'Test Song');
         expect(track.artist, 'Test Artist');
         expect(track.album, 'Test Album');
-        expect(track.url, 'http://example.com/track123');
+        expect(track.url, 'http://example.com/music.mp3');
       });
       test('should identify Deezer track correctly', () {
         const track = Track(
@@ -54,8 +54,8 @@ void main() {
           name: 'Test Song',
           artist: 'Test Artist',
           album: 'Test Album',
-          url: 'http://example.com/track',
-          deezerTrackId: '123'
+          url: 'http://example.com/music2.mp3',
+          deezerTrackId: '123',
         );
         
         expect(track.isDeezerTrack, true);
@@ -127,8 +127,8 @@ void main() {
           name: 'Test Song',
           artist: '',
           album: 'Test Album',
-          url: 'http://example.com/track',
-          deezerTrackId: '123'
+          url: 'http://example.com/music3.mp3',
+          deezerTrackId: '123',
         );
         
         const playlistTrack = PlaylistTrack(
@@ -146,7 +146,7 @@ void main() {
           name: 'Test Song',
           artist: 'Test Artist',
           album: 'Test Album',
-          url: 'http://example.com/track'
+          url: 'http://localhost:8000'
         );
         
         const playlistTrack = PlaylistTrack(
@@ -166,7 +166,7 @@ void main() {
           name: 'Original Song',
           artist: 'Original Artist',
           album: 'Original Album',
-          url: 'http://example.com/track'
+          url: 'http://localhost:8000'
         );
         
         const newTrack = Track(
@@ -174,7 +174,7 @@ void main() {
           name: 'New Song',
           artist: 'New Artist',
           album: 'New Album',
-          url: 'http://example.com/track'
+          url: 'http://localhost:8000'
         );
         
         const playlistTrack = PlaylistTrack(

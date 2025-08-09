@@ -8,7 +8,7 @@ void main() {
     setUp(() {
       cacheService = TrackCacheService();
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000';
+      dio.options.baseUrl = 'http://localhost:8000'
       ApiService(dio);
       cacheService.clearCache();
     });

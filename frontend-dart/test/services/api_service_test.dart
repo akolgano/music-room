@@ -6,13 +6,13 @@ void main() {
   group('API Service Tests', () {
     test('ApiService should be instantiable', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000';
+      dio.options.baseUrl = 'http://localhost:8000'
       final apiService = ApiService(dio);
       expect(apiService, isA<ApiService>());
     });
     test('ApiService should be instantiable with custom Dio instance', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000';
+      dio.options.baseUrl = 'http://localhost:8000'
       final apiService = ApiService(dio);
       expect(apiService, isA<ApiService>());
     });

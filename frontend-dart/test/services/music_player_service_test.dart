@@ -14,7 +14,7 @@ void main() {
       GetIt.instance.reset();
       
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000';
+      dio.options.baseUrl = 'http://localhost:8000'
       final apiService = ApiService(dio);
       final musicService = MusicService(apiService);
       

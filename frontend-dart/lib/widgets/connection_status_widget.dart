@@ -29,7 +29,7 @@ class ConnectionStatusBanner extends StatelessWidget {
                       ),
                     ),
                     TextButton(
-                      onPressed: () => connectivity.forceCheck(),
+                      onPressed: () => connectivity.checkConnection(),
                       child: const Text(
                         'Retry',
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -154,7 +154,7 @@ class ConnectionStatusIndicator extends StatelessWidget {
           if (connectivity.isDisconnected)
             TextButton(
               onPressed: () {
-                connectivity.forceCheck();
+                connectivity.checkConnection();
                 Navigator.of(context).pop();
               },
               child: const Text('Retry Connection'),
@@ -203,7 +203,7 @@ class ConnectionStatusCard extends StatelessWidget {
                 if (connectivity.isDisconnected) ...[
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
-                    onPressed: () => connectivity.forceCheck(),
+                    onPressed: () => connectivity.checkConnection(),
                     icon: const Icon(Icons.refresh),
                     label: const Text('Retry Connection'),
                   ),

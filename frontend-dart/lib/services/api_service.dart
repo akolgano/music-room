@@ -14,7 +14,7 @@ class ApiService {
   static Dio _createConfiguredDio() {
     final baseUrl = (dotenv.env['API_BASE_URL']?.isNotEmpty == true 
         ? dotenv.env['API_BASE_URL']! 
-        : 'http://localhost:8000').replaceAll(RegExp(r'/$'), '');
+        : 'http://localhost:8000');
     final dio = Dio()
       ..options = BaseOptions(
           baseUrl: baseUrl, 
@@ -239,11 +239,11 @@ class ApiService {
       _postVoid('/playlists/$playlistId/add/', request, token: token);
 
   Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) async {
-    // First get the playlist tracks to find the correct playlistTrackId
+    
     final tracksResponse = await getPlaylistTracks(playlistId, token);
     PlaylistTrack? targetTrack;
     
-    // Find the track by comparing track IDs
+    
     for (final track in tracksResponse.tracks) {
       if (track.trackId == trackId) {
         targetTrack = track;
@@ -255,7 +255,7 @@ class ApiService {
       throw Exception('Track not found in playlist');
     }
     
-    // Use the playlistTrackId if available, otherwise fall back to trackId
+    
     final idToUse = targetTrack.playlistTrackId ?? trackId;
     
     int? parsedId;

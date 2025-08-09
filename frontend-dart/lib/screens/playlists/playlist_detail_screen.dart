@@ -678,7 +678,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           AppLogger.debug('Removing track: Track.id=$trackId, using PlaylistTrackId=$playlistTrackId', 'PlaylistDetailScreen');
           AppLogger.debug('TrackId mapping size: ${_trackIdToPlaylistTrackId.length}', 'PlaylistDetailScreen');
           
-          // Validate that the track ID can be parsed as an integer
+          
           try {
             int.parse(playlistTrackId);
             AppLogger.debug('PlaylistTrackId $playlistTrackId is valid integer', 'PlaylistDetailScreen');
@@ -705,11 +705,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final musicProvider = getProvider<MusicProvider>();
     final currentSort = musicProvider.currentSortOption;
     
-    // If not in custom order, switch to it first
+    
     if (currentSort.field != TrackSortField.position) {
       musicProvider.resetToCustomOrder();
       
-      // Show a brief message to the user
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -720,11 +720,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         );
       }
       
-      // Wait a frame for the UI to update
+      
       await Future.delayed(const Duration(milliseconds: 100));
     }
     
-    // Now perform the move
+    
     await _moveTrack(fromIndex, toIndex);
   }
 
@@ -763,8 +763,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     try {
       final musicProvider = getProvider<MusicProvider>();
       
-      // When moving down, we need to adjust the insertBefore index
-      // because after removing the item at oldIndex, all subsequent indices shift down by 1
+      
+      
       int adjustedInsertBefore = newIndex;
       if (newIndex > oldIndex) {
         adjustedInsertBefore = newIndex + 1;

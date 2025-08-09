@@ -150,13 +150,14 @@ class ProfileProvider extends BaseProvider {
             _phone = profileData.phone;
             _friendInfo = profileData.friendInfo;
             _musicPreferences = profileData.musicPreferences;
-            _avatarVisibility = VisibilityLevel.public;
-            _nameVisibility = VisibilityLevel.public;
-            _locationVisibility = VisibilityLevel.public;
-            _bioVisibility = VisibilityLevel.public;
-            _phoneVisibility = VisibilityLevel.private;
-            _friendInfoVisibility = VisibilityLevel.friends;
-            _musicPreferencesVisibility = VisibilityLevel.public;
+            _musicPreferenceIds = profileData.musicPreferencesIds;
+            _avatarVisibility = VisibilityLevelExtension.fromString(profileData.avatarVisibility);
+            _nameVisibility = VisibilityLevelExtension.fromString(profileData.nameVisibility);
+            _locationVisibility = VisibilityLevelExtension.fromString(profileData.locationVisibility);
+            _bioVisibility = VisibilityLevelExtension.fromString(profileData.bioVisibility);
+            _phoneVisibility = VisibilityLevelExtension.fromString(profileData.phoneVisibility);
+            _friendInfoVisibility = VisibilityLevelExtension.fromString(profileData.friendInfoVisibility);
+            _musicPreferencesVisibility = VisibilityLevelExtension.fromString(profileData.musicPreferencesVisibility);
           } catch (e) {
             if (kDebugMode) {
               debugPrint('[ProfileProvider] Error loading profile data: $e');
@@ -404,8 +405,9 @@ class ProfileProvider extends BaseProvider {
           debugPrint('[ProfileProvider] Updating visibility settings with multipart');
         }
         
+        ProfileResponse response;
         if (kIsWeb) {
-          await _apiService.updateProfileWithFileWeb(
+          response = await _apiService.updateProfileWithFileWeb(
             token!,
             avatarVisibility: avatarVisibility?.value,
             nameVisibility: nameVisibility?.value,
@@ -416,7 +418,7 @@ class ProfileProvider extends BaseProvider {
             musicPreferencesVisibility: musicPreferencesVisibility?.value,
           );
         } else {
-          await _apiService.updateProfileWithFile(
+          response = await _apiService.updateProfileWithFile(
             token!,
             avatarVisibility: avatarVisibility?.value,
             nameVisibility: nameVisibility?.value,
@@ -428,13 +430,24 @@ class ProfileProvider extends BaseProvider {
           );
         }
 
-        if (avatarVisibility != null) _avatarVisibility = avatarVisibility;
-        if (nameVisibility != null) _nameVisibility = nameVisibility;
-        if (locationVisibility != null) _locationVisibility = locationVisibility;
-        if (bioVisibility != null) _bioVisibility = bioVisibility;
-        if (phoneVisibility != null) _phoneVisibility = phoneVisibility;
-        if (friendInfoVisibility != null) _friendInfoVisibility = friendInfoVisibility;
-        if (musicPreferencesVisibility != null) _musicPreferencesVisibility = musicPreferencesVisibility;
+        _avatarVisibility = VisibilityLevelExtension.fromString(response.avatarVisibility);
+        _nameVisibility = VisibilityLevelExtension.fromString(response.nameVisibility);
+        _locationVisibility = VisibilityLevelExtension.fromString(response.locationVisibility);
+        _bioVisibility = VisibilityLevelExtension.fromString(response.bioVisibility);
+        _phoneVisibility = VisibilityLevelExtension.fromString(response.phoneVisibility);
+        _friendInfoVisibility = VisibilityLevelExtension.fromString(response.friendInfoVisibility);
+        _musicPreferencesVisibility = VisibilityLevelExtension.fromString(response.musicPreferencesVisibility);
+        
+        if (response.avatar != null) _avatar = response.avatar;
+        if (response.name != null) _name = response.name;
+        if (response.location != null) _location = response.location;
+        if (response.bio != null) _bio = response.bio;
+        if (response.phone != null) _phone = response.phone;
+        if (response.friendInfo != null) _friendInfo = response.friendInfo;
+        if (response.musicPreferences != null) _musicPreferences = response.musicPreferences;
+        if (response.musicPreferencesIds != null) _musicPreferenceIds = response.musicPreferencesIds;
+        
+        notifyListeners();
       },
       successMessage: 'Visibility settings updated successfully',
       errorMessage: 'Failed to update visibility settings',

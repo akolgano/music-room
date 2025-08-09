@@ -15,7 +15,7 @@ class ThemeUtils {
   }
 
   static double getResponsiveMargin(BuildContext context) {
-    return MusicAppResponsive.getMargin(context,
+    return MusicAppResponsive.getPadding(context,
       tiny: 1.0, small: 2.0, medium: 4.0,
       large: 6.0, xlarge: 8.0, xxlarge: 12.0
     );
