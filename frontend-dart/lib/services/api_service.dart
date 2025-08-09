@@ -4,6 +4,7 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
+import '../core/logging_navigation_observer.dart';
 
 class ApiService {
   final Dio _dio;
@@ -237,8 +238,36 @@ class ApiService {
   Future<void> addTrackToPlaylist(String playlistId, String token, AddTrackRequest request) => 
       _postVoid('/playlists/$playlistId/add/', request, token: token);
 
-  Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) => 
-      _delete('/playlists/$playlistId/remove_tracks', data: {'track_id': int.parse(trackId)}, token: token);
+  Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) async {
+    // First get the playlist tracks to find the correct playlistTrackId
+    final tracksResponse = await getPlaylistTracks(playlistId, token);
+    PlaylistTrack? targetTrack;
+    
+    // Find the track by comparing track IDs
+    for (final track in tracksResponse.tracks) {
+      if (track.trackId == trackId) {
+        targetTrack = track;
+        break;
+      }
+    }
+    
+    if (targetTrack == null) {
+      throw Exception('Track not found in playlist');
+    }
+    
+    // Use the playlistTrackId if available, otherwise fall back to trackId
+    final idToUse = targetTrack.playlistTrackId ?? trackId;
+    
+    int? parsedId;
+    try {
+      parsedId = int.parse(idToUse);
+    } catch (e) {
+      AppLogger.error('Failed to parse ID as integer: $idToUse', e, null, 'ApiService');
+      throw Exception('Invalid ID format: $idToUse');
+    }
+    
+    return _postVoid('/playlists/playlists/$playlistId/remove_tracks', {'track_id': parsedId}, token: token);
+  }
   Future<void> moveTrackInPlaylist(String playlistId, String token, MoveTrackRequest request) => 
       _postVoid('/playlists/$playlistId/move-track/', request, token: token);
   Future<VoteResponse> voteForTrack(String playlistId, String token, VoteRequest request) => 

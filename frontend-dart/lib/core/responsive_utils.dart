@@ -138,23 +138,6 @@ class MusicAppResponsive {
     }
   }
 
-  static double getElevation(BuildContext context, {
-    double tiny = 1.0,
-    double small = 2.0,
-    double medium = 3.0,
-    double large = 4.0,
-    double xlarge = 6.0,
-    double xxlarge = 8.0,
-  }) {
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny;
-      case ScreenSize.small: return small;
-      case ScreenSize.medium: return medium;
-      case ScreenSize.large: return large;
-      case ScreenSize.xlarge: return xlarge;
-      case ScreenSize.xxlarge: return xxlarge;
-    }
-  }
 
   static int getGridColumns(BuildContext context, {
     int tiny = 1,

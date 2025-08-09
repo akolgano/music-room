@@ -74,7 +74,7 @@ class MusicProvider extends BaseProvider {
     AppLogger.debug('MusicProvider: Fetching all playlists (user + public)', 'MusicProvider');
     final result = await executeAsync(
       () async {
-        // Fetch both user's saved playlists and all public playlists
+
         final userPlaylistsFuture = _musicService.getUserPlaylists(token);
         final publicPlaylistsFuture = _musicService.getPublicPlaylists(token);
         
@@ -82,15 +82,15 @@ class MusicProvider extends BaseProvider {
         final userPlaylists = results[0];
         final publicPlaylists = results[1];
         
-        // Combine playlists, avoiding duplicates
+
         final allPlaylists = <String, Playlist>{};
         
-        // Add all user's saved playlists first (includes their own playlists)
+
         for (final playlist in userPlaylists) {
           allPlaylists[playlist.id] = playlist;
         }
         
-        // Add public playlists from other users (skip if already added from user's saved)
+
         for (final playlist in publicPlaylists) {
           if (!allPlaylists.containsKey(playlist.id)) {
             allPlaylists[playlist.id] = playlist;
@@ -136,7 +136,7 @@ class MusicProvider extends BaseProvider {
           name, description, isPublic, token, deviceUuid
         );
         AppLogger.debug('Playlist created with ID: $id', 'MusicProvider');
-        // Refresh the combined playlists list to include the new playlist
+
         await fetchAllPlaylists(token);
         return id;
       },
@@ -198,6 +198,8 @@ class MusicProvider extends BaseProvider {
       if (trackIdsToPreload.isNotEmpty) {
         _trackCacheService.preloadTracks(trackIdsToPreload, token, _apiService);
       }
+      
+      notifyListeners();
     }
   }
 

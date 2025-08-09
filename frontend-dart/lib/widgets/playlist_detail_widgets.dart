@@ -14,10 +14,16 @@ class PlaylistDetailWidgets {
       builder: (context, themeProvider, _) {
         return ThemeUtils.buildThemedCard(
           context: context,
-          elevation: MusicAppResponsive.getElevation(context,
-            tiny: 4.0, small: 5.0, medium: 6.0,
-            large: 7.0, xlarge: 8.0, xxlarge: 10.0
-          ),
+          elevation: () {
+            switch (MusicAppResponsive.getScreenSize(context)) {
+              case ScreenSize.tiny: return 4.0;
+              case ScreenSize.small: return 5.0;
+              case ScreenSize.medium: return 6.0;
+              case ScreenSize.large: return 7.0;
+              case ScreenSize.xlarge: return 8.0;
+              case ScreenSize.xxlarge: return 10.0;
+            }
+          }(),
           child: Column(
             children: [
               Container(

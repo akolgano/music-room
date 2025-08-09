@@ -279,15 +279,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _isGetOtp = false;
         });
 
-        AppWidgets.showSnackBar(context, "Password changed successfully!", backgroundColor: AppTheme.onSurface);
-
         if (mounted) {
+          AppWidgets.showSnackBar(context, "Password changed successfully!", backgroundColor: AppTheme.onSurface);
           Navigator.pop(context);
         }
       }
     } catch (error) {
       AppLogger.error('Error during password reset', error, null, 'ForgotPasswordScreen');
-      AppWidgets.showSnackBar(context, error.toString(), backgroundColor: AppTheme.error);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, error.toString(), backgroundColor: AppTheme.error);
+      }
     }
 
     setState(() {

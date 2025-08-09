@@ -152,6 +152,7 @@ class Playlist {
 
 class PlaylistTrack {
   final String trackId;
+  final String? playlistTrackId;
   final String name;
   final int position;
   final int points; 
@@ -159,6 +160,7 @@ class PlaylistTrack {
 
   const PlaylistTrack({
     required this.trackId,
+    this.playlistTrackId,
     required this.name,
     required this.position,
     this.points = 0, 
@@ -211,6 +213,7 @@ class PlaylistTrack {
 
     return PlaylistTrack(
       trackId: (json['track_id'] ?? json['id']).toString(),
+      playlistTrackId: json['playlist_track_id']?.toString(),
       name: (json['name'] ?? track?.name ?? '').toString(),
       position: json['position'] as int,
       points: json['points'] as int? ?? 0, 
@@ -271,6 +274,7 @@ class PlaylistTrack {
   PlaylistTrack copyWithTrack(Track newTrack) {
     return PlaylistTrack(
       trackId: trackId,
+      playlistTrackId: playlistTrackId,
       name: name,
       position: position,
       points: points,
@@ -281,6 +285,7 @@ class PlaylistTrack {
   PlaylistTrack copyWithPoints(int newPoints) {
     return PlaylistTrack(
       trackId: trackId,
+      playlistTrackId: playlistTrackId,
       name: name,
       position: position,
       points: newPoints,

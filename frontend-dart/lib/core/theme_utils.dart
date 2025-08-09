@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'responsive_utils.dart' show MusicAppResponsive;
+import 'responsive_utils.dart' show MusicAppResponsive, ScreenSize;
 
 class ThemeUtils {
   static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
@@ -47,10 +47,6 @@ class ThemeUtils {
     return EdgeInsets.all(padding);
   }
 
-  static EdgeInsets getResponsiveCardMargin(BuildContext context) {
-    final margin = getResponsiveMargin(context);
-    return EdgeInsets.all(margin);
-  }
 
 
   static TextStyle getHeadingStyle(BuildContext context) {
@@ -107,10 +103,16 @@ class ThemeUtils {
     return ElevatedButton.styleFrom(
       backgroundColor: AppTheme.primary, 
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
-      elevation: MusicAppResponsive.getElevation(context,
-        tiny: 1.0, small: 2.0, medium: 3.0,
-        large: 4.0, xlarge: 5.0, xxlarge: 6.0
-      ),
+      elevation: () {
+        switch (MusicAppResponsive.getScreenSize(context)) {
+          case ScreenSize.tiny: return 1.0;
+          case ScreenSize.small: return 2.0;
+          case ScreenSize.medium: return 3.0;
+          case ScreenSize.large: return 4.0;
+          case ScreenSize.xlarge: return 5.0;
+          case ScreenSize.xxlarge: return 6.0;
+        }
+      }(),
       shadowColor: AppTheme.primary.withValues(alpha: 0.3), 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
       minimumSize: Size(MusicAppResponsive.getFontSize(context,
@@ -165,11 +167,17 @@ class ThemeUtils {
   }) {
     return Card(
       color: Theme.of(context).colorScheme.surface,
-      elevation: elevation ?? MusicAppResponsive.getElevation(context,
-        tiny: 1.0, small: 2.0, medium: 3.0,
-        large: 4.0, xlarge: 5.0, xxlarge: 6.0
-      ),
-      margin: margin ?? getResponsiveCardMargin(context),
+      elevation: elevation ?? () {
+        switch (MusicAppResponsive.getScreenSize(context)) {
+          case ScreenSize.tiny: return 1.0;
+          case ScreenSize.small: return 2.0;
+          case ScreenSize.medium: return 3.0;
+          case ScreenSize.large: return 4.0;
+          case ScreenSize.xlarge: return 5.0;
+          case ScreenSize.xxlarge: return 6.0;
+        }
+      }(),
+      margin: margin ?? EdgeInsets.all(getResponsiveMargin(context)),
       shadowColor: AppTheme.primary.withValues(alpha: 0.2), 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? getResponsiveBorderRadius(context))),
       child: Padding(padding: padding ?? getResponsiveCardPadding(context), child: child),

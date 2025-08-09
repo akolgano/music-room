@@ -107,22 +107,6 @@ void main() {
       expect(find.textContaining('Border Radius:'), findsOneWidget);
     });
 
-    testWidgets('should provide responsive elevation', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
-            builder: (context) {
-              final elevation = MusicAppResponsive.getElevation(context);
-              return Scaffold(
-                body: Text('Elevation: $elevation'),
-              );
-            },
-          ),
-        ),
-      );
-
-      expect(find.textContaining('Elevation:'), findsOneWidget);
-    });
 
     testWidgets('should provide responsive grid columns', (WidgetTester tester) async {
       await tester.pumpWidget(

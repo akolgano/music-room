@@ -81,7 +81,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   Widget _buildHeader() => Card(
     color: AppTheme.surface,
     elevation: MusicAppResponsive.isVerySmall(context) ? 2 : 4,
-    margin: MusicAppResponsive.isVerySmall(context) ? EdgeInsets.zero : ThemeUtils.getResponsiveCardMargin(context),
+    margin: MusicAppResponsive.isVerySmall(context) ? EdgeInsets.zero : EdgeInsets.all(ThemeUtils.getResponsiveMargin(context)),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
     child: Padding(
       padding: MusicAppResponsive.isVerySmall(context) ? const EdgeInsets.all(12) : ThemeUtils.getResponsiveCardPadding(context),

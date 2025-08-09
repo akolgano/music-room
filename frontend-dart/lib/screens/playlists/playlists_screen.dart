@@ -94,7 +94,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
         await musicProvider.fetchAllPlaylists(auth.token!);
         AppLogger.debug('Loaded ${musicProvider.playlists.length} total playlists', 'AllPlaylistsScreen');
         
-        // Debug: Show all playlists with full details
+
         if (musicProvider.playlists.isEmpty) {
           AppLogger.debug('NO PLAYLISTS FOUND - This could be the issue!', 'AllPlaylistsScreen');
         } else {
@@ -183,9 +183,9 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
         break;
         
       case PlaylistSortField.dateCreated:
-        // Note: If playlist has no createdAt field, we'll sort by name as fallback
+
         _sortedPlaylists.sort((a, b) {
-          // For now, sort by name as fallback since we don't have dateCreated in the model
+
           final comparison = a.name.toLowerCase().compareTo(b.name.toLowerCase());
           return _currentSort.order == SortOrder.ascending ? comparison : -comparison;
         });
