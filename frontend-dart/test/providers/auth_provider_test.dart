@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/providers/auth_provider.dart';
+import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/models/music_models.dart';
 import 'package:music_room/models/api_models.dart';
 void main() {

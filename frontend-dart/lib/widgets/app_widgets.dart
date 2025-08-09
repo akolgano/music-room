@@ -4,14 +4,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/music_models.dart';
-import '../services/music_player_service.dart';
-import '../providers/dynamic_theme_provider.dart';
-import '../widgets/voting_widgets.dart';
+import '../services/player_services.dart';
+import '../providers/theme_providers.dart';
 import 'dialog_widgets.dart';
-import 'scrollbar.dart';
+import 'votes_widgets.dart';
+import '../models/voting_models.dart';
+import 'scrollbar_widgets.dart';
 import 'form_widgets.dart';
 import 'state_widgets.dart';
-export 'mini_player_widget.dart';
+export 'player_widgets.dart';
 
 class TrackActionsWidget extends StatelessWidget {
   final bool showAddButton;
@@ -291,6 +292,14 @@ class TrackCardWidget extends StatelessWidget {
                           child: TrackVotingControls(
                             playlistId: playlistId!,
                             trackId: track.id,
+                            trackIndex: 0,
+                            stats: VoteStats(
+                              totalVotes: 0,
+                              upvotes: 0,
+                              downvotes: 0,
+                              userHasVoted: false,
+                              voteScore: 0.0,
+                            ),
                           ),
                         ),
                       if (onSelectionChanged == null)

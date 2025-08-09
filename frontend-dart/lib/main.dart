@@ -3,14 +3,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'core/theme_utils.dart';
-import 'core/social_login.dart';
-import 'core/constants.dart';
-import 'core/service_locator.dart';
-import 'core/app_builder.dart';
-import 'core/logging_navigation_observer.dart';
-import 'services/notification_service.dart';
-import 'providers/dynamic_theme_provider.dart';
+import 'core/theme_core.dart';
+import 'core/social_core.dart';
+import 'core/constants_core.dart';
+import 'core/locator_core.dart';
+import 'core/builder_core.dart';
+import 'core/navigation_core.dart';
+import 'services/notification_services.dart';
+import 'providers/theme_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -3,12 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FormWidgets {
   
-  static double _getScaledButtonHeight(BuildContext context) {
-    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
-    const baseHeight = 40.0;
-    return (baseHeight * textScaleFactor).clamp(32.0, 72.0);
-  }
-  
   
   static Widget textField({
     required BuildContext context, 
@@ -81,8 +75,8 @@ class FormWidgets {
     bool fullWidth = true,
   }) {
     final theme = Theme.of(context);
-    final scaledHeight = _getScaledButtonHeight(context);
     final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
+    final scaledHeight = (40.0 * textScaleFactor).clamp(32.0, 72.0);
     
     final content = isLoading 
       ? SizedBox(
@@ -139,8 +133,8 @@ class FormWidgets {
     bool fullWidth = true,
   }) {
     final theme = Theme.of(context);
-    final scaledHeight = _getScaledButtonHeight(context);
     final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
+    final scaledHeight = (40.0 * textScaleFactor).clamp(32.0, 72.0);
     
     final content = Row(
       mainAxisSize: MainAxisSize.min,

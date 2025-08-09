@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/logging_navigation_observer.dart';
+import 'package:music_room/core/navigation_core.dart';
 
 void main() {
   group('LoggingNavigationObserver Tests', () {

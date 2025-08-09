@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/services/frontend_logging_service.dart';
+import 'package:music_room/services/logging_services.dart';
 
 void main() {
   group('FrontendLoggingService Sanitization Tests', () {

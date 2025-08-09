@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/social_login.dart';
+import 'package:music_room/core/social_core.dart';
 void main() {
   group('SocialLoginUtils Tests', () {
     test('SocialLoginUtils should have initialize method', () {

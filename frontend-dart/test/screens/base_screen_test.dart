@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/base_screen.dart';
+import 'package:music_room/screens/base_screens.dart';
 void main() {
   group('Base Screen Tests', () {
     test('BaseScreen should provide common functionality', () {

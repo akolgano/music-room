@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/auth/auth_screen.dart';
-import 'package:music_room/core/constants.dart';
+import 'package:music_room/screens/auth/auth_screens.dart';
+import 'package:music_room/core/constants_core.dart';
 void main() {
   group('Auth Screen Tests', () {
     test('AuthScreen should be instantiable', () {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:music_room/screens/playlists/playlist_editor_screen.dart';
+import 'package:music_room/screens/playlists/editor_playlists.dart';
 import 'package:music_room/models/music_models.dart';
 
 void main() {

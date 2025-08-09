@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/friends/add_friend_screen.dart';
+import 'package:music_room/screens/friends/add_friends.dart';
 void main() {
   group('Add Friend Screen Tests', () {
     test('AddFriendScreen should be instantiable', () {
@@ -20,7 +20,7 @@ void main() {
           'id': 'user_1',
           'username': 'alice_wonder',
           'displayName': 'Alice Wonderland',
-          'profilePicture': 'https://localhost:8001'
+          'profilePicture': 'https://localhost:8001',
           'isFriend': false,
           'hasPendingRequest': false,
         },
@@ -28,7 +28,7 @@ void main() {
           'id': 'user_2',
           'username': 'alice_smith',
           'displayName': 'Alice Smith',
-          'profilePicture': 'https://localhost:8001'
+          'profilePicture': 'https://localhost:8001',
           'isFriend': true,
           'hasPendingRequest': false,
         },

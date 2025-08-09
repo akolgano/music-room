@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:music_room/providers/profile_provider.dart';
-import 'package:music_room/core/base_provider.dart';
-import 'package:music_room/services/api_service.dart';
+import 'package:music_room/providers/profile_providers.dart';
+import 'package:music_room/core/provider_core.dart';
+import 'package:music_room/services/api_services.dart';
 void main() {
   group('Profile Provider Tests', () {
     late ProfileProvider profileProvider;
     setUp(() {
       GetIt.instance.reset();
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       GetIt.instance.registerSingleton<ApiService>(apiService);
       profileProvider = ProfileProvider();

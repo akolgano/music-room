@@ -1,18 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
-import 'package:music_room/services/api_service.dart';
+import 'package:music_room/services/api_services.dart';
 import 'package:music_room/models/api_models.dart';
 void main() {
   group('API Service Tests', () {
     test('ApiService should be instantiable', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       expect(apiService, isA<ApiService>());
     });
     test('ApiService should be instantiable with custom Dio instance', () {
       final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8000'
+      dio.options.baseUrl = 'http://localhost:8000';
       final apiService = ApiService(dio);
       expect(apiService, isA<ApiService>());
     });

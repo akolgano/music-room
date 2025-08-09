@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/profile/social_network_link_screen.dart';
+import 'package:music_room/screens/profile/social_profile.dart';
 import 'package:music_room/models/api_models.dart';
 
 void main() {

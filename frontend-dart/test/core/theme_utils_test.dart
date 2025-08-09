@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/core/theme_utils.dart';
+import 'package:music_room/core/theme_core.dart';
 void main() {
   group('Theme Utils Tests', () {
     test('AppTheme should provide dark theme data', () {

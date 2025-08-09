@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/screens/auth/forgot_password_screen.dart';
-import 'package:music_room/core/constants.dart';
+import 'package:music_room/screens/auth/password_auth.dart';
+import 'package:music_room/core/constants_core.dart';
 
 void main() {
   group('Forgot Password Screen Tests', () {
