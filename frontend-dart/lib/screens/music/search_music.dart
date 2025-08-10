@@ -7,6 +7,7 @@ import '../../providers/music_providers.dart';
 import '../../services/player_services.dart';
 import '../../services/music_services.dart';
 import '../../core/theme_core.dart';
+import '../../core/constants_core.dart';
 import '../../core/logging_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
@@ -657,7 +658,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       context, 
       title: 'Create New Playlist',
       hintText: 'Enter playlist name',
-      validator: (value) => value?.isEmpty ?? true ? 'Please enter a playlist name' : null,
+      validator: AppValidators.playlistName,
     );
     if (playlistName?.isNotEmpty == true) {
       await runAsyncAction(

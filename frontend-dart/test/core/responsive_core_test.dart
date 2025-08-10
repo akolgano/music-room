@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/responsive_core.dart';
+import 'package:music_room/core/theme_core.dart';
 
 void main() {
   group('MusicAppResponsive Tests', () {
@@ -125,12 +126,12 @@ void main() {
       expect(find.textContaining('Grid Columns:'), findsOneWidget);
     });
 
-    testWidgets('should provide responsive button height', (WidgetTester tester) async {
+    testWidgets('should provide responsive values through theme helper', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
             builder: (context) {
-              final height = MusicAppResponsive.getButtonHeight(context);
+              final height = ThemeUtils.getResponsiveButtonHeight(context);
               return Scaffold(
                 body: Text('Button Height: $height'),
               );

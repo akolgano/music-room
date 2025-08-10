@@ -162,11 +162,5 @@ class MusicService {
     }
   }
 
-  Future<void> addRandomTrackToPlaylist(String playlistId, String token) async {
-    final randomTracks = await getRandomTracks(count: 1);
-    if (randomTracks.isNotEmpty) {
-      await addTrackToPlaylist(playlistId, randomTracks.first.backendId, token);
-    }
-  }
 }
 

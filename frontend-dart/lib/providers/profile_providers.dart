@@ -195,7 +195,6 @@ class ProfileProvider extends BaseProvider {
         ));
       },
       successMessage: 'Password changed successfully',
-      errorMessage: 'Failed to change password',
     );
   }
 

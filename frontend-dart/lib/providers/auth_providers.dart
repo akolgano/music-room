@@ -150,7 +150,6 @@ class AuthProvider extends BaseProvider {
         await _authService.sendSignupEmailOtp(email);
       },
       successMessage: 'OTP sent successfully',
-      errorMessage: 'Failed to send OTP',
     );
   }
 
@@ -158,7 +157,6 @@ class AuthProvider extends BaseProvider {
     final success = await executeBool(
       () async => await _authService.signupWithOtp(username, email, password, otp),
       successMessage: 'Account created successfully!',
-      errorMessage: 'Signup failed',
     );
     
     if (success && token != null) {

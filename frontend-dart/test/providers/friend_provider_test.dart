@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:music_room/providers/friend_providers.dart';
 import 'package:music_room/core/provider_core.dart';
 import 'package:music_room/services/api_services.dart';
+import 'package:music_room/models/api_models.dart';
 void main() {
   group('Friend Provider Tests', () {
     late FriendProvider friendProvider;
@@ -30,7 +31,7 @@ void main() {
       final received = friendProvider.receivedInvitations;
       final sent = friendProvider.sentInvitations;
       
-      expect(() => friends.add('1'), throwsUnsupportedError);
+      expect(() => friends.add(Friend(id: '1', username: 'test')), throwsUnsupportedError);
       expect(() => received.add({}), throwsUnsupportedError);
       expect(() => sent.add({}), throwsUnsupportedError);
     });

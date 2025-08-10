@@ -85,13 +85,13 @@ class MusicAppResponsive {
     }
   }
 
-  static double getButtonHeight(BuildContext context, {
-    double tiny = 28.0,
-    double small = 32.0,
-    double medium = 36.0,
-    double large = 40.0,
-    double xlarge = 48.0,
-    double xxlarge = 56.0,
+  static double getResponsiveValue(BuildContext context, {
+    required double tiny,
+    required double small,
+    required double medium,
+    required double large,
+    required double xlarge,
+    required double xxlarge,
   }) {
     switch (getScreenSize(context)) {
       case ScreenSize.tiny: return tiny;

@@ -65,6 +65,13 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
 
+  Widget _buildPlaceholderIcon(Color surfaceColor) {
+    return Container(
+      color: surfaceColor,
+      child: const Icon(Icons.music_note, size: 80, color: Colors.white),
+    );
+  }
+
   @override
   Widget buildContent() {
     if (_track == null) return buildLoadingState(message: 'Loading track details...');
@@ -124,15 +131,9 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                         child: CircularProgressIndicator(color: AppTheme.primary)
                       ),
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: themeProvider.surfaceColor,
-                      child: const Icon(Icons.music_note, size: 80, color: Colors.white),
-                    ),
+                    errorWidget: (context, url, error) => _buildPlaceholderIcon(themeProvider.surfaceColor),
                   )
-                : Container(
-                    color: themeProvider.surfaceColor,
-                    child: const Icon(Icons.music_note, size: 80, color: Colors.white),
-                  ),
+                : _buildPlaceholderIcon(themeProvider.surfaceColor),
             ),
           ),
           const SizedBox(height: 24),

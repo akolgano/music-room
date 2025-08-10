@@ -16,33 +16,18 @@ class SocialLoginUtils {
   static Future<void> initialize() async {
     if (_isInitialized) { return; }    
     try {
-      await _initializeFacebook();
+      final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
+      if (fbAppId != null && fbAppId.isNotEmpty) {
+        if (kIsWeb) {
+          await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v18.0");
+        }
+        _facebookInitialized = true;
+      }
       await _initializeGoogle();
       _isInitialized = true;
       AppLogger.debug('Social login initialization completed successfully', 'SocialLoginUtils');
     } catch (e) {
       AppLogger.debug('Social login initialization error: $e', 'SocialLoginUtils');
-      rethrow;
-    }
-  }
-
-  static Future<void> _initializeFacebook() async {
-    try {
-      final fbAppId = dotenv.env['FACEBOOK_APP_ID'];
-      if (fbAppId == null || fbAppId.isEmpty) {
-        AppLogger.debug('Warning: FACEBOOK_APP_ID not found in environment variables', 'SocialLoginUtils');
-        return;
-      }
-      if (kIsWeb) {
-        await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v18.0");
-        AppLogger.debug('Facebook initialized for web', 'SocialLoginUtils');
-      } else {
-        AppLogger.debug('Facebook SDK configured for mobile platform', 'SocialLoginUtils');
-      }
-      _facebookInitialized = true;
-    } catch (e) {
-      AppLogger.debug('Facebook initialization error: $e', 'SocialLoginUtils');
-      _facebookInitialized = false;
       rethrow;
     }
   }

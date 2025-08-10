@@ -319,7 +319,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
           Navigator.pushReplacementNamed(context, '/');
         }
       } else {
-        _showError('Signup failed. Please check your verification code.');
+        _showError(authProvider.errorMessage ?? 'Signup failed. Please check your verification code.');
       }
     } catch (e) {
       AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');

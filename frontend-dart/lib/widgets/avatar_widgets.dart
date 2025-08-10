@@ -422,46 +422,9 @@ class ProfileAvatarWidget extends StatelessWidget {
           backgroundColor: Colors.transparent,
           child: GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.9,
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: profileProvider.avatarUrl!.startsWith('data:')
-                          ? Image.memory(
-                              base64Decode(profileProvider.avatarUrl!.split(',')[1]),
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  _buildInitialsAvatar(),
-                            )
-                          : Image.network(
-                              profileProvider.avatarUrl!,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  _buildInitialsAvatar(),
-                            ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                      onPressed: () => Navigator.pop(context),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.black54,
-                        shape: const CircleBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: profileProvider.avatarUrl!.startsWith('data:')
+                ? Image.memory(base64Decode(profileProvider.avatarUrl!.split(',')[1]))
+                : Image.network(profileProvider.avatarUrl!),
           ),
         );
       },

@@ -110,7 +110,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   controller: _emailController,
                                   labelText: 'Email',
                                   prefixIcon: Icons.email,
-                                  keyboardType: TextInputType.emailAddress,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter an email';

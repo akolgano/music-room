@@ -120,7 +120,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             controller: _nameController,
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
-            validator: AppValidators.name,
+            validator: AppValidators.playlistName,
             onFieldSubmitted: kIsWeb ? (_) => (_isEditMode ? _saveChanges() : _createPlaylist()) : null,
           ),
           const SizedBox(height: 16),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../core/theme_core.dart';
 import '../models/sort_models.dart';
 
-class SortButton extends StatelessWidget {
-  final TrackSortOption currentSort;
+class SortButton<T> extends StatelessWidget {
+  final T currentSort;
   final VoidCallback onPressed;
   final bool showLabel;
 
@@ -11,14 +11,16 @@ class SortButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCustomOrder = currentSort.field == TrackSortField.position;
+    final isCustomOrder = _isDefaultSort(currentSort);
+    final icon = _getSortIcon(currentSort);
+    final displayName = _getSortDisplayName(currentSort);
     
     if (showLabel) {
       return ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(currentSort.icon, size: 18),
+        icon: Icon(icon, size: 18),
         label: Text(
-          isCustomOrder ? 'Sort' : currentSort.displayName,
+          isCustomOrder ? 'Sort' : displayName,
           style: const TextStyle(fontSize: 14),
         ),
         style: ElevatedButton.styleFrom(
@@ -34,12 +36,39 @@ class SortButton extends StatelessWidget {
       return IconButton(
         onPressed: onPressed,
         icon: Icon(
-          currentSort.icon,
+          icon,
           color: isCustomOrder ? Colors.white : AppTheme.primary,
         ),
-        tooltip: currentSort.displayName,
+        tooltip: displayName,
       );
     }
+  }
+
+  bool _isDefaultSort(T sort) {
+    if (sort is TrackSortOption) {
+      return sort.field == TrackSortField.position;
+    } else if (sort is PlaylistSortOption) {
+      return sort.field == PlaylistSortField.name && sort == PlaylistSortOption.defaultOptions.first;
+    }
+    return false;
+  }
+
+  IconData _getSortIcon(T sort) {
+    if (sort is TrackSortOption) {
+      return sort.icon;
+    } else if (sort is PlaylistSortOption) {
+      return sort.icon;
+    }
+    return Icons.sort;
+  }
+
+  String _getSortDisplayName(T sort) {
+    if (sort is TrackSortOption) {
+      return sort.displayName;
+    } else if (sort is PlaylistSortOption) {
+      return sort.displayName;
+    }
+    return 'Sort';
   }
 }
 
@@ -149,47 +178,6 @@ class TrackSortBottomSheet extends StatelessWidget {
         onSortChanged: onSortChanged,
       ),
     );
-  }
-}
-
-class PlaylistSortButton extends StatelessWidget {
-  final PlaylistSortOption currentSort;
-  final VoidCallback onPressed;
-  final bool showLabel;
-
-  const PlaylistSortButton({super.key, required this.currentSort, required this.onPressed, this.showLabel = true});
-
-  @override
-  Widget build(BuildContext context) {
-    final isCustomOrder = currentSort.field == PlaylistSortField.name && currentSort == PlaylistSortOption.defaultOptions.first;
-    
-    if (showLabel) {
-      return ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(currentSort.icon, size: 18),
-        label: Text(
-          isCustomOrder ? 'Sort' : currentSort.displayName,
-          style: const TextStyle(fontSize: 14),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isCustomOrder ? AppTheme.surface : AppTheme.primary,
-          foregroundColor: isCustomOrder ? Colors.white : Colors.black,
-          side: BorderSide(
-            color: isCustomOrder ? Colors.white54 : AppTheme.primary,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-      );
-    } else {
-      return IconButton(
-        onPressed: onPressed,
-        icon: Icon(
-          currentSort.icon,
-          color: isCustomOrder ? Colors.white : AppTheme.primary,
-        ),
-        tooltip: currentSort.displayName,
-      );
-    }
   }
 }
 

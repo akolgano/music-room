@@ -244,7 +244,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
             const Text('Share to Social Media', style: TextStyle(color: Colors.white)),
           ],
         ),
-        content: const Text('Social media sharing coming soon!', style: TextStyle(color: Colors.white)),
+        content: const Text('Share your playlist on social media platforms.', style: TextStyle(color: Colors.white)),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
