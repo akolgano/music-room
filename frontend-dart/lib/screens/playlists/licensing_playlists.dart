@@ -27,7 +27,7 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
   
   String _licenseType = 'open';
   List<String> _invitedUsers = [];
-  List<String> _availableFriends = [];
+  List<Friend> _availableFriends = [];
   TimeOfDay? _voteStartTime;
   TimeOfDay? _voteEndTime;
   double? _latitude;
@@ -215,19 +215,19 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
               subtitle: 'Add friends first to invite them',
             )
           else
-            ..._availableFriends.map((friendId) => CheckboxListTile(
-              value: _invitedUsers.contains(friendId),
-              onChanged: (value) => _toggleFriendInvite(friendId, value ?? false),
+            ..._availableFriends.map((friend) => CheckboxListTile(
+              value: _invitedUsers.contains(friend.id),
+              onChanged: (value) => _toggleFriendInvite(friend.id, value ?? false),
               title: Text(
-                'Friend #$friendId',
+                friend.username,
                 style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                'User ID: $friendId',
+                'ID: ${friend.id}',
                 style: const TextStyle(color: Colors.grey),
               ),
               secondary: CircleAvatar(
-                backgroundColor: ThemeUtils.getColorFromString(friendId),
+                backgroundColor: ThemeUtils.getColorFromString(friend.id),
                 child: const Icon(Icons.person, color: Colors.white),
               ),
               activeColor: AppTheme.primary,
@@ -446,7 +446,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
 
   Future<void> _getCurrentLocation() async {
     try {
-      // Check location permissions
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -461,7 +460,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
         return;
       }
 
-      // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         showError('Location services are disabled. Please enable location services.');
@@ -470,7 +468,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
 
       showInfo('Getting your current location...');
       
-      // Get current position
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 15),

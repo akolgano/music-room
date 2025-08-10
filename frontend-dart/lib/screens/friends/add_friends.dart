@@ -139,8 +139,10 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
     await runAsyncAction(
       () async {
         final friendProvider = getProvider<FriendProvider>();
+        await friendProvider.fetchAllFriendData(auth.token!);
         
-        if (friendProvider.friends.contains(userId)) {
+        final isAlreadyFriend = friendProvider.friends.any((friend) => friend.id == userId);
+        if (isAlreadyFriend) {
           throw Exception('This user is already your friend');
         }
         
@@ -151,7 +153,21 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           return toUserId == userId && status == 'pending';
         });
         
-        if (alreadySent) throw Exception('You already sent a friend request to this user');
+        if (alreadySent) {
+          throw Exception('You already sent a friend request to this user');
+        }
+        
+        final receivedInvitations = friendProvider.receivedInvitations;
+        final hasReceivedRequest = receivedInvitations.any((invitation) {
+          final fromUserId = friendProvider.getFromUserId(invitation);
+          final status = friendProvider.getInvitationStatus(invitation);
+          return fromUserId == userId && status == 'pending';
+        });
+        
+        if (hasReceivedRequest) {
+          throw Exception('This user has already sent you a friend request. Check your pending requests.');
+        }
+        
         await friendProvider.sendFriendRequest(auth.token!, userId);
         _userIdController.clear();
       },

@@ -144,7 +144,9 @@ class NotificationService {
     Duration duration = const Duration(seconds: 4),
   }) {
     final messageType = messageData['type'] as String? ?? 'Unknown';
-    final title = _getNotificationTitle(messageType);
+    final title = (messageType == 'playlist_update' || messageType == 'playlist.update') 
+        ? 'Playlist Updated' 
+        : 'New Message';
     final message = _getNotificationMessage(messageType, messageData);
     final icon = _getNotificationIcon(messageType);
     final color = messageType == 'playlist_update' || messageType == 'playlist.update'
@@ -161,15 +163,6 @@ class NotificationService {
     );
   }
 
-  String _getNotificationTitle(String messageType) {
-    switch (messageType) {
-      case 'playlist_update':
-      case 'playlist.update':
-        return 'Playlist Updated';
-      default:
-        return 'New Message';
-    }
-  }
 
   String _getNotificationMessage(String messageType, Map<String, dynamic> data) {
     switch (messageType) {

@@ -360,7 +360,6 @@ class AppWidgets {
   );
 
 
-  static double _responsiveSize(double webSize, double mobileSize) => kIsWeb ? webSize : mobileSize.sp.toDouble();
   static double _responsiveWidth(double size) => _responsive(size, type: 'w');
   static double _responsiveHeight(double size) => _responsive(size, type: 'h');
   static double _responsiveValue(double value) => _responsive(value);
@@ -601,8 +600,8 @@ static Widget emptyState({
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
-          final iconSize = _responsiveSize(isConstrained ? 24.0 : 64.0, isConstrained ? 24 : 64);
-          final titleSize = _responsiveSize(isConstrained ? 12.0 : 18.0, isConstrained ? 12 : 18);
+          final iconSize = _responsiveValue(isConstrained ? 24.0 : 64.0);
+          final titleSize = _responsiveValue(isConstrained ? 12.0 : 18.0);
           final spacing = _responsiveHeight(isConstrained ? 4.0 : 12.0);
           final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
           

@@ -394,7 +394,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         if (success) {
           logAuthAction('social_login', success: true, metadata: {'provider': provider});
           if (mounted) {
-            Navigator.pushReplacementNamed(context, AppRoutes.home);
+            Navigator.pushReplacementNamed(context, '/');
           }
         } else {
           logAuthAction('social_login', success: false, metadata: {'provider': provider, 'error': authProvider.errorMessage});

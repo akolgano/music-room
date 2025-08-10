@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../providers/friend_providers.dart';
+import '../../models/api_models.dart';
 import '../base_screens.dart';
 
 class FriendsListScreen extends StatefulWidget {
@@ -55,9 +56,9 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
   }
 
   Widget _buildFriendsTab(FriendProvider friendProvider) {
-    return buildListContent<String>(
+    return buildListContent<Friend>(
       items: friendProvider.friends,
-      itemBuilder: (friendId, index) => _buildFriendCard(friendId),
+      itemBuilder: (friend, index) => _buildFriendCard(friend),
       onRefresh: _loadFriendsData,
       emptyState: buildEmptyState(
         icon: Icons.people,
@@ -116,26 +117,26 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     );
   }
 
-  Widget _buildFriendCard(String friendId) {
+  Widget _buildFriendCard(Friend friend) {
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
       color: AppTheme.surface,
       child: ListTile(
-        onTap: () => _navigateToUserPage(friendId),
+        onTap: () => _navigateToUserPage(friend.id),
         leading: CircleAvatar(
-          backgroundColor: ThemeUtils.getColorFromString(friendId),
+          backgroundColor: ThemeUtils.getColorFromString(friend.id),
           child: const Icon(Icons.person, color: Colors.white),
         ),
         title: Text(
-          friendId, 
+          friend.username, 
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)
         ),
         subtitle: Text(
-          'Connected', 
+          'ID: ${friend.id}', 
           style: const TextStyle(color: Colors.grey, fontSize: 12)
         ),
         trailing: PopupMenuButton<String>(
-          onSelected: (value) => _handleFriendAction(value, friendId),
+          onSelected: (value) => _handleFriendAction(value, friend.id),
           itemBuilder: (context) => [
             const PopupMenuItem(
               value: 'view_profile',

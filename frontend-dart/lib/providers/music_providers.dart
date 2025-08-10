@@ -15,12 +15,16 @@ class MusicProvider extends BaseProvider {
   final ApiService _apiService = getIt<ApiService>();
 
   List<Playlist> _playlists = [];
+  List<Playlist> _userPlaylists = [];
+  List<Playlist> _publicPlaylists = [];
   List<Track> _searchResults = [];
   List<PlaylistTrack> _playlistTracks = [];
   bool _hasConnectionError = false;
   
 
   List<Playlist> get playlists => List.unmodifiable(_playlists);
+  List<Playlist> get userPlaylists => List.unmodifiable(_userPlaylists);
+  List<Playlist> get publicPlaylists => List.unmodifiable(_publicPlaylists);
   List<Track> get searchResults => List.unmodifiable(_searchResults);
   List<PlaylistTrack> get playlistTracks => _playlistTracks;
   bool get hasConnectionError => _hasConnectionError;
@@ -55,19 +59,27 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<void> fetchUserPlaylists(String token) async {
-    await _fetchPlaylists(
+    final result = await executeAsync(
       () => _musicService.getUserPlaylists(token),
-      'Failed to load playlists',
+      errorMessage: 'Failed to load user playlists',
     );
+    if (result != null) {
+      _userPlaylists = result;
+      notifyListeners();
+    }
   }
 
   Future<void> fetchPublicPlaylists(String token) async {
     AppLogger.debug('MusicProvider: Fetching public playlists', 'MusicProvider');
-    await _fetchPlaylists(
+    final result = await executeAsync(
       () => _musicService.getPublicPlaylists(token),
-      'Failed to load public playlists',
+      errorMessage: 'Failed to load public playlists',
     );
-    AppLogger.debug('MusicProvider: Fetched ${_playlists.length} public playlists', 'MusicProvider');
+    if (result != null) {
+      _publicPlaylists = result;
+      AppLogger.debug('MusicProvider: Fetched ${_publicPlaylists.length} public playlists', 'MusicProvider');
+      notifyListeners();
+    }
   }
 
   Future<void> fetchAllPlaylists(String token) async {
@@ -103,9 +115,14 @@ class MusicProvider extends BaseProvider {
     );
     
     if (result != null) {
+      final userPlaylists = await _musicService.getUserPlaylists(token);
+      final publicPlaylists = await _musicService.getPublicPlaylists(token);
+      
+      _userPlaylists = userPlaylists;
+      _publicPlaylists = publicPlaylists;
       _playlists = result;
       _hasConnectionError = false;
-      AppLogger.debug('MusicProvider: Combined ${_playlists.length} total playlists', 'MusicProvider');
+      AppLogger.debug('MusicProvider: Combined ${_playlists.length} total playlists (${_userPlaylists.length} user + ${_publicPlaylists.length} public)', 'MusicProvider');
     } else {
       _hasConnectionError = true;
     }

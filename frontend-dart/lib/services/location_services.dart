@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LocationService {
   static const String _geonamesUsername = 'demo';
@@ -33,28 +34,77 @@ class LocationService {
       }
     }
     
-    // Return fallback popular cities if API fails
-    return _getFallbackSuggestions(query);
+    return [];
   }
 
-  static List<LocationSuggestion> _getFallbackSuggestions(String query) {
-    final popularCities = [
-      LocationSuggestion(name: 'New York', country: 'United States', adminName: 'New York'),
-      LocationSuggestion(name: 'London', country: 'United Kingdom', adminName: 'England'),
-      LocationSuggestion(name: 'Tokyo', country: 'Japan', adminName: 'Tokyo'),
-      LocationSuggestion(name: 'Paris', country: 'France', adminName: 'Île-de-France'),
-      LocationSuggestion(name: 'Los Angeles', country: 'United States', adminName: 'California'),
-      LocationSuggestion(name: 'Toronto', country: 'Canada', adminName: 'Ontario'),
-      LocationSuggestion(name: 'Sydney', country: 'Australia', adminName: 'New South Wales'),
-      LocationSuggestion(name: 'Berlin', country: 'Germany', adminName: 'Berlin'),
-      LocationSuggestion(name: 'Singapore', country: 'Singapore', adminName: 'Singapore'),
-      LocationSuggestion(name: 'Mumbai', country: 'India', adminName: 'Maharashtra'),
-    ];
-    
-    final queryLower = query.toLowerCase();
-    return popularCities
-        .where((city) => city.name.toLowerCase().contains(queryLower))
-        .toList();
+  static Future<LocationSuggestion?> getCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (kDebugMode) {
+          debugPrint('Location services are disabled.');
+        }
+        return null;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (kDebugMode) {
+            debugPrint('Location permissions are denied');
+          }
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (kDebugMode) {
+          debugPrint('Location permissions are permanently denied, cannot request permissions.');
+        }
+        return null;
+      }
+
+      final Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 15),
+      );
+
+      return await _reverseGeocode(position.latitude, position.longitude);
+      
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error getting current location: $e');
+      }
+      return null;
+    }
+  }
+
+  static Future<LocationSuggestion?> _reverseGeocode(double latitude, double longitude) async {
+    try {
+      final url = Uri.parse(
+        '$_geonamesBaseUrl/findNearbyPlaceNameJSON?lat=$latitude&lng=$longitude&username=$_geonamesUsername'
+      );
+      
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['geonames'] != null && (data['geonames'] as List).isNotEmpty) {
+          final place = (data['geonames'] as List).first;
+          return LocationSuggestion(
+            name: place['name'] as String,
+            country: place['countryName'] as String,
+            adminName: place['adminName1'] as String?,
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error reverse geocoding: $e');
+      }
+    }
+    return null;
   }
 }
 

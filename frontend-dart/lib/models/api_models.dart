@@ -623,15 +623,44 @@ class PlaylistTracksResponse {
       );
 }
 
+class Friend {
+  final String id;
+  final String username;
+  final String? profilePictureUrl;
+  
+  const Friend({
+    required this.id,
+    required this.username,
+    this.profilePictureUrl,
+  });
+  
+  factory Friend.fromJson(Map<String, dynamic> json) => Friend(
+    id: json['friend_id'] as String? ?? json['id'] as String? ?? '',
+    username: json['friend_username'] as String? ?? json['username'] as String? ?? 'Unknown User',
+    profilePictureUrl: json['profile_picture_url'] as String?,
+  );
+}
+
 class FriendsResponse {
-  final List<String> friends;
+  final List<Friend> friends;
   
   const FriendsResponse({required this.friends});
   
-  factory FriendsResponse.fromJson(Map<String, dynamic> json) => 
-      FriendsResponse(
-        friends: (json['friends'] as List<dynamic>).cast<String>(),
-      );
+  factory FriendsResponse.fromJson(Map<String, dynamic> json) {
+    final friendsList = json['friends'] as List<dynamic>? ?? [];
+    return FriendsResponse(
+      friends: friendsList.map((item) {
+        if (item is Map<String, dynamic>) {
+          return Friend.fromJson(item);
+        } else {
+          return Friend(
+            id: item.toString(),
+            username: item.toString(),
+          );
+        }
+      }).toList(),
+    );
+  }
 }
 
 class Friendship {
@@ -775,10 +804,22 @@ class FriendInvitationsResponse {
   
   const FriendInvitationsResponse({required this.invitations});
   
-  factory FriendInvitationsResponse.fromJson(Map<String, dynamic> json) => 
-      FriendInvitationsResponse(invitations: (json['received_invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? 
-                                              (json['sent_invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? 
-                                              (json['invitations'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? []);
+  factory FriendInvitationsResponse.fromJson(Map<String, dynamic> json) {
+    List<Map<String, dynamic>> parseInvitations(List<dynamic>? rawList) {
+      if (rawList == null) return [];
+      return rawList.whereType<Map<String, dynamic>>().toList();
+    }
+    
+    List<Map<String, dynamic>> invitations = parseInvitations(json['received_invitations'] as List<dynamic>?);
+    if (invitations.isEmpty) {
+      invitations = parseInvitations(json['sent_invitations'] as List<dynamic>?);
+    }
+    if (invitations.isEmpty) {
+      invitations = parseInvitations(json['invitations'] as List<dynamic>?);
+    }
+    
+    return FriendInvitationsResponse(invitations: invitations);
+  }
 }
 
 class BatchLibraryAddResult {

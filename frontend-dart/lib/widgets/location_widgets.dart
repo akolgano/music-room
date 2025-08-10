@@ -7,6 +7,7 @@ class LocationAutocompleteField extends StatefulWidget {
   final String hintText;
   final void Function(String) onLocationSelected;
   final String? Function(String?)? validator;
+  final bool showAutoDetectButton;
 
   const LocationAutocompleteField({
     super.key,
@@ -15,6 +16,7 @@ class LocationAutocompleteField extends StatefulWidget {
     this.hintText = 'Enter your city or location',
     required this.onLocationSelected,
     this.validator,
+    this.showAutoDetectButton = true,
   });
 
   @override
@@ -26,6 +28,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
   List<LocationSuggestion> _suggestions = [];
   bool _isLoading = false;
   bool _showSuggestions = false;
+  bool _isDetectingLocation = false;
 
   @override
   void initState() {
@@ -87,6 +90,53 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     });
   }
 
+  Future<void> _detectCurrentLocation() async {
+    setState(() {
+      _isDetectingLocation = true;
+      _showSuggestions = false;
+    });
+
+    try {
+      final location = await LocationService.getCurrentLocation();
+      if (location != null && mounted) {
+        _controller.text = location.displayName;
+        widget.onLocationSelected(location.displayName);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Location detected: ${location.displayName}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to detect location. Please check permissions and try again.'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error detecting location. Please enter manually.'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDetectingLocation = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -94,6 +144,26 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (widget.showAutoDetectButton)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: _isDetectingLocation ? null : _detectCurrentLocation,
+              icon: _isDetectingLocation
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location, size: 18),
+              label: Text(_isDetectingLocation ? 'Detecting...' : 'Auto-detect Location'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+            ),
+          ),
         TextFormField(
           controller: _controller,
           validator: widget.validator,
@@ -207,7 +277,6 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
               },
             ),
           ),
-        // Invisible tap target to hide suggestions
         if (_showSuggestions)
           Positioned.fill(
             child: GestureDetector(

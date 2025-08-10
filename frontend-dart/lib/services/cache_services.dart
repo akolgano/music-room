@@ -114,7 +114,6 @@ class TrackCacheService {
     return _trackCache.containsKey(deezerTrackId);
   }
 
-  // Read-only access to cached tracks - returns null if not cached
   Track? operator [](String deezerTrackId) {
     return _trackCache[deezerTrackId];
   }
@@ -132,10 +131,6 @@ class TrackCacheService {
       AppLogger.debug('Preloading ${futures.length} tracks', 'TrackCacheService');
       await Future.wait(futures);
     }
-  }
-
-  bool hasRetryingTracks() {
-    return _retryCount.isNotEmpty;
   }
 
   bool isTrackRetrying(String deezerTrackId) {
@@ -162,6 +157,8 @@ class TrackCacheService {
   }
 
   TrackRetryConfig get retryConfig => _retryConfig;
+
+  Map<String, int> get retryCount => Map.unmodifiable(_retryCount);
 
   void clearCache() {
     _trackCache.clear();

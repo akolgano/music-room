@@ -137,8 +137,4 @@ class AuthService {
     return result;
   }
 
-  Future<Map<String, dynamic>> checkEmailAvailability(String email) async {
-    return await _api.checkEmail(email);
-  }
-
 }

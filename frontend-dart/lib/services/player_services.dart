@@ -445,11 +445,8 @@ class MusicPlayerService with ChangeNotifier {
               candidate.previewUrl != null && 
               candidate.previewUrl!.isNotEmpty) {
             
-            final similarity = _calculateTrackSimilarity(originalTrack, candidate);
-            if (similarity > 0.7) {
-              AppLogger.info('Found replacement: ${candidate.name} by ${candidate.artist} (similarity: ${(similarity * 100).toStringAsFixed(1)}%)', 'MusicPlayerService');
-              return candidate;
-            }
+            AppLogger.info('Found replacement: ${candidate.name} by ${candidate.artist}', 'MusicPlayerService');
+            return candidate;
           }
         }
       }
@@ -462,17 +459,6 @@ class MusicPlayerService with ChangeNotifier {
     }
   }
 
-  double _calculateTrackSimilarity(Track original, Track candidate) {
-    final originalName = original.name.toLowerCase().trim();
-    final candidateName = candidate.name.toLowerCase().trim();
-    final originalArtist = original.artist.toLowerCase().trim();
-    final candidateArtist = candidate.artist.toLowerCase().trim();
-    
-    final nameSimilarity = _stringSimilarity(originalName, candidateName);
-    final artistSimilarity = _stringSimilarity(originalArtist, candidateArtist);
-    
-    return (nameSimilarity * 0.7) + (artistSimilarity * 0.3);
-  }
 
   double _stringSimilarity(String a, String b) {
     if (a == b) return 1.0;
