@@ -380,14 +380,12 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     } else if (friendProvider.hasError) {
       final errorMessage = friendProvider.errorMessage!;
       
-      // Handle specific error cases
       if (errorMessage.toLowerCase().contains('already friends')) {
         showError('You are already friends with this user');
         setState(() {
           _isFriend = true;
         });
       } else {
-        // Show the specific error message from the API
         showError(errorMessage);
       }
       

@@ -1,12 +1,13 @@
 import '../core/provider_core.dart';
 import '../core/locator_core.dart';
 import '../services/api_services.dart';
+import '../models/api_models.dart';
 
 class FriendService {
   final ApiService _api;
   FriendService(this._api);
 
-  Future<List<String>> getFriends(String token) async {
+  Future<List<Friend>> getFriends(String token) async {
     final response = await _api.getFriends(token); 
     return response.friends;
   }
@@ -40,11 +41,11 @@ class FriendProvider extends BaseProvider {
   final FriendService _friendService = getIt<FriendService>();
   final ApiService _apiService = getIt<ApiService>();
   
-  List<String> _friends = [];
+  List<Friend> _friends = [];
   List<Map<String, dynamic>> _receivedInvitations = [];
   List<Map<String, dynamic>> _sentInvitations = [];
 
-  List<String> get friends => List.unmodifiable(_friends);
+  List<Friend> get friends => List.unmodifiable(_friends);
   List<Map<String, dynamic>> get receivedInvitations => List.unmodifiable(_receivedInvitations);
   List<Map<String, dynamic>> get sentInvitations => List.unmodifiable(_sentInvitations);
 
@@ -117,7 +118,7 @@ class FriendProvider extends BaseProvider {
     return await executeBool(
       () async {
         await _friendService.removeFriend(friendId, token);
-        _friends.remove(friendId);
+        _friends.removeWhere((friend) => friend.id == friendId);
       },
       successMessage: 'Friend removed',
       errorMessage: 'Failed to remove friend',

@@ -33,8 +33,6 @@ class VotingProvider extends BaseProvider {
   final Map<int, int> _trackPoints = {};
   Map<int, int> get trackPoints => Map.unmodifiable(_trackPoints);
 
-  VoteStats? getTrackVotes(String trackId) => _trackVotes[trackId];
-
   VoteStats? getTrackVotesByIndex(int index) {
     final trackKey = 'track_$index';
     return _trackVotes[trackKey];
@@ -117,7 +115,6 @@ class VotingProvider extends BaseProvider {
             trackIndex: trackIndex,
             token: token
           );
-          // Only update state if the backend request was successful
           _hasUserVotedForPlaylist = true;
           final currentPoints = _trackPoints[trackIndex] ?? 0;
           final newPoints = currentPoints + 1;
@@ -192,14 +189,6 @@ class VotingProvider extends BaseProvider {
     _hasUserVotedForPlaylist = false;
     notifyListeners();
   }
-
-  String getVotingStatusMessage() {
-    if (_hasUserVotedForPlaylist) {
-      return 'You have already voted on this playlist';
-    }
-    return _canVote ? 'Select a track to vote for' : 'Voting is not allowed';
-  }
-
 
   void setHasUserVotedForPlaylist(bool hasVoted) {
     AppLogger.debug('Setting user voted for playlist: $hasVoted', 'VotingProvider');

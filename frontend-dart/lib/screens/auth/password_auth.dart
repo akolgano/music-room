@@ -21,32 +21,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   var _isGetEmail = true;
   var _isGetOtp = false;
 
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String labelText,
-    required IconData prefixIcon,
-    TextInputType? keyboardType,
-    bool obscureText = false,
-    required String? Function(String?) validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: Icon(prefixIcon, color: AppTheme.onSurfaceVariant),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        filled: true,
-        fillColor: AppTheme.surfaceVariant,
-      ),
-      style: const TextStyle(color: Colors.white),
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      validator: validator,
-    );
-  }
 
 
   @override
@@ -131,7 +105,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               const SizedBox(height: 24),
 
                               if (_isGetEmail)
-                                _buildTextFormField(
+                                AppWidgets.textField(
+                                  context: context,
                                   controller: _emailController,
                                   labelText: 'Email',
                                   prefixIcon: Icons.email,
@@ -151,7 +126,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 ),
 
                               if (_isGetOtp) ...[
-                                _buildTextFormField(
+                                AppWidgets.textField(
+                                  context: context,
                                   controller: _otpController,
                                   labelText: 'OTP Code',
                                   prefixIcon: Icons.lock,
@@ -169,7 +145,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   },
                                 ),
                                 const SizedBox(height: 24),
-                                _buildTextFormField(
+                                AppWidgets.textField(
+                                  context: context,
                                   controller: _passwordController,
                                   labelText: 'Password',
                                   prefixIcon: Icons.lock,

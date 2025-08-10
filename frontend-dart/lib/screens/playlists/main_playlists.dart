@@ -67,7 +67,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
                 onRefresh: _loadPlaylists,
                 itemBuilder: (playlist, index) => AppWidgets.playlistCard( 
                   playlist: playlist,
-                  onTap: () => _viewPlaylist(playlist), 
+                  onTap: () => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id), 
                   onPlay: () => _playPlaylist(playlist),
                   showPlayButton: true,
                 ),
@@ -107,7 +107,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
     );
   }
 
-  void _viewPlaylist(Playlist playlist) => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id); 
+ 
   
   void _playPlaylist(Playlist playlist) async {
     if (playlist.tracks.isNotEmpty != true) {

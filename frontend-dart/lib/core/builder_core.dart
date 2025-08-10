@@ -12,6 +12,7 @@ import '../providers/profile_providers.dart';
 import '../providers/theme_providers.dart';
 import '../providers/voting_providers.dart';
 import '../providers/connectivity_providers.dart';
+import '../providers/animation_providers.dart';
 import '../services/player_services.dart';
 import '../models/music_models.dart';
 import '../screens/auth/auth_screens.dart';
@@ -46,6 +47,7 @@ class AppBuilder {
       ChangeNotifierProvider<FriendProvider>(create: (_) => FriendProvider()),
       ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
       ChangeNotifierProvider<VotingProvider>(create: (_) => getIt<VotingProvider>()),
+      ChangeNotifierProvider<AnimationSettingsProvider>(create: (_) => AnimationSettingsProvider()),
     ];
   }
 
@@ -70,7 +72,7 @@ class AppBuilder {
   }
 
   static final Set<String> _protectedRoutes = {
-    AppRoutes.home, AppRoutes.profile,
+    AppRoutes.profile,
     AppRoutes.playlistEditor,
     AppRoutes.playlistDetail,
     AppRoutes.trackDetail,
@@ -142,8 +144,6 @@ class AppBuilder {
     AppLogger.debug('Building protected route: ${settings.name} with arguments: ${settings.arguments}', 'AppBuilder');
     
     switch (settings.name) {
-      case AppRoutes.home:
-        return const HomeScreen();
       case AppRoutes.profile:
         return const ProfileScreen();
       case AppRoutes.trackSearch:

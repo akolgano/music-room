@@ -446,7 +446,6 @@ class ProfileSectionsWidget extends StatelessWidget {
 
   Future<void> _editMusicPreferences(BuildContext context) async {
     if (musicPreferences.isEmpty) {
-      // Show error - this should be handled by the parent
       return;
     }
 

@@ -1,11 +1,14 @@
 import 'dart:async'; 
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive/hive.dart';
 import '../../providers/music_providers.dart';
 import '../../services/player_services.dart';
 import '../../services/music_services.dart';
 import '../../core/theme_core.dart';
 import '../../core/logging_core.dart';
+import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/sort_widgets.dart';
 import '../../models/music_models.dart';
@@ -38,7 +41,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
   List<Playlist> _userPlaylists = [];
   Timer? _searchTimer;
   static const Duration _searchDelay = Duration(milliseconds: 800); 
-  static const int _minSearchLength = 2; 
+  static const int _minSearchLength = 2;
+  
+  static const List<String> _randomSearchSuggestions = [
+    'Pop hits', 'Rock classics', 'Jazz fusion', 'Electronic dance', 'Hip hop beats',
+    'Indie alternative', 'Country gold', 'R&B smooth', 'Classical symphony', 'Reggae vibes',
+    'Folk acoustic', 'Metal hardcore', 'Disco funk', 'Blues soul', 'Ambient chill',
+    'Punk energy', 'Trap beats', 'Techno pulse', 'Gospel spirit', 'World music'
+  ]; 
 
   bool get _isAddingToPlaylist => widget.playlistId != null;
   bool get _hasSelection => _selectedTracks.isNotEmpty;
@@ -81,8 +91,35 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
     if (widget.initialTrack != null) {
       _searchController.text = widget.initialTrack!.name;
       WidgetsBinding.instance.addPostFrameCallback((_) => _performSearch());
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkFirstVisitAndSetRandomSearch());
     }
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadUserPlaylists());
+  }
+
+  Future<void> _checkFirstVisitAndSetRandomSearch() async {
+    try {
+      final box = await Hive.openBox('app_preferences');
+      final hasVisitedSearch = box.get('has_visited_search_screen', defaultValue: false) as bool;
+      
+      if (!hasVisitedSearch && widget.isEmbedded) {
+        final random = Random();
+        final randomSuggestion = _randomSearchSuggestions[random.nextInt(_randomSearchSuggestions.length)];
+        
+        setState(() {
+          _searchController.text = randomSuggestion;
+        });
+        
+        await box.put('has_visited_search_screen', true);
+        await box.close();
+        
+        AppLogger.debug('First visit to search screen - set random suggestion: $randomSuggestion', 'TrackSearchScreen');
+      } else {
+        await box.close();
+      }
+    } catch (e) {
+      AppLogger.error('Failed to check first visit status', e, null, 'TrackSearchScreen');
+    }
   }
 
   @override
@@ -518,7 +555,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
     await runAsyncAction(
       () async {
         await getProvider<MusicProvider>().fetchUserPlaylists(auth.token!);
-        _userPlaylists = getProvider<MusicProvider>().playlists;
+        _userPlaylists = getProvider<MusicProvider>().userPlaylists;
       },
       errorMessage: 'Failed to load playlists',
     );

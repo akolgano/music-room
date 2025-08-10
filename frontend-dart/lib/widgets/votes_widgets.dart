@@ -327,9 +327,33 @@ class PlaylistVotingWidgets {
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _buildDefaultAlbumArt(),
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.music_note,
+                        color: AppTheme.primary,
+                        size: 24,
+                      ),
+                    ),
                   )
-                : _buildDefaultAlbumArt(),
+                : Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.music_note,
+                      color: AppTheme.primary,
+                      size: 24,
+                    ),
+                  ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -386,21 +410,6 @@ class PlaylistVotingWidgets {
     );
   }
 
-  static Widget _buildDefaultAlbumArt() {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: const Icon(
-        Icons.music_note,
-        color: AppTheme.primary,
-        size: 24,
-      ),
-    );
-  }
 
   static Widget _buildAddTrackForVotingButton({
     required BuildContext context,

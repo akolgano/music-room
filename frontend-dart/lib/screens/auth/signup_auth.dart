@@ -316,7 +316,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       
       if (success) {
         if (mounted) {
-          Navigator.pushReplacementNamed(context, AppRoutes.home);
+          Navigator.pushReplacementNamed(context, '/');
         }
       } else {
         _showError('Signup failed. Please check your verification code.');

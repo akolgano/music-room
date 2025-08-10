@@ -837,9 +837,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted) {
         final trackCacheService = getIt<TrackCacheService>();
-        final hasRetryingTracks = trackCacheService.hasRetryingTracks();
-        
-        if (hasRetryingTracks) {
+        if (trackCacheService.retryCount.isNotEmpty) {
           _refreshPlaylistData();
         } else if (!_webSocketService.isConnected && timer.tick % 3 == 0) {
           _refreshPlaylistData();

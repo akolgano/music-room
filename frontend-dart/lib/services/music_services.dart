@@ -170,10 +170,3 @@ class MusicService {
   }
 }
 
-extension PlaylistTrackSorting on List<PlaylistTrack> {
-
-  List<PlaylistTrack> sortedCopy(TrackSortOption sortOption) {
-    return TrackSortingService.sortTracks(this, sortOption);
-  }
-
-}

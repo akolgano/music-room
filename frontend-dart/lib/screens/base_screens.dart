@@ -54,7 +54,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     Navigator.pop(context, result);
   }
 
-  void navigateToHome() => navigateTo(AppRoutes.home);
+  void navigateToHome() => navigateTo('/');
 
   void showSuccess(String message) {
     if (!mounted) return;

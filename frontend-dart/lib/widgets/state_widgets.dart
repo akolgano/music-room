@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import '../core/animations_core.dart';
 
 class StateWidgets {
   static double _responsiveWidth(double value) => value.w;
   static double _responsiveHeight(double value) => value.h;
-  static double _responsiveSize(double webValue, int appValue) => 
-      webValue.isFinite ? webValue : appValue.toDouble();
   
   static TextStyle _secondaryStyle(BuildContext context) => 
       Theme.of(context).textTheme.bodyMedium!.copyWith(
@@ -52,8 +51,8 @@ class StateWidgets {
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
-          final iconSize = _responsiveSize(isConstrained ? 24.0 : 64.0, isConstrained ? 24 : 64);
-          final titleSize = _responsiveSize(isConstrained ? 12.0 : 18.0, isConstrained ? 12 : 18);
+          final iconSize = (isConstrained ? 24.0 : 64.0).sp;
+          final titleSize = (isConstrained ? 12.0 : 18.0).sp;
           final spacing = _responsiveHeight(isConstrained ? 4.0 : 12.0);
           final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
           
@@ -241,15 +240,22 @@ class NetworkConnectivityWidget extends StatefulWidget {
   State<NetworkConnectivityWidget> createState() => _NetworkConnectivityWidgetState();
 }
 
-class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
+class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> with TickerProviderStateMixin, PulsingColorMixin {
   bool _isConnected = true;
   bool _showBanner = false;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
+    initializePulsingController();
+    _initConnectivity();
+  }
+
+  Future<void> _initConnectivity() async {
     final results = await Connectivity().checkConnectivity();
-    _onConnectivityChanged(results);
+    if (mounted) {
+      _onConnectivityChanged(results);
+    }
     Connectivity().onConnectivityChanged.listen(_onConnectivityChanged);
   }
 
@@ -276,28 +282,55 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> {
   }
 
   Widget _buildConnectivityBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(4),
-      color: _isConnected ? Colors.green : Colors.red,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(_isConnected ? Icons.wifi : Icons.wifi_off, color: Colors.white, size: 16),
-          const SizedBox(width: 8),
-          Text(
-            _isConnected ? 'Back online' : 'No internet connection',
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-          ),
-          if (_isConnected) ...[
+    if (_isConnected) {
+      return AnimatedBuilder(
+        animation: pulsingColorAnimation,
+        builder: (context, child) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(4),
+            color: pulsingColorAnimation.value ?? Colors.green,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.wifi, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'Back online',
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => setState(() => _showBanner = false),
+                  child: const Icon(Icons.close, color: Colors.white, size: 16),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } else {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(4),
+        color: Colors.red,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off, color: Colors.white, size: 16),
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () => setState(() => _showBanner = false),
-              child: const Icon(Icons.close, color: Colors.white, size: 16),
+            Text(
+              'No internet connection',
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ],
-        ],
-      ),
-    );
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

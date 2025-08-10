@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../providers/friend_providers.dart';
+import '../../models/api_models.dart';
 import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/navigation_core.dart';
@@ -17,7 +18,7 @@ class PlaylistSharingScreen extends StatefulWidget {
 }
 
 class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
-  List<String> _friends = [];
+  List<Friend> _friends = [];
   final Set<String> _selectedFriends = {};
   bool _isSharing = false;
 
@@ -153,13 +154,13 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
             style: const TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 16),
-          ..._friends.map((friendId) => CheckboxListTile(
-            value: _selectedFriends.contains(friendId),
-            onChanged: (value) => _toggleFriendSelection(friendId, value ?? false),
-            title: Text('Friend #$friendId', style: const TextStyle(color: Colors.white)),
-            subtitle: Text('User ID: $friendId', style: const TextStyle(color: Colors.grey)),
+          ..._friends.map((friend) => CheckboxListTile(
+            value: _selectedFriends.contains(friend.id),
+            onChanged: (value) => _toggleFriendSelection(friend.id, value ?? false),
+            title: Text(friend.username, style: const TextStyle(color: Colors.white)),
+            subtitle: Text('ID: ${friend.id}', style: const TextStyle(color: Colors.grey)),
             secondary: CircleAvatar(
-              backgroundColor: ThemeUtils.getColorFromString(friendId),
+              backgroundColor: ThemeUtils.getColorFromString(friend.id),
               child: const Icon(Icons.person, color: Colors.white),
             ),
             activeColor: AppTheme.primary,

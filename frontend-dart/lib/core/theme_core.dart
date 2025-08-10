@@ -221,6 +221,8 @@ class ThemeUtils {
 class AppTheme {
   static const primary = Color(0xFF1DB954);
   static const primaryDark = Color(0xFF1AA34A);
+  static const primaryLight = Color(0xFF2EF564);
+  static const primaryPulse = Color(0xFF0F7A2E);
   static const background = Color(0xFF121212);
   static const backgroundDark = Color(0xFF0A0A0A);
   static const surface = Color(0xFF282828);

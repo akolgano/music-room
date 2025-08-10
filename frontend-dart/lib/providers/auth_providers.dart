@@ -251,7 +251,7 @@ class AuthProvider extends BaseProvider {
 
   Future<bool> checkEmailAvailability(String email) async {
     try {
-      final result = await _authService.checkEmailAvailability(email);
+      final result = await _authService.api.checkEmail(email);
       return result['exists'] == false;
     } catch (e) {
       if (kDebugMode) {
