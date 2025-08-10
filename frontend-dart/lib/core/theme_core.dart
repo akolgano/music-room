@@ -7,6 +7,17 @@ class ThemeUtils {
   static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
   static Color getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 
+  static double _getResponsiveElevation(BuildContext context) {
+    switch (MusicAppResponsive.getScreenSize(context)) {
+      case ScreenSize.tiny: return 1.0;
+      case ScreenSize.small: return 2.0;
+      case ScreenSize.medium: return 3.0;
+      case ScreenSize.large: return 4.0;
+      case ScreenSize.xlarge: return 5.0;
+      case ScreenSize.xxlarge: return 6.0;
+    }
+  }
+
   static double getResponsivePadding(BuildContext context) {
     return MusicAppResponsive.getPadding(context,
       tiny: 2.0, small: 4.0, medium: 6.0, 
@@ -97,16 +108,7 @@ class ThemeUtils {
     return ElevatedButton.styleFrom(
       backgroundColor: AppTheme.primary, 
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
-      elevation: () {
-        switch (MusicAppResponsive.getScreenSize(context)) {
-          case ScreenSize.tiny: return 1.0;
-          case ScreenSize.small: return 2.0;
-          case ScreenSize.medium: return 3.0;
-          case ScreenSize.large: return 4.0;
-          case ScreenSize.xlarge: return 5.0;
-          case ScreenSize.xxlarge: return 6.0;
-        }
-      }(),
+      elevation: _getResponsiveElevation(context),
       shadowColor: AppTheme.primary.withValues(alpha: 0.3), 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
       minimumSize: Size(MusicAppResponsive.getFontSize(context,
@@ -161,16 +163,7 @@ class ThemeUtils {
   }) {
     return Card(
       color: Theme.of(context).colorScheme.surface,
-      elevation: elevation ?? () {
-        switch (MusicAppResponsive.getScreenSize(context)) {
-          case ScreenSize.tiny: return 1.0;
-          case ScreenSize.small: return 2.0;
-          case ScreenSize.medium: return 3.0;
-          case ScreenSize.large: return 4.0;
-          case ScreenSize.xlarge: return 5.0;
-          case ScreenSize.xxlarge: return 6.0;
-        }
-      }(),
+      elevation: elevation ?? _getResponsiveElevation(context),
       margin: margin ?? EdgeInsets.all(getResponsiveMargin(context)),
       shadowColor: AppTheme.primary.withValues(alpha: 0.2), 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? getResponsiveBorderRadius(context))),

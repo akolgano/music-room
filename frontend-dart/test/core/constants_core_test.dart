@@ -65,11 +65,11 @@ void main() {
     });
     
     group('Password validator', () {
-      const validTestPassword1 = 'abcdefgh';
-      const validTestPassword2 = 'testpass';
-      const validTestPassword3 = 'Example1';
+      const validTestPassword1 = 'ValidPass123';
+      const validTestPassword2 = 'TestPass456';
+      const validTestPassword3 = 'SamplePwd789';
       const shortPassword1 = 'abc';
-      const shortPassword2 = 'abcdefg';
+      const shortPassword2 = 'Short12';
       
       test('should accept valid passwords', () {
         expect(AppValidators.password(validTestPassword1), null);
@@ -83,9 +83,9 @@ void main() {
       });
       
       test('should reject passwords with spaces', () {
-        expect(AppValidators.password('example with space'), isA<String>());
-        expect(AppValidators.password(' example'), isA<String>());
-        expect(AppValidators.password('example '), isA<String>());
+        expect(AppValidators.password('test with space'), isA<String>());
+        expect(AppValidators.password(' testword'), isA<String>());
+        expect(AppValidators.password('testword '), isA<String>());
       });
     });
     
