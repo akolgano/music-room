@@ -9,6 +9,22 @@ import '../providers/voting_providers.dart';
 import '../providers/auth_providers.dart';
 
 class PlaylistVotingWidgets {
+  static Widget _buildMusicNotePlaceholder() {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Icon(
+        Icons.music_note,
+        color: AppTheme.primary,
+        size: 24,
+      ),
+    );
+  }
+
   static List<Widget> buildVotingModeHeader({
     required BuildContext context,
     required bool isOwner,
@@ -327,33 +343,9 @@ class PlaylistVotingWidgets {
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Icon(
-                        Icons.music_note,
-                        color: AppTheme.primary,
-                        size: 24,
-                      ),
-                    ),
+                    errorBuilder: (context, error, stackTrace) => _buildMusicNotePlaceholder(),
                   )
-                : Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Icon(
-                      Icons.music_note,
-                      color: AppTheme.primary,
-                      size: 24,
-                    ),
-                  ),
+                : _buildMusicNotePlaceholder(),
             ),
             const SizedBox(width: 12),
             Expanded(

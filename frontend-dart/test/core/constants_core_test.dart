@@ -1,6 +1,42 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/constants_core.dart';
 void main() {
+  group('AppConstants Tests', () {
+    test('AppConstants should have correct values', () {
+      expect(AppConstants.appName, 'Music Room');
+      expect(AppConstants.version, '1.0.0');
+      expect(AppConstants.defaultApiBaseUrl, 'http://localhost:8000');
+      expect(AppConstants.contentTypeJson, 'application/json');
+      expect(AppConstants.authorizationPrefix, 'Token');
+      expect(AppConstants.minPasswordLength, 4);
+    });
+  });
+  group('AppStrings Tests', () {
+    test('AppStrings should have correct values', () {
+      expect(AppStrings.confirmLogout, 'Are you sure you want to sign out?');
+      expect(AppStrings.networkError, 'Network error. Please check your connection.');
+    });
+  });
+  group('AppRoutes Tests', () {
+    test('AppRoutes should have correct values', () {
+      expect(AppRoutes.auth, '/auth');
+      expect(AppRoutes.profile, '/profile');
+      expect(AppRoutes.playlistEditor, '/playlist_editor');
+      expect(AppRoutes.playlistDetail, '/playlist_detail');
+      expect(AppRoutes.trackDetail, '/track_detail');
+      expect(AppRoutes.trackSearch, '/track_search');
+      expect(AppRoutes.publicPlaylists, '/public_playlists');
+      expect(AppRoutes.friends, '/friends');
+      expect(AppRoutes.addFriend, '/add_friend');
+      expect(AppRoutes.friendRequests, '/friend_requests');
+      expect(AppRoutes.playlistSharing, '/playlist_sharing');
+      expect(AppRoutes.player, '/player');
+      expect(AppRoutes.userPasswordChange, '/user_password_change');
+      expect(AppRoutes.socialNetworkLink, '/social_network_link');
+      expect(AppRoutes.signupOtp, '/signup_otp');
+    });
+  });
+  
   group('AppValidators Tests', () {
     test('AppValidators should have required validator', () {
       expect(AppValidators.required('test'), null);
@@ -29,21 +65,27 @@ void main() {
     });
     
     group('Password validator', () {
+      const validTestPassword1 = 'abcdefgh';
+      const validTestPassword2 = 'testpass';
+      const validTestPassword3 = 'Example1';
+      const shortPassword1 = 'abc';
+      const shortPassword2 = 'abcdefg';
+      
       test('should accept valid passwords', () {
-        expect(AppValidators.password('12345678'), null);
-        expect(AppValidators.password('validpassword'), null);
-        expect(AppValidators.password('Pass123!'), null);
+        expect(AppValidators.password(validTestPassword1), null);
+        expect(AppValidators.password(validTestPassword2), null);
+        expect(AppValidators.password(validTestPassword3), null);
       });
       
       test('should reject short passwords', () {
-        expect(AppValidators.password('123'), isA<String>());
-        expect(AppValidators.password('1234567'), isA<String>());
+        expect(AppValidators.password(shortPassword1), isA<String>());
+        expect(AppValidators.password(shortPassword2), isA<String>());
       });
       
       test('should reject passwords with spaces', () {
-        expect(AppValidators.password('password with space'), isA<String>());
-        expect(AppValidators.password(' password'), isA<String>());
-        expect(AppValidators.password('password '), isA<String>());
+        expect(AppValidators.password('example with space'), isA<String>());
+        expect(AppValidators.password(' example'), isA<String>());
+        expect(AppValidators.password('example '), isA<String>());
       });
     });
     

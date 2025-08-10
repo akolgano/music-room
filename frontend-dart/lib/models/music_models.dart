@@ -262,26 +262,18 @@ class PlaylistTrack {
            track?.album.isNotEmpty == true;
   }
 
-  String get displayName {
-    if (track?.name.isNotEmpty == true) {
-      return track!.name;
+  String _getDisplayProperty(String? trackValue, String fallback) {
+    if (trackValue?.isNotEmpty == true) {
+      return trackValue!;
     }
-    return name;
+    return fallback;
   }
 
-  String get displayArtist {
-    if (track?.artist.isNotEmpty == true) {
-      return track!.artist;
-    }
-    return 'Unknown Artist';
-  }
+  String get displayName => _getDisplayProperty(track?.name, name);
 
-  String get displayAlbum {
-    if (track?.album.isNotEmpty == true) {
-      return track!.album;
-    }
-    return 'Unknown Album';
-  }
+  String get displayAlbum => _getDisplayProperty(track?.album, 'Unknown Album');
+
+  String get displayArtist => _getDisplayProperty(track?.artist, 'Unknown Artist');
 
   PlaylistTrack copyWithTrack(Track newTrack) {
     return PlaylistTrack(

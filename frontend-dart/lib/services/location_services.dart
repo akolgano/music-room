@@ -7,6 +7,12 @@ class LocationService {
   static const String _geonamesUsername = 'demo';
   static const String _geonamesBaseUrl = 'http://api.geonames.org';
   
+  static void _debugPrintError(String operation, dynamic error) {
+    if (kDebugMode) {
+      debugPrint('Error $operation: $error');
+    }
+  }
+  
   static Future<List<LocationSuggestion>> searchCities(String query) async {
     if (query.trim().isEmpty || query.length < 2) {
       return [];
@@ -29,9 +35,7 @@ class LocationService {
         }
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error fetching location suggestions: $e');
-      }
+      _debugPrintError('fetching location suggestions', e);
     }
     
     return [];
@@ -73,9 +77,7 @@ class LocationService {
       return await _reverseGeocode(position.latitude, position.longitude);
       
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error getting current location: $e');
-      }
+      _debugPrintError('getting current location', e);
       return null;
     }
   }
@@ -100,9 +102,7 @@ class LocationService {
         }
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error reverse geocoding: $e');
-      }
+      _debugPrintError('reverse geocoding', e);
     }
     return null;
   }

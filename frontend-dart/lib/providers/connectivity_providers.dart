@@ -131,6 +131,19 @@ class ConnectivityProvider extends BaseProvider {
     }
   }
 
+  String _formatTimeAgo(DateTime? timestamp, String prefix, String fallback) {
+    if (timestamp == null) return fallback;
+    
+    final timeAgo = DateTime.now().difference(timestamp);
+    if (timeAgo.inMinutes < 1) {
+      return '$prefix (just now)';
+    } else if (timeAgo.inHours < 1) {
+      return '$prefix (${timeAgo.inMinutes}m ago)';
+    } else {
+      return '$prefix (${timeAgo.inHours}h ago)';
+    }
+  }
+
   String get connectionStatusText {
     switch (_connectionStatus) {
       case ConnectionStatus.connected:
@@ -145,31 +158,9 @@ class ConnectivityProvider extends BaseProvider {
   String get detailedStatusText {
     switch (_connectionStatus) {
       case ConnectionStatus.connected:
-        if (_lastConnectedTime != null) {
-          final timeAgo = DateTime.now().difference(_lastConnectedTime!);
-          if (timeAgo.inMinutes < 1) {
-            return 'Connected (just now)';
-          } else if (timeAgo.inHours < 1) {
-            return 'Connected (${timeAgo.inMinutes}m ago)';
-          } else {
-            return 'Connected (${timeAgo.inHours}h ago)';
-          }
-        }
-        return 'Connected';
+        return _formatTimeAgo(_lastConnectedTime, 'Connected', 'Connected');
       case ConnectionStatus.disconnected:
-        String baseMessage;
-        if (_lastConnectedTime != null) {
-          final timeAgo = DateTime.now().difference(_lastConnectedTime!);
-          if (timeAgo.inMinutes < 1) {
-            baseMessage = 'Offline (lost connection just now)';
-          } else if (timeAgo.inHours < 1) {
-            baseMessage = 'Offline (lost connection ${timeAgo.inMinutes}m ago)';
-          } else {
-            baseMessage = 'Offline (lost connection ${timeAgo.inHours}h ago)';
-          }
-        } else {
-          baseMessage = 'Offline';
-        }
+        final baseMessage = _formatTimeAgo(_lastConnectedTime, 'Offline (lost connection', 'Offline');
         
         if (_consecutiveFailures > 0 && _currentHealthCheckInterval != _initialHealthCheckInterval) {
           final nextCheckIn = _currentHealthCheckInterval.inSeconds;
