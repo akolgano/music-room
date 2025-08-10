@@ -75,7 +75,14 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                               child: AppWidgets.primaryButton(
                                 context: context,
                                 text: 'View Profile',
-                                onPressed: () => _viewUserProfile(userId),
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.userPage,
+                                  arguments: {
+                                    'userId': userId,
+                                    'username': null,
+                                  },
+                                ),
                                 icon: Icons.person,
                               ),
                             ),
@@ -107,16 +114,6 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
     );
   }
 
-  void _viewUserProfile(String userId) {
-    Navigator.pushNamed(
-      context,
-      AppRoutes.userPage,
-      arguments: {
-        'userId': userId,
-        'username': null,
-      },
-    );
-  }
 
   Future<void> _sendFriendRequest() async {
     if (!_formKey.currentState!.validate()) {

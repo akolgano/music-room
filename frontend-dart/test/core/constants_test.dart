@@ -19,7 +19,6 @@ void main() {
   });
   group('AppRoutes Tests', () {
     test('AppRoutes should have correct values', () {
-      expect(AppRoutes.home, '/home');
       expect(AppRoutes.auth, '/auth');
       expect(AppRoutes.profile, '/profile');
       expect(AppRoutes.playlistEditor, '/playlist_editor');

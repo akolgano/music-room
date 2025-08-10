@@ -119,6 +119,10 @@ abstract class BaseProvider extends ChangeNotifier {
         }
         
         if (data['error'] != null) {
+          if (data['error'] is List) {
+            final errorList = (data['error'] as List).cast<String>();
+            return errorList.join('\n');
+          }
           return data['error'].toString();
         }
         

@@ -6,9 +6,9 @@ import '../providers/animation_providers.dart';
 class PulsingColorAnimation {
   static const Duration defaultDuration = Duration(seconds: 2);
   
-  static Color lightGreen = const Color(0xFF2EF564);  // Brighter green
-  static Color mediumGreen = AppTheme.primary;        // Original app green
-  static Color darkGreen = const Color(0xFF0F7A2E);  // Darker green
+  static Color lightGreen = const Color(0xFF2EF564);
+  static Color mediumGreen = AppTheme.primary;
+  static Color darkGreen = const Color(0xFF0F7A2E);
 
   static AnimationController createController({
     required TickerProvider vsync,

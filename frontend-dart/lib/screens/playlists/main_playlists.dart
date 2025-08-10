@@ -26,7 +26,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
 
   @override
   List<Widget> get actions => [
-    PlaylistSortButton(
+    SortButton<PlaylistSortOption>(
       currentSort: _currentSort,
       onPressed: () => _showSortOptions(),
       showLabel: false,

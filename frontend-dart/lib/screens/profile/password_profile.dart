@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../core/theme_core.dart';
+import '../../core/constants_core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/profile_providers.dart';
@@ -74,8 +75,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             controller: _currentPasswordController,
                             labelText: 'Current Password',
                             obscureText: true,
-                            validator: (v) => v?.isEmpty ?? true ? 'Please enter current password' : 
-                                      v!.length < 4 ? 'Password must be at least 4 characters' : null,
+                            validator: (v) => v?.isEmpty ?? true ? 'Please enter current password' : null,
                             onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                           ),
                           const SizedBox(height: 24),
@@ -84,8 +84,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             controller: _newPasswordController,
                             labelText: 'New Password',
                             obscureText: true,
-                            validator: (v) => v?.isEmpty ?? true ? 'Please enter new password' : 
-                                      v!.length < 4 ? 'Password must be at least 4 characters' : null,
+                            validator: AppValidators.password,
                             onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                           ),
                           const SizedBox(height: 24),

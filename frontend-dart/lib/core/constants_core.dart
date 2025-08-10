@@ -33,6 +33,7 @@ class AppRoutes {
   static const String signupOtp = '/signup_otp';
   static const String userPage = '/user_page';
   static const String adminDashboard = '/admin_dashboard';
+  static const String beaconAdmin = '/beacon_admin';
 }
 
 class FormatUtils {
@@ -53,17 +54,68 @@ class AppValidators {
   static String? required(String? value, [String? fieldName]) =>
       ValidationBuilder().required('Please enter ${fieldName ?? 'this field'}').build()(value);
   
-  static String? email(String? value) =>
-      ValidationBuilder().email('Please enter a valid email address').build()(value);
+  static String? email(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter an email address';
+    }
+    
+    if (value != value.trim()) {
+      return 'Email cannot have leading or trailing spaces';
+    }
+    
+    final emailRegex = RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+    
+    return null;
+  }
   
-  static String? password(String? value, [int minLength = 8]) =>
-      ValidationBuilder().minLength(minLength, 'Password must be at least $minLength characters').build()(value);
+  static String? password(String? value, [int minLength = 8]) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a password';
+    }
+    
+    if (value.length < minLength) {
+      return 'Password must be at least $minLength characters';
+    }
+    
+    if (value.contains(' ')) {
+      return 'The password must not contain spaces';
+    }
+    
+    return null;
+  }
   
-  static String? username(String? value) =>
-      ValidationBuilder()
-          .minLength(3, 'Username must be at least 3 characters')
-          .maxLength(30, 'Username must be less than 30 characters')
-          .regExp(RegExp(r'^[a-zA-Z0-9_]+$'), 'Username can only contain letters, numbers, and underscores').build()(value);
+  static String? username(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a username';
+    }
+    
+    if (value != value.trim()) {
+      return 'Username cannot have leading or trailing spaces';
+    }
+    
+    if (value.length < 1) {
+      return 'Username must be at least 1 character';
+    }
+    if (value.length > 20) {
+      return 'Username must be less than 20 characters';
+    }
+    
+    if (!RegExp(r'^\w+$').hasMatch(value)) {
+      return 'Username can only contain letters, numbers, and underscores';
+    }
+    
+    return null;
+  }
+
+  static String? playlistName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Playlist name is required';
+    }
+    return null;
+  }
 
   static String? phoneNumber(String? value, [bool required = false]) {
     if (!required && (value?.isEmpty ?? true)) { return null; }
@@ -76,8 +128,6 @@ class AppValidators {
       return 'Please enter a valid phone number';
     }
   }
-  
-  
   
   static String? name(String? value) =>
       ValidationBuilder().maxLength(100, 'Name must be less than 100 characters').build()(value);

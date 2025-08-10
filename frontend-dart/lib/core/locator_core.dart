@@ -11,6 +11,7 @@ import '../services/cache_services.dart';
 import '../services/websocket_services.dart';
 import '../services/logging_services.dart';
 import '../services/notification_services.dart';
+import '../services/beacon_services.dart';
 import '../providers/theme_providers.dart';
 import '../providers/music_providers.dart';
 import '../providers/voting_providers.dart';
@@ -140,6 +141,8 @@ Future<void> setupServiceLocator() async {
       FrontendLoggingService());
 
   getIt.registerSingleton<NotificationService>(NotificationService());
+
+  getIt.registerLazySingleton<BeaconService>(() => BeaconService());
 
   await getIt<FrontendLoggingService>().initialize();
 

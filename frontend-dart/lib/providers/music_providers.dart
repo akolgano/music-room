@@ -243,7 +243,12 @@ class MusicProvider extends BaseProvider {
 
   Future<AddTrackResult> addRandomTrackToPlaylist(String playlistId, String token) async {
     try {
-      await _musicService.addRandomTrackToPlaylist(playlistId, token);
+      final randomTracks = await _musicService.getRandomTracks(count: 1);
+      if (randomTracks.isNotEmpty) {
+        await _musicService.addTrackToPlaylist(playlistId, randomTracks.first.backendId, token);
+      } else {
+        return AddTrackResult(success: false, message: 'No random tracks available');
+      }
       await fetchPlaylistTracks(playlistId, token);
       final trackList = _playlistTracks.map((pt) => pt.track).where((t) => t != null).cast<Track>().toList();
       updatePlaylistInCache(playlistId, tracks: trackList);

@@ -83,6 +83,10 @@ class VotingProvider extends BaseProvider {
     notifyListeners();
   }
 
+  void initializeVotingForPlaylist(List<PlaylistTrack> tracks) {
+    initializeTrackPoints(tracks);
+  }
+
   void setVotingPermission(bool canVote) {
     AppLogger.debug('Setting voting permission to: $canVote', 'VotingProvider');
     _canVote = canVote;
@@ -182,13 +186,6 @@ class VotingProvider extends BaseProvider {
     notifyListeners();
   }
 
-  void initializeVotingForPlaylist(List<PlaylistTrack> tracks) {
-    AppLogger.debug('Initializing voting for playlist with ${tracks.length} tracks', 'VotingProvider');
-    clearVotingData();
-    initializeTrackPoints(tracks);
-    _hasUserVotedForPlaylist = false;
-    notifyListeners();
-  }
 
   void setHasUserVotedForPlaylist(bool hasVoted) {
     AppLogger.debug('Setting user voted for playlist: $hasVoted', 'VotingProvider');

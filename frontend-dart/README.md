@@ -26,5 +26,5 @@ check swagger
 
 - username: admin
 - password: admin
-- username: anna
+- username: anna elina elana
 - password: Pass1234!

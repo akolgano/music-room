@@ -6,21 +6,94 @@ void main() {
       expect(AppValidators.required('test'), null);
       expect(AppValidators.required(''), isA<String>());
     });
-    test('AppValidators should have email validator', () {
-      expect(AppValidators.email('test@example.com'), null);
-      expect(AppValidators.email('invalid'), isA<String>());
+    
+    group('Email validator', () {
+      test('should accept valid emails', () {
+        expect(AppValidators.email('test@example.com'), null);
+        expect(AppValidators.email('user.name+tag@example-domain.com'), null);
+        expect(AppValidators.email('user123@test.co'), null);
+      });
+      
+      test('should reject invalid emails', () {
+        expect(AppValidators.email('invalid'), isA<String>());
+        expect(AppValidators.email('test@'), isA<String>());
+        expect(AppValidators.email('@example.com'), isA<String>());
+        expect(AppValidators.email('test@.com'), isA<String>());
+      });
+      
+      test('should reject emails with leading/trailing spaces', () {
+        expect(AppValidators.email(' test@example.com'), isA<String>());
+        expect(AppValidators.email('test@example.com '), isA<String>());
+        expect(AppValidators.email(' test@example.com '), isA<String>());
+      });
     });
-    test('AppValidators should have password validator', () {
-      expect(AppValidators.password('1234'), null);
-      expect(AppValidators.password('123'), isA<String>());
+    
+    group('Password validator', () {
+      test('should accept valid passwords', () {
+        expect(AppValidators.password('12345678'), null);
+        expect(AppValidators.password('validpassword'), null);
+        expect(AppValidators.password('Pass123!'), null);
+      });
+      
+      test('should reject short passwords', () {
+        expect(AppValidators.password('123'), isA<String>());
+        expect(AppValidators.password('1234567'), isA<String>());
+      });
+      
+      test('should reject passwords with spaces', () {
+        expect(AppValidators.password('password with space'), isA<String>());
+        expect(AppValidators.password(' password'), isA<String>());
+        expect(AppValidators.password('password '), isA<String>());
+      });
     });
-    test('AppValidators should have username validator', () {
-      expect(AppValidators.username('username'), null);
-      expect(AppValidators.username('ab'), isA<String>());
+    
+    group('Username validator', () {
+      test('should accept valid usernames', () {
+        expect(AppValidators.username('user'), null);
+        expect(AppValidators.username('user123'), null);
+        expect(AppValidators.username('user_name'), null);
+        expect(AppValidators.username('Username123_'), null);
+      });
+      
+      test('should reject short usernames', () {
+        expect(AppValidators.username(''), isA<String>());
+      });
+      
+      test('should reject long usernames', () {
+        expect(AppValidators.username('a' * 21), isA<String>());
+      });
+      
+      test('should reject usernames with leading/trailing spaces', () {
+        expect(AppValidators.username(' username'), isA<String>());
+        expect(AppValidators.username('username '), isA<String>());
+        expect(AppValidators.username(' username '), isA<String>());
+      });
+      
+      test('should reject usernames with invalid characters', () {
+        expect(AppValidators.username('user-name'), isA<String>());
+        expect(AppValidators.username('user.name'), isA<String>());
+        expect(AppValidators.username('user@name'), isA<String>());
+        expect(AppValidators.username('user name'), isA<String>());
+      });
     });
+    
     test('AppValidators should have phoneNumber validator', () {
       expect(AppValidators.phoneNumber(''), null);
       expect(AppValidators.phoneNumber('', true), isA<String>());
+    });
+    
+    group('Playlist name validator', () {
+      test('should accept valid playlist names', () {
+        expect(AppValidators.playlistName('My Playlist'), null);
+        expect(AppValidators.playlistName('Rock Songs'), null);
+        expect(AppValidators.playlistName('  Playlist with spaces  '), null);
+      });
+      
+      test('should reject empty playlist names', () {
+        expect(AppValidators.playlistName(''), isA<String>());
+        expect(AppValidators.playlistName(null), isA<String>());
+        expect(AppValidators.playlistName('   '), isA<String>());
+      });
     });
   });
 }

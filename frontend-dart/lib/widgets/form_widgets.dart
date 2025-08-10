@@ -73,6 +73,40 @@ class FormWidgets {
     IconData? icon,
     bool isLoading = false,
     bool fullWidth = true,
+  }) => _buildButton(
+    context: context,
+    text: text,
+    onPressed: onPressed,
+    icon: icon,
+    isLoading: isLoading,
+    fullWidth: fullWidth,
+    isSecondary: false,
+  );
+
+  static Widget secondaryButton({
+    required BuildContext context, 
+    required String text, 
+    required VoidCallback? onPressed, 
+    IconData? icon, 
+    bool fullWidth = true,
+  }) => _buildButton(
+    context: context,
+    text: text,
+    onPressed: onPressed,
+    icon: icon,
+    isLoading: false,
+    fullWidth: fullWidth,
+    isSecondary: true,
+  );
+
+  static Widget _buildButton({
+    required BuildContext context,
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool fullWidth = true,
+    bool isSecondary = false,
   }) {
     final theme = Theme.of(context);
     final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
@@ -106,17 +140,29 @@ class FormWidgets {
           ],
         );
     
-    final button = ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      style: theme.elevatedButtonTheme.style?.copyWith(
-        minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
-        padding: WidgetStateProperty.all(EdgeInsets.symmetric(
-          horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
-          vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
-        )),
-      ),
-      child: content,
-    );
+    final button = isSecondary 
+      ? OutlinedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: theme.outlinedButtonTheme.style?.copyWith(
+            minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
+            padding: WidgetStateProperty.all(EdgeInsets.symmetric(
+              horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
+              vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
+            )),
+          ),
+          child: content,
+        )
+      : ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: theme.elevatedButtonTheme.style?.copyWith(
+            minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
+            padding: WidgetStateProperty.all(EdgeInsets.symmetric(
+              horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
+              vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
+            )),
+          ),
+          child: content,
+        );
     
     return fullWidth ? SizedBox(
       width: double.infinity, 
@@ -125,52 +171,4 @@ class FormWidgets {
     ) : button;
   }
 
-  static Widget secondaryButton({
-    required BuildContext context, 
-    required String text, 
-    required VoidCallback? onPressed, 
-    IconData? icon, 
-    bool fullWidth = true,
-  }) {
-    final theme = Theme.of(context);
-    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
-    final scaledHeight = (40.0 * textScaleFactor).clamp(32.0, 72.0);
-    
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: (16.0 * textScaleFactor).clamp(14.0, 22.0)), 
-          SizedBox(width: 6.0.w)
-        ],
-        Flexible(
-          child: Text(
-            text, 
-            overflow: TextOverflow.visible,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-          )
-        ),
-      ],
-    );
-    
-    final button = OutlinedButton(
-      onPressed: onPressed, 
-      style: theme.outlinedButtonTheme.style?.copyWith(
-        minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
-        padding: WidgetStateProperty.all(EdgeInsets.symmetric(
-          horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
-          vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
-        )),
-      ),
-      child: content,
-    );
-    
-    return fullWidth ? SizedBox(
-      width: double.infinity, 
-      height: scaledHeight, 
-      child: button
-    ) : button;
-  }
 }
