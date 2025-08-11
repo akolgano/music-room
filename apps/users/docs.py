@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter
 from .docs_serializers import *
 
 
@@ -361,4 +361,315 @@ check_email_schema = extend_schema(
             response=CheckEmailResponseSerializer
         ),
     },
+)
+
+
+send_friend_request_schema = extend_schema(
+    methods=["POST"],
+    summary="Send a friend request",
+    parameters=[
+        OpenApiParameter(
+            name="user_id",
+            description="UUID of the user to send friend request to",
+            required=True,
+            location=OpenApiParameter.PATH,
+            type=str,
+            pattern=r'^[0-9a-fA-F-]{36}$',
+        ),
+    ],
+    request=None,
+    responses={
+        201: OpenApiResponse(
+            description="Friend request successfully sent",
+            response=FriendRequestResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Success",
+                    value={
+                        "message": "Friend request sent to user123.",
+                        "friend_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "friendship_id": 1
+                    },
+                ),
+            ]
+        ),
+        400: OpenApiResponse(
+            description="Invalid friend request",
+            response=ErrorMessageSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Self Request",
+                    value={"message": "You cannot add yourself as a friend."}
+                ),
+                OpenApiExample(
+                    name="Pending Request",
+                    value={"message": "You already have a pending friend request."}
+                ),
+                OpenApiExample(
+                    name="Already Friends",
+                    value={"message": "You are already friends."}
+                ),
+            ]
+        ),
+        404: OpenApiResponse(
+            description="User not found",
+            response=ErrorMessageSerializer,
+            examples=[
+                OpenApiExample(
+                    name="User Not Found",
+                    value={"message": "Not found."}
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    }
+)
+
+
+accept_friend_request_schema = extend_schema(
+    methods=["POST"],
+    summary="Accept a pending friend request",
+    parameters=[
+        OpenApiParameter(
+            name="friendship_id",
+            description="ID of the pending friendship request to accept",
+            required=True,
+            location=OpenApiParameter.PATH,
+            type=int,
+        ),
+    ],
+    request=None,
+    responses={
+        200: OpenApiResponse(
+            description="Friend request accepted successfully",
+            response=AcceptFriendRequestResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Success",
+                    value={"message": "You are now friends with user123!"}
+                )
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Friend request not found or not pending",
+            response=ErrorMessageSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Not Found",
+                    value={"message": "Not found."}
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    }
+)
+
+
+get_pending_friend_request_schema = extend_schema(
+    methods=["GET"],
+    summary="Get pending friend requests received by the authenticated user",
+    responses={
+        200: OpenApiResponse(
+            description="List of pending friend requests",
+            response=PendingFriendRequestsResponseSerializer
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    }
+)
+
+
+reject_friend_request_schema = extend_schema(
+    methods=["POST"],
+    summary="Reject a pending friend request",
+    parameters=[
+        OpenApiParameter(
+            name="friendship_id",
+            description="ID of the pending friendship request to reject",
+            required=True,
+            location=OpenApiParameter.PATH,
+            type=int,
+        ),
+    ],
+    request=None,
+    responses={
+        200: OpenApiResponse(
+            description="Friend request rejected successfully",
+            response=RejectFriendRequestResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Success",
+                    value={"message": "Friend request with user123 rejected!"}
+                )
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Friend request not found or not pending",
+            response=ErrorMessageSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Not Found",
+                    value={"message": "Not found."}
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    }
+)
+
+
+get_sent_friend_request_schema = extend_schema(
+    methods=["GET"],
+    summary="Get pending friend requests sent by the authenticated user",
+    responses={
+        200: OpenApiResponse(
+            description="List of pending friend requests sent by user",
+            response=SentFriendRequestsResponseSerializer
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    }
+)
+
+
+get_friends_list_schema = extend_schema(
+    methods=["GET"],
+    summary="Get list of friends for the authenticated user",
+    responses={
+        200: OpenApiResponse(
+            description="List of friends",
+            response=FriendsListResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Friends List Example",
+                    value={
+                        "friends": [
+                            {
+                                "friend_id": "550e8400-e29b-41d4-a716-446655440000",
+                                "friend_username": "user123",
+                                "profile_picture_url": "http://example.com/media/user123.jpg"
+                            },
+                            {
+                                "friend_id": "123e4567-e89b-12d3-a456-426614174000",
+                                "friend_username": "user248",
+                                "profile_picture_url": ""
+                            }
+                        ]
+                    }
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description="Error retrieving friends list",
+            response=ErrorResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Error Example",
+                    value={"error": "Detailed error message here."}
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    }
+)
+
+
+remove_friend_schema = extend_schema(
+    methods=["POST"],
+    summary="Remove a friend",
+    parameters=[
+        OpenApiParameter(
+            name="user_id",
+            description="UUID of the friend to remove",
+            required=True,
+            location=OpenApiParameter.PATH,
+            type=str,
+            pattern=r'^[0-9a-fA-F-]{36}$',
+        ),
+    ],
+    request=None,
+    responses={
+        200: OpenApiResponse(
+            description="Friend removed successfully",
+            response=RemoveFriendResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Success",
+                    value={"message": "Friend removed successfully."}
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description="Not friend error",
+            response=ErrorMessageSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Not Friend",
+                    value={"message": "You are not friends with this user."}
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    }
 )
