@@ -96,7 +96,7 @@ class AppValidators {
       return 'Username cannot have leading or trailing spaces';
     }
     
-    if (value.length < 1) {
+    if (value.isEmpty) {
       return 'Username must be at least 1 character';
     }
     if (value.length > 20) {

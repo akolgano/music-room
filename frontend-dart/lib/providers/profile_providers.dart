@@ -140,45 +140,43 @@ class ProfileProvider extends BaseProvider {
           _socialName = social['social_name'];
         }
 
-        if (_userId != null) {
-          try {
-            final profileData = await _apiService.getProfileById(_userId!, token);
-            _avatar = profileData.avatar;
-            _name = profileData.name;
-            _location = profileData.location;
-            _bio = profileData.bio;
-            _phone = profileData.phone;
-            _friendInfo = profileData.friendInfo;
-            _musicPreferences = profileData.musicPreferences;
-            _musicPreferenceIds = profileData.musicPreferencesIds;
-            _avatarVisibility = VisibilityLevelExtension.fromString(profileData.avatarVisibility);
-            _nameVisibility = VisibilityLevelExtension.fromString(profileData.nameVisibility);
-            _locationVisibility = VisibilityLevelExtension.fromString(profileData.locationVisibility);
-            _bioVisibility = VisibilityLevelExtension.fromString(profileData.bioVisibility);
-            _phoneVisibility = VisibilityLevelExtension.fromString(profileData.phoneVisibility);
-            _friendInfoVisibility = VisibilityLevelExtension.fromString(profileData.friendInfoVisibility);
-            _musicPreferencesVisibility = VisibilityLevelExtension.fromString(profileData.musicPreferencesVisibility);
-          } catch (e) {
-            if (kDebugMode) {
-              debugPrint('[ProfileProvider] Error loading profile data: $e');
-            }
-            _avatar = null;
-            _name = null;
-            _location = null;
-            _bio = null;
-            _phone = null;
-            _friendInfo = null;
-            _musicPreferences = null;
-            _musicPreferenceIds = null;
-            
-            _avatarVisibility = VisibilityLevel.public;
-            _nameVisibility = VisibilityLevel.public;
-            _locationVisibility = VisibilityLevel.public;
-            _bioVisibility = VisibilityLevel.public;
-            _phoneVisibility = VisibilityLevel.private;
-            _friendInfoVisibility = VisibilityLevel.friends;
-            _musicPreferencesVisibility = VisibilityLevel.public;
+        try {
+          final profileData = await _apiService.getMyProfile(token);
+          _avatar = profileData.avatar;
+          _name = profileData.name;
+          _location = profileData.location;
+          _bio = profileData.bio;
+          _phone = profileData.phone;
+          _friendInfo = profileData.friendInfo;
+          _musicPreferences = profileData.musicPreferences;
+          _musicPreferenceIds = profileData.musicPreferencesIds;
+          _avatarVisibility = VisibilityLevelExtension.fromString(profileData.avatarVisibility);
+          _nameVisibility = VisibilityLevelExtension.fromString(profileData.nameVisibility);
+          _locationVisibility = VisibilityLevelExtension.fromString(profileData.locationVisibility);
+          _bioVisibility = VisibilityLevelExtension.fromString(profileData.bioVisibility);
+          _phoneVisibility = VisibilityLevelExtension.fromString(profileData.phoneVisibility);
+          _friendInfoVisibility = VisibilityLevelExtension.fromString(profileData.friendInfoVisibility);
+          _musicPreferencesVisibility = VisibilityLevelExtension.fromString(profileData.musicPreferencesVisibility);
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] Error loading profile data: $e');
           }
+          _avatar = null;
+          _name = null;
+          _location = null;
+          _bio = null;
+          _phone = null;
+          _friendInfo = null;
+          _musicPreferences = null;
+          _musicPreferenceIds = null;
+          
+          _avatarVisibility = VisibilityLevel.public;
+          _nameVisibility = VisibilityLevel.public;
+          _locationVisibility = VisibilityLevel.public;
+          _bioVisibility = VisibilityLevel.public;
+          _phoneVisibility = VisibilityLevel.private;
+          _friendInfoVisibility = VisibilityLevel.friends;
+          _musicPreferencesVisibility = VisibilityLevel.public;
         }
       },
       successMessage: 'Profile loaded successfully',

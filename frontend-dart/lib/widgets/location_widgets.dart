@@ -114,7 +114,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
           const SnackBar(
             content: Text('Unable to detect location. Please check permissions and try again.'),
             backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -124,7 +124,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
           const SnackBar(
             content: Text('Error detecting location. Please enter manually.'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         );
       }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_providers.dart';
 import '../core/theme_core.dart';
-import '../core/constants_core.dart';
 import '../widgets/app_widgets.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {

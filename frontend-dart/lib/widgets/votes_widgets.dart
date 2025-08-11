@@ -514,7 +514,9 @@ class TrackVotingControls extends StatelessWidget {
     if (success && onVoteSubmitted != null) {
       onVoteSubmitted!();
     } else if (!success && votingProvider.hasError) {
-      AppWidgets.showSnackBar(context, votingProvider.errorMessage!, backgroundColor: Colors.red);
+      if (context.mounted) {
+        AppWidgets.showSnackBar(context, votingProvider.errorMessage!, backgroundColor: Colors.red);
+      }
     }
   }
 }

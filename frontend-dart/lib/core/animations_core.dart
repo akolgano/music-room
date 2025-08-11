@@ -190,11 +190,6 @@ class _PulsingIconState extends State<PulsingIcon>
       },
     );
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
 
 class PulsingText extends StatefulWidget {
@@ -247,11 +242,6 @@ class _PulsingTextState extends State<PulsingText>
         );
       },
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
 
@@ -308,10 +298,5 @@ class _PulsingButtonState extends State<PulsingButton>
         );
       },
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

@@ -329,8 +329,4 @@ class _NetworkConnectivityWidgetState extends State<NetworkConnectivityWidget> w
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
