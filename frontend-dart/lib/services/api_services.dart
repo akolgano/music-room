@@ -129,6 +129,8 @@ class ApiService {
 
   Future<ProfileByIdResponse> getProfileById(String userId, String token) => 
       _get('/profile/$userId/', ProfileByIdResponse.fromJson, token: token);
+  Future<ProfileResponse> getMyProfile(String token) => 
+      _get('/profile/me/', ProfileResponse.fromJson, token: token);
   Future<void> updateProfile(String token, Map<String, dynamic> data) => _patchVoid('/profile/me/', data, token: token);
   Future<ProfileResponse> updateProfileFull(String token, ProfileUpdateRequest request) => 
       _patch('/profile/me/', request, ProfileResponse.fromJson, token: token);

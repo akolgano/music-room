@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import '../core/provider_core.dart';
 import '../core/navigation_core.dart';
 import '../core/locator_core.dart';
@@ -168,10 +167,13 @@ class BeaconProvider extends BaseProvider {
   BeaconInfo? getBeaconForPlaylist(String playlistId) {
     final expectedMajor = int.tryParse(playlistId.replaceAll(RegExp(r'\D'), '').substring(0, 4)) ?? 1;
     
-    return _discoveredBeacons.firstWhere(
-      (beacon) => beacon.major == expectedMajor,
-      orElse: () => null,
-    );
+    try {
+      return _discoveredBeacons.firstWhere(
+        (beacon) => beacon.major == expectedMajor,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   bool isUserNearPlaylist(String playlistId) {

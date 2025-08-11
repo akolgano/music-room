@@ -53,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
     
     if (isLandscape) {
       return ConnectionStatusBanner(

@@ -13,7 +13,7 @@ class SortButton<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCustomOrder = _isDefaultSort(currentSort);
     final icon = _getSortIcon(currentSort);
-    final displayName = _getSortDisplayName(currentSort);
+    final displayName = (currentSort as dynamic).displayName ?? 'Sort';
     
     if (showLabel) {
       return ElevatedButton.icon(
@@ -62,14 +62,6 @@ class SortButton<T> extends StatelessWidget {
     return Icons.sort;
   }
 
-  String _getSortDisplayName(T sort) {
-    if (sort is TrackSortOption) {
-      return sort.displayName;
-    } else if (sort is PlaylistSortOption) {
-      return sort.displayName;
-    }
-    return 'Sort';
-  }
 }
 
 class TrackSortBottomSheet extends StatelessWidget {

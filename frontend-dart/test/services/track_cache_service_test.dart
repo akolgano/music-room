@@ -22,7 +22,7 @@ void main() {
       const testTrackId = 'test_track_123';
       
       expect(cacheService.isTrackCached(testTrackId), false);
-      expect(cacheService.hasRetryingTracks(), false);
+      expect(cacheService.retryCount.isEmpty, false);
     });
     test('TrackCacheService should implement retry logic with exponential backoff', () {
       expect(cacheService.retryConfig.maxRetries, 5);
@@ -53,7 +53,7 @@ void main() {
       expect(cacheService.retryConfig.jitterFactor, 0.2);
     });
     test('TrackCacheService should track retrying tracks status', () {
-      expect(cacheService.hasRetryingTracks(), false);
+      expect(cacheService.retryCount.isEmpty, false);
     });
     test('TrackCacheService should cancel retries', () {
       const testTrackId = 'test_track_123';
@@ -66,7 +66,7 @@ void main() {
     test('TrackCacheService should clear cache properly', () {
       cacheService.clearCache();
       
-      expect(cacheService.hasRetryingTracks(), false);
+      expect(cacheService.retryCount.isEmpty, false);
     });
     test('TrackRetryConfig should have predefined configurations', () {
       expect(TrackRetryConfig.standard.maxRetries, 5);

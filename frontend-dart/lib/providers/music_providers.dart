@@ -45,18 +45,6 @@ class MusicProvider extends BaseProvider {
     notifyListeners();
   }
 
-  Future<void> _fetchPlaylists(Future<List<Playlist>> Function() fetchMethod, String errorMessage) async {
-    final result = await executeAsync(
-      fetchMethod,
-      errorMessage: errorMessage,
-    );
-    if (result != null) {
-      _playlists = result;
-      _hasConnectionError = false;
-    } else {
-      _hasConnectionError = true;
-    }
-  }
 
   Future<void> fetchUserPlaylists(String token) async {
     final result = await executeAsync(

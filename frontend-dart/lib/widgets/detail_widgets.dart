@@ -97,7 +97,7 @@ class PlaylistDetailWidgets {
 
   static Widget buildThemedPlaylistStats(BuildContext context, List<PlaylistTrack> tracks) {
     final totalDuration = tracks.length * 0.5;
-    final totalVotes = tracks.fold<int>(0, (sum, track) => sum + (track.points ?? 0));
+    final totalVotes = tracks.fold<int>(0, (sum, track) => sum + track.points);
     return Card(
       color: Theme.of(context).colorScheme.surface,
       elevation: 4,
