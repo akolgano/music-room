@@ -327,15 +327,6 @@ class TrackCardWidget extends StatelessWidget {
 class AppWidgets {
   static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
 
-  static Widget _buildWithTheme(Widget Function(BuildContext context, ThemeData theme, ColorScheme colorScheme) builder) {
-    return Builder(
-      builder: (context) {
-        final theme = Theme.of(context);
-        final colorScheme = theme.colorScheme;
-        return builder(context, theme, colorScheme);
-      },
-    );
-  }
 
   static IconButton _buildStyledIconButton(
     IconData icon,
@@ -472,7 +463,8 @@ class AppWidgets {
     String? actionText,
     VoidCallback? onAction,
   }) {
-    return _buildWithTheme((context, theme, colorScheme) {
+    return Builder(builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
       final bannerColor = color ?? colorScheme.primary;
       return Container(
         margin: EdgeInsets.symmetric(
@@ -535,7 +527,8 @@ class AppWidgets {
     required String message,
     VoidCallback? onDismiss,
   }) {
-    return _buildWithTheme((context, theme, colorScheme) {
+    return Builder(builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
       final errorColor = colorScheme.error;
       return Container(
         margin: EdgeInsets.symmetric(
@@ -647,7 +640,8 @@ static Widget emptyState({
   }
 
   static Widget errorState({required String message, VoidCallback? onRetry, String? retryText}) {
-    return _buildWithTheme((context, theme, colorScheme) {
+    return Builder(builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
       return Center(
         child: Padding(
           padding: EdgeInsets.all(_responsiveWidth(32.0)),

@@ -460,20 +460,6 @@ class MusicPlayerService with ChangeNotifier {
   }
 
 
-  double _stringSimilarity(String a, String b) {
-    if (a == b) return 1.0;
-    if (a.isEmpty || b.isEmpty) return 0.0;
-    
-    if (a.contains(b) || b.contains(a)) return 0.8;
-    
-    final longer = a.length > b.length ? a : b;
-    final shorter = a.length > b.length ? b : a;
-    
-    if (longer.isEmpty) return 1.0;
-    
-    final editDistance = _levenshteinDistance(longer, shorter);
-    return (longer.length - editDistance) / longer.length;
-  }
 
   int _levenshteinDistance(String s1, String s2) {
     final matrix = List.generate(s1.length + 1, (_) => List.filled(s2.length + 1, 0));

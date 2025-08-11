@@ -52,18 +52,18 @@ class ProfileSectionsWidget extends StatelessWidget {
 
   Widget _buildAccountInfoSection(BuildContext context) {
     return AppWidgets.settingsSection(
-      title: 'Account',
+      title: 'Account Info',
       items: [
         _buildInfoItem(
           icon: Icons.person,
           title: 'Username',
-          value: profileProvider.username ?? 'Not set',
+          value: (profileProvider.username?.isEmpty ?? true) ? 'No username set' : profileProvider.username!,
           isEditable: false,
         ),
         _buildInfoItem(
           icon: Icons.email,
           title: 'Email',
-          value: profileProvider.userEmail ?? 'Not set',
+          value: (profileProvider.userEmail?.isEmpty ?? true) ? 'No email provided' : profileProvider.userEmail!,
           isEditable: false,
         ),
       ],
@@ -78,7 +78,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           context,
           icon: Icons.person_outline,
           title: 'Name',
-          value: profileProvider.name ?? 'Not set',
+          value: (profileProvider.name?.isEmpty ?? true) ? 'No display name set' : profileProvider.name!,
           visibility: profileProvider.nameVisibility,
           onEdit: () => _editName(context),
           onVisibilityChanged: (visibility) => updateVisibility(profileProvider, 'nameVisibility', visibility),
@@ -87,7 +87,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           context,
           icon: Icons.location_on,
           title: 'Location',
-          value: profileProvider.location ?? 'Not specified',
+          value: (profileProvider.location?.isEmpty ?? true) ? 'No location specified' : profileProvider.location!,
           visibility: profileProvider.locationVisibility,
           onEdit: () => _editLocation(context),
           onVisibilityChanged: (visibility) => updateVisibility(profileProvider, 'locationVisibility', visibility),
@@ -96,7 +96,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           context,
           icon: Icons.info,
           title: 'Bio',
-          value: profileProvider.bio ?? 'No bio yet',
+          value: (profileProvider.bio?.isEmpty ?? true) ? 'No bio added yet' : profileProvider.bio!,
           visibility: profileProvider.bioVisibility,
           onEdit: () => _editBio(context),
           onVisibilityChanged: (visibility) => updateVisibility(profileProvider, 'bioVisibility', visibility),
@@ -114,7 +114,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           context,
           icon: Icons.phone,
           title: 'Phone',
-          value: profileProvider.phone ?? 'Not set',
+          value: (profileProvider.phone?.isEmpty ?? true) ? 'No phone number provided' : profileProvider.phone!,
           visibility: profileProvider.phoneVisibility,
           onEdit: () => _editPhone(context),
           onVisibilityChanged: (visibility) => updateVisibility(profileProvider, 'phoneVisibility', visibility),
@@ -131,7 +131,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           context,
           icon: Icons.people,
           title: 'Friend Info',
-          value: profileProvider.friendInfo ?? 'No friend info',
+          value: (profileProvider.friendInfo?.isEmpty ?? true) ? 'No friend information added' : profileProvider.friendInfo!,
           visibility: profileProvider.friendInfoVisibility,
           onEdit: () => _editFriendInfo(context),
           onVisibilityChanged: (visibility) => updateVisibility(profileProvider, 'friendInfoVisibility', visibility),
@@ -151,7 +151,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           title: 'Music Genres',
           value: profileProvider.musicPreferences?.isNotEmpty == true
               ? profileProvider.musicPreferences!.join(', ')
-              : 'No preferences set',
+              : 'No music preferences selected',
           visibility: profileProvider.musicPreferencesVisibility,
           onEdit: () => _editMusicPreferences(context),
           onVisibilityChanged: (visibility) => updateVisibility(profileProvider, 'musicPreferencesVisibility', visibility),
@@ -208,7 +208,7 @@ class ProfileSectionsWidget extends StatelessWidget {
 
   Widget _buildAccountActionsSection(BuildContext context) {
     return AppWidgets.settingsSection(
-      title: 'Account',
+      title: 'Actions',
       items: [
         AppWidgets.settingsItem(
           icon: Icons.admin_panel_settings,

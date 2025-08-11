@@ -45,20 +45,6 @@ mixin UserActionLoggingMixin<T extends StatefulWidget> on State<T> {
     _loggingService.logMusicAction(action, trackId, playlistId: playlistId, metadata: metadata);
   }
 
-  Widget buildLoggingButton({
-    required Widget child,
-    required VoidCallback onPressed,
-    required String buttonName,
-    Map<String, dynamic>? metadata,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        logButtonClick(buttonName, metadata: metadata);
-        onPressed();
-      },
-      child: child,
-    );
-  }
 
   Widget buildLoggingInkWell({
     required Widget child,
