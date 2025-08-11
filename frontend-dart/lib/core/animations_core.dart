@@ -142,11 +142,6 @@ class _PulsingContainerState extends State<PulsingContainer>
       },
     );
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
 
 class PulsingIcon extends StatefulWidget {
