@@ -97,6 +97,7 @@ class PlaylistDetailWidgets {
 
   static Widget buildThemedPlaylistStats(BuildContext context, List<PlaylistTrack> tracks) {
     final totalDuration = tracks.length * 0.5;
+    final totalVotes = tracks.fold<int>(0, (sum, track) => sum + (track.points ?? 0));
     return Card(
       color: Theme.of(context).colorScheme.surface,
       elevation: 4,
@@ -108,7 +109,7 @@ class PlaylistDetailWidgets {
           children: [
             buildThemedStatItem(context, icon: Icons.queue_music, label: 'Tracks', value: '${tracks.length}'),
             buildThemedStatItem(context, icon: Icons.access_time, label: 'Duration', value: '${totalDuration}m'),
-            buildThemedStatItem(context, icon: Icons.favorite, label: 'Votes', value: '0'),
+            buildThemedStatItem(context, icon: Icons.favorite, label: 'Votes', value: '$totalVotes'),
           ],
         ),
       ),
