@@ -47,3 +47,19 @@ curl -X GET http://127.0.0.1:8000/playlists/playlists/4 -u anna:Pass1234!
 Response:
 
 {"playlist": [{"name": "My playlist #1", "description": "This is a test playlist.", "public": true, "creator": "anna", "tracks": [{"name": "APT.", "artist": "ROS\u00c9"}, {"name": "APT.", "artist": "Bongo Cat"}, {"name": "APT. (ULTRAFUNK)", "artist": "HISTED"}, {"name": "APT.", "artist": "Sandaru Sathsara"}]}]}
+
+
+4) Update name or description or public true/false
+
+curl -X PATCH http://127.0.0.1:8000/playlists/update_playlist/2  \
+-H "Authorization: Token 01ec4caeb3b1c77c2a0288e896dee98779716075" \
+     -H "Content-Type: application/json"      -d '{
+           "name": "New name",              
+           "description": "New description",
+           "public": true
+         }'
+
+5) Delete playlist
+
+curl -X POST http://127.0.0.1:8000/playlists/delete_playlist/2  \
+-H "Authorization: Token 01ec4caeb3b1c77c2a0288e896dee98779716075" 
