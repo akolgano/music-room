@@ -27,6 +27,8 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
   bool _isLoading = true;
   bool _isFriend = false;
   bool _isCurrentUser = false;
+  bool _hasPendingOutgoingRequest = false;
+  bool _hasPendingIncomingRequest = false;
 
   @override
   String get screenTitle => widget.username ?? 'User Profile';
@@ -50,7 +52,21 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
       
       if (!_isCurrentUser) {
         final friendsResponse = await apiService.getFriends(auth.token!);
-        _isFriend = friendsResponse.friends.contains(widget.userId);
+        _isFriend = friendsResponse.friends.any((friend) => friend.id == widget.userId);
+        
+        // Check for pending requests
+        final receivedInvitations = await apiService.getReceivedInvitations(auth.token!);
+        final sentInvitations = await apiService.getSentInvitations(auth.token!);
+        
+        _hasPendingIncomingRequest = receivedInvitations.invitations.any((invitation) {
+          final fromUserId = invitation['friend_id'] as String? ?? invitation['from_user'] as String?;
+          return fromUserId == widget.userId;
+        });
+        
+        _hasPendingOutgoingRequest = sentInvitations.invitations.any((invitation) {
+          final toUserId = invitation['friend_id'] as String? ?? invitation['to_user'] as String?;
+          return toUserId == widget.userId;
+        });
       }
 
       setState(() {
@@ -286,17 +302,40 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     if (_isCurrentUser) return const SizedBox.shrink();
 
     return AppWidgets.settingsSection(
-      title: 'Actions',
+      title: 'Friendship Status',
       items: [
-        AppWidgets.settingsItem(
-          icon: _isFriend ? Icons.person_remove : Icons.person_add,
-          title: _isFriend ? 'Remove Friend' : 'Send Friend Request',
-          subtitle: _isFriend 
-              ? 'Remove this user from your friends list'
-              : 'Send a friend request to this user',
-          color: _isFriend ? Colors.orange : AppTheme.primary,
-          onTap: _isFriend ? _removeFriend : _sendFriendRequest,
-        ),
+        if (_isFriend)
+          AppWidgets.settingsItem(
+            icon: Icons.people,
+            title: 'Friends',
+            subtitle: 'You are friends with this user',
+            color: Colors.green,
+            onTap: () {}, // No action
+          )
+        else if (_hasPendingOutgoingRequest)
+          AppWidgets.settingsItem(
+            icon: Icons.schedule,
+            title: 'Friend Request Sent',
+            subtitle: 'Your friend request is pending approval',
+            color: Colors.orange,
+            onTap: () {}, // No action
+          )
+        else if (_hasPendingIncomingRequest)
+          AppWidgets.settingsItem(
+            icon: Icons.notification_important,
+            title: 'Friend Request Received',
+            subtitle: 'This user sent you a friend request',
+            color: Colors.blue,
+            onTap: () {}, // No action
+          )
+        else
+          AppWidgets.settingsItem(
+            icon: Icons.person_add,
+            title: 'Send Friend Request',
+            subtitle: 'Send a friend request to this user',
+            color: AppTheme.primary,
+            onTap: _sendFriendRequest,
+          ),
       ],
     );
   }
@@ -374,6 +413,9 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     
     if (success) {
       showSuccess('Friend request sent!');
+      setState(() {
+        _hasPendingOutgoingRequest = true;
+      });
       if (kDebugMode) {
         debugPrint('[UserPageScreen] Friend request sent to user ${widget.userId}');
       }
@@ -395,32 +437,4 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     }
   }
 
-  Future<void> _removeFriend() async {
-    final confirmed = await showConfirmDialog(
-      'Remove Friend',
-      'Are you sure you want to remove ${_userProfile!.name ?? _userProfile!.user} from your friends list?',
-      isDangerous: true,
-    );
-
-    if (!confirmed) return;
-
-    try {
-      final apiService = ApiService();
-      await apiService.removeFriend(widget.userId, auth.token!);
-      showSuccess('Friend removed');
-      
-      setState(() {
-        _isFriend = false;
-      });
-
-      if (kDebugMode) {
-        debugPrint('[UserPageScreen] Removed friend ${widget.userId}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[UserPageScreen] Error removing friend: $e');
-      }
-      showError('Failed to remove friend');
-    }
-  }
 }

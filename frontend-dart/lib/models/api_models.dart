@@ -332,25 +332,6 @@ class ProfileByIdResponse {
     musicPreferencesVisibility: json['music_preferences_visibility'] as String?,
   );
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'user': user,
-    if (avatar != null) 'avatar': avatar,
-    if (name != null) 'name': name,
-    if (location != null) 'location': location,
-    if (bio != null) 'bio': bio,
-    if (phone != null) 'phone': phone,
-    if (friendInfo != null) 'friend_info': friendInfo,
-    if (musicPreferences != null) 'music_preferences': musicPreferences,
-    if (musicPreferencesIds != null) 'music_preferences_ids': musicPreferencesIds,
-    if (avatarVisibility != null) 'avatar_visibility': avatarVisibility,
-    if (nameVisibility != null) 'name_visibility': nameVisibility,
-    if (locationVisibility != null) 'location_visibility': locationVisibility,
-    if (bioVisibility != null) 'bio_visibility': bioVisibility,
-    if (phoneVisibility != null) 'phone_visibility': phoneVisibility,
-    if (friendInfoVisibility != null) 'friend_info_visibility': friendInfoVisibility,
-    if (musicPreferencesVisibility != null) 'music_preferences_visibility': musicPreferencesVisibility,
-  };
 }
 
 class AvatarUpdateRequest {
