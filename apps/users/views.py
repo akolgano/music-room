@@ -128,6 +128,7 @@ def check_email(request):
     return JsonResponse({'exists': email_exists}, status=status.HTTP_200_OK)
 
 
+@remove_friend_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -142,6 +143,8 @@ def remove_friend(request, user_id):
     friendship.delete()
     return JsonResponse({'message': 'Friend removed successfully.'}, status=status.HTTP_200_OK)
 
+
+@get_friends_list_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -174,6 +177,7 @@ def get_friends_list(request):
     except Exception as e:
         return Response({'error': str(e)}, status=400)
 
+@send_friend_request_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -197,6 +201,7 @@ def send_friend_request(request, user_id):
     }, status=201)
 
 
+@get_pending_friend_request_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -226,6 +231,7 @@ def get_pending_friend_request(request):
     return JsonResponse({'received_invitations': data}, status=200)
 
 
+@get_sent_friend_request_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -257,6 +263,7 @@ def get_sent_friend_request(request):
     return JsonResponse({'sent_invitations': data}, status=200)
 
 
+@accept_friend_request_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -269,6 +276,7 @@ def accept_friend_request(request, friendship_id):
     }, status=200)
 
 
+@reject_friend_request_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])

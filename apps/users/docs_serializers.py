@@ -11,6 +11,9 @@ class ErrorDetailSerializer(serializers.Serializer):
 class UnauthorizedResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
 
+class ErrorMessageSerializer(serializers.Serializer):
+    message = serializers.CharField()
+
 
 #forgot_password_schema
 class ForgotPasswordRequestSerializer(serializers.Serializer):
@@ -117,3 +120,59 @@ class CheckEmailRequestSerializer(serializers.Serializer):
 
 class CheckEmailResponseSerializer(serializers.Serializer):
     exists = serializers.BooleanField()
+
+
+#send_friend_request
+class FriendRequestResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+    friend_id = serializers.UUIDField()
+    friendship_id = serializers.IntegerField()
+
+
+#accept_friend_request
+class AcceptFriendRequestResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+
+
+#get_pending_friend_request
+class PendingFriendRequestSerializer(serializers.Serializer):
+    friend_id = serializers.UUIDField()
+    friend_username = serializers.CharField()
+    friendship_id = serializers.IntegerField()
+    profile_picture_url = serializers.CharField(allow_blank=True, required=False)
+    status = serializers.CharField()
+
+class PendingFriendRequestsResponseSerializer(serializers.Serializer):
+    received_invitations = PendingFriendRequestSerializer(many=True)
+
+
+#reject_friend_request
+class RejectFriendRequestResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+
+
+#get_sent_friend_request
+class SentFriendRequestSerializer(serializers.Serializer):
+    friend_id = serializers.UUIDField()
+    friend_username = serializers.CharField()
+    friendship_id = serializers.IntegerField()
+    profile_picture_url = serializers.CharField(allow_blank=True, required=False)
+    status = serializers.CharField()
+
+class SentFriendRequestsResponseSerializer(serializers.Serializer):
+    sent_invitations = SentFriendRequestSerializer(many=True)
+
+
+#get_friends_list
+class FriendSerializer(serializers.Serializer):
+    friend_id = serializers.IntegerField()
+    friend_username = serializers.CharField()
+    profile_picture_url = serializers.CharField(allow_blank=True, required=False)
+
+class FriendsListResponseSerializer(serializers.Serializer):
+    friends = FriendSerializer(many=True)
+
+
+#remove_friend
+class RemoveFriendResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
