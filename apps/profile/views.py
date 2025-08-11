@@ -13,12 +13,15 @@ from .docs import *
 
 
 @profile_update_schema
-@api_view(['PUT', 'PATCH'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
 def profile_update(request):
     profile = request.user.profile
+    if request.method == 'GET':
+        serializer = ProfileSerializer(profile, context={'request': request})
+        return Response(serializer.data)
     partial = request.method == 'PATCH'
     serializer = ProfileSerializer(profile, data=request.data, partial=partial, context={'request': request})
     if serializer.is_valid():

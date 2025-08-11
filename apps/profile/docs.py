@@ -4,12 +4,12 @@ from .serializers import ProfileSerializer, MusicPreferenceSerializer
 
 
 profile_update_schema = extend_schema(
-    methods=["PUT", "PATCH"],
-    summary="Update the authenticated user's profile",
+    methods=["GET", "PUT", "PATCH"],
+    summary="GET or Update the authenticated user's profile",
     request=ProfileSerializer,
     responses={
         200: OpenApiResponse(
-            description="Profile updated successfully",
+            description="Profile returned or updated successfully",
             response=ProfileSerializer,
         ),
         400: OpenApiResponse(
