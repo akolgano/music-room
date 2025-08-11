@@ -207,7 +207,7 @@ class FrontendLoggingService {
     final sanitizedMetadata = sanitizeMetadata(metadata);
 
     final event = FrontendLogEvent(
-      id: _generateLogId(),
+      id: '',
       timestamp: DateTime.now(),
       actionType: actionType,
       description: description,
@@ -401,11 +401,6 @@ class FrontendLoggingService {
     }
   }
 
-  String _generateLogId() {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final random = (timestamp % 10000).toString().padLeft(4, '0');
-    return 'log_${timestamp}_$random';
-  }
 
   Future<void> flush() async {
     if (_pendingLogs.isNotEmpty) {

@@ -499,7 +499,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                           style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         trailing: Icon(Icons.music_note, color: AppTheme.primary, size: 20),
-                        onTap: () => _showInfo('View friend profile and music activity.'),
+                        onTap: () => Navigator.pushNamed(
+                          context, 
+                          AppRoutes.userPage, 
+                          arguments: {
+                            'userId': friend.id,
+                            'username': friend.username,
+                          }
+                        ),
                       ),
                     );
                   },

@@ -181,7 +181,7 @@ class DynamicThemeProvider with ChangeNotifier {
 
   Future<void> extractAndApplyDominantColor(String? imageUrl) async {
     if (imageUrl == null || imageUrl.isEmpty) {
-      _resetToDefaultTheme();
+      resetTheme();
       return;
     }
 
@@ -206,7 +206,7 @@ class DynamicThemeProvider with ChangeNotifier {
       _applyColorScheme(colorScheme);
     } catch (e) {
       AppLogger.error('Error extracting color from image: ${e.toString()}', null, null, 'DynamicThemeProvider');
-      _resetToDefaultTheme();
+      resetTheme();
     }
 
     _isExtracting = false;
@@ -310,16 +310,6 @@ class DynamicThemeProvider with ChangeNotifier {
         .toColor();
   }
 
-  void _resetToDefaultTheme() {
-    _primaryColor = AppTheme.primary;
-    _surfaceColor = AppTheme.surface;
-    _backgroundColor = AppTheme.background;
-    _accentColor = AppTheme.primary;
-    _onPrimaryColor = Colors.black;
-    _onSurfaceColor = Colors.white;
-    _currentImageUrl = null;
-    notifyListeners();
-  }
 
   Color _getContrastColor(Color backgroundColor) {
     final double luminance = backgroundColor.computeLuminance();
@@ -341,7 +331,14 @@ class DynamicThemeProvider with ChangeNotifier {
   }
 
   void resetTheme() {
-    _resetToDefaultTheme();
+    _primaryColor = AppTheme.primary;
+    _surfaceColor = AppTheme.surface;
+    _backgroundColor = AppTheme.background;
+    _accentColor = AppTheme.primary;
+    _onPrimaryColor = Colors.black;
+    _onSurfaceColor = Colors.white;
+    _currentImageUrl = null;
+    notifyListeners();
   }
 
   Map<String, Color> get currentColors => {

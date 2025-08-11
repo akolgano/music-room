@@ -136,7 +136,9 @@ class AppBuilder {
 
     return MaterialPageRoute(
       settings: settings,
-      builder: (context) => AppWidgets.buildErrorScreen('Page not found'),
+      builder: (context) => Scaffold(
+        body: AppWidgets.errorState(message: 'Page not found'),
+      ),
     );
   }
 
@@ -175,7 +177,9 @@ class AppBuilder {
       case AppRoutes.playlistSharing:
         return _buildPlaylistSharing(settings);
       default:
-        return AppWidgets.buildErrorScreen('Page not found');
+        return Scaffold(
+          body: AppWidgets.errorState(message: 'Page not found'),
+        );
     }
   }
 
@@ -190,7 +194,9 @@ class AppBuilder {
     
     if (args == null) {
       AppLogger.warning('No arguments provided for playlist detail', 'AppBuilder');
-      return AppWidgets.buildErrorScreen('No playlist ID provided');
+      return Scaffold(
+        body: AppWidgets.errorState(message: 'No playlist ID provided'),
+      );
     }
 
     String? playlistId;
@@ -200,12 +206,16 @@ class AppBuilder {
       playlistId = args['id'].toString();
     } else {
       AppLogger.error('Invalid arguments type for playlist detail: ${args.runtimeType}', null, null, 'AppBuilder');
-      return AppWidgets.buildErrorScreen('Invalid playlist ID format');
+      return Scaffold(
+        body: AppWidgets.errorState(message: 'Invalid playlist ID format'),
+      );
     }
 
     if (playlistId.isEmpty || playlistId == 'null') {
       AppLogger.error('Invalid playlist ID: $playlistId', null, null, 'AppBuilder');
-      return AppWidgets.buildErrorScreen('Invalid playlist ID');
+      return Scaffold(
+        body: AppWidgets.errorState(message: 'Invalid playlist ID'),
+      );
     }
 
     AppLogger.debug('Building PlaylistDetailScreen with ID: $playlistId', 'AppBuilder');
@@ -226,13 +236,17 @@ class AppBuilder {
     } else if (args is Track) {
       return TrackDetailScreen(track: args);
     }
-    return AppWidgets.buildErrorScreen('Invalid track data');
+    return Scaffold(
+      body: AppWidgets.errorState(message: 'Invalid track data'),
+    );
   }
 
   static Widget _buildPlaylistSharing(RouteSettings settings) {
     final args = settings.arguments;
     if (args is Playlist) return PlaylistSharingScreen(playlist: args);
-    return AppWidgets.buildErrorScreen('Invalid playlist data');
+    return Scaffold(
+      body: AppWidgets.errorState(message: 'Invalid playlist data'),
+    );
   }
 
   static Widget _buildUserPage(RouteSettings settings) {
@@ -253,7 +267,9 @@ class AppBuilder {
       return UserPageScreen(userId: args.toString());
     }
     
-    return AppWidgets.buildErrorScreen('Invalid user data provided');
+    return Scaffold(
+      body: AppWidgets.errorState(message: 'Invalid user data provided'),
+    );
   }
 
 
