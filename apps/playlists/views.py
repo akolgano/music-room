@@ -46,6 +46,49 @@ def create_new_playlist(request):
         "playlist_id": playlist.id
     }, status=201)
 
+@api_view(['PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_playlist(request, playlist_id):
+    user = request.user
+
+    playlist = get_object_or_404(Playlist, id=playlist_id)
+
+    if playlist.creator != user and playlist.public is False:
+        return JsonResponse({"error": "You do not have permission to edit this playlist."}, status=403)
+
+
+    name = request.data.get('name')
+    description = request.data.get('description')
+    public = request.data.get('public')
+
+    if name is not None:
+        playlist.name = name
+    if description is not None:
+        playlist.description = description
+    if public is not None:
+        playlist.public = public
+
+    playlist.save()
+
+    return JsonResponse({"message": "Playlist updated successfully."}, status=200)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_playlist(request, playlist_id):
+    user = request.user
+
+    playlist = get_object_or_404(Playlist, id=playlist_id)
+
+    if playlist.creator != user and playlist.public is False:
+        return JsonResponse({"error": "You do not have permission to delete this playlist."}, status=403)
+
+    playlist.delete()
+
+    return JsonResponse({"message": "Playlist deleted successfully."}, status=200)
+
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
