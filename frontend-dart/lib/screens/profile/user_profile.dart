@@ -54,7 +54,6 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
         final friendsResponse = await apiService.getFriends(auth.token!);
         _isFriend = friendsResponse.friends.any((friend) => friend.id == widget.userId);
         
-        // Check for pending requests
         final receivedInvitations = await apiService.getReceivedInvitations(auth.token!);
         final sentInvitations = await apiService.getSentInvitations(auth.token!);
         
@@ -310,7 +309,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
             title: 'Friends',
             subtitle: 'You are friends with this user',
             color: Colors.green,
-            onTap: () {}, // No action
+            onTap: () {},
           )
         else if (_hasPendingOutgoingRequest)
           AppWidgets.settingsItem(
@@ -318,7 +317,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
             title: 'Friend Request Sent',
             subtitle: 'Your friend request is pending approval',
             color: Colors.orange,
-            onTap: () {}, // No action
+            onTap: () {},
           )
         else if (_hasPendingIncomingRequest)
           AppWidgets.settingsItem(
@@ -326,7 +325,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
             title: 'Friend Request Received',
             subtitle: 'This user sent you a friend request',
             color: Colors.blue,
-            onTap: () {}, // No action
+            onTap: () {},
           )
         else
           AppWidgets.settingsItem(

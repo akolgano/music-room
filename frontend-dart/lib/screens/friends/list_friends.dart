@@ -257,13 +257,18 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     );
   }
 
-  void _handleFriendAction(String action, String friendId) {
+  void _handleFriendAction(String action, String friendId) async {
     switch (action) {
       case 'view_profile':
         _navigateToUserPage(friendId);
         break;
-      case 'remove': 
-        _showRemoveDialog(friendId); 
+      case 'remove':
+        final confirmed = await showConfirmDialog(
+          'Remove Friend', 
+          'Are you sure you want to remove User ID $friendId from your friends?', 
+          isDangerous: true
+        );
+        if (confirmed) await _removeFriend(friendId);
         break;
     }
   }
@@ -277,14 +282,6 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
         'username': null,
       },
     );
-  }
-
-  void _showRemoveDialog(String friendId) async {
-    final confirmed = await showConfirmDialog(
-      'Remove Friend', 
-      'Are you sure you want to remove User ID $friendId from your friends?', isDangerous: true
-    );
-    if (confirmed) await _removeFriend(friendId);
   }
 
   Future<void> _removeFriend(String friendId) async {
