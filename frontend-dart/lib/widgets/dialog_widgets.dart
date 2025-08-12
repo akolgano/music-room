@@ -4,7 +4,6 @@ class DialogWidgets {
   static Color _getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
   static Color _getSurface(BuildContext context) => Theme.of(context).colorScheme.surface;
   static Color _getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
-  static Color _getError(BuildContext context) => Theme.of(context).colorScheme.error;
 
   static Future<String?> showTextInputDialog(
     BuildContext context, {
@@ -44,11 +43,11 @@ class DialogWidgets {
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _getError(context), width: 2),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _getError(context), width: 2),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),

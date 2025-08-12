@@ -447,12 +447,14 @@ class AppWidgets {
     required VoidCallback? onPressed, 
     IconData? icon, 
     bool fullWidth = true,
-  }) => FormWidgets.secondaryButton(
+  }) => FormWidgets.buildButton(
     context: context,
     text: text,
     onPressed: onPressed,
     icon: icon,
+    isLoading: false,
     fullWidth: fullWidth,
+    isSecondary: true,
   );
 
   static Widget infoBanner({

@@ -43,7 +43,12 @@ class MiniPlayerWidget extends StatelessWidget {
               _buildProgressBar(context, playerService),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => _navigateToTrackDetail(context, currentTrack),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TrackDetailScreen(track: currentTrack),
+                    ),
+                  ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: ThemeUtils.getResponsivePadding(context) * 2, 
@@ -357,14 +362,4 @@ class MiniPlayerWidget extends StatelessWidget {
     );
   }
 
-  void _navigateToTrackDetail(BuildContext context, Track? track) {
-    if (track == null) return;
-    
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TrackDetailScreen(track: track),
-      ),
-    );
-  }
 }
