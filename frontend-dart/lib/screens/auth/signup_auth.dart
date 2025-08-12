@@ -210,7 +210,10 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
             onPressed: () => setState(() {
               _currentStep = 1;
               _otpController.clear();
-              _stopCountdown();
+              _countdownTimer?.cancel();
+              _countdownTimer = null;
+              _canResendOtp = true;
+              _resendCountdown = 0;
             }),
             child: const Text('Change Details', style: TextStyle(color: Colors.white)),
           ),
@@ -224,7 +227,10 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
               onPressed: () => setState(() {
                 _currentStep = 1;
                 _otpController.clear();
-                _stopCountdown();
+                _countdownTimer?.cancel();
+                _countdownTimer = null;
+                _canResendOtp = true;
+                _resendCountdown = 0;
               }),
               child: const Text('Back', style: TextStyle(color: Colors.grey)),
             ),
@@ -330,7 +336,10 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   }
 
   void _startResendCountdown() {
-    _stopCountdown(); 
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    _canResendOtp = false;
+    _resendCountdown = 60; 
     
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -354,13 +363,6 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     });
   }
 
-  void _stopCountdown() {
-    _countdownTimer?.cancel();
-    _countdownTimer = null;
-    _canResendOtp = true;
-    _resendCountdown = 0;
-  }
-
   void _showSuccess(String message) {
     AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
   }
@@ -371,7 +373,8 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   @override
   void dispose() {
-    _stopCountdown();
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
     _emailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();

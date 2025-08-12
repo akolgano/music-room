@@ -405,13 +405,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                           style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      buildLoggingTextButton(
+                      buildLoggingButton<TextButton>(
                         onPressed: () => Navigator.pushNamed(context, AppRoutes.friendRequests),
                         child: const Text(
                           'View',
                           style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
                         ),
                         buttonName: 'view_friend_requests_notification',
+                        buttonBuilder: ({required onPressed, required child, style}) => 
+                            TextButton(onPressed: onPressed, style: style, child: child),
                         metadata: {'pending_requests_count': pendingRequests.length},
                       ),
                     ],

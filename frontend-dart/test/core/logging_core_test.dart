@@ -21,10 +21,12 @@ class _TestWidgetWithLoggingState extends State<TestWidgetWithLogging> with User
             onPressed: () => logButtonClick('test_button'),
             buttonName: 'test_button',
           ),
-          buildLoggingTextButton(
+          buildLoggingButton<TextButton>(
             child: const Text('Text Button'),
             onPressed: () => logButtonClick('text_button'),
             buttonName: 'text_button',
+            buttonBuilder: ({required onPressed, required child, style}) => 
+                TextButton(onPressed: onPressed, style: style, child: child),
           ),
           buildLoggingElevatedButton(
             child: const Text('Elevated Button'),

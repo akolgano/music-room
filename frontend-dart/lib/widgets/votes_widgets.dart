@@ -39,13 +39,9 @@ class PlaylistVotingWidgets {
     required Future<void> Function(bool) onSelectVotingDateTime,
   }) {
     return [
-      AppWidgets.infoBanner(
-        title: 'Voting Mode Active',
-        message: 'Vote for one track to boost its ranking! ${isOwner ? 'Configure voting settings below.' : 'Choose your favorite track.'}',
-        icon: Icons.how_to_vote,
-      ),
+      _buildVotingModeInfoBanner(context, isOwner),
       SizedBox(height: MusicAppResponsive.getSpacing(context)),
-      if (isOwner) _buildVotingSettings(
+      if (isOwner) _buildCollapsibleVotingSettings(
         context: context,
         isPublicVoting: isPublicVoting,
         votingLicenseType: votingLicenseType,
@@ -57,10 +53,123 @@ class PlaylistVotingWidgets {
         onSelectVotingDateTime: onSelectVotingDateTime,
       ),
       if (votingInfo != null) _buildVotingStats(context, votingInfo),
+      _buildScrollToVoteIndicator(context, isOwner),
     ];
   }
 
-  static Widget _buildVotingSettings({
+  static Widget _buildVotingModeInfoBanner(BuildContext context, bool isOwner) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primary.withValues(alpha: 0.1),
+            AppTheme.primary.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.how_to_vote, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Voting Mode Active',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      isOwner 
+                        ? 'Users can vote for their favorite track below. Tap settings to configure voting rules.'
+                        : 'Vote for your favorite track below to boost its ranking!',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (!isOwner) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.keyboard_arrow_down, color: AppTheme.primary),
+                Text(
+                  'Scroll down to see tracks and vote',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Icon(Icons.keyboard_arrow_down, color: AppTheme.primary),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildScrollToVoteIndicator(BuildContext context, bool isOwner) {
+    if (isOwner) return const SizedBox.shrink();
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.music_note, color: AppTheme.primary, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'Tracks available for voting below',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(Icons.arrow_downward, color: AppTheme.primary, size: 16),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildCollapsibleVotingSettings({
     required BuildContext context,
     required bool isPublicVoting,
     required String votingLicenseType,
@@ -71,42 +180,18 @@ class PlaylistVotingWidgets {
     required Future<void> Function() onApplyVotingSettings,
     required Future<void> Function(bool) onSelectVotingDateTime,
   }) {
-    return AppTheme.buildFormCard(
-      title: 'Voting Configuration',
-      titleIcon: Icons.settings,
-      child: Column(
-        children: [
-          AppWidgets.switchTile(
-            value: isPublicVoting,
-            onChanged: onPublicVotingChanged,
-            title: 'Public Voting',
-            subtitle: isPublicVoting 
-              ? 'Anyone can find and vote on this playlist' 
-              : 'Only invited users can vote',
-            icon: isPublicVoting ? Icons.public : Icons.lock,
-          ),
-          const SizedBox(height: 12),
-          _buildVotingLicenseSettings(
-            context: context,
-            votingLicenseType: votingLicenseType,
-            votingStartTime: votingStartTime,
-            votingEndTime: votingEndTime,
-            onPublicVotingChanged: onPublicVotingChanged,
-        onLicenseTypeChanged: onLicenseTypeChanged,
-            onSelectVotingDateTime: onSelectVotingDateTime,
-          ),
-          const SizedBox(height: 12),
-          AppWidgets.primaryButton(
-            context: context,
-            text: 'Apply Voting Settings',
-            icon: Icons.check,
-            onPressed: onApplyVotingSettings,
-            isLoading: false,
-          ),
-        ],
-      ),
+    return _CollapsibleVotingSettings(
+      isPublicVoting: isPublicVoting,
+      votingLicenseType: votingLicenseType,
+      votingStartTime: votingStartTime,
+      votingEndTime: votingEndTime,
+      onPublicVotingChanged: onPublicVotingChanged,
+      onLicenseTypeChanged: onLicenseTypeChanged,
+      onApplyVotingSettings: onApplyVotingSettings,
+      onSelectVotingDateTime: onSelectVotingDateTime,
     );
   }
+
 
   static Widget _buildVotingLicenseSettings({
     required BuildContext context,
@@ -230,24 +315,61 @@ class PlaylistVotingWidgets {
   }) {
     return Card(
       color: Theme.of(context).colorScheme.surface,
-      elevation: 4,
-      shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
+      elevation: 6,
+      shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.2),
       child: Padding(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(Icons.how_to_vote, color: ThemeUtils.getPrimary(context), size: 20),
-                const SizedBox(width: 6),
-                Text('Track Voting', style: ThemeUtils.getSubheadingStyle(context)),
-                const Spacer(),
-                Text(
-                  '${tracks.length} tracks',
-                  style: ThemeUtils.getCaptionStyle(context),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withValues(alpha: 0.1),
+                    AppTheme.primary.withValues(alpha: 0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(Icons.how_to_vote, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Vote for Your Favorite Track',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${tracks.length} track${tracks.length == 1 ? '' : 's'} available • Tap 👍 to vote',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             if (tracks.isEmpty) 
@@ -381,20 +503,52 @@ class PlaylistVotingWidgets {
             ),
             const SizedBox(width: 8),
             Consumer<VotingProvider>(
-              builder: (context, votingProvider, child) => TrackVotingControls(
-                playlistId: playlistId,
-                trackId: track.id,
-                trackIndex: index,
-                isCompact: true,
-                stats: VoteStats(
-                  totalVotes: playlistTrack.points.toInt(),
-                  upvotes: playlistTrack.points.toInt(),
-                  downvotes: 0,
-                  userHasVoted: votingProvider.hasUserVotedForPlaylist,
-                  voteScore: playlistTrack.points.toDouble(),
-                ),
-                onVoteSubmitted: onLoadData,
-              ),
+              builder: (context, votingProvider, child) {
+                final canVote = !votingProvider.hasUserVotedForPlaylist;
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: canVote 
+                        ? AppTheme.primary.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: canVote 
+                          ? AppTheme.primary.withValues(alpha: 0.3)
+                          : Colors.grey.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      if (canVote) ...[
+                        Text(
+                          'VOTE',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                      ],
+                      TrackVotingControls(
+                        playlistId: playlistId,
+                        trackId: track.id,
+                        trackIndex: index,
+                        isCompact: true,
+                        stats: VoteStats(
+                          totalVotes: playlistTrack.points.toInt(),
+                          upvotes: playlistTrack.points.toInt(),
+                          downvotes: 0,
+                          userHasVoted: votingProvider.hasUserVotedForPlaylist,
+                          voteScore: playlistTrack.points.toDouble(),
+                        ),
+                        onVoteSubmitted: onLoadData,
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -518,5 +672,105 @@ class TrackVotingControls extends StatelessWidget {
         AppWidgets.showSnackBar(context, votingProvider.errorMessage!, backgroundColor: Colors.red);
       }
     }
+  }
+}
+
+class _CollapsibleVotingSettings extends StatefulWidget {
+  final bool isPublicVoting;
+  final String votingLicenseType;
+  final DateTime? votingStartTime;
+  final DateTime? votingEndTime;
+  final ValueChanged<bool> onPublicVotingChanged;
+  final ValueChanged<String> onLicenseTypeChanged;
+  final Future<void> Function() onApplyVotingSettings;
+  final Future<void> Function(bool) onSelectVotingDateTime;
+
+  const _CollapsibleVotingSettings({
+    required this.isPublicVoting,
+    required this.votingLicenseType,
+    required this.votingStartTime,
+    required this.votingEndTime,
+    required this.onPublicVotingChanged,
+    required this.onLicenseTypeChanged,
+    required this.onApplyVotingSettings,
+    required this.onSelectVotingDateTime,
+  });
+
+  @override
+  State<_CollapsibleVotingSettings> createState() => _CollapsibleVotingSettingsState();
+}
+
+class _CollapsibleVotingSettingsState extends State<_CollapsibleVotingSettings> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.settings,
+              color: AppTheme.primary,
+            ),
+            title: Text(
+              'Voting Configuration',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              _isExpanded ? 'Tap to hide settings' : 'Tap to configure voting rules',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            trailing: Icon(
+              _isExpanded ? Icons.expand_less : Icons.expand_more,
+              color: AppTheme.primary,
+            ),
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+          ),
+          if (_isExpanded) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  AppWidgets.switchTile(
+                    value: widget.isPublicVoting,
+                    onChanged: widget.onPublicVotingChanged,
+                    title: 'Public Voting',
+                    subtitle: widget.isPublicVoting 
+                      ? 'Anyone can find and vote on this playlist' 
+                      : 'Only invited users can vote',
+                    icon: widget.isPublicVoting ? Icons.public : Icons.lock,
+                  ),
+                  const SizedBox(height: 12),
+                  PlaylistVotingWidgets._buildVotingLicenseSettings(
+                    context: context,
+                    votingLicenseType: widget.votingLicenseType,
+                    votingStartTime: widget.votingStartTime,
+                    votingEndTime: widget.votingEndTime,
+                    onPublicVotingChanged: widget.onPublicVotingChanged,
+                    onLicenseTypeChanged: widget.onLicenseTypeChanged,
+                    onSelectVotingDateTime: widget.onSelectVotingDateTime,
+                  ),
+                  const SizedBox(height: 12),
+                  AppWidgets.primaryButton(
+                    context: context,
+                    text: 'Apply Voting Settings',
+                    icon: Icons.check,
+                    onPressed: widget.onApplyVotingSettings,
+                    isLoading: false,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
