@@ -36,10 +36,10 @@ void main() {
       isPublic = true;
       expect(isPublic, true);
       const playlistId = 'playlist_123';
-      final publicLink = 'https://localhost:8001';
+      final publicLink = 'https://localhost:8000/playlist/${playlistId}';
       
       expect(publicLink, contains(playlistId));
-      expect(publicLink, startsWith('https://localhost:8001'));
+      expect(publicLink, startsWith('https://localhost:8000'));
       const allowPublicComments = true;
       const showInDiscovery = false;
       
@@ -80,7 +80,7 @@ void main() {
     });
     test('PlaylistSharingScreen should handle share link generation', () {
       const playlistId = 'abc123def456';
-      const baseUrl = 'https://localhost:8001';
+      const baseUrl = 'https://localhost:8000';
       final shareLink = '$baseUrl/shared/$playlistId';
       
       expect(shareLink, contains(playlistId));

@@ -18,13 +18,13 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'http://example.com/track.mp3',
+        url: 'http://localhost:8000/api/track',
       );
       
       expect(track.name, 'Test Song');
       expect(track.artist, 'Test Artist');
       expect(track.album, 'Test Album');
-      expect(track.url, 'http://example.com/track.mp3');
+      expect(track.url, 'http://localhost:8000/api/track');
     });
     test('TrackDetailScreen should handle Deezer track identification', () {
       const deezerTrack = Track(
@@ -32,7 +32,7 @@ void main() {
         name: 'Deezer Song',
         artist: 'Artist',
         album: 'Album',
-        url: 'http://example.com/track2.mp3',
+        url: 'http://localhost:8000/api/track',
         deezerTrackId: '123',
       );
       
@@ -70,7 +70,7 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'http://example.com/track3.mp3',
+        url: 'http://localhost:8000/api/track',
       );
       
       final json = track.toJson();
@@ -78,7 +78,7 @@ void main() {
       expect(json['name'], 'Test Song');
       expect(json['artist'], 'Test Artist');
       expect(json['album'], 'Test Album');
-      expect(json['url'], 'http://example.com/track3.mp3');
+      expect(json['url'], 'http://localhost:8000/api/track');
     });
   });
 }

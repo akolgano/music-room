@@ -14,13 +14,13 @@ void main() {
         'email': 'test@example.com',
         'firstName': 'Test',
         'lastName': 'User',
-        'profilePicture': 'https://localhost:8001',
+        'profilePicture': 'https://example.com/profile.jpg',
       };
       final fullName = '${userProfile['firstName']} ${userProfile['lastName']}';
       expect(fullName, 'Test User');
       expect(userProfile['username'], 'testuser');
       expect(userProfile['email'], contains('@'));
-      expect(userProfile['profilePicture'], startsWith('https://localhost:8001'));
+      expect(userProfile['profilePicture'], startsWith('https://'));
     });
     test('ProfileScreen should handle profile editing', () {
       var isEditMode = false;
@@ -37,14 +37,14 @@ void main() {
     });
     test('ProfileScreen should handle avatar upload', () {
       const defaultAvatar = 'assets/images/default_avatar.png';
-      const uploadedAvatar = 'https://localhost:8001';
+      const uploadedAvatar = 'https://example.com/avatar.jpg';
       
       var currentAvatar = defaultAvatar;
       expect(currentAvatar, defaultAvatar);
       
       currentAvatar = uploadedAvatar;
       expect(currentAvatar, uploadedAvatar);
-      expect(currentAvatar, startsWith('https://localhost:8001'));
+      expect(currentAvatar, startsWith('https://'));
     });
     test('ProfileScreen should handle social media connections', () {
       const socialConnections = {

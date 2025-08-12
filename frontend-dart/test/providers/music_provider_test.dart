@@ -33,14 +33,14 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'http://localhost:8000'
+        url: 'http://localhost:8000/api/track',
       );
       
       expect(track.id, '1');
       expect(track.name, 'Test Song');
       expect(track.artist, 'Test Artist');
       expect(track.album, 'Test Album');
-      expect(track.url, 'http://localhost:8000');
+      expect(track.url, 'http://localhost:8000/api/track');
     });
     test('PlaylistTrack model should work correctly', () {
       const track = Track(
@@ -48,7 +48,7 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'http://localhost:8000'
+        url: 'http://localhost:8000/api/track',
       );
       
       const playlistTrack = PlaylistTrack(
@@ -118,7 +118,7 @@ void main() {
         name: 'Deezer Song',
         artist: 'Artist',
         album: 'Album',
-        url: 'http://localhost:8000',
+        url: 'http://localhost:8000/api/track',
         deezerTrackId: '123'
       );
       

@@ -344,6 +344,30 @@ class FrontendLoggingService {
   Future<void> _sendPendingLogs() async {
     if (_pendingLogs.isEmpty) return;
 
+    
+    if (_currentUserId == null) {
+      if (kDebugMode) {
+        AppLogger.debug('Skipping log send - user not authenticated', 'FrontendLoggingService');
+      }
+      return;
+    }
+
+    
+    String? authToken;
+    try {
+      final storageService = getIt<StorageService>();
+      authToken = storageService.get<String>('auth_token');
+    } catch (e) {
+      authToken = null;
+    }
+
+    if (authToken == null) {
+      if (kDebugMode) {
+        AppLogger.debug('Skipping log send - no auth token available', 'FrontendLoggingService');
+      }
+      return;
+    }
+
     final logsToSend = List<FrontendLogEvent>.from(_pendingLogs);
     _pendingLogs.clear();
 
@@ -372,7 +396,7 @@ class FrontendLoggingService {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
-            if (_currentUserId != null) 'Authorization': 'Token ${await _getAuthToken()}',
+            'Authorization': 'Token $authToken',
           },
         ),
       );
@@ -391,16 +415,6 @@ class FrontendLoggingService {
       }
     }
   }
-
-  Future<String?> _getAuthToken() async {
-    try {
-      final storageService = getIt<StorageService>();
-      return storageService.get<String>('auth_token');
-    } catch (e) {
-      return null;
-    }
-  }
-
 
   Future<void> flush() async {
     if (_pendingLogs.isNotEmpty) {
