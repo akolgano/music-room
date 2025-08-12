@@ -603,7 +603,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         isPublic: _isPublic,
       );
       
-      await musicProvider.fetchUserPlaylists(auth.token!);
+      await musicProvider.fetchAllPlaylists(auth.token!);
       
       showSuccess('Playlist updated successfully!');
       if (mounted) {

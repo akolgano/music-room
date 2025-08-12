@@ -28,7 +28,7 @@ class ProfileAvatarWidget extends StatelessWidget {
     return GestureDetector(
       onTap: profileProvider.isLoading 
           ? null 
-          : () => _showAvatarOptions(context),
+          : () => _editAvatar(context),
       child: Stack(
         children: [
           Container(
@@ -358,44 +358,5 @@ class ProfileAvatarWidget extends StatelessWidget {
     );
   }
 
-  Future<void> _showAvatarOptions(BuildContext context) async {
-    final String? action = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppTheme.surface,
-          title: const Text(
-            'Profile Picture',
-            style: TextStyle(color: Colors.white),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit, color: AppTheme.primary),
-                title: const Text(
-                  'Change Picture',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: () => Navigator.pop(context, 'edit'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (!context.mounted) return;
-
-    if (action == 'edit') {
-      _editAvatar(context);
-    }
-  }
 
 }

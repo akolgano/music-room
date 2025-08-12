@@ -194,7 +194,9 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
       () async {
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.fetchFriends(auth.token!);
-        _friends = friendProvider.friends;
+        setState(() {
+          _friends = friendProvider.friends;
+        });
       },
       errorMessage: 'Failed to load friends',
     );
