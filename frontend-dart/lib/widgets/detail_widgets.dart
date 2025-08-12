@@ -190,8 +190,8 @@ class PlaylistDetailWidgets {
     return Container(
       key: key,
       margin: EdgeInsets.symmetric(
-        horizontal: MusicAppResponsive.getPadding(context, tiny: 8.0, small: 12.0, medium: 16.0),
-        vertical: MusicAppResponsive.getPadding(context, tiny: 1.0, small: 1.5, medium: 2.0)
+        horizontal: MusicAppResponsive.getSpacing(context, tiny: 8.0, small: 12.0, medium: 16.0),
+        vertical: MusicAppResponsive.getSpacing(context, tiny: 1.0, small: 1.5, medium: 2.0)
       ),
       decoration: BoxDecoration(
         color: AppTheme.surface,
@@ -199,7 +199,7 @@ class PlaylistDetailWidgets {
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
-        padding: EdgeInsets.all(MusicAppResponsive.getPadding(context, tiny: 8.0, small: 10.0, medium: 12.0)),
+        padding: EdgeInsets.all(MusicAppResponsive.getSpacing(context, tiny: 8.0, small: 10.0, medium: 12.0)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

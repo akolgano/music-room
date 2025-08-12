@@ -78,3 +78,8 @@ dependencies {
 }
 
 apply(plugin = "com.google.gms.google-services")
+
+// Suppress Java obsolete warnings for all compile tasks
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-Xlint:-options")
+}

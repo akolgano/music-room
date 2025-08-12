@@ -106,7 +106,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
           SnackBar(
             content: Text('Location detected: ${location.displayName}'),
             backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
+            duration: const Duration(seconds: 3),
           ),
         );
       } else if (mounted) {
@@ -121,10 +121,10 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error detecting location. Please enter manually.'),
+          SnackBar(
+            content: Text(e.toString()),
             backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -141,12 +141,14 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Stack(
       children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
         if (widget.showAutoDetectButton)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 6.0),
             child: ElevatedButton.icon(
               onPressed: _isDetectingLocation ? null : _detectCurrentLocation,
               icon: _isDetectingLocation
@@ -160,7 +162,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
             ),
           ),
@@ -212,7 +214,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
               fontSize: 14, 
               color: theme.colorScheme.onSurface.withValues(alpha: 0.5)
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
           ),
           onChanged: (value) {
             widget.onLocationSelected(value);
@@ -277,13 +279,15 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
               },
             ),
           ),
-        if (_showSuggestions)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: _hideSuggestions,
-              child: Container(color: Colors.transparent),
-            ),
+        ],
+      ),
+      if (_showSuggestions)
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: _hideSuggestions,
+            child: Container(color: Colors.transparent),
           ),
+        ),
       ],
     );
   }

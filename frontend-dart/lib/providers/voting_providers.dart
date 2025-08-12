@@ -83,9 +83,6 @@ class VotingProvider extends BaseProvider {
     notifyListeners();
   }
 
-  void initializeVotingForPlaylist(List<PlaylistTrack> tracks) {
-    initializeTrackPoints(tracks);
-  }
 
   void setVotingPermission(bool canVote) {
     AppLogger.debug('Setting voting permission to: $canVote', 'VotingProvider');

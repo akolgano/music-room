@@ -375,9 +375,12 @@ class ProfileSectionsWidget extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surface,
         title: const Text('Edit Location', style: TextStyle(color: Colors.white)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: LocationAutocompleteField(
+        content: IntrinsicHeight(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.8,
+            ),
+            child: LocationAutocompleteField(
             initialValue: profileProvider.location,
             labelText: 'Location',
             hintText: 'Search for your city or location',
@@ -385,6 +388,7 @@ class ProfileSectionsWidget extends StatelessWidget {
               selectedLocation = location;
             },
             validator: (value) => ValidationBuilder().maxLength(100, 'Location must be less than 100 characters').build()(value),
+            ),
           ),
         ),
         actions: [
@@ -519,8 +523,11 @@ class _MusicPreferenceDialogState extends State<MusicPreferenceDialog> {
     return AlertDialog(
       backgroundColor: AppTheme.surface,
       title: const Text('Select Music Preferences', style: TextStyle(color: Colors.white)),
-      content: SizedBox(
-        width: double.maxFinite,
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
         child: ListView.builder(
           shrinkWrap: true,
           itemCount: widget.availablePreferences.length,

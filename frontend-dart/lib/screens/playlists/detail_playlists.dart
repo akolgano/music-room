@@ -147,8 +147,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       builder: (context, themeProvider, _) {
         return CustomSingleChildScrollView(
           padding: EdgeInsets.symmetric(
-            vertical: MusicAppResponsive.getPadding(context, tiny: 4.0, small: 5.0, medium: 6.0),
-            horizontal: MusicAppResponsive.getPadding(context, tiny: 1.0, small: 1.5, medium: 2.0)
+            vertical: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0),
+            horizontal: MusicAppResponsive.getSpacing(context, tiny: 1.0, small: 1.5, medium: 2.0)
           ),
           child: Column(
             children: [
@@ -453,7 +453,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           
           if (_votingProvider != null) {
             _votingProvider!.setVotingPermission(true);
-            _votingProvider!.initializeVotingForPlaylist(_tracks);
+            _votingProvider!.initializeTrackPoints(_tracks);
           }
           
           if (_playlist!.imageUrl?.isNotEmpty == true) {

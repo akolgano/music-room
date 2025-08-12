@@ -48,23 +48,6 @@ class MusicAppResponsive {
     }
   }
 
-  static double getPadding(BuildContext context, {
-    double tiny = 2.0,
-    double small = 4.0,
-    double medium = 6.0,
-    double large = 8.0,
-    double xlarge = 12.0,
-    double xxlarge = 16.0,
-  }) {
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny;
-      case ScreenSize.small: return small;
-      case ScreenSize.medium: return medium;
-      case ScreenSize.large: return large;
-      case ScreenSize.xlarge: return xlarge;
-      case ScreenSize.xxlarge: return xxlarge;
-    }
-  }
 
 
   static double getIconSize(BuildContext context, {
