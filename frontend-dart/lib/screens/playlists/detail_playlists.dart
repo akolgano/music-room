@@ -2,7 +2,6 @@ import 'dart:async';
 import '../../core/navigation_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'licensing_playlists.dart';
 import '../../providers/music_providers.dart';
 import '../../providers/theme_providers.dart';
 import '../../services/player_services.dart';
@@ -115,14 +114,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         _openPlaylistEditor();
       },
       buttonName: 'edit_playlist_button',
-    ),
-    if (_isOwner) buildLoggingIconButton(
-      icon: const Icon(Icons.settings), 
-      onPressed: () {
-        logButtonClick('playlist_settings', metadata: {'playlist_id': widget.playlistId});
-        _openPlaylistSettings();
-      },
-      buttonName: 'playlist_settings_button',
     ),
     buildLoggingIconButton(
       icon: const Icon(Icons.share), 
@@ -811,16 +802,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     });
   }
 
-  void _openPlaylistSettings() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PlaylistLicensingScreen(playlistId: widget.playlistId, playlistName: _playlist?.name ?? 'Playlist'),
-      ),
-    ).then((_) {
-      if (mounted) _loadData();
-    });
-  }
 
   void _sharePlaylist() {
     if (_playlist != null && mounted) {

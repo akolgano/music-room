@@ -359,8 +359,6 @@ class ProfileAvatarWidget extends StatelessWidget {
   }
 
   Future<void> _showAvatarOptions(BuildContext context) async {
-    final hasAvatar = profileProvider.avatarUrl?.isNotEmpty == true;
-    
     final String? action = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -373,16 +371,6 @@ class ProfileAvatarWidget extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (hasAvatar) ...[
-                ListTile(
-                  leading: const Icon(Icons.fullscreen, color: AppTheme.primary),
-                  title: const Text(
-                    'View Full Size',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onTap: () => Navigator.pop(context, 'view'),
-                ),
-              ],
               ListTile(
                 leading: const Icon(Icons.edit, color: AppTheme.primary),
                 title: const Text(
@@ -405,29 +393,9 @@ class ProfileAvatarWidget extends StatelessWidget {
 
     if (!context.mounted) return;
 
-    if (action == 'view') {
-      _showEnlargedAvatar(context);
-    } else if (action == 'edit') {
+    if (action == 'edit') {
       _editAvatar(context);
     }
   }
 
-  void _showEnlargedAvatar(BuildContext context) {
-    if (profileProvider.avatarUrl?.isEmpty == true) return;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: profileProvider.avatarUrl!.startsWith('data:')
-                ? Image.memory(base64Decode(profileProvider.avatarUrl!.split(',')[1]))
-                : Image.network(profileProvider.avatarUrl!),
-          ),
-        );
-      },
-    );
-  }
 }

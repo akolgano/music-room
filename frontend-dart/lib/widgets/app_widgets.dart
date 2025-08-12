@@ -912,11 +912,5 @@ static Widget emptyState({
     cancelText: cancelText,
   );
 
-  static Future<int?> showSelectionDialog<T>({
-    required BuildContext context, 
-    required String title,
-    required List<T> items,
-    required String Function(T) itemTitle,
-  }) => DialogWidgets.showSelectionDialog<T>(context: context, title: title, items: items, itemTitle: itemTitle);
 
 }
