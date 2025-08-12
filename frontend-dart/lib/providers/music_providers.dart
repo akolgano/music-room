@@ -405,7 +405,7 @@ class MusicProvider extends BaseProvider {
       final track = playlistTrack.track;
       
       if (track?.deezerTrackId != null && _trackCacheService.isTrackCached(track!.deezerTrackId!)) {
-        final cachedTrack = _trackCacheService[track.deezerTrackId!];
+        final cachedTrack = _trackCacheService.getCachedTrack(track.deezerTrackId!);
         if (cachedTrack != null && 
             (cachedTrack.artist != track.artist || 
              cachedTrack.album != track.album || 

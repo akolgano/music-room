@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_beacon/flutter_beacon.dart';
+import 'package:dchs_flutter_beacon/dchs_flutter_beacon.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../core/navigation_core.dart';
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class DialogWidgets {
-  static Color _getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
   static Color _getSurface(BuildContext context) => Theme.of(context).colorScheme.surface;
   static Color _getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 
@@ -39,7 +38,7 @@ class DialogWidgets {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: _getPrimary(context), width: 2),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -99,7 +98,7 @@ class DialogWidgets {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDangerous ? Colors.red : _getPrimary(context),
+              backgroundColor: isDangerous ? Colors.red : Theme.of(context).colorScheme.primary,
               foregroundColor: isDangerous ? Colors.white : Colors.black,
             ),
             child: Text(confirmText),

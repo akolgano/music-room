@@ -586,8 +586,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                 children: [
                   Expanded(
                     child: PulsingContainer(
-                      child: buildLoggingElevatedButton(
-                        onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
+                      child: buildLoggingButton<ElevatedButton>(
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -596,7 +595,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                             Text('Add Friend'),
                           ],
                         ),
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
                         buttonName: 'add_friend_button_friends_section',
+                        buttonBuilder: ({required onPressed, required child, style}) => 
+                            ElevatedButton(onPressed: onPressed, style: style, child: child),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primary,
                           foregroundColor: Colors.black,
@@ -607,8 +609,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: buildLoggingElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
+                    child: buildLoggingButton<ElevatedButton>(
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -617,7 +618,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                           Text('View All'),
                         ],
                       ),
+                      onPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
                       buttonName: 'view_all_friends_button',
+                      buttonBuilder: ({required onPressed, required child, style}) => 
+                          ElevatedButton(onPressed: onPressed, style: style, child: child),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.surface,
                         foregroundColor: Colors.white,

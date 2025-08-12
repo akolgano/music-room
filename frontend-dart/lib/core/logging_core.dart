@@ -83,23 +83,6 @@ mixin UserActionLoggingMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-  Widget buildLoggingElevatedButton({
-    required Widget child,
-    required VoidCallback onPressed,
-    required String buttonName,
-    Map<String, dynamic>? metadata,
-    ButtonStyle? style,
-  }) {
-    return buildLoggingButton<ElevatedButton>(
-      child: child,
-      onPressed: onPressed,
-      buttonName: buttonName,
-      buttonBuilder: ({required onPressed, required child, style}) => 
-          ElevatedButton(onPressed: onPressed, style: style, child: child),
-      metadata: metadata,
-      style: style,
-    );
-  }
 
   Widget buildLoggingIconButton({
     required Widget icon,

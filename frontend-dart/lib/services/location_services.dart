@@ -3,15 +3,19 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
+class LocationException implements Exception {
+  final String message;
+  LocationException(this.message);
+  
+  @override
+  String toString() => message;
+}
+
 class LocationService {
   static const String _geonamesUsername = 'demo';
   static const String _geonamesBaseUrl = 'http://api.geonames.org';
+  static const String _ipApiUrl = 'http://ip-api.com/json';
   
-  static void _debugPrintError(String operation, dynamic error) {
-    if (kDebugMode) {
-      debugPrint('Error $operation: $error');
-    }
-  }
   
   static Future<List<LocationSuggestion>> searchCities(String query) async {
     if (query.trim().isEmpty || query.length < 2) {
@@ -35,51 +39,86 @@ class LocationService {
         }
       }
     } catch (e) {
-      _debugPrintError('fetching location suggestions', e);
+      if (kDebugMode) {
+        debugPrint('Error fetching location suggestions: $e');
+      }
     }
     
     return [];
   }
 
+  static Future<LocationSuggestion?> getLocationByIP() async {
+    try {
+      final response = await http.get(Uri.parse(_ipApiUrl)).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return LocationSuggestion(
+            name: data['city'] as String,
+            country: data['country'] as String,
+            adminName: data['regionName'] as String?,
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error getting location by IP: $e');
+      }
+    }
+    return null;
+  }
+
   static Future<LocationSuggestion?> getCurrentLocation() async {
+    // Try GPS first
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (kDebugMode) {
-          debugPrint('Location services are disabled.');
-        }
-        return null;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+      if (serviceEnabled) {
+        LocationPermission permission = await Geolocator.checkPermission();
         if (permission == LocationPermission.denied) {
-          if (kDebugMode) {
-            debugPrint('Location permissions are denied');
+          permission = await Geolocator.requestPermission();
+        }
+
+        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+          final Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.medium,
+            timeLimit: const Duration(seconds: 15),
+            forceAndroidLocationManager: false,
+          );
+          
+          final gpsResult = await _reverseGeocode(position.latitude, position.longitude);
+          if (gpsResult != null) {
+            return gpsResult;
           }
-          return null;
         }
       }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (kDebugMode) {
-          debugPrint('Location permissions are permanently denied, cannot request permissions.');
-        }
-        return null;
-      }
-
-      final Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 15),
-      );
-
-      return await _reverseGeocode(position.latitude, position.longitude);
-      
     } catch (e) {
-      _debugPrintError('getting current location', e);
-      return null;
+      if (kDebugMode) {
+        debugPrint('GPS location failed, trying IP fallback: $e');
+      }
     }
+
+    // Fallback to IP-based location
+    try {
+      final ipResult = await getLocationByIP();
+      if (ipResult != null) {
+        if (kDebugMode) {
+          debugPrint('Location detected via IP: ${ipResult.displayName}');
+        }
+        return ipResult;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('IP location also failed: $e');
+      }
+    }
+
+    // If both methods fail
+    String errorMessage = 'Unable to detect location automatically.';
+    if (kIsWeb) {
+      errorMessage += ' GPS requires HTTPS and location permissions. Tried IP-based detection as backup.';
+    }
+    throw LocationException(errorMessage);
   }
 
   static Future<LocationSuggestion?> _reverseGeocode(double latitude, double longitude) async {
@@ -102,7 +141,9 @@ class LocationService {
         }
       }
     } catch (e) {
-      _debugPrintError('reverse geocoding', e);
+      if (kDebugMode) {
+        debugPrint('Error reverse geocoding: $e');
+      }
     }
     return null;
   }

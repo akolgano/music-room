@@ -9,14 +9,14 @@ class ThemeUtils {
 
 
   static double getResponsivePadding(BuildContext context) {
-    return MusicAppResponsive.getPadding(context,
+    return MusicAppResponsive.getSpacing(context,
       tiny: 2.0, small: 4.0, medium: 6.0, 
       large: 8.0, xlarge: 12.0, xxlarge: 16.0
     );
   }
 
   static double getResponsiveMargin(BuildContext context) {
-    return MusicAppResponsive.getPadding(context,
+    return MusicAppResponsive.getSpacing(context,
       tiny: 1.0, small: 2.0, medium: 4.0,
       large: 6.0, xlarge: 8.0, xxlarge: 12.0
     );
@@ -393,47 +393,47 @@ class AppTheme {
   static ThemeData get darkTheme => _buildTheme();
 
 
-  static Widget _buildCard({
-    required Widget child, 
-    EdgeInsets? margin, 
-    EdgeInsets? padding, 
-    double? elevation, double? borderRadius
-  }) => Card(
+
+  static Widget buildHeaderCard({required Widget child}) => Card(
     color: surface,
-    elevation: elevation ?? 4,
-    margin: margin ?? EdgeInsets.all(kIsWeb ? 8 : 8.w),
+    elevation: 8,
+    margin: EdgeInsets.all(kIsWeb ? 8 : 8.w),
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(borderRadius ?? (kIsWeb ? 16 : 16.r))  
+      borderRadius: BorderRadius.circular(kIsWeb ? 16 : 16.r)  
     ),
-    child: Padding(padding: padding ?? EdgeInsets.all(kIsWeb ? 12 : 12.w), child: child),
+    child: Padding(padding: EdgeInsets.all(kIsWeb ? 12 : 12.w), child: child),
   );
 
-  static Widget buildHeaderCard({required Widget child}) => _buildCard(child: child, elevation: 8);
-
-  static Widget buildFormCard({required String title, IconData? titleIcon, required Widget child}) => _buildCard(
-    borderRadius: kIsWeb ? 12 : 12.r,
-    padding: EdgeInsets.all(kIsWeb ? 10 : 10.w),
+  static Widget buildFormCard({required String title, IconData? titleIcon, required Widget child}) => Card(
+    color: surface,
+    elevation: 4,
     margin: EdgeInsets.zero,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            if (titleIcon != null) ...[
-              Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
-              SizedBox(width: kIsWeb ? 4 : 4.w)
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(kIsWeb ? 12 : 12.r)
+    ),
+    child: Padding(
+      padding: EdgeInsets.all(kIsWeb ? 10 : 10.w), 
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (titleIcon != null) ...[
+                Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
+                SizedBox(width: kIsWeb ? 4 : 4.w)
+              ],
+              Flexible(
+                child: Text(title, 
+                  style: TextStyle(fontSize: kIsWeb ? 18 : 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
+                ), 
+              ),
             ],
-            Flexible(
-              child: Text(title, 
-                style: TextStyle(fontSize: kIsWeb ? 18 : 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
-                overflow: TextOverflow.ellipsis,
-              ), 
-            ),
-          ],
-        ),
-        SizedBox(height: kIsWeb ? 8 : 8.h), 
-        child,
-      ],
+          ),
+          SizedBox(height: kIsWeb ? 8 : 8.h), 
+          child,
+        ],
+      ),
     ),
   );
 }
