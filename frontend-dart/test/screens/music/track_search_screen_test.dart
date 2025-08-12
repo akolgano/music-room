@@ -18,7 +18,7 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'http://localhost:8000'
+        url: 'http://localhost:8000/api/track',
       );
       
       expect(mockTrack.name.toLowerCase(), contains('test'));
@@ -31,14 +31,14 @@ void main() {
           name: 'Rock Song',
           artist: 'Rock Artist',
           album: 'Rock Album',
-          url: 'http://localhost:8000'
+          url: 'http://localhost:8000/api/track',
         ),
         const Track(
           id: '2',
           name: 'Pop Song',
           artist: 'Pop Artist',
           album: 'Pop Album',
-          url: 'http://localhost:8000'
+          url: 'http://localhost:8000/api/track',
         ),
       ];
       const searchTerm = 'rock';
@@ -87,7 +87,7 @@ void main() {
         name: 'Selected Song',
         artist: 'Selected Artist',
         album: 'Selected Album',
-        url: 'http://localhost:8000'
+        url: 'http://localhost:8000/api/track',
       );
       
       var isSelected = false;

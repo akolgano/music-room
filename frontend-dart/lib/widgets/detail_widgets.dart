@@ -201,12 +201,13 @@ class PlaylistDetailWidgets {
       child: Padding(
         padding: EdgeInsets.all(MusicAppResponsive.getPadding(context, tiny: 8.0, small: 10.0, medium: 12.0)),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             buildTrackImage(track),
             SizedBox(width: MusicAppResponsive.getSpacing(context)),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     track.name,
@@ -217,6 +218,7 @@ class PlaylistDetailWidgets {
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -227,6 +229,7 @@ class PlaylistDetailWidgets {
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),

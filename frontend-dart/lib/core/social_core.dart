@@ -23,17 +23,7 @@ class SocialLoginUtils {
         }
         _facebookInitialized = true;
       }
-      await _initializeGoogle();
-      _isInitialized = true;
-      AppLogger.debug('Social login initialization completed successfully', 'SocialLoginUtils');
-    } catch (e) {
-      AppLogger.debug('Social login initialization error: $e', 'SocialLoginUtils');
-      rethrow;
-    }
-  }
-
-  static Future<void> _initializeGoogle() async {
-    try {
+      
       final googleClientId = kIsWeb ? dotenv.env['GOOGLE_CLIENT_ID_WEB'] : dotenv.env['GOOGLE_CLIENT_ID_APP'];
       if (googleClientId != null && googleClientId.isNotEmpty) {
         _googleSignIn = GoogleSignIn(
@@ -43,8 +33,11 @@ class SocialLoginUtils {
       } else {
         AppLogger.debug('Warning: Google Client ID not found in environment variables', 'SocialLoginUtils');
       }
+      
+      _isInitialized = true;
+      AppLogger.debug('Social login initialization completed successfully', 'SocialLoginUtils');
     } catch (e) {
-      AppLogger.debug('Google initialization error: $e', 'SocialLoginUtils');
+      AppLogger.debug('Social login initialization error: $e', 'SocialLoginUtils');
       rethrow;
     }
   }

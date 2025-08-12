@@ -70,7 +70,7 @@ void main() {
         name: 'Test Song',
         artist: 'Test Artist',
         album: 'Test Album',
-        url: 'http://localhost:8000'
+        url: 'http://localhost:8000/api/track',
       );
       
       final json = track.toJson();
@@ -78,7 +78,7 @@ void main() {
       expect(json['name'], 'Test Song');
       expect(json['artist'], 'Test Artist');
       expect(json['album'], 'Test Album');
-      expect(json['url'], 'http://localhost:8000');
+      expect(json['url'], 'http://localhost:8000/api/track');
     });
     test('BatchAddResult should calculate success states', () {
       const completeSuccess = BatchAddResult(
