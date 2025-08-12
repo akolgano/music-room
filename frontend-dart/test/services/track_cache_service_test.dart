@@ -35,7 +35,6 @@ void main() {
       
       expect(cacheService.isTrackRetrying(testTrackId), false);
       expect(cacheService.getRetryCount(testTrackId), 0);
-      expect(cacheService.getLastRetryTime(testTrackId), null);
     });
     test('TrackCacheService should handle retry configuration', () {
       const newConfig = TrackRetryConfig(

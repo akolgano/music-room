@@ -141,9 +141,6 @@ class TrackCacheService {
     return _retryCount[deezerTrackId] ?? 0;
   }
 
-  DateTime? getLastRetryTime(String deezerTrackId) {
-    return _lastRetryTime[deezerTrackId];
-  }
 
   void cancelRetries(String deezerTrackId) {
     _retryCount.remove(deezerTrackId);

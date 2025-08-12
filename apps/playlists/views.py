@@ -393,8 +393,6 @@ def delete_track_from_playlist(request, playlist_id):
 def change_visibility(request, playlist_id):
     try:
         public = request.data.get('public', True)
-        #lets set True for now
-        public = True
         playlist = Playlist.objects.get(id=playlist_id)
         playlist.public = public
         playlist.save()
