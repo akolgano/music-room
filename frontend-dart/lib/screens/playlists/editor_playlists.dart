@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:async';
 import '../../providers/music_providers.dart';
-import '../../providers/connectivity_providers.dart';
 import '../../core/locator_core.dart';
 import '../../services/api_services.dart';
 import '../../services/websocket_services.dart';
@@ -586,12 +585,13 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       }
       
       if (hasNameOrDescriptionChanged) {
-        final connectivity = getProvider<ConnectivityProvider>();
-        if (connectivity.isDisconnected) {
-          showInfo('Changes saved locally - will sync when connection is restored');
-        } else {
-          showInfo('Name and description changes are saved locally only');
-        }
+        final musicProvider = getProvider<MusicProvider>();
+        await musicProvider.updatePlaylistDetails(
+          widget.playlistId!,
+          auth.token!,
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+        );
       }
       
       final musicProvider = getProvider<MusicProvider>();

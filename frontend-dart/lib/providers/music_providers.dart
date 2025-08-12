@@ -456,6 +456,18 @@ class MusicProvider extends BaseProvider {
     }
   }
 
+  Future<void> updatePlaylistDetails(String playlistId, String token, {String? name, String? description}) async {
+    final result = await executeAsync(
+      () async {
+        final request = UpdatePlaylistRequest(name: name, description: description);
+        await _apiService.updatePlaylist(playlistId, token, request);
+        updatePlaylistInCache(playlistId, name: name, description: description);
+      },
+      errorMessage: 'Failed to update playlist details',
+    );
+    return result;
+  }
+
   Future<void> shufflePlaylistTracks(String playlistId, String token) async {
     if (_playlistTracks.isEmpty) return;
     

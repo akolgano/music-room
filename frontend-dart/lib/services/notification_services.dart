@@ -147,7 +147,16 @@ class NotificationService {
     final title = (messageType == 'playlist_update' || messageType == 'playlist.update') 
         ? 'Playlist Updated' 
         : 'New Message';
-    final message = _getNotificationMessage(messageType, messageData);
+    
+    final message = (messageType == 'playlist_update' || messageType == 'playlist.update')
+        ? () {
+            final playlistId = messageData['playlist_id']?.toString() ?? 'Unknown';
+            final tracksData = messageData['data'] as List?;
+            final trackCount = tracksData?.length ?? 0;
+            return 'Playlist $playlistId updated with $trackCount tracks';
+          }()
+        : 'Received: ${messageData['type'] ?? 'Unknown message'}';
+    
     final icon = _getNotificationIcon(messageType);
     final color = messageType == 'playlist_update' || messageType == 'playlist.update'
         ? Colors.blue.withValues(alpha: 0.9)
@@ -161,20 +170,6 @@ class NotificationService {
       backgroundColor: color,
       icon: icon,
     );
-  }
-
-
-  String _getNotificationMessage(String messageType, Map<String, dynamic> data) {
-    switch (messageType) {
-      case 'playlist_update':
-      case 'playlist.update':
-        final playlistId = data['playlist_id']?.toString() ?? 'Unknown';
-        final tracksData = data['data'] as List?;
-        final trackCount = tracksData?.length ?? 0;
-        return 'Playlist $playlistId updated with $trackCount tracks';
-      default:
-        return 'Received: ${data['type'] ?? 'Unknown message'}';
-    }
   }
 
   IconData _getNotificationIcon(String messageType) {

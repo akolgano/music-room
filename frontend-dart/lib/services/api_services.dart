@@ -226,6 +226,9 @@ class ApiService {
       CreatePlaylistResponse.fromJson((await _dio.post('/playlists/playlists', data: request.toJson(), 
       options: Options(headers: {'Authorization': 'Token $token'}))).data);
 
+  Future<void> updatePlaylist(String playlistId, String token, UpdatePlaylistRequest request) => 
+      _patchVoid('/playlists/update_playlist/$playlistId', request, token: token);
+
   Future<void> changePlaylistVisibility(String playlistId, String token, VisibilityRequest request) => 
       _postVoid('/playlists/$playlistId/change-visibility/', request, token: token);
   Future<void> inviteUserToPlaylist(String playlistId, String token, InviteUserRequest request) => 

@@ -111,36 +111,5 @@ class DialogWidgets {
     return result ?? false;
   }
 
-  static Future<int?> showSelectionDialog<T>({
-    required BuildContext context, 
-    required String title,
-    required List<T> items,
-    required String Function(T) itemTitle,
-  }) async {
-    return showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _getSurface(context),
-        title: Text(title, style: TextStyle(color: _getOnSurface(context))),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: items.length,
-            itemBuilder: (context, index) => ListTile(
-              title: Text(itemTitle(items[index]), style: TextStyle(color: _getOnSurface(context))),
-              onTap: () => Navigator.pop(context, index),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
-          ),
-        ],
-      ),
-    );
-  }
 
 }

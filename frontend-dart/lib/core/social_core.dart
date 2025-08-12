@@ -49,60 +49,6 @@ class SocialLoginUtils {
     }
   }
 
-  static Future<SocialLoginResult> loginWithFacebook() async {
-    try {
-      if (!_isInitialized) {
-        AppLogger.debug('Social login not initialized, initializing now...', 'SocialLoginUtils');
-        await initialize();
-      }
-
-      if (!_facebookInitialized) { return SocialLoginResult.error('Facebook not properly initialized. Please check your configuration.'); }
-
-      AppLogger.debug('Attempting Facebook login...', 'SocialLoginUtils');
-      
-      try {
-        await FacebookAuth.instance.logOut();
-      } catch (e) {
-        AppLogger.debug('Warning: Could not log out existing Facebook session: $e', 'SocialLoginUtils');
-      }
-
-      final result = await FacebookAuth.instance.login(
-        permissions: ['email', 'public_profile'],
-      );
-
-      AppLogger.debug('Facebook login result status: ${result.status}', 'SocialLoginUtils');
-
-      if (result.status == LoginStatus.success) {
-        final accessToken = result.accessToken?.tokenString;
-        if (accessToken != null && accessToken.isNotEmpty) {
-          AppLogger.debug('Facebook login successful with access token', 'SocialLoginUtils');
-          return SocialLoginResult.success(accessToken, 'facebook');
-        } else {
-          AppLogger.debug('Facebook login failed - no valid token received', 'SocialLoginUtils');
-          return SocialLoginResult.error('Facebook login failed - no access token received');
-        }
-      } else if (result.status == LoginStatus.cancelled) {
-        AppLogger.debug('Facebook login was cancelled by user', 'SocialLoginUtils');
-        return SocialLoginResult.error('Facebook login was cancelled');
-      } else if (result.status == LoginStatus.failed) {
-        AppLogger.debug('Facebook login failed: ${result.message}', 'SocialLoginUtils');
-        return SocialLoginResult.error('Facebook login failed: ${result.message ?? "Unknown error"}');
-      } else {
-        AppLogger.debug('Facebook login failed with status: ${result.status}', 'SocialLoginUtils');
-        return SocialLoginResult.error('Facebook login failed with unexpected status');
-      }
-    } catch (e) {
-      AppLogger.debug('Facebook login error: $e', 'SocialLoginUtils');
-      
-      if (e.toString().contains('MissingPluginException')) {
-        return SocialLoginResult.error(
-          'Facebook login is not properly configured. Please check your platform-specific setup.'
-        );
-      }
-      
-      return SocialLoginResult.error('Facebook login error: $e');
-    }
-  }
 
   static Future<SocialLoginResult> loginWithGoogle() async {
     if (!_isInitialized) {
