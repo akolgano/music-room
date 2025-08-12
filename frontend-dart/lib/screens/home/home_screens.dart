@@ -29,13 +29,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, UserActionLoggingMixin {
   late TabController _tabController;
   int _currentIndex = 0;
+  bool _isInitialLoading = true;
   bool get isLandscape => MediaQuery.of(context).orientation == Orientation.landscape;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: 1);
-    _currentIndex = 1;
+    _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
+    _currentIndex = 0;
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         final newIndex = _tabController.index;
@@ -175,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.background,
-        title: const Text('All Playlists'),
+        title: const Text('Music Room'),
         automaticallyImplyLeading: false,
         toolbarHeight: isLandscape ? (MusicAppResponsive.isSmallScreen(context) ? 40 : 48) : null,
         actions: [
@@ -185,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
           ),
         ],
       ),
-      body: _buildPlaylists(),
+      body: _buildCombinedHomeAndPlaylists(),
     );
   }
 
@@ -337,6 +338,167 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     }
     
     return widgets;
+  }
+
+  Widget _buildCombinedHomeAndPlaylists() {
+    return Consumer<MusicProvider>(
+      builder: (context, music, _) {
+        final auth = Provider.of<AuthProvider>(context, listen: false);
+        
+        if (music.isLoading || _isInitialLoading) {
+          return AppWidgets.loading('Loading your music room...');
+        }
+        
+        return RefreshIndicator(
+          onRefresh: _loadData,
+          color: AppTheme.primary,
+          child: CustomSingleChildScrollView(
+            padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildWelcomeSection(auth),
+                const SizedBox(height: 24),
+                _buildQuickActions(),
+                const SizedBox(height: 24),
+                if (music.playlists.isEmpty)
+                  _buildEmptyPlaylistsState()
+                else
+                  ..._buildOrganizedPlaylists(music.playlists, auth.username),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWelcomeSection(AuthProvider auth) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primary.withValues(alpha: 0.2),
+            AppTheme.primary.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome back, ${auth.username ?? 'Music Lover'}!',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Discover, create, and share your favorite playlists',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.music_note,
+            color: AppTheme.primary,
+            size: 40,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Quick Actions',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: PulsingContainer(
+                child: Card(
+                  color: AppTheme.surface,
+                  child: InkWell(
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Icon(Icons.add, color: AppTheme.primary, size: 32),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Create Playlist',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Card(
+                color: AppTheme.surface,
+                child: InkWell(
+                  onTap: () => _tabController.animateTo(1),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Icon(Icons.search, color: AppTheme.primary, size: 32),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Search Music',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyPlaylistsState() {
+    return AppWidgets.emptyState(
+      icon: Icons.playlist_play,
+      title: 'No playlists found',
+      subtitle: 'Create your first playlist to get started!',
+      buttonText: 'Create Playlist',
+      onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+    );
   }
 
   Widget _buildPlaylists() {
@@ -537,7 +699,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
       if (auth.isLoggedIn && auth.token != null) {
         await Future.wait([
-          music.fetchAllPlaylists(auth.token!), 
+          _loadPlaylistsWithRetry(music, auth.token!), 
           profileProvider.loadProfile(auth.token),
           friendProvider.fetchAllFriendData(auth.token!),
         ]);
@@ -545,6 +707,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     } catch (e) {
       AppLogger.error('Failed to load data', e, null, 'HomeScreen');
       _showError('Failed to load data: ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadPlaylistsWithRetry(MusicProvider music, String token) async {
+    int retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = Duration(seconds: 1);
+
+    while (retryCount < maxRetries) {
+      try {
+        AppLogger.debug('Loading playlists attempt ${retryCount + 1}/$maxRetries', 'HomeScreen');
+        await music.fetchAllPlaylists(token);
+        
+        // Trigger UI update immediately after each fetch attempt
+        if (mounted) {
+          setState(() {});
+        }
+        
+        if (music.playlists.isNotEmpty || retryCount == maxRetries - 1) {
+          AppLogger.debug('Playlists loaded successfully: ${music.playlists.length} playlists', 'HomeScreen');
+          break;
+        }
+        
+        if (music.playlists.isEmpty && retryCount < maxRetries - 1) {
+          AppLogger.debug('No playlists found, retrying in ${retryDelay.inSeconds} seconds...', 'HomeScreen');
+          retryCount++;
+          await Future.delayed(retryDelay);
+        } else {
+          break;
+        }
+      } catch (e) {
+        retryCount++;
+        AppLogger.error('Playlist load attempt ${retryCount} failed', e, null, 'HomeScreen');
+        
+        if (retryCount < maxRetries) {
+          AppLogger.debug('Retrying playlist load in ${retryDelay.inSeconds} seconds...', 'HomeScreen');
+          await Future.delayed(retryDelay);
+        } else {
+          rethrow;
+        }
+      }
     }
   }
 
