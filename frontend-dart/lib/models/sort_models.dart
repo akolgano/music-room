@@ -19,6 +19,8 @@ class TrackSortOption {
     required this.icon,
   });
 
+  bool get isDefault => field == TrackSortField.position;
+
   TrackSortOption copyWith({
     TrackSortField? field,
     SortOrder? order,
@@ -114,6 +116,8 @@ class PlaylistSortOption {
     required this.displayName,
     required this.icon,
   });
+
+  bool get isDefault => field == PlaylistSortField.name && this == defaultOptions.first;
 
   PlaylistSortOption copyWith({
     PlaylistSortField? field,

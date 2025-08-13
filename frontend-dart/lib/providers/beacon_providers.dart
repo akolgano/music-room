@@ -181,13 +181,6 @@ class BeaconProvider extends BaseProvider {
     return beacon != null && beacon.isNearby;
   }
 
-  List<String> getNearbyPlaylistIds() {
-    return _discoveredBeacons
-        .where((beacon) => beacon.isNearby)
-        .map((beacon) => beacon.major.toString())
-        .toList();
-  }
-
   Future<void> refreshBeacons() async {
     if (_isScanning) {
       await stopScanning();

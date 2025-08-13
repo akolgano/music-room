@@ -189,10 +189,10 @@ class AuthProvider extends BaseProvider {
         final idToken = auth.idToken;
 
         if (idToken != null) {
-          await _authService.googleLoginApp(idToken);
+          await _authService.googleLogin(idToken: idToken);
         }
         else {
-          await _authService.googleLoginWeb(socialId, socialEmail, socialName);
+          await _authService.googleLogin(socialId: socialId, socialEmail: socialEmail, socialName: socialName);
         }
       
       },

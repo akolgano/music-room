@@ -346,9 +346,7 @@ class FrontendLoggingService {
 
     
     if (_currentUserId == null) {
-      if (kDebugMode) {
-        AppLogger.debug('Skipping log send - user not authenticated', 'FrontendLoggingService');
-      }
+      _pendingLogs.clear();
       return;
     }
 
@@ -362,9 +360,7 @@ class FrontendLoggingService {
     }
 
     if (authToken == null) {
-      if (kDebugMode) {
-        AppLogger.debug('Skipping log send - no auth token available', 'FrontendLoggingService');
-      }
+      _pendingLogs.clear();
       return;
     }
 

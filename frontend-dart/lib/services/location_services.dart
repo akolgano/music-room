@@ -70,7 +70,6 @@ class LocationService {
   }
 
   static Future<LocationSuggestion?> getCurrentLocation() async {
-    // Try GPS first
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (serviceEnabled) {
@@ -98,7 +97,6 @@ class LocationService {
       }
     }
 
-    // Fallback to IP-based location
     try {
       final ipResult = await getLocationByIP();
       if (ipResult != null) {
@@ -113,7 +111,6 @@ class LocationService {
       }
     }
 
-    // If both methods fail
     String errorMessage = 'Unable to detect location automatically.';
     if (kIsWeb) {
       errorMessage += ' GPS requires HTTPS and location permissions. Tried IP-based detection as backup.';

@@ -31,10 +31,20 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final profileProvider = getProvider<ProfileProvider>();
-      profileProvider.loadProfile(auth.token);
-      _loadMusicPreferences();
+      _initializeProfile();
     });
+  }
+
+  Future<void> _initializeProfile() async {
+    final profileProvider = getProvider<ProfileProvider>();
+    try {
+      await profileProvider.loadProfile(auth.token);
+      await _loadMusicPreferences();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[ProfileScreen] Error initializing profile: $e');
+      }
+    }
   }
 
   Future<void> _loadMusicPreferences() async {

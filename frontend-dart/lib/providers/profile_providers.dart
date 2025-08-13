@@ -247,6 +247,7 @@ class ProfileProvider extends BaseProvider {
     String? phone,
     String? friendInfo, 
     List<int>? musicPreferencesIds,
+    List<Map<String, dynamic>>? availableMusicPreferences,
   }) async {
     return await executeBool(
       () async {
@@ -287,7 +288,10 @@ class ProfileProvider extends BaseProvider {
             if (bio != null) _bio = bio;
             if (phone != null) _phone = phone;
             if (friendInfo != null) _friendInfo = friendInfo;
-            if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+            if (musicPreferencesIds != null) {
+              _musicPreferenceIds = musicPreferencesIds;
+              _updateMusicPreferenceNames(availableMusicPreferences);
+            }
           } else {
             if (kDebugMode) {
               debugPrint('[ProfileProvider] Mobile platform detected, preparing avatar upload');
@@ -327,7 +331,10 @@ class ProfileProvider extends BaseProvider {
               if (bio != null) _bio = bio;
               if (phone != null) _phone = phone;
               if (friendInfo != null) _friendInfo = friendInfo;
-              if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+              if (musicPreferencesIds != null) {
+                _musicPreferenceIds = musicPreferencesIds;
+                _updateMusicPreferenceNames(availableMusicPreferences);
+              }
             } finally {
               if (await tempFile.exists()) {
                 await tempFile.delete();
@@ -378,12 +385,30 @@ class ProfileProvider extends BaseProvider {
           if (bio != null) _bio = bio;
           if (phone != null) _phone = phone;
           if (friendInfo != null) _friendInfo = friendInfo;
-          if (musicPreferencesIds != null) _musicPreferenceIds = musicPreferencesIds;
+          if (musicPreferencesIds != null) {
+            _musicPreferenceIds = musicPreferencesIds;
+            _updateMusicPreferenceNames(availableMusicPreferences);
+          }
         }
       },
       successMessage: 'Profile updated successfully',
       errorMessage: 'Failed to update profile',
     );
+  }
+
+  void _updateMusicPreferenceNames(List<Map<String, dynamic>>? availablePreferences) {
+    if (availablePreferences == null || _musicPreferenceIds == null) return;
+    
+    _musicPreferences = _musicPreferenceIds!
+        .map((id) {
+          final preference = availablePreferences.firstWhere(
+            (pref) => pref['id'] == id,
+            orElse: () => <String, dynamic>{},
+          );
+          return preference['name']?.toString() ?? 'Unknown';
+        })
+        .where((name) => name != 'Unknown')
+        .toList();
   }
 
   Future<bool> updateVisibility(String? token, {

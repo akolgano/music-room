@@ -844,11 +844,6 @@ class BatchLibraryAddResult {
     if (failureCount > 0) { parts.add('$failureCount failed'); }
     return parts.join(', ');
   }
-
-  List<String> get successSample {
-    return successfulTracks.take(3).toList();
-  }
-
 }
 
 class SocialLoginResult {

@@ -12,8 +12,8 @@ class PlaylistDetailWidgets {
   static Widget buildThemedPlaylistHeader(BuildContext context, Playlist playlist) {
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
-        return ThemeUtils.buildThemedCard(
-          context: context,
+        return Card(
+          color: Theme.of(context).colorScheme.surface,
           elevation: () {
             switch (MusicAppResponsive.getScreenSize(context)) {
               case ScreenSize.tiny: return 4.0;
@@ -24,7 +24,12 @@ class PlaylistDetailWidgets {
               case ScreenSize.xxlarge: return 10.0;
             }
           }(),
-          child: Column(
+          margin: EdgeInsets.all(ThemeUtils.getResponsiveMargin(context)),
+          shadowColor: AppTheme.primary.withValues(alpha: 0.2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(ThemeUtils.getResponsiveBorderRadius(context))),
+          child: Padding(
+            padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
+            child: Column(
             children: [
               Container(
                 width: MusicAppResponsive.isSmallScreen(context) ? 80 : 120,
@@ -89,6 +94,7 @@ class PlaylistDetailWidgets {
                   ],
                 ),
             ],
+            ),
           ),
         );
       },
