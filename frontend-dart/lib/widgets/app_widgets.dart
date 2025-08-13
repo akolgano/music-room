@@ -429,13 +429,14 @@ class AppWidgets {
     IconData? icon,
     bool isLoading = false,
     bool fullWidth = true,
-  }) => FormWidgets.primaryButton(
+  }) => FormWidgets.buildButton(
     context: context,
     text: text,
     onPressed: onPressed,
     icon: icon,
     isLoading: isLoading,
     fullWidth: fullWidth,
+    isSecondary: false,
   );
 
   static Widget secondaryButton({

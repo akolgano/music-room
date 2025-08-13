@@ -44,11 +44,6 @@ class PulsingColorAnimation {
     ));
   }
 
-  static Animation<double> createIntensityAnimation(AnimationController controller) {
-    return Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-    );
-  }
 }
 
 mixin PulsingColorMixin<T extends StatefulWidget> on State<T>, TickerProviderStateMixin<T> {
@@ -69,7 +64,9 @@ mixin PulsingColorMixin<T extends StatefulWidget> on State<T>, TickerProviderSta
         duration: duration ?? PulsingColorAnimation.defaultDuration
       );
       _pulsingColorAnimation = PulsingColorAnimation.createColorAnimation(_pulsingController);
-      _pulsingIntensityAnimation = PulsingColorAnimation.createIntensityAnimation(_pulsingController);
+      _pulsingIntensityAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
+        CurvedAnimation(parent: _pulsingController, curve: Curves.easeInOut),
+      );
       _mixinControllerCreated = true;
     }
   }
