@@ -55,15 +55,8 @@ class AuthProvider extends BaseProvider {
       notifyListeners();
       
       if (isLoggedIn && token != null) {
-        try {
-          await _webSocketService.connect(token!);
-          if (kDebugMode) {
-            developer.log('WebSocket connected on app startup', name: 'AuthProvider');
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            developer.log('Failed to connect WebSocket on app startup: $e', name: 'AuthProvider');
-          }
+        if (kDebugMode) {
+          developer.log('User authenticated on app startup', name: 'AuthProvider');
         }
       }
     } catch (e) {
@@ -82,16 +75,6 @@ class AuthProvider extends BaseProvider {
     
     if (success && token != null) {
       _loggingService.updateUserId(userId);
-      try {
-        await _webSocketService.connect(token!);
-        if (kDebugMode) {
-          developer.log('WebSocket connected after login', name: 'AuthProvider');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          developer.log('Failed to connect WebSocket after login: $e', name: 'AuthProvider');
-        }
-      }
     }
     
     return success;
@@ -159,19 +142,6 @@ class AuthProvider extends BaseProvider {
       successMessage: 'Account created successfully!',
     );
     
-    if (success && token != null) {
-      try {
-        await _webSocketService.connect(token!);
-        if (kDebugMode) {
-          developer.log('WebSocket connected after signup', name: 'AuthProvider');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          developer.log('Failed to connect WebSocket after signup: $e', name: 'AuthProvider');
-        }
-      }
-    }
-    
     return success;
   }
 
@@ -197,21 +167,7 @@ class AuthProvider extends BaseProvider {
       
       },
       successMessage: 'Google login successful!',
-      errorMessage: 'Google login failed',
     );
-    
-    if (success && token != null) {
-      try {
-        await _webSocketService.connect(token!);
-        if (kDebugMode) {
-          developer.log('WebSocket connected after Google login', name: 'AuthProvider');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          developer.log('Failed to connect WebSocket after Google login: $e', name: 'AuthProvider');
-        }
-      }
-    }
     
     return success;
   }
@@ -230,19 +186,6 @@ class AuthProvider extends BaseProvider {
       successMessage: 'Facebook login successful!',
       errorMessage: 'Facebook login failed',
     );
-    
-    if (success && token != null) {
-      try {
-        await _webSocketService.connect(token!);
-        if (kDebugMode) {
-          developer.log('WebSocket connected after Facebook login', name: 'AuthProvider');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          developer.log('Failed to connect WebSocket after Facebook login: $e', name: 'AuthProvider');
-        }
-      }
-    }
     
     return success;
   }

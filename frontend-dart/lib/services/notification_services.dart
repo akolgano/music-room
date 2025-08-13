@@ -157,7 +157,9 @@ class NotificationService {
           }()
         : 'Received: ${messageData['type'] ?? 'Unknown message'}';
     
-    final icon = _getNotificationIcon(messageType);
+    final icon = (messageType == 'playlist_update' || messageType == 'playlist.update')
+        ? Icons.playlist_play
+        : Icons.notifications;
     final color = messageType == 'playlist_update' || messageType == 'playlist.update'
         ? Colors.blue.withValues(alpha: 0.9)
         : null;
@@ -170,16 +172,6 @@ class NotificationService {
       backgroundColor: color,
       icon: icon,
     );
-  }
-
-  IconData _getNotificationIcon(String messageType) {
-    switch (messageType) {
-      case 'playlist_update':
-      case 'playlist.update':
-        return Icons.playlist_play;
-      default:
-        return Icons.notifications;
-    }
   }
 
   Widget _buildNotificationWidget(

@@ -18,7 +18,6 @@ class TrackRetryConfig {
   
   static const standard = TrackRetryConfig();
   static const aggressive = TrackRetryConfig(maxRetries: 10, baseDelayMs: 500);
-  static const conservative = TrackRetryConfig(maxRetries: 3, baseDelayMs: 2000);
 }
 
 class TrackCacheService {

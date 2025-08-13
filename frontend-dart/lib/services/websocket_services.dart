@@ -70,10 +70,6 @@ class WebSocketService {
       _playlistUpdateController != null && 
       !_playlistUpdateController!.isClosed;
 
-  Future<void> connect(String token) async {
-    _log('General WebSocket connection not supported - use connectToPlaylist instead');
-  }
-
   Future<void> connectToPlaylist(String playlistId, String token) async {
     if (_currentPlaylistId == playlistId && isConnected) {
       _log('Already connected to playlist $playlistId');
