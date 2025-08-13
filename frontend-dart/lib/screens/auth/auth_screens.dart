@@ -466,7 +466,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.forgotPassword(_emailController.text);
+      final success = await authProvider.sendPasswordResetEmail(_emailController.text);
       
       if (success && mounted) {
         setState(() {
@@ -561,7 +561,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.forgotChangePassword(
+      final success = await authProvider.resetPasswordWithOtp(
         _emailController.text,
         _otpController.text,
         _passwordController.text,

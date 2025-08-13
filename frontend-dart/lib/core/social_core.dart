@@ -94,20 +94,22 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isGoogle = provider.toLowerCase() == 'google';
-    final isFacebook = provider.toLowerCase() == 'facebook';
-
-    IconData icon;
-    Color color;
-    if (isGoogle) {
-      icon = Icons.g_mobiledata;
-      color = Colors.red;
-    } else if (isFacebook) {
-      icon = Icons.facebook;
-      color = Colors.blue;
-    } else {
-      icon = Icons.login;
-      color = const Color(0xFF1DB954); 
+    final providerLower = provider.toLowerCase();
+    
+    late IconData icon;
+    late Color color;
+    
+    switch (providerLower) {
+      case 'google':
+        icon = Icons.g_mobiledata;
+        color = Colors.red;
+        break;
+      case 'facebook':
+        icon = Icons.facebook;
+        color = Colors.blue;
+        break;
+      default:
+        throw ArgumentError('Unsupported social login provider: $provider');
     }
 
     return SizedBox(

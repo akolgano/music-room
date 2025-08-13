@@ -105,7 +105,19 @@ class AuthProvider extends BaseProvider {
     return success;
   }
 
-  Future<bool> forgotPassword(String email) async {
+
+  Future<bool> resetPasswordWithOtp(String email, String otp, String newPassword) async {
+    return await executeBool(
+      () async {
+        final request = ChangePasswordRequest(email: email, otp: otp, password: newPassword);
+        await _authService.api.forgotChangePassword(request);
+      },
+      successMessage: 'Password reset successfully',
+      errorMessage: 'Failed to reset password',
+    );
+  }
+
+  Future<bool> sendPasswordResetEmail(String email) async {
     return await executeBool(
       () async {
         final request = ForgotPasswordRequest(email: email);
@@ -113,17 +125,6 @@ class AuthProvider extends BaseProvider {
       },
       successMessage: 'Password reset email sent',
       errorMessage: 'Failed to send reset email',
-    );
-  }
-
-  Future<bool> forgotChangePassword(String email, String otp, String password) async {
-    return await executeBool(
-      () async {
-        final request = ChangePasswordRequest(email: email, otp: otp, password: password);
-        await _authService.api.forgotChangePassword(request);
-      },
-      successMessage: 'Password changed successfully',
-      errorMessage: 'Failed to change password',
     );
   }
 

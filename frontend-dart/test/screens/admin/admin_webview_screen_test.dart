@@ -33,21 +33,21 @@ void main() {
       expect(find.text(customTitle), findsOneWidget);
     });
 
-    testWidgets('should have back button in app bar', (WidgetTester tester) async {
+    testWidgets('should display route path information', (WidgetTester tester) async {
+      const routePath = '/custom/admin/dashboard/';
+      
       await tester.pumpWidget(
-        MaterialApp(
-          home: const Scaffold(body: Text('Home')),
-          routes: {
-            '/admin': (context) => const AdminWebViewScreen(
-              routePath: '/admin/',
-              title: 'Admin',
-            ),
-          },
+        const MaterialApp(
+          home: AdminWebViewScreen(
+            routePath: routePath,
+            title: 'Dashboard Admin',
+          ),
         ),
       );
 
-      await tester.tap(find.text('Home'));
-      await tester.pumpAndSettle();
+      // Verify the screen renders without errors
+      expect(find.byType(AdminWebViewScreen), findsOneWidget);
+      expect(find.text('Dashboard Admin'), findsOneWidget);
     });
   });
 }

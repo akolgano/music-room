@@ -40,8 +40,6 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
         children: [
           _buildPlaylistInfo(),
           const SizedBox(height: 24),
-          _buildSharingOptions(),
-          const SizedBox(height: 24),
           _buildFriendsList(),
           const SizedBox(height: 24),
           if (_selectedFriends.isNotEmpty) _buildShareButton(),
@@ -51,9 +49,10 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
   }
 
   Widget _buildPlaylistInfo() {
-    return AppTheme.buildHeaderCard(
-      child: Column(
-        children: [
+    return Center(
+      child: AppTheme.buildHeaderCard(
+        child: Column(
+          children: [
           Container(
             width: 80,
             height: 80,
@@ -70,6 +69,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
           Text(
             '${widget.playlist.tracks.length} tracks',
             style: const TextStyle(color: Colors.white70),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Container(
@@ -88,50 +88,11 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
 
-  Widget _buildSharingOptions() {
-    return AppTheme.buildFormCard(
-      title: 'Sharing Options',
-      titleIcon: Icons.share,
-      child: Column(
-        children: [
-          AppWidgets.infoBanner(
-            title: 'Share with Friends',
-            message: 'Select friends below to invite them to collaborate on this playlist',
-            icon: Icons.people,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _copyPlaylistLink,
-                  icon: const Icon(Icons.link),
-                  label: const Text('Copy Link'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.surface,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _shareToSocial,
-                  icon: const Icon(Icons.ios_share),
-                  label: const Text('Share'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.surface, foregroundColor: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildFriendsList() {
     if (_friends.isEmpty) {
@@ -149,6 +110,12 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
       titleIcon: Icons.people,
       child: Column(
         children: [
+          AppWidgets.infoBanner(
+            title: 'Invite Friends',
+            message: 'Select friends below to invite them to collaborate on this playlist',
+            icon: Icons.people,
+          ),
+          const SizedBox(height: 16),
           Text(
             'Choose friends to invite to this playlist (${_selectedFriends.length} selected)',
             style: const TextStyle(color: Colors.white70),
@@ -230,30 +197,4 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
     }
   }
 
-  void _copyPlaylistLink() {
-    showInfo('Playlist link copied to clipboard!');
-  }
-
-  void _shareToSocial() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Row(
-          children: [
-            Icon(Icons.share, color: AppTheme.primary),
-            const SizedBox(width: 8),
-            const Text('Share to Social Media', style: TextStyle(color: Colors.white)),
-          ],
-        ),
-        content: const Text('Share your playlist on social media platforms.', style: TextStyle(color: Colors.white)),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }

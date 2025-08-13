@@ -3,10 +3,6 @@ import 'package:music_room/models/music_models.dart';
 
 void main() {
   group('Playlists Screen Tests', () {
-    test('PlaylistsScreen should be instantiable', () {
-      expect('PlaylistsScreen', isA<String>());
-      expect('PlaylistsScreen', 'PlaylistsScreen');
-    });
 
     test('PlaylistsScreen should handle playlist list display', () {
       final playlists = [
@@ -92,8 +88,8 @@ void main() {
       expect(sortedByCreation.last.id, '1');
     });
 
-    test('PlaylistsScreen should handle playlist actions', () {
-      'playlist_123';
+    test('PlaylistsScreen should handle owner permissions correctly', () {
+      const playlistId = 'playlist_123';
       const actions = {
         'edit': true,
         'delete': true,
@@ -102,18 +98,24 @@ void main() {
         'export': false,
       };
 
-      expect(actions['edit'], true);
-      expect(actions['delete'], true);
-      expect(actions['share'], true);
-      expect(actions['duplicate'], true);
-      expect(actions['export'], false);
-
+      // Test owner permissions
       const isOwner = true;
       final canEdit = isOwner && actions['edit'] == true;
       final canDelete = isOwner && actions['delete'] == true;
+      final canShare = actions['share'] == true;
 
       expect(canEdit, true);
       expect(canDelete, true);
+      expect(canShare, true);
+
+      // Test non-owner permissions
+      const isNotOwner = false;
+      final nonOwnerCanEdit = isNotOwner && actions['edit'] == true;
+      final nonOwnerCanDelete = isNotOwner && actions['delete'] == true;
+
+      expect(nonOwnerCanEdit, false);
+      expect(nonOwnerCanDelete, false);
+      expect(playlistId, 'playlist_123');
     });
 
     test('PlaylistsScreen should handle empty playlist state', () {
