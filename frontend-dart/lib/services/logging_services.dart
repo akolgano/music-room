@@ -281,24 +281,6 @@ class FrontendLoggingService {
     );
   }
 
-  void logMusicAction(String action, String trackId, {String? playlistId, Map<String, dynamic>? metadata}) {
-    final actionType = action == 'play' ? UserActionType.playMusic : 
-                     action == 'pause' ? UserActionType.pauseMusic :
-                     action == 'add' ? UserActionType.addToPlaylist :
-                     action == 'remove' ? UserActionType.removeFromPlaylist :
-                     UserActionType.other;
-    
-    logUserAction(
-      actionType: actionType,
-      description: 'Music action: $action for track $trackId',
-      metadata: {
-        'action': action,
-        'track_id': trackId,
-        'playlist_id': playlistId,
-        ...?metadata,
-      },
-    );
-  }
 
   void logAuthAction(String action, {bool success = true, Map<String, dynamic>? metadata}) {
     final actionType = action == 'login' ? UserActionType.login :

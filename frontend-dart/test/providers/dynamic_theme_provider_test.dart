@@ -58,16 +58,13 @@ void main() {
       expect(themeProvider.primaryColor, AppTheme.primary);
       expect(themeProvider.currentImageUrl, null);
     });
-    test('DynamicThemeProvider should provide current colors map', () {
-      final colors = themeProvider.currentColors;
-      
-      expect(colors, isA<Map<String, Color>>());
-      expect(colors.containsKey('primary'), true);
-      expect(colors.containsKey('surface'), true);
-      expect(colors.containsKey('background'), true);
-      expect(colors.containsKey('accent'), true);
-      expect(colors.containsKey('onPrimary'), true);
-      expect(colors.containsKey('onSurface'), true);
+    test('DynamicThemeProvider should provide color properties', () {
+      expect(themeProvider.primaryColor, isA<Color>());
+      expect(themeProvider.surfaceColor, isA<Color>());
+      expect(themeProvider.backgroundColor, isA<Color>());
+      expect(themeProvider.accentColor, isA<Color>());
+      expect(themeProvider.onPrimaryColor, isA<Color>());
+      expect(themeProvider.onSurfaceColor, isA<Color>());
     });
     test('DynamicThemeProvider should clear color cache', () {
       themeProvider.clearCache();

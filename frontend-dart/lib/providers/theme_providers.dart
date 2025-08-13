@@ -341,12 +341,4 @@ class DynamicThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Map<String, Color> get currentColors => {
-    'primary': _primaryColor,
-    'surface': _surfaceColor,
-    'background': _backgroundColor,
-    'accent': _accentColor,
-    'onPrimary': _onPrimaryColor,
-    'onSurface': _onSurfaceColor,
-  };
 }

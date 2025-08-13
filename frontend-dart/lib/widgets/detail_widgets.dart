@@ -249,7 +249,7 @@ class PlaylistDetailWidgets {
             ],
             SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 7.0, medium: 8.0)),
             SizedBox(
-              width: canReorder ? 110 : 70, 
+              width: canReorder ? 140 : 90, 
               child: buildActionButtons(
                 context, 
                 onPlay, 
@@ -323,12 +323,12 @@ class PlaylistDetailWidgets {
           GestureDetector(
             onTap: onMoveUp,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: AppTheme.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.keyboard_arrow_up, color: AppTheme.primary, size: 14),
+              child: const Icon(Icons.keyboard_arrow_up, color: AppTheme.primary, size: 20),
             ),
           ),
           const SizedBox(width: 2),
@@ -337,12 +337,12 @@ class PlaylistDetailWidgets {
           GestureDetector(
             onTap: onMoveDown,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: AppTheme.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.keyboard_arrow_down, color: AppTheme.primary, size: 14),
+              child: const Icon(Icons.keyboard_arrow_down, color: AppTheme.primary, size: 20),
             ),
           ),
           const SizedBox(width: 2),
@@ -350,12 +350,12 @@ class PlaylistDetailWidgets {
         GestureDetector(
           onTap: onPlay,
           child: Container(
-            padding: const EdgeInsets.all(2),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: AppTheme.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 16),
+            child: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 22),
           ),
         ),
         if (isOwner && onRemove != null) ...[
@@ -363,12 +363,12 @@ class PlaylistDetailWidgets {
           GestureDetector(
             onTap: onRemove,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 14),
+              child: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 20),
             ),
           ),
         ],

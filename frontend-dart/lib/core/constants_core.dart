@@ -110,12 +110,6 @@ class AppValidators {
     return null;
   }
 
-  static String? playlistName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Playlist name is required';
-    }
-    return null;
-  }
 
   static String? phoneNumber(String? value, [bool required = false]) {
     if (!required && (value?.isEmpty ?? true)) { return null; }

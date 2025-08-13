@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import '../../providers/music_providers.dart';
 import '../../services/player_services.dart';
 import '../../services/music_services.dart';
+import '../../services/logging_services.dart';
 import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/logging_core.dart';
@@ -524,9 +525,12 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
   }
 
   Future<void> _handleAddTrack(Track track) async {
-    logMusicAction('add', track.id, 
-      playlistId: widget.playlistId,
+    logUserAction(
+      actionType: UserActionType.addToPlaylist,
+      description: 'Added track to playlist: ${track.name}',
       metadata: {
+        'track_id': track.id,
+        'playlist_id': widget.playlistId,
         'track_name': track.name,
         'artist': track.artist,
         'is_adding_to_specific_playlist': _isAddingToPlaylist,
@@ -563,8 +567,12 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
   }
 
   Future<void> _playTrack(Track track) async {
-    logMusicAction(_playerService.currentTrack?.id == track.id ? 'pause' : 'play', track.id,
+    final isPlaying = _playerService.currentTrack?.id == track.id;
+    logUserAction(
+      actionType: isPlaying ? UserActionType.pauseMusic : UserActionType.playMusic,
+      description: isPlaying ? 'Paused track: ${track.name}' : 'Playing track: ${track.name}',
       metadata: {
+        'track_id': track.id,
         'track_name': track.name,
         'artist': track.artist,
         'is_toggle': _playerService.currentTrack?.id == track.id,
@@ -658,7 +666,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       context, 
       title: 'Create New Playlist',
       hintText: 'Enter playlist name',
-      validator: AppValidators.playlistName,
+      validator: (value) => AppValidators.required(value, 'playlist name'),
     );
     if (playlistName?.isNotEmpty == true) {
       await runAsyncAction(
@@ -669,6 +677,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
             'Created while adding "${track.name}"', 
             true, 
             auth.token!,
+            'open',
           );
         if (playlistId?.isNotEmpty == true) {
           final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);

@@ -152,65 +152,11 @@ void main() {
       expect(validationMessages['descriptionTooLong'], contains('500'));
     });
 
-    test('PlaylistEditorScreen should handle form submission', () {
-
-      GlobalKey<FormState>();
-      const validPlaylistData = {
-        'name': 'Test Playlist',
-        'description': 'Test Description',
-        'isPublic': true,
-      };
-      
-
-      var isFormValid = (validPlaylistData['name']! as String).isNotEmpty &&
-                       (validPlaylistData['name'] as String).length <= 100;
-      
-      expect(isFormValid, true);
-      
-
-      var isSubmitting = false;
-      var submissionError = '';
-      var submissionSuccess = false;
-      
-
-      isSubmitting = true;
-      expect(isSubmitting, true);
-      
-
-      isSubmitting = false;
-      submissionSuccess = true;
-      const successMessage = 'Playlist saved successfully';
-      
-      expect(submissionSuccess, true);
-      expect(successMessage, contains('saved'));
-      
-
-      submissionSuccess = false;
-      submissionError = 'Failed to save playlist';
-      
-      expect(submissionError.isNotEmpty, true);
-      expect(submissionError, contains('Failed'));
-      
-
-      const shouldNavigateBack = true;
-      const shouldShowSuccessSnackbar = true;
-      
-      expect(shouldNavigateBack, true);
-      expect(shouldShowSuccessSnackbar, true);
-      
-
-      const autoSaveDraft = true;
-      const draftSaveInterval = Duration(seconds: 30);
-      
-      expect(autoSaveDraft, true);
-      expect(draftSaveInterval.inSeconds, 30);
-      
-
-      const hasUnsavedChanges = true;
-      const showExitWarning = true;
-      
-      expect(hasUnsavedChanges, true);
-      expect(showExitWarning, true);
+    test('PlaylistEditorScreen should be creatable in edit mode', () {
+      const screen = PlaylistEditorScreen(playlistId: 'test-id-123');
+      expect(screen, isA<PlaylistEditorScreen>());
+      expect(screen.playlistId, 'test-id-123');
     });
+
   });
 }

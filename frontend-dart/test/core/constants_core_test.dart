@@ -124,17 +124,17 @@ void main() {
       expect(AppValidators.phoneNumber('', true), isA<String>());
     });
     
-    group('Playlist name validator', () {
+    group('Required field validator for playlist names', () {
       test('should accept valid playlist names', () {
-        expect(AppValidators.playlistName('My Playlist'), null);
-        expect(AppValidators.playlistName('Rock Songs'), null);
-        expect(AppValidators.playlistName('  Playlist with spaces  '), null);
+        expect(AppValidators.required('My Playlist', 'playlist name'), null);
+        expect(AppValidators.required('Rock Songs', 'playlist name'), null);
+        expect(AppValidators.required('  Playlist with spaces  ', 'playlist name'), null);
       });
       
       test('should reject empty playlist names', () {
-        expect(AppValidators.playlistName(''), isA<String>());
-        expect(AppValidators.playlistName(null), isA<String>());
-        expect(AppValidators.playlistName('   '), isA<String>());
+        expect(AppValidators.required('', 'playlist name'), isA<String>());
+        expect(AppValidators.required(null, 'playlist name'), isA<String>());
+        expect(AppValidators.required('   ', 'playlist name'), isA<String>());
       });
     });
   });
