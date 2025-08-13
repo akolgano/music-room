@@ -445,7 +445,7 @@ def patch_playlist_license(request, playlist_id):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-#@check_license
+@check_license
 def vote_for_track(request, playlist_id):
     try:
         playlist = Playlist.objects.get(id=playlist_id)

@@ -63,18 +63,25 @@ void main() {
       expect(sorted, isEmpty);
     });
 
-    test('TrackSortOption should have correct properties', () {
+    test('TrackSortingService should sort tracks by points descending', () {
+      final tracks = [
+        const PlaylistTrack(trackId: '1', name: 'Song 1', position: 1, points: 5),
+        const PlaylistTrack(trackId: '2', name: 'Song 2', position: 2, points: 15),
+        const PlaylistTrack(trackId: '3', name: 'Song 3', position: 3, points: 10),
+      ];
+      
       const sortOption = TrackSortOption(
-        displayName: 'By Name',
-        field: TrackSortField.name,
-        order: SortOrder.ascending,
-        icon: Icons.sort_by_alpha,
+        displayName: 'By Points',
+        field: TrackSortField.points,
+        order: SortOrder.descending,
+        icon: Icons.star,
       );
       
-      expect(sortOption.displayName, 'By Name');
-      expect(sortOption.field, TrackSortField.name);
-      expect(sortOption.order, SortOrder.ascending);
-      expect(sortOption.icon, Icons.sort_by_alpha);
+      final sorted = TrackSortingService.sortTracks(tracks, sortOption);
+      
+      expect(sorted[0].points, 15);
+      expect(sorted[1].points, 10);
+      expect(sorted[2].points, 5);
     });
 
     test('TrackSortingService should sort Track list correctly', () {

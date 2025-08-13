@@ -62,10 +62,6 @@ void main() {
         expect(track.backendId, '123');
         expect(track.id, 'deezer_123');
       });
-      test('should convert frontend ID correctly', () {
-        expect(Track.toFrontendId('123', isDeezer: true), 'deezer_123');
-        expect(Track.toFrontendId('regular_track'), 'regular_track');
-      });
     });
     group('Playlist', () {
       test('should create Playlist from JSON', () {

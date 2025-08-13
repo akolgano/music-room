@@ -40,10 +40,6 @@ class Track {
     return deezerTrackId != null || id.startsWith('deezer_');
   }
 
-  static String toFrontendId(String trackId, {bool isDeezer = false}) {
-    if (isDeezer && !trackId.startsWith('deezer_')) { return 'deezer_$trackId'; }
-    return trackId;
-  }
 
   factory Track.fromJson(Map<String, dynamic> json) {
     String trackId;
