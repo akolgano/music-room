@@ -189,7 +189,30 @@ class NearbyBeaconsCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                ...nearbyBeacons.take(3).map((beacon) => _buildBeaconRow(beacon)),
+                ...nearbyBeacons.take(3).map((beacon) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      BeaconProximityIndicator(beacon: beacon, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Major: ${beacon.major}, Minor: ${beacon.minor}',
+                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                            ),
+                            Text(
+                              '${beacon.distance.toStringAsFixed(1)}m • ${beacon.proximity}',
+                              style: const TextStyle(color: Colors.grey, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
                 if (nearbyBeacons.length > 3)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -206,32 +229,6 @@ class NearbyBeaconsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBeaconRow(BeaconInfo beacon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          BeaconProximityIndicator(beacon: beacon, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Major: ${beacon.major}, Minor: ${beacon.minor}',
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-                Text(
-                  '${beacon.distance.toStringAsFixed(1)}m • ${beacon.proximity}',
-                  style: const TextStyle(color: Colors.grey, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class BeaconConnectionDialog extends StatefulWidget {

@@ -66,24 +66,6 @@ class FormWidgets {
     );
   }
 
-  static Widget primaryButton({
-    required BuildContext context,
-    required String text,
-    required VoidCallback? onPressed,
-    IconData? icon,
-    bool isLoading = false,
-    bool fullWidth = true,
-  }) => buildButton(
-    context: context,
-    text: text,
-    onPressed: onPressed,
-    icon: icon,
-    isLoading: isLoading,
-    fullWidth: fullWidth,
-    isSecondary: false,
-  );
-
-
   static Widget buildButton({
     required BuildContext context,
     required String text,

@@ -297,6 +297,29 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     }
   }
 
+  Widget _buildStatusText({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(color: Colors.white70),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    );
+  }
+
   Widget _buildActionButtons() {
     if (_isCurrentUser) return const SizedBox.shrink();
 
@@ -304,28 +327,25 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
       title: 'Friendship Status',
       items: [
         if (_isFriend)
-          AppWidgets.settingsItem(
+          _buildStatusText(
             icon: Icons.people,
             title: 'Friends',
             subtitle: 'You are friends with this user',
             color: Colors.green,
-            onTap: () {},
           )
         else if (_hasPendingOutgoingRequest)
-          AppWidgets.settingsItem(
+          _buildStatusText(
             icon: Icons.schedule,
             title: 'Friend Request Sent',
             subtitle: 'Your friend request is pending approval',
             color: Colors.orange,
-            onTap: () {},
           )
         else if (_hasPendingIncomingRequest)
-          AppWidgets.settingsItem(
+          _buildStatusText(
             icon: Icons.notification_important,
             title: 'Friend Request Received',
             subtitle: 'This user sent you a friend request',
             color: Colors.blue,
-            onTap: () {},
           )
         else
           AppWidgets.settingsItem(

@@ -75,7 +75,8 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
               children: [
                 _buildProfileHeader(profileProvider),
                 SizedBox(height: ThemeUtils.getResponsivePadding(context) * 2),
-                const ConnectionStatusCard(),
+                Center(child: const ConnectionStatusIndicator()),
+                SizedBox(height: ThemeUtils.getResponsivePadding(context)),
                 ProfileSectionsWidget(
                   profileProvider: profileProvider,
                   auth: auth,
