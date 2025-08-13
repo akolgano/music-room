@@ -401,7 +401,6 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           throw Exception(authProvider.errorMessage ?? '$provider authentication failed');
         }
       },
-      errorMessage: '$provider authentication failed',
     );
   }
 
