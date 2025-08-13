@@ -119,7 +119,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             controller: _nameController,
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
-            validator: AppValidators.playlistName,
+            validator: (value) => AppValidators.required(value, 'playlist name'),
             onFieldSubmitted: kIsWeb ? (_) => (_isEditMode ? _saveChanges() : _createPlaylist()) : null,
           ),
           const SizedBox(height: 16),
@@ -517,6 +517,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             _nameController.text = _playlist!.name;
             _descriptionController.text = _playlist!.description;
             _isPublic = _playlist!.isPublic;
+            _licenseType = _playlist!.licenseType;
           });
 
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
@@ -547,7 +548,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         _descriptionController.text.trim(),
         _isPublic,
         auth.token!,
-        _licenseType, 
+        _licenseType,
       );
 
       if (playlistId?.isEmpty ?? true) {
@@ -578,6 +579,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           (_playlist!.name != _nameController.text.trim() || 
            _playlist!.description != _descriptionController.text.trim());
       final hasVisibilityChanged = _playlist != null && _playlist!.isPublic != _isPublic;
+      final hasLicenseTypeChanged = _playlist != null && _playlist!.licenseType != _licenseType;
       
       if (hasVisibilityChanged) {
         final visibilityRequest = VisibilityRequest(public: _isPublic);
@@ -594,6 +596,11 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         );
       }
       
+      if (hasLicenseTypeChanged) {
+        final licenseRequest = PlaylistLicenseRequest(licenseType: _licenseType);
+        await apiService.updatePlaylistLicense(widget.playlistId!, auth.token!, licenseRequest);
+      }
+      
       final musicProvider = getProvider<MusicProvider>();
       
       musicProvider.updatePlaylistInCache(
@@ -601,6 +608,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         isPublic: _isPublic,
+        licenseType: _licenseType,
       );
       
       await musicProvider.fetchAllPlaylists(auth.token!);

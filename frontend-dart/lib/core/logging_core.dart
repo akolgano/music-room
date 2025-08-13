@@ -41,9 +41,6 @@ mixin UserActionLoggingMixin<T extends StatefulWidget> on State<T> {
     _loggingService.logAuthAction(action, success: success, metadata: metadata);
   }
 
-  void logMusicAction(String action, String trackId, {String? playlistId, Map<String, dynamic>? metadata}) {
-    _loggingService.logMusicAction(action, trackId, playlistId: playlistId, metadata: metadata);
-  }
 
 
   Widget buildLoggingInkWell({

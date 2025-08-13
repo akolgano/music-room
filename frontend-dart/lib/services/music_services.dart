@@ -15,19 +15,15 @@ class TrackSortingService {
 
   static List<Track> sortTrackList(List<Track> tracks, TrackSortOption sortOption) {
     return tracks.sorted((a, b) {
-      final comparison = _getTrackComparison(a, b, sortOption.field);
+      final comparison = switch (sortOption.field) {
+        TrackSortField.position => 0,
+        TrackSortField.name => compareAsciiLowerCase(a.name, b.name),
+        TrackSortField.artist => compareAsciiLowerCase(a.artist, b.artist),
+        TrackSortField.album => compareAsciiLowerCase(a.album, b.album),
+        TrackSortField.dateAdded => 0,
+      };
       return sortOption.order == SortOrder.ascending ? comparison : -comparison;
     });
-  }
-
-  static int _getTrackComparison(Track a, Track b, TrackSortField field) {
-    switch (field) {
-      case TrackSortField.position: return 0;
-      case TrackSortField.name: return compareAsciiLowerCase(a.name, b.name);
-      case TrackSortField.artist: return compareAsciiLowerCase(a.artist, b.artist);
-      case TrackSortField.album: return compareAsciiLowerCase(a.album, b.album);
-      case TrackSortField.dateAdded: return 0;
-    }
   }
 
   static int _getComparison(PlaylistTrack a, PlaylistTrack b, TrackSortField field) {
@@ -85,8 +81,8 @@ class MusicService {
     return response.playlist;
   }
 
-  Future<String> createPlaylist(String name, String description, bool isPublic, String token, [String? deviceUuid]) async {
-    final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, deviceUuid: deviceUuid);
+  Future<String> createPlaylist(String name, String description, bool isPublic, String token, String licenseType, [String? deviceUuid]) async {
+    final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, licenseType: licenseType, deviceUuid: deviceUuid);
     final response = await _api.createPlaylist(token, request); 
     return response.playlistId;
   }

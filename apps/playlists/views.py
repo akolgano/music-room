@@ -30,6 +30,7 @@ def create_new_playlist(request):
     name = request.data.get('name')
     description = request.data.get('description', '')
     public = request.data.get('public', True)
+    license_type = request.data.get('license_type', 'open')
     # public = True
     if not name:
         return JsonResponse({"error": "Playlist name is required."}, status=400)
@@ -37,6 +38,7 @@ def create_new_playlist(request):
         name=name,
         description=description,
         public=public,
+        license_type=license_type,
         creator=user
     )
     user.saved_playlists.add(playlist)
@@ -109,6 +111,7 @@ def get_user_saved_playlists(request):
             'description': playlist.description,
             'public': playlist.public,
             'creator': playlist.creator.username,
+            'license_type': playlist.license_type,
             'tracks': track_list,
         })
 
@@ -197,6 +200,7 @@ def get_playlist_info(request, playlist_id):
             'description': playlist.description,
             'public': playlist.public,
             'creator': playlist.creator.username,
+            'license_type': playlist.license_type,
             'tracks': track_list,
         })
 

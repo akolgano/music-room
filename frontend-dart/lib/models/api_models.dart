@@ -367,16 +367,18 @@ class CreatePlaylistRequest {
   final String description;
   final bool public;
   final String? deviceUuid;
+  final String licenseType;
   
   const CreatePlaylistRequest({
     required this.name, 
     required this.description, 
     required this.public, 
-    this.deviceUuid
+    this.deviceUuid,
+    this.licenseType = 'open',
   });
   
   Map<String, dynamic> toJson() {
-    final json = { 'name': name, 'description': description, 'public': public };
+    final json = { 'name': name, 'description': description, 'public': public, 'license_type': licenseType };
     if (deviceUuid != null) { json['device_uuid'] = deviceUuid!; }
     return json;
   }

@@ -132,13 +132,14 @@ class MusicProvider extends BaseProvider {
     String description, 
     bool isPublic, 
     String token, 
+    String licenseType, 
     [String? deviceUuid]
   ) async {
     AppLogger.debug('Creating playlist: $name (public: $isPublic)', 'MusicProvider');
     final result = await executeAsync(
       () async {
         final id = await _musicService.createPlaylist(
-          name, description, isPublic, token, deviceUuid
+          name, description, isPublic, token, licenseType, deviceUuid
         );
         AppLogger.debug('Playlist created with ID: $id', 'MusicProvider');
 
@@ -439,6 +440,7 @@ class MusicProvider extends BaseProvider {
     String? description,
     bool? isPublic,
     List<Track>? tracks,
+    String? licenseType,
   }) {
     final index = _playlists.indexWhere((p) => p.id == playlistId);
     if (index != -1) {
@@ -451,6 +453,7 @@ class MusicProvider extends BaseProvider {
         isPublic: isPublic ?? currentPlaylist.isPublic,
         tracks: tracks ?? currentPlaylist.tracks,
         imageUrl: currentPlaylist.imageUrl,
+        licenseType: licenseType ?? currentPlaylist.licenseType,
       );
       notifyListeners();
     }

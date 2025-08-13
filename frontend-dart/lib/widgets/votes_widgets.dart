@@ -53,7 +53,6 @@ class PlaylistVotingWidgets {
         onSelectVotingDateTime: onSelectVotingDateTime,
       ),
       if (votingInfo != null) _buildVotingStats(context, votingInfo),
-      _buildScrollToVoteIndicator(context, isOwner),
     ];
   }
 
@@ -132,42 +131,6 @@ class PlaylistVotingWidgets {
     );
   }
 
-  static Widget _buildScrollToVoteIndicator(BuildContext context, bool isOwner) {
-    if (isOwner) return const SizedBox.shrink();
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.music_note, color: AppTheme.primary, size: 16),
-                const SizedBox(width: 6),
-                Text(
-                  'Tracks available for voting below',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Icon(Icons.arrow_downward, color: AppTheme.primary, size: 16),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   static Widget _buildCollapsibleVotingSettings({
     required BuildContext context,

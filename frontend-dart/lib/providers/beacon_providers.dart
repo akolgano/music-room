@@ -122,7 +122,6 @@ class BeaconProvider extends BaseProvider {
 
   void _handleBeaconEntered(BeaconInfo beacon) {
     AppLogger.info('Beacon entered range: ${beacon.identifier}', 'BeaconProvider');
-    _checkForPlaylistAssociation(beacon);
     notifyListeners();
   }
 
@@ -158,11 +157,6 @@ class BeaconProvider extends BaseProvider {
     _nearestBeacon = nearby.isNotEmpty ? nearby.first : null;
   }
 
-  void _checkForPlaylistAssociation(BeaconInfo beacon) {
-    if (beacon.isImmediate || beacon.isNear) {
-      AppLogger.info('User is near beacon ${beacon.identifier} - potential playlist association', 'BeaconProvider');
-    }
-  }
 
   BeaconInfo? getBeaconForPlaylist(String playlistId) {
     final expectedMajor = int.tryParse(playlistId.replaceAll(RegExp(r'\D'), '').substring(0, 4)) ?? 1;
