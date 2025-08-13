@@ -730,7 +730,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         AppLogger.debug('Loading playlists attempt ${retryCount + 1}/$maxRetries', 'HomeScreen');
         await music.fetchAllPlaylists(token);
         
-        // Trigger UI update immediately after each fetch attempt
         if (mounted) {
           setState(() {});
         }

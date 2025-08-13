@@ -70,35 +70,40 @@ class Track {
     );
   }
 
-  static T? _extractValue<T>(Map<String, dynamic> json, String key, {String? nestedKey, T? defaultValue, List<String>? fallbackKeys}) {
-    if (json[key] is T) { 
-      return json[key]; 
-    }
-    if (json[key] is Map && nestedKey != null) { 
-      final nestedValue = json[key][nestedKey];
-      if (nestedValue is T) return nestedValue;
-    }
-    if (fallbackKeys != null) {
-      for (String fallbackKey in fallbackKeys) {
-        if (json[key] is Map && json[key][fallbackKey] is T) {
-          return json[key][fallbackKey];
-        }
-      }
-    }
-    return defaultValue;
-  }
-
   static String _extractArtist(Map<String, dynamic> json) {
-    return _extractValue<String>(json, 'artist', nestedKey: 'name', defaultValue: '') ?? '';
+    if (json['artist'] is String) {
+      return json['artist'] as String;
+    }
+    if (json['artist'] is Map && json['artist']['name'] is String) {
+      return json['artist']['name'] as String;
+    }
+    return '';
   }
 
   static String _extractAlbum(Map<String, dynamic> json) {
-    return _extractValue<String>(json, 'album', nestedKey: 'title', defaultValue: '') ?? '';
+    if (json['album'] is String) {
+      return json['album'] as String;
+    }
+    if (json['album'] is Map && json['album']['title'] is String) {
+      return json['album']['title'] as String;
+    }
+    return '';
   }
 
   static String? _extractImageUrl(Map<String, dynamic> json) {
-    return _extractValue<String>(json, 'image_url') ?? 
-           _extractValue<String>(json, 'album', fallbackKeys: ['cover_medium', 'cover']);
+    if (json['image_url'] is String) {
+      return json['image_url'] as String;
+    }
+    if (json['album'] is Map) {
+      final album = json['album'] as Map<String, dynamic>;
+      if (album['cover_medium'] is String) {
+        return album['cover_medium'] as String;
+      }
+      if (album['cover'] is String) {
+        return album['cover'] as String;
+      }
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() => {

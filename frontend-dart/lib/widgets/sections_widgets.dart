@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:form_validator/form_validator.dart';
 import '../providers/profile_providers.dart';
 import '../providers/auth_providers.dart';
@@ -453,21 +454,152 @@ class ProfileSectionsWidget extends StatelessWidget {
       return;
     }
 
-    final currentPreferenceIds = profileProvider.musicPreferenceIds ?? [];
-    final selectedIds = await showDialog<List<int>>(
-      context: context,
-      builder: (context) => MusicPreferenceDialog(
-        availablePreferences: musicPreferences,
-        selectedIds: currentPreferenceIds,
-      ),
-    );
+    if (!context.mounted) {
+      if (kDebugMode) {
+        print('[DEBUG] Context not mounted at start - cannot edit music preferences');
+      }
+      return;
+    }
 
-    if (selectedIds != null) {
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        musicPreferencesIds: selectedIds
+    List<int> currentPreferenceIds = [];
+    
+    // First, try to get existing preferences without loading dialog if we already have the data
+    final rawPreferenceIds = profileProvider.musicPreferenceIds;
+    if (rawPreferenceIds != null && rawPreferenceIds.isNotEmpty) {
+      currentPreferenceIds = rawPreferenceIds.map((id) {
+        return id is int ? id : int.tryParse(id.toString()) ?? 0;
+      }).toList();
+    } else if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
+      currentPreferenceIds = [];
+      for (final prefName in profileProvider.musicPreferences!) {
+        final matchingPref = musicPreferences.firstWhere(
+          (pref) => pref['name']?.toString().toLowerCase() == prefName.toLowerCase(),
+          orElse: () => <String, dynamic>{},
+        );
+        if (matchingPref.isNotEmpty && matchingPref['id'] != null) {
+          final id = matchingPref['id'] is int ? matchingPref['id'] as int : int.tryParse(matchingPref['id'].toString()) ?? 0;
+          if (id > 0) currentPreferenceIds.add(id);
+        }
+      }
+    }
+
+    // If we have no preference data, load it first
+    if (currentPreferenceIds.isEmpty && (profileProvider.musicPreferences?.isEmpty ?? true) && (profileProvider.musicPreferenceIds?.isEmpty ?? true)) {
+      bool isLoadingDialogShown = false;
+      late NavigatorState navigator;
+      
+      try {
+        navigator = Navigator.of(context);
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+        isLoadingDialogShown = true;
+
+        if (kDebugMode) {
+          print('[DEBUG] Loading dialog shown, refreshing profile data...');
+        }
+
+        await profileProvider.loadProfile(auth.token).timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => throw Exception('Profile loading timed out'),
+        );
+        
+        // Re-extract preference IDs after loading
+        final newRawPreferenceIds = profileProvider.musicPreferenceIds;
+        if (newRawPreferenceIds != null && newRawPreferenceIds.isNotEmpty) {
+          currentPreferenceIds = newRawPreferenceIds.map((id) {
+            return id is int ? id : int.tryParse(id.toString()) ?? 0;
+          }).toList();
+        } else if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
+          currentPreferenceIds = [];
+          for (final prefName in profileProvider.musicPreferences!) {
+            final matchingPref = musicPreferences.firstWhere(
+              (pref) => pref['name']?.toString().toLowerCase() == prefName.toLowerCase(),
+              orElse: () => <String, dynamic>{},
+            );
+            if (matchingPref.isNotEmpty && matchingPref['id'] != null) {
+              final id = matchingPref['id'] is int ? matchingPref['id'] as int : int.tryParse(matchingPref['id'].toString()) ?? 0;
+              if (id > 0) currentPreferenceIds.add(id);
+            }
+          }
+        }
+        
+      } catch (e) {
+        if (kDebugMode) {
+          print('[DEBUG] Error loading preferences: $e');
+        }
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load music preferences: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      } finally {
+        if (isLoadingDialogShown && navigator.mounted) {
+          try {
+            navigator.pop();
+            if (kDebugMode) {
+              print('[DEBUG] Loading dialog dismissed');
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('[DEBUG] Error dismissing dialog: $e');
+            }
+          }
+        }
+      }
+    }
+
+    if (!context.mounted) {
+      if (kDebugMode) {
+        print('[DEBUG] Context not mounted after loading - cannot show dialog');
+      }
+      return;
+    }
+
+    if (kDebugMode) {
+      print('[DEBUG] Loaded preference IDs: $currentPreferenceIds');
+      print('[DEBUG] Showing music preference dialog...');
+    }
+
+    try {
+      final selectedIds = await showDialog<List<int>>(
+        context: context,
+        builder: (context) => MusicPreferenceDialog(
+          availablePreferences: musicPreferences,
+          selectedIds: currentPreferenceIds,
+        ),
       );
-      if (success) handleUpdateSuccess('Music preferences', profileProvider);
+
+      if (selectedIds != null && context.mounted) {
+        final success = await profileProvider.updateProfile(
+          auth.token,
+          musicPreferencesIds: selectedIds,
+          availableMusicPreferences: musicPreferences,
+        );
+        if (success && context.mounted) {
+          handleUpdateSuccess('Music preferences', profileProvider);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('[DEBUG] Error showing music preference dialog: $e');
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening music preferences: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -523,19 +655,22 @@ class _MusicPreferenceDialogState extends State<MusicPreferenceDialog> {
     return AlertDialog(
       backgroundColor: AppTheme.surface,
       title: const Text('Select Music Preferences', style: TextStyle(color: Colors.white)),
-      content: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.8,
-          maxHeight: MediaQuery.of(context).size.height * 0.6,
-        ),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.6,
         child: ListView.builder(
-          shrinkWrap: true,
           itemCount: widget.availablePreferences.length,
           itemBuilder: (context, index) {
             final preference = widget.availablePreferences[index];
-            final id = preference['id'] as int;
+            final dynamic rawId = preference['id'];
+            final int id = rawId is int ? rawId : int.tryParse(rawId.toString()) ?? 0;
             final name = preference['name'] as String;
             final isSelected = _selectedIds.contains(id);
+            
+            if (kDebugMode && index < 5) {  // Log first 5 preferences for better debugging
+              print('[DEBUG] Preference "$name" (rawId: $rawId, id: $id, type: ${id.runtimeType}) - isSelected: $isSelected');
+              print('[DEBUG] _selectedIds contains $id: ${_selectedIds.contains(id)}, _selectedIds: $_selectedIds');
+            }
 
             return CheckboxListTile(
               value: isSelected,

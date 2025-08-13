@@ -128,36 +128,6 @@ class StateWidgets {
     });
   }
 
-  static Widget buildErrorScreen(String message) {
-    return Builder(
-      builder: (context) => Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          title: const Text('Error'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
-              const SizedBox(height: 16),
-              Text(
-                message,
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Go Back'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class EmptyStateContentWidget extends StatelessWidget {

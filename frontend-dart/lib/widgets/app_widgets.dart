@@ -325,9 +325,6 @@ class TrackCardWidget extends StatelessWidget {
 }
 
 class AppWidgets {
-  static ColorScheme _colorScheme(BuildContext context) => Theme.of(context).colorScheme;
-
-
   static IconButton _buildStyledIconButton(
     IconData icon,
     Color color,
@@ -343,11 +340,11 @@ class AppWidgets {
   );
   
   static TextStyle _primaryStyle(BuildContext context) => TextStyle(
-    color: _colorScheme(context).onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
+    color: Theme.of(context).colorScheme.onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
   );
   
   static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
-    color: _colorScheme(context).onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
+    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
   );
 
 
@@ -416,7 +413,7 @@ class AppWidgets {
             )
           : Icon(
               defaultIcon, 
-              color: _colorScheme(context).onSurface, 
+              color: Theme.of(context).colorScheme.onSurface, 
               size: kIsWeb ? size * 0.5 : (size * 0.5).sp.toDouble()
             ),
     );
@@ -787,7 +784,7 @@ static Widget emptyState({
             width: 56,
             height: 48,
             decoration: BoxDecoration(
-              color: _colorScheme(context).primary.withValues(alpha: 0.2),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.library_music),
@@ -803,9 +800,9 @@ static Widget emptyState({
                 child: Text(
                   'by ${playlist.creator}',
                   style: _secondaryStyle(context).copyWith(
-                    color: _colorScheme(context).primary,
+                    color: Theme.of(context).colorScheme.primary,
                     decoration: TextDecoration.underline,
-                    decorationColor: _colorScheme(context).primary,
+                    decorationColor: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -813,7 +810,7 @@ static Widget emptyState({
           ),
           trailing: showPlayButton && onPlay != null
               ? IconButton(
-                  icon: Icon(Icons.play_arrow, color: _colorScheme(context).primary),
+                  icon: Icon(Icons.play_arrow, color: Theme.of(context).colorScheme.primary),
                   onPressed: onPlay,
                 )
               : null,
@@ -829,7 +826,7 @@ static Widget emptyState({
   }) {
     return Builder(builder: (context) {
       return Card(
-        color: _colorScheme(context).surface,
+        color: Theme.of(context).colorScheme.surface,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -854,7 +851,7 @@ static Widget emptyState({
     Color? color,
   }) {
     return Builder(builder: (context) {
-      final itemColor = color ?? _colorScheme(context).onSurface;
+      final itemColor = color ?? Theme.of(context).colorScheme.onSurface;
       return ListTile(
         leading: Icon(icon, color: itemColor),
         title: Text(title, style: TextStyle(color: itemColor)),
@@ -874,10 +871,10 @@ static Widget emptyState({
   }) {
     return Builder(builder: (context) {
       return ListTile(
-        leading: icon != null ? Icon(icon, color: _colorScheme(context).primary) : null,
+        leading: icon != null ? Icon(icon, color: Theme.of(context).colorScheme.primary) : null,
         title: Text(title, style: _primaryStyle(context)),
         subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle(context)) : null,
-        trailing: Switch(value: value, onChanged: onChanged, activeColor: _colorScheme(context).primary),
+        trailing: Switch(value: value, onChanged: onChanged, activeColor: Theme.of(context).colorScheme.primary),
       );
     });
   }

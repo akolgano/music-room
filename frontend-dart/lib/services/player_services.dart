@@ -74,7 +74,6 @@ class MusicPlayerService with ChangeNotifier {
   bool get hasPreviousTrack => _currentIndex > 0;
   bool get hasNextTrack => _currentIndex >= 0 && _currentIndex < _playlist.length - 1;
   bool get isUsingFullAudio => _isUsingFullAudio;
-  bool get canPlayFullAudio => false;
   double get playbackSpeed => _playbackSpeed;
 
   String get currentTrackInfo {

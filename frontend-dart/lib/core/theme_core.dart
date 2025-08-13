@@ -143,25 +143,6 @@ class ThemeUtils {
     return Colors.primaries[hashValue % Colors.primaries.length];
   }
 
-  static Widget buildThemedCard({
-    required BuildContext context,
-    required Widget child,
-    EdgeInsets? margin,
-    EdgeInsets? padding,
-    double? elevation,
-    double? borderRadius,
-  }) {
-    return Card(
-      color: Theme.of(context).colorScheme.surface,
-      elevation: elevation ?? 4.0,
-      margin: margin ?? EdgeInsets.all(getResponsiveMargin(context)),
-      shadowColor: AppTheme.primary.withValues(alpha: 0.2), 
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? getResponsiveBorderRadius(context))),
-      child: Padding(padding: padding ?? EdgeInsets.all(getResponsivePadding(context)), child: child),
-    );
-  }
-
-
   static InputDecoration getThemedInputDecoration(BuildContext context, {required String labelText, 
     String? hintText, 
     IconData? prefixIcon

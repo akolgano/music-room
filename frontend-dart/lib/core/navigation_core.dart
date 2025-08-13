@@ -44,12 +44,6 @@ class AppLogger {
     final logMessage = tag != null ? '[$tag] $message' : message;
     _logger!.e(logMessage, error: error, stackTrace: stackTrace);
   }
-  
-  static void trace(String message, [String? tag]) {
-    if (_logger == null) return;
-    final logMessage = tag != null ? '[$tag] $message' : message;
-    _logger!.t(logMessage);
-  }
 }
 
 class LoggingNavigationObserver extends NavigatorObserver {

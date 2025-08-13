@@ -48,10 +48,6 @@ class ConnectivityProvider extends BaseProvider {
     }
   }
 
-  void stopHealthCheck() {
-    _healthCheckTimer?.cancel();
-  }
-
   Future<void> checkConnection() async {
     if (_connectionStatus != ConnectionStatus.checking) {
       _setConnectionStatus(ConnectionStatus.checking);

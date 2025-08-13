@@ -140,14 +140,6 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     );
   }
 
-  Widget buildTabScaffold({
-    required List<Tab> tabs,
-    required List<Widget> tabViews,
-    TabController? controller,
-  }) {
-    return buildTabContent(tabs: tabs, tabViews: tabViews, controller: controller);
-  }
-
   Future<void> runAsync(Future<void> Function() operation) async {
     await operation();
   }

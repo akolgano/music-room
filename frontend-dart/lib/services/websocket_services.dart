@@ -175,7 +175,7 @@ class WebSocketService {
 
   void _scheduleReconnect() {
     if (_reconnectAttempts < _maxReconnectAttempts && _currentToken != null) {
-_reconnectAttempts++;
+      _reconnectAttempts++;
       
       _log('Scheduling reconnect attempt $_reconnectAttempts/$_maxReconnectAttempts in ${_reconnectDelay.inSeconds}s');
       

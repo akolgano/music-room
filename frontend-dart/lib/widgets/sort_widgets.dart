@@ -11,8 +11,8 @@ class SortButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCustomOrder = _isDefaultSort(currentSort);
-    final icon = _getSortIcon(currentSort);
+    final isCustomOrder = (currentSort as dynamic).isDefault ?? false;
+    final icon = (currentSort as dynamic).icon ?? Icons.sort;
     final displayName = (currentSort as dynamic).displayName ?? 'Sort';
     
     if (showLabel) {
@@ -43,25 +43,6 @@ class SortButton<T> extends StatelessWidget {
       );
     }
   }
-
-  bool _isDefaultSort(T sort) {
-    if (sort is TrackSortOption) {
-      return sort.field == TrackSortField.position;
-    } else if (sort is PlaylistSortOption) {
-      return sort.field == PlaylistSortField.name && sort == PlaylistSortOption.defaultOptions.first;
-    }
-    return false;
-  }
-
-  IconData _getSortIcon(T sort) {
-    if (sort is TrackSortOption) {
-      return sort.icon;
-    } else if (sort is PlaylistSortOption) {
-      return sort.icon;
-    }
-    return Icons.sort;
-  }
-
 }
 
 class TrackSortBottomSheet extends StatelessWidget {

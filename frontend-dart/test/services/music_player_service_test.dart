@@ -59,7 +59,6 @@ void main() {
     });
     test('MusicPlayerService should handle Deezer integration', () {
       expect(musicPlayerService.isUsingFullAudio, false);
-      expect(musicPlayerService.canPlayFullAudio, isA<bool>());
     });
     test('MusicPlayerService should clear playlist', () {
       musicPlayerService.clearPlaylist();
