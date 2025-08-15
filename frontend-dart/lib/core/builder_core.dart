@@ -175,7 +175,10 @@ class AppBuilder {
       case AppRoutes.trackDetail:
         return _buildTrackDetail(settings);
       case AppRoutes.playlistSharing:
-        return _buildPlaylistSharing(settings);
+        final args = settings.arguments;
+        return args is Playlist 
+          ? PlaylistSharingScreen(playlist: args)
+          : Scaffold(body: AppWidgets.errorState(message: 'Invalid playlist data'));
       default:
         return Scaffold(
           body: AppWidgets.errorState(message: 'Page not found'),
@@ -241,13 +244,6 @@ class AppBuilder {
     );
   }
 
-  static Widget _buildPlaylistSharing(RouteSettings settings) {
-    final args = settings.arguments;
-    if (args is Playlist) return PlaylistSharingScreen(playlist: args);
-    return Scaffold(
-      body: AppWidgets.errorState(message: 'Invalid playlist data'),
-    );
-  }
 
   static Widget _buildUserPage(RouteSettings settings) {
     final args = settings.arguments;

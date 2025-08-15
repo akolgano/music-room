@@ -90,6 +90,25 @@ class VotingProvider extends BaseProvider {
     notifyListeners();
   }
 
+  void updateVotingEligibilityFromPlaylist(Playlist playlist) {
+    AppLogger.debug('Updating voting eligibility for playlist license: ${playlist.licenseType}', 'VotingProvider');
+    
+    switch (playlist.licenseType) {
+      case 'open':
+        setVotingPermission(true);
+        break;
+      case 'invite_only':
+        AppLogger.debug('Invite-only playlist detected - voting eligibility depends on backend invitation status', 'VotingProvider');
+        break;
+      case 'location_time':
+        AppLogger.debug('Location/time restricted playlist detected - voting eligibility depends on backend validation', 'VotingProvider');
+        break;
+      default:
+        AppLogger.warning('Unknown license type: ${playlist.licenseType}', 'VotingProvider');
+        setVotingPermission(false);
+    }
+  }
+
   Future<bool> voteForTrackByIndex({
     required String playlistId,
     required int trackIndex,
@@ -117,16 +136,54 @@ class VotingProvider extends BaseProvider {
             token: token
           );
           _hasUserVotedForPlaylist = true;
-          final currentPoints = _trackPoints[trackIndex] ?? 0;
-          final newPoints = currentPoints + 1;
-          updateTrackPoints(trackIndex, newPoints);
+          
           
           if (response.playlist.isNotEmpty) {
             _updateVotingDataFromPlaylist(response.playlist);
+            AppLogger.info('Updated voting data from backend response', 'VotingProvider');
+          } else {
+            
+            final currentPoints = _trackPoints[trackIndex] ?? 0;
+            final newPoints = currentPoints + 1;
+            updateTrackPoints(trackIndex, newPoints);
+            AppLogger.info('Vote successful for track $trackIndex, incremented points locally to $newPoints', 'VotingProvider');
           }
-          AppLogger.info('Vote successful for track $trackIndex, new points: $newPoints', 'VotingProvider');
         } catch (e) {
-          AppLogger.error('Vote failed', e, null, 'VotingProvider');
+          final errorString = e.toString().toLowerCase();
+          if (errorString.contains('already voted')) {
+            _hasUserVotedForPlaylist = true;
+            AppLogger.warning('Backend confirmed user already voted', 'VotingProvider');
+            setError('You have already voted for this playlist');
+          } else if (errorString.contains('not invited')) {
+            setError('You are not invited to vote on this playlist');
+            _canVote = false;
+            AppLogger.warning('User not invited to vote on invite-only playlist', 'VotingProvider');
+          } else if (errorString.contains('not allowed at this time') || errorString.contains('time window')) {
+            setError('Voting is not allowed at this time');
+            _canVote = false;
+            AppLogger.warning('Voting outside allowed time window', 'VotingProvider');
+          } else if (errorString.contains('not within') || errorString.contains('voting area')) {
+            setError('You are not within the allowed voting area');
+            _canVote = false;
+            AppLogger.warning('User outside allowed voting area', 'VotingProvider');
+          } else if (errorString.contains('location is missing')) {
+            setError('Location is required for voting');
+            _canVote = false;
+            AppLogger.warning('User location missing for location-based voting', 'VotingProvider');
+          } else if (errorString.contains('time window not configured') || errorString.contains('location settings not configured')) {
+            setError('Playlist voting settings not configured properly');
+            _canVote = false;
+            AppLogger.error('Playlist license settings incomplete', 'VotingProvider');
+          } else if (errorString.contains('not allowed') || errorString.contains('permission')) {
+            setError('Voting not permitted');
+            _canVote = false;
+            AppLogger.warning('Backend rejected vote due to permissions/license', 'VotingProvider');
+          } else if (errorString.contains('invalid track')) {
+            setError('Invalid track selection');
+            AppLogger.error('Invalid track index sent to backend: $trackIndex', 'VotingProvider');
+          } else {
+            AppLogger.error('Vote failed with error', e, null, 'VotingProvider');
+          }
           rethrow;
         }
       },

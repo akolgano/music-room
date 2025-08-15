@@ -491,12 +491,12 @@ class PlaylistDetailWidgets {
           width: 56,
           height: 50,
           decoration: BoxDecoration(
-            color: trackCacheService.isTrackRetrying(trackId) 
+            color: trackCacheService.getRetryCount(trackId) > 0 
                 ? Colors.orange.withValues(alpha: 0.3) 
                 : Colors.red.withValues(alpha: 0.3), 
             borderRadius: BorderRadius.circular(8)
           ),
-          child: trackCacheService.isTrackRetrying(trackId)
+          child: trackCacheService.getRetryCount(trackId) > 0
               ? const SizedBox(
                   width: 24,
                   height: 16,
@@ -514,10 +514,10 @@ class PlaylistDetailWidgets {
         subtitle: Text(
           _getTrackStatusText(trackCacheService, trackId),
           style: TextStyle(
-            color: trackCacheService.isTrackRetrying(trackId) ? Colors.orange : Colors.grey
+            color: trackCacheService.getRetryCount(trackId) > 0 ? Colors.orange : Colors.grey
           ),
         ),
-        trailing: trackCacheService.isTrackRetrying(trackId)
+        trailing: trackCacheService.getRetryCount(trackId) > 0
             ? IconButton(
                 icon: const Icon(Icons.cancel, color: Colors.orange),
                 onPressed: () => trackCacheService.cancelRetries(trackId),
@@ -529,7 +529,7 @@ class PlaylistDetailWidgets {
   }
 
   static String _getTrackStatusText(TrackCacheService cacheService, String trackId) {
-    if (cacheService.isTrackRetrying(trackId)) {
+    if (cacheService.getRetryCount(trackId) > 0) {
       final retryCount = cacheService.getRetryCount(trackId);
       final maxRetries = cacheService.retryConfig.maxRetries;
       return 'Retrying... (attempt $retryCount/$maxRetries)';

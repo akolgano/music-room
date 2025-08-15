@@ -3,9 +3,10 @@ import '../../providers/friend_providers.dart';
 import '../../models/api_models.dart';
 import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
-import '../../core/navigation_core.dart';
 import '../../models/music_models.dart';
 import '../../widgets/app_widgets.dart';
+import '../../services/music_services.dart';
+import '../../providers/music_providers.dart';
 import '../base_screens.dart';
 
 class PlaylistSharingScreen extends StatefulWidget {
@@ -95,18 +96,31 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
 
 
   Widget _buildFriendsList() {
+    final alreadySharedCount = widget.playlist.sharedWith.length;
+    
     if (_friends.isEmpty) {
+      final emptyMessage = alreadySharedCount > 0 
+        ? 'All $alreadySharedCount friends already have access to this playlist'
+        : 'No friends to share with';
+      final emptySubtitle = alreadySharedCount > 0
+        ? 'This playlist is already shared with all your friends'
+        : 'Add friends first to share your playlists';
+      
       return AppWidgets.emptyState(
         icon: Icons.people_outline,
-        title: 'No friends to share with',
-        subtitle: 'Add friends first to share your playlists',
-        buttonText: 'Add Friends',
-        onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.friends),
+        title: emptyMessage,
+        subtitle: emptySubtitle,
+        buttonText: alreadySharedCount > 0 ? null : 'Add Friends',
+        onButtonPressed: alreadySharedCount > 0 ? null : () => Navigator.pushNamed(context, AppRoutes.friends),
       );
     }
 
+    final titleText = alreadySharedCount > 0 
+      ? 'Select More Friends ($alreadySharedCount already shared)'
+      : 'Select Friends';
+
     return AppTheme.buildFormCard(
-      title: 'Select Friends',
+      title: titleText,
       titleIcon: Icons.people,
       child: Column(
         children: [
@@ -161,8 +175,9 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
       () async {
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.fetchFriends(auth.token!);
+        final sharedWithIds = widget.playlist.sharedWith.map((user) => user.id).toSet();
         setState(() {
-          _friends = friendProvider.friends;
+          _friends = friendProvider.friends.where((friend) => !sharedWithIds.contains(friend.id)).toList();
         });
       },
       errorMessage: 'Failed to load friends',
@@ -183,15 +198,47 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
     if (_selectedFriends.isEmpty) return;
 
     setState(() => _isSharing = true);
+    
     try {
-      await Future.delayed(const Duration(seconds: 2));
-      showSuccess('Playlist shared with ${_selectedFriends.length} friends!');
-      if (mounted) {
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      AppLogger.error('Failed to share playlist', e, null, 'PlaylistSharingScreen');
-      showError('Failed to share playlist: ${e.toString()}');
+      await runAsyncAction(
+        () async {
+          final musicService = getProvider<MusicService>();
+          final token = auth.token!;
+          
+          for (final friendId in _selectedFriends) {
+            await musicService.inviteUserToPlaylist(widget.playlist.id, friendId, token);
+          }
+          
+          final newSharedUsers = _selectedFriends.map((friendId) {
+            final friend = _friends.firstWhere((f) => f.id == friendId);
+            return User(id: friend.id, username: friend.username);
+          }).toList();
+          
+          final updatedPlaylist = Playlist(
+            id: widget.playlist.id,
+            name: widget.playlist.name,
+            description: widget.playlist.description,
+            isPublic: widget.playlist.isPublic,
+            creator: widget.playlist.creator,
+            tracks: widget.playlist.tracks,
+            imageUrl: widget.playlist.imageUrl,
+            licenseType: widget.playlist.licenseType,
+            sharedWith: [...widget.playlist.sharedWith, ...newSharedUsers],
+          );
+          
+          final musicProvider = getProvider<MusicProvider>();
+          final playlistIndex = musicProvider.playlists.indexWhere((p) => p.id == widget.playlist.id);
+          if (playlistIndex != -1) {
+            musicProvider.playlists[playlistIndex] = updatedPlaylist;
+          }
+          
+          if (mounted) {
+            showSuccess('Playlist shared with ${_selectedFriends.length} friends!');
+            Navigator.pop(context, updatedPlaylist);
+          }
+        },
+        errorMessage: 'Failed to share playlist',
+      );
     } finally {
       setState(() => _isSharing = false);
     }

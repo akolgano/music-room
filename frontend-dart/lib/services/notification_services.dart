@@ -139,40 +139,6 @@ class NotificationService {
     });
   }
 
-  void showWebSocketNotification({
-    required Map<String, dynamic> messageData,
-    Duration duration = const Duration(seconds: 4),
-  }) {
-    final messageType = messageData['type'] as String? ?? 'Unknown';
-    final title = (messageType == 'playlist_update' || messageType == 'playlist.update') 
-        ? 'Playlist Updated' 
-        : 'New Message';
-    
-    final message = (messageType == 'playlist_update' || messageType == 'playlist.update')
-        ? () {
-            final playlistId = messageData['playlist_id']?.toString() ?? 'Unknown';
-            final tracksData = messageData['data'] as List?;
-            final trackCount = tracksData?.length ?? 0;
-            return 'Playlist $playlistId updated with $trackCount tracks';
-          }()
-        : 'Received: ${messageData['type'] ?? 'Unknown message'}';
-    
-    final icon = (messageType == 'playlist_update' || messageType == 'playlist.update')
-        ? Icons.playlist_play
-        : Icons.notifications;
-    final color = messageType == 'playlist_update' || messageType == 'playlist.update'
-        ? Colors.blue.withValues(alpha: 0.9)
-        : null;
-
-    showNotification(
-      title: title,
-      message: message,
-      data: messageData,
-      duration: duration,
-      backgroundColor: color,
-      icon: icon,
-    );
-  }
 
   Widget _buildNotificationWidget(
     BuildContext context, {

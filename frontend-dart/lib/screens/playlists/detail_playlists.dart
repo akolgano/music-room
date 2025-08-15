@@ -803,9 +803,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
 
-  void _sharePlaylist() {
+  Future<void> _sharePlaylist() async {
     if (_playlist != null && mounted) {
-      navigateTo(AppRoutes.playlistSharing, arguments: _playlist);
+      final result = await Navigator.pushNamed(context, AppRoutes.playlistSharing, arguments: _playlist);
+      if (result is Playlist && mounted) {
+        setState(() {
+          _playlist = result;
+        });
+      }
     }
   }
 

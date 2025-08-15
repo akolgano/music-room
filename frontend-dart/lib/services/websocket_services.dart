@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
@@ -137,7 +138,15 @@ class WebSocketService {
       _rawMessageController?.add(data);
       
       if (getIt.isRegistered<NotificationService>()) {
-        getIt<NotificationService>().showWebSocketNotification(messageData: data);
+        final hasVotingData = data['data'] != null && data['data'] is List && (data['data'] as List).isNotEmpty;
+        getIt<NotificationService>().showNotification(
+          title: hasVotingData ? 'Playlist Updated' : 'Playlist Activity',
+          message: hasVotingData ? 'New votes received!' : 'Playlist has been updated',
+          backgroundColor: hasVotingData 
+            ? Colors.orange.withValues(alpha: 0.9)
+            : Colors.blue.withValues(alpha: 0.9),
+          icon: hasVotingData ? Icons.how_to_vote : Icons.playlist_play,
+        );
       }
       
       final messageType = PlaylistWebSocketMessageType.fromString(data['type']);

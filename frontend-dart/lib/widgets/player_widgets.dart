@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../services/player_services.dart';
 import '../core/theme_core.dart';
 import '../core/responsive_core.dart';
-import '../models/music_models.dart';
 import '../screens/music/detail_music.dart';
 
 class MiniPlayerWidget extends StatelessWidget {

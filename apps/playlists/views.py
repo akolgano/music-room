@@ -63,6 +63,7 @@ def update_playlist(request, playlist_id):
     name = request.data.get('name')
     description = request.data.get('description')
     public = request.data.get('public')
+    license_type = request.data.get('license_type')
 
     if name is not None:
         playlist.name = name
@@ -70,6 +71,8 @@ def update_playlist(request, playlist_id):
         playlist.description = description
     if public is not None:
         playlist.public = public
+    if license_type is not None:
+        playlist.license_type = license_type
 
     playlist.save()
 
@@ -194,6 +197,8 @@ def get_playlist_info(request, playlist_id):
         tracks = playlist.tracks.all()
         track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
 
+        shared_users = [{'id': user.id, 'username': user.username} for user in playlist.users_saved.all()]
+        
         playlist_data.append({
             'id': playlist.id,
             'playlist_name': playlist.name,
@@ -202,6 +207,7 @@ def get_playlist_info(request, playlist_id):
             'creator': playlist.creator.username,
             'license_type': playlist.license_type,
             'tracks': track_list,
+            'shared_with': shared_users,
         })
 
         return JsonResponse({'playlist': playlist_data})

@@ -463,7 +463,7 @@ class ProfileSectionsWidget extends StatelessWidget {
 
     List<int> currentPreferenceIds = [];
     
-    // First, try to get existing preferences without loading dialog if we already have the data
+    
     final rawPreferenceIds = profileProvider.musicPreferenceIds;
     if (rawPreferenceIds != null && rawPreferenceIds.isNotEmpty) {
       currentPreferenceIds = rawPreferenceIds.map((id) {
@@ -483,7 +483,7 @@ class ProfileSectionsWidget extends StatelessWidget {
       }
     }
 
-    // If we have no preference data, load it first
+    
     if (currentPreferenceIds.isEmpty && (profileProvider.musicPreferences?.isEmpty ?? true) && (profileProvider.musicPreferenceIds?.isEmpty ?? true)) {
       bool isLoadingDialogShown = false;
       late NavigatorState navigator;
@@ -508,7 +508,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           onTimeout: () => throw Exception('Profile loading timed out'),
         );
         
-        // Re-extract preference IDs after loading
+        
         final newRawPreferenceIds = profileProvider.musicPreferenceIds;
         if (newRawPreferenceIds != null && newRawPreferenceIds.isNotEmpty) {
           currentPreferenceIds = newRawPreferenceIds.map((id) {
@@ -667,7 +667,7 @@ class _MusicPreferenceDialogState extends State<MusicPreferenceDialog> {
             final name = preference['name'] as String;
             final isSelected = _selectedIds.contains(id);
             
-            if (kDebugMode && index < 5) {  // Log first 5 preferences for better debugging
+            if (kDebugMode && index < 5) {  
               print('[DEBUG] Preference "$name" (rawId: $rawId, id: $id, type: ${id.runtimeType}) - isSelected: $isSelected');
               print('[DEBUG] _selectedIds contains $id: ${_selectedIds.contains(id)}, _selectedIds: $_selectedIds');
             }

@@ -133,9 +133,6 @@ class TrackCacheService {
     }
   }
 
-  bool isTrackRetrying(String deezerTrackId) {
-    return _retryCount.containsKey(deezerTrackId);
-  }
 
   int getRetryCount(String deezerTrackId) {
     return _retryCount[deezerTrackId] ?? 0;

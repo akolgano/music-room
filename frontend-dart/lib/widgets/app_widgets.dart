@@ -567,7 +567,8 @@ class AppWidgets {
 
   static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
     final theme = Theme.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.showSnackBar(SnackBar(
       content: Text(message, style: TextStyle(fontSize: _responsiveValue(14.0))),
       backgroundColor: backgroundColor ?? theme.colorScheme.primary,
       behavior: SnackBarBehavior.fixed,
@@ -575,7 +576,7 @@ class AppWidgets {
       action: SnackBarAction(
         label: 'Dismiss', 
         textColor: backgroundColor != null ? Colors.white : theme.colorScheme.onPrimary,
-        onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+        onPressed: () => scaffoldMessenger.hideCurrentSnackBar(),
       ),
     ));
   }

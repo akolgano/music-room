@@ -122,6 +122,7 @@ class Playlist {
   final List<Track> tracks;
   final String? imageUrl;
   final String licenseType;
+  final List<User> sharedWith;
 
   const Playlist({
     required this.id,
@@ -132,6 +133,7 @@ class Playlist {
     this.tracks = const [],
     this.imageUrl,
     this.licenseType = 'open',
+    this.sharedWith = const [],
   });
 
   factory Playlist.fromJson(Map<String, dynamic> json) => Playlist(
@@ -143,6 +145,7 @@ class Playlist {
     tracks: (json['tracks'] as List<dynamic>?) ?.map((t) => Track.fromJson(t as Map<String, dynamic>)).toList() ?? [],
     imageUrl: json['image_url'] as String?,
     licenseType: json['license_type'] as String? ?? 'open',
+    sharedWith: (json['shared_with'] as List<dynamic>?) ?.map((u) => User.fromJson(u as Map<String, dynamic>)).toList() ?? [],
   );
 
   bool canEdit(String? username) {
@@ -160,6 +163,7 @@ class Playlist {
     'tracks': tracks.map((t) => t.toJson()).toList(), 
     'image_url': imageUrl,
     'license_type': licenseType,
+    'shared_with': sharedWith.map((u) => u.toJson()).toList(),
   };
 }
 
