@@ -365,7 +365,12 @@ class ProfileSectionsWidget extends StatelessWidget {
     initialValue: profileProvider.name,
     hintText: 'Enter your display name (max 100 characters)',
     successMessage: 'Display name',
-    validator: AppValidators.name,
+    validator: (value) {
+      if (value != null && value.length > 100) {
+        return 'Name must be less than 100 characters';
+      }
+      return null;
+    },
     updateFunction: (value) => profileProvider.updateProfile(auth.token, name: value),
   );
 

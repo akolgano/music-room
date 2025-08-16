@@ -22,6 +22,9 @@ import '../../widgets/sort_widgets.dart';
 import '../../models/voting_models.dart';
 import '../../widgets/votes_widgets.dart';
 import '../../widgets/scrollbar_widgets.dart';
+import '../../providers/auth_providers.dart';
+import '../../widgets/app_widgets.dart';
+import '../../models/api_models.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
@@ -53,6 +56,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   DateTime? _votingStartTime;
   DateTime? _votingEndTime;
   PlaylistVotingInfo? _votingInfo;
+  double? _latitude;
+  double? _longitude;
+  int? _allowedRadiusMeters;
 
   @override
   String get screenTitle => _playlist?.name ?? 'Playlist Details';
@@ -316,7 +322,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     if (track?.deezerTrackId != null && 
         _fetchingTrackDetails.contains(track!.deezerTrackId!) &&
         _trackHasMissingDetails(track)) {
-      return PlaylistDetailWidgets.buildLoadingTrackItem(key, playlistTrack, index);
+      return PlaylistDetailWidgets.buildErrorTrackItem(key, playlistTrack, index, isLoading: true);
     }
 
     final musicProvider = getProvider<MusicProvider>();
@@ -456,6 +462,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
             _votingProvider!.setVotingPermission(true);
             _votingProvider!.initializeTrackPoints(_tracks);
           }
+          
+          await _loadVotingSettings();
           
           if (_playlist!.imageUrl?.isNotEmpty == true) {
             themeProvider.extractAndApplyDominantColor(_playlist!.imageUrl);
@@ -877,18 +885,94 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Future<void> _applyVotingSettings() async {
-    _votingInfo = PlaylistVotingInfo(
-      playlistId: widget.playlistId,
-      restrictions: VotingRestrictions(
+    final auth = getProvider<AuthProvider>();
+    if (auth.token == null) {
+      AppWidgets.showSnackBar(context, 'Authentication required', backgroundColor: Colors.red);
+      return;
+    }
+
+    try {
+      String? voteStartTimeStr;
+      String? voteEndTimeStr;
+      
+      if (_votingLicenseType == 'location_time') {
+        if (_votingStartTime != null) {
+          voteStartTimeStr = _votingStartTime!.toIso8601String();
+        }
+        if (_votingEndTime != null) {
+          voteEndTimeStr = _votingEndTime!.toIso8601String();
+        }
+      }
+
+      final request = PlaylistLicenseRequest(
         licenseType: _votingLicenseType,
-        isInvited: true,
-        isInTimeWindow: _votingLicenseType != 'location_time' || _isInVotingTimeWindow(),
-        isInLocation: true,
-      ),
-      trackVotes: {},
-    );
+        invitedUsers: _votingLicenseType != 'open' ? [] : null,
+        voteStartTime: voteStartTimeStr,
+        voteEndTime: voteEndTimeStr,
+        latitude: _votingLicenseType == 'location_time' ? _latitude : null,
+        longitude: _votingLicenseType == 'location_time' ? _longitude : null,
+        allowedRadiusMeters: _votingLicenseType == 'location_time' ? _allowedRadiusMeters : null,
+      );
+
+      final apiService = getIt<ApiService>();
+      await apiService.updatePlaylistLicense(widget.playlistId, auth.token!, request);
+      
+      AppWidgets.showSnackBar(context, 'Voting settings updated successfully!', backgroundColor: Colors.green);
+      
+      await _loadVotingSettings();
+      
+      _votingInfo = PlaylistVotingInfo(
+        playlistId: widget.playlistId,
+        restrictions: VotingRestrictions(
+          licenseType: _votingLicenseType,
+          isInvited: true,
+          isInTimeWindow: _votingLicenseType != 'location_time' || _isInVotingTimeWindow(),
+          isInLocation: true,
+        ),
+        trackVotes: {},
+      );
+      
+    } catch (e) {
+      AppLogger.error('Failed to update voting settings', e, null, 'PlaylistDetailScreen');
+      AppWidgets.showSnackBar(context, 'Failed to update voting settings: ${e.toString()}', backgroundColor: Colors.red);
+    }
     
     setState(() {});
+  }
+
+  Future<void> _loadVotingSettings() async {
+    final auth = getProvider<AuthProvider>();
+    if (auth.token == null) {
+      AppLogger.warning('Cannot load voting settings - no authentication token', 'PlaylistDetailScreen');
+      return;
+    }
+
+    try {
+      final apiService = getIt<ApiService>();
+      final licenseResponse = await apiService.getPlaylistLicense(widget.playlistId, auth.token!);
+      
+      setState(() {
+        _votingLicenseType = licenseResponse.licenseType;
+        
+        if (licenseResponse.voteStartTime != null) {
+          _votingStartTime = DateTime.parse(licenseResponse.voteStartTime!);
+        }
+        if (licenseResponse.voteEndTime != null) {
+          _votingEndTime = DateTime.parse(licenseResponse.voteEndTime!);
+        }
+        
+        _latitude = licenseResponse.latitude;
+        _longitude = licenseResponse.longitude;
+        _allowedRadiusMeters = licenseResponse.allowedRadiusMeters;
+        
+        _isPublicVoting = licenseResponse.licenseType == 'open';
+      });
+      
+      AppLogger.info('Successfully loaded voting settings: ${licenseResponse.licenseType}', 'PlaylistDetailScreen');
+      
+    } catch (e) {
+      AppLogger.error('Failed to load voting settings: $e', null, null, 'PlaylistDetailScreen');
+    }
   }
 
   bool _isInVotingTimeWindow() {

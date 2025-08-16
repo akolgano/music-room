@@ -755,32 +755,12 @@ static Widget emptyState({
   }
 
   static Widget errorState({required String message, VoidCallback? onRetry, String? retryText}) {
-    return Builder(builder: (context) {
-      final colorScheme = Theme.of(context).colorScheme;
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(_responsiveWidth(32.0)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: _responsiveValue(64.0), color: colorScheme.error),
-              SizedBox(height: _responsiveHeight(12.0)),
-              Text(
-                message,
-                style: TextStyle(color: colorScheme.onSurface, fontSize: _responsiveValue(18.0),
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (onRetry != null) ...[
-                SizedBox(height: _responsiveHeight(16.0)),
-                ElevatedButton(onPressed: onRetry, child: Text(retryText ?? 'Retry')),
-              ],
-            ],
-          ),
-        ),
-      );
-    });
+    return emptyState(
+      icon: Icons.error_outline,
+      title: message,
+      buttonText: onRetry != null ? (retryText ?? 'Retry') : null,
+      onButtonPressed: onRetry,
+    );
   }
 
   static Widget refreshableList<E>({
