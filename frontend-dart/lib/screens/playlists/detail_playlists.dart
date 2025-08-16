@@ -183,6 +183,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 onLoadData: () => _loadData(),
                 onSuggestTrackForVoting: _suggestTrackForVoting,
                 votingInfo: _votingInfo,
+                playlistOwnerId: _playlist?.creator,
               ) : _buildTracksSection(),
             ],
           ),

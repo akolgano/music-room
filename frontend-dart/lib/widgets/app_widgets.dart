@@ -184,6 +184,7 @@ class TrackCardWidget extends StatelessWidget {
   final bool showVotingControls;
   final String? playlistContext;
   final String? playlistId;
+  final String? playlistOwnerId;
   final VoidCallback? onTap;
   final VoidCallback? onAdd;
   final VoidCallback? onPlay;
@@ -201,6 +202,7 @@ class TrackCardWidget extends StatelessWidget {
     this.showVotingControls = false,
     this.playlistContext,
     this.playlistId,
+    this.playlistOwnerId,
     this.onTap,
     this.onAdd,
     this.onPlay,
@@ -299,6 +301,7 @@ class TrackCardWidget extends StatelessWidget {
                               userHasVoted: false,
                               voteScore: 0.0,
                             ),
+                            playlistOwnerId: playlistOwnerId,
                           ),
                         ),
                       if (onSelectionChanged == null)

@@ -40,8 +40,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.music_room"
-        // minSdk = flutter.minSdkVersion
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         // targetSdk = flutter.targetSdkVersion
         targetSdk = 34
         versionCode = flutter.versionCode
@@ -79,7 +78,9 @@ dependencies {
 
 apply(plugin = "com.google.gms.google-services")
 
-// Suppress Java obsolete warnings for all compile tasks
+// Configure Java compilation for all tasks
 tasks.withType<JavaCompile> {
-    options.compilerArgs.add("-Xlint:-options")
+    options.compilerArgs.addAll(listOf("-Xlint:-options", "-Xlint:-deprecation"))
+    sourceCompatibility = JavaVersion.VERSION_17.toString()
+    targetCompatibility = JavaVersion.VERSION_17.toString()
 }

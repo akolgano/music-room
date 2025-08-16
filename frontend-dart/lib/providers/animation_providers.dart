@@ -30,10 +30,4 @@ class AnimationSettingsProvider extends ChangeNotifier {
     }
   }
 
-  void resetToDefaults() {
-    _pulsingEnabled = true;
-    _pulsingDuration = const Duration(seconds: 2);
-    _pulsingIntensity = 1.0;
-    notifyListeners();
-  }
 }

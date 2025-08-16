@@ -427,7 +427,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
     final sortedTracks = TrackSortingService.sortTrackList(tracks, _searchSortOption);
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
         if (tracks.isNotEmpty)
           Container(

@@ -2,13 +2,10 @@ import 'dart:async';
 import 'navigation_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/api_models.dart';
 
 class SocialLoginUtils {
-  static GoogleSignIn? _googleSignIn;
   static bool _isInitialized = false;
 
 
@@ -22,15 +19,6 @@ class SocialLoginUtils {
         }
       }
       
-      final googleClientId = kIsWeb ? dotenv.env['GOOGLE_CLIENT_ID_WEB'] : dotenv.env['GOOGLE_CLIENT_ID_APP'];
-      if (googleClientId != null && googleClientId.isNotEmpty) {
-        _googleSignIn = GoogleSignIn(
-          scopes: <String>['email', 'profile', 'openid'],
-        );
-        AppLogger.debug('Google Sign-In initialized for ${kIsWeb ? 'web' : 'app'} with client ID: ${googleClientId.substring(0, 20)}...', 'SocialLoginUtils');
-      } else {
-        AppLogger.debug('Warning: Google Client ID not found in environment variables', 'SocialLoginUtils');
-      }
       
       _isInitialized = true;
       AppLogger.debug('Social login initialization completed successfully', 'SocialLoginUtils');
@@ -41,46 +29,6 @@ class SocialLoginUtils {
   }
 
 
-  static Future<SocialLoginResult> loginWithGoogle() async {
-    if (!_isInitialized) {
-      AppLogger.debug('Google Sign-In not initialized, initializing now...', 'SocialLoginUtils');
-      await initialize();
-    }
-
-    if (_googleSignIn == null) {
-      AppLogger.debug('Google Sign-In instance is null after initialization', 'SocialLoginUtils');
-      return SocialLoginResult.error(
-        'Google Sign-In not properly initialized. Please check your configuration.'
-      );
-    }
-
-    try {
-      await _googleSignIn!.signOut();
-      
-      final GoogleSignInAccount? user = await _googleSignIn!.signIn();
-      
-      if (user != null) {
-        AppLogger.debug('Google user signed in: ${user.email}', 'SocialLoginUtils');
-        final GoogleSignInAuthentication auth = await user.authentication;
-        AppLogger.debug('Google auth obtained - idToken: ${auth.idToken != null}', 'SocialLoginUtils');
-        
-        final idToken = auth.idToken;
-        if (idToken != null && idToken.isNotEmpty) {
-          AppLogger.debug('Google login successful with idToken', 'SocialLoginUtils');
-          return SocialLoginResult.success(idToken, 'google');
-        }
-      } else {
-        AppLogger.debug('Google sign-in was cancelled by user', 'SocialLoginUtils');
-        return SocialLoginResult.error('Google sign-in was cancelled');
-      }
-      
-      AppLogger.debug('Google login failed - no valid token received', 'SocialLoginUtils');
-      return SocialLoginResult.error('Google login failed - no valid token received');
-    } catch (e) {
-      AppLogger.debug('Google login error: $e', 'SocialLoginUtils');
-      return SocialLoginResult.error('Google login error: $e');
-    }
-  }
 }
 
 class SocialLoginButton extends StatelessWidget {

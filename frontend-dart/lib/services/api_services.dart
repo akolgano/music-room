@@ -27,13 +27,12 @@ class ApiService {
             requestHeader: true, requestBody: true, responseBody: true, 
             responseHeader: false, error: true, compact: true, maxWidth: 120),
         InterceptorsWrapper(onRequest: (options, handler) => handler.next(options), onError: (error, handler) {
-          if (error.response?.statusCode == 401 && kDebugMode) debugPrint('[ApiService] Unauthorized request detected - should trigger logout');
+          if (error.response?.statusCode == 401 && kDebugMode) debugPrint('[ApiService] Unauthorized request detected');
           handler.next(error);
         })
       ]);
     return dio;
   }
-
 
   Future<T> _request<T>(
     String method, 

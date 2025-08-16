@@ -48,11 +48,6 @@ class AppBuilder {
       ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
       ChangeNotifierProvider<VotingProvider>(create: (_) => getIt<VotingProvider>()),
       ChangeNotifierProvider<AnimationSettingsProvider>(create: (_) => AnimationSettingsProvider()),
-    ];
-  }
-
-  static List<SingleChildWidget> buildAdditionalProviders() {
-    return [
       ChangeNotifierProxyProvider<DynamicThemeProvider, MusicPlayerService>(
         create: (context) {
           return getIt<MusicPlayerService>();
@@ -61,6 +56,7 @@ class AppBuilder {
       ),
     ];
   }
+
 
   static Widget _buildAuthenticatedRoute(Widget Function() builder) {
     return Consumer<AuthProvider>(

@@ -215,8 +215,17 @@ class ProfileProvider extends BaseProvider {
   Future<bool> googleLink(String? token) async {
     return await executeBool(
       () async {
-
-        final user = await googleSignIn.signIn();
+        GoogleSignInAccount? user;
+        
+        if (kIsWeb) {
+          user = await googleSignIn.signInSilently();
+          if (user == null) {
+            user = await googleSignIn.signIn();
+          }
+        } else {
+          user = await googleSignIn.signIn();
+        }
+        
         if (user == null) throw Exception("Google login failed!");
 
         final socialId = user.id;

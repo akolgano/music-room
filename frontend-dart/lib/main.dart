@@ -94,7 +94,7 @@ class MyApp extends StatelessWidget {
       useInheritedMediaQuery: true,
       builder: (context, child) {
         return MultiProvider(
-          providers: [...AppBuilder.buildProviders(), ...AppBuilder.buildAdditionalProviders()],
+          providers: AppBuilder.buildProviders(),
           child: ResponsiveBreakpoints(
             breakpoints: [
               const Breakpoint(start: 0, end: 256, name: 'TINY'),
