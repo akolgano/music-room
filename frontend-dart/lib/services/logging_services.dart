@@ -282,37 +282,7 @@ class FrontendLoggingService {
   }
 
 
-  void logAuthAction(String action, {bool success = true, Map<String, dynamic>? metadata}) {
-    final actionType = action == 'login' ? UserActionType.login :
-                      action == 'logout' ? UserActionType.logout :
-                      action == 'signup' ? UserActionType.signup :
-                      UserActionType.other;
-    
-    logUserAction(
-      actionType: actionType,
-      description: 'Auth action: $action ${success ? 'successful' : 'failed'}',
-      level: success ? LogLevel.info : LogLevel.warning,
-      metadata: {
-        'action': action,
-        'success': success,
-        ...?metadata,
-      },
-    );
-  }
 
-  void logError(String error, String screenName, {StackTrace? stackTrace, Map<String, dynamic>? metadata}) {
-    logUserAction(
-      actionType: UserActionType.other,
-      description: 'Error occurred: $error',
-      level: LogLevel.error,
-      metadata: {
-        'error': error,
-        'stack_trace': stackTrace?.toString(),
-        ...?metadata,
-      },
-      screenName: screenName,
-    );
-  }
 
   void _startBatchTimer() {
     _batchTimer?.cancel();

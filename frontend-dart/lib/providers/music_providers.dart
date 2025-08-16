@@ -26,6 +26,11 @@ class MusicProvider extends BaseProvider {
   List<Playlist> get userPlaylists => List.unmodifiable(_userPlaylists);
   List<Playlist> get publicPlaylists => List.unmodifiable(_publicPlaylists);
   List<Track> get searchResults => List.unmodifiable(_searchResults);
+  
+  void clearSearchResults() {
+    _searchResults = [];
+    notifyListeners();
+  }
   List<PlaylistTrack> get playlistTracks => _playlistTracks;
   bool get hasConnectionError => _hasConnectionError;
 
@@ -161,10 +166,6 @@ class MusicProvider extends BaseProvider {
     if (result != null) _searchResults = result;
   }
 
-  void clearSearchResults() {
-    _searchResults.clear();
-    notifyListeners();
-  }
 
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
@@ -344,18 +345,18 @@ class MusicProvider extends BaseProvider {
   }
 
   void updatePlaylistTracks(List<PlaylistTrack> updatedTracks) {
-    _log('Updating playlist tracks: ${updatedTracks.length} tracks (WebSocket update)');
+    AppLogger.debug('Updating playlist tracks: ${updatedTracks.length} tracks (WebSocket update)', 'MusicProvider');
     _playlistTracks = updatedTracks;
     
     notifyListeners();
     
     _loadMissingTrackDetailsInBackground();
     
-    _log('Completed playlist tracks update and triggered UI refresh');
+    AppLogger.debug('Completed playlist tracks update and triggered UI refresh', 'MusicProvider');
   }
 
   void updatePlaylistTracksWithPreload(List<PlaylistTrack> updatedTracks) {
-    _log('Updating playlist tracks with comprehensive preload: ${updatedTracks.length} tracks (WebSocket comprehensive update)');
+    AppLogger.debug('Updating playlist tracks with comprehensive preload: ${updatedTracks.length} tracks (WebSocket comprehensive update)', 'MusicProvider');
     _playlistTracks = updatedTracks;
     
     notifyListeners();
@@ -364,7 +365,7 @@ class MusicProvider extends BaseProvider {
     
     Future.microtask(() => notifyListeners());
     
-    _log('Completed comprehensive playlist tracks update with preload and multiple notifications');
+    AppLogger.debug('Completed comprehensive playlist tracks update with preload and multiple notifications', 'MusicProvider');
   }
 
   void _preloadTrackDetails(List<PlaylistTrack> tracks) {
@@ -380,22 +381,22 @@ class MusicProvider extends BaseProvider {
       }
       
       if (trackIdsToPreload.isNotEmpty) {
-        _log('Preloading ${trackIdsToPreload.length} tracks with missing details');
+        AppLogger.debug('Preloading ${trackIdsToPreload.length} tracks with missing details', 'MusicProvider');
         if (getIt.isRegistered<AuthService>()) {
           final authService = getIt<AuthService>();
           final token = authService.currentToken;
           if (token != null) {
             _trackCacheService.preloadTracks(trackIdsToPreload, token, _apiService).then((_) {
-              _log('Completed preloading tracks, updating tracks with complete details');
+              AppLogger.debug('Completed preloading tracks, updating tracks with complete details', 'MusicProvider');
               _updateTracksWithCachedDetails();
             }).catchError((e) {
-              _log('Error preloading tracks: $e');
+              AppLogger.debug('Error preloading tracks: $e', 'MusicProvider');
             });
           }
         }
       }
     } catch (e) {
-      _log('Error in preload track details: $e');
+      AppLogger.debug('Error in preload track details: $e', 'MusicProvider');
     }
   }
 
@@ -414,13 +415,13 @@ class MusicProvider extends BaseProvider {
           
           _playlistTracks[i] = playlistTrack.copyWithTrack(cachedTrack);
           updated = true;
-          _log('Updated track ${track.name} with cached details');
+          AppLogger.debug('Updated track ${track.name} with cached details', 'MusicProvider');
         }
       }
     }
     
     if (updated) {
-      _log('Refreshing UI with updated track details');
+      AppLogger.debug('Refreshing UI with updated track details', 'MusicProvider');
       notifyListeners();
     }
   }
@@ -431,9 +432,6 @@ class MusicProvider extends BaseProvider {
     });
   }
 
-  void _log(String message) {
-    AppLogger.debug(message, 'MusicProvider');
-  }
 
   void updatePlaylistInCache(String playlistId, {
     String? name,
@@ -441,6 +439,7 @@ class MusicProvider extends BaseProvider {
     bool? isPublic,
     List<Track>? tracks,
     String? licenseType,
+    List<User>? sharedWith,
   }) {
     final index = _playlists.indexWhere((p) => p.id == playlistId);
     if (index != -1) {
@@ -454,6 +453,7 @@ class MusicProvider extends BaseProvider {
         tracks: tracks ?? currentPlaylist.tracks,
         imageUrl: currentPlaylist.imageUrl,
         licenseType: licenseType ?? currentPlaylist.licenseType,
+        sharedWith: sharedWith ?? currentPlaylist.sharedWith,
       );
       notifyListeners();
     }

@@ -304,7 +304,4 @@ class ApiService {
   }
 
   String get baseUrl => _dio.options.baseUrl;
-
-  void updateAuthToken(String token) => 
-      _dio.options.headers['Authorization'] = 'Token $token';
 }

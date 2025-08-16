@@ -200,7 +200,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         return Card(
           color: Theme.of(context).colorScheme.surface,
           elevation: 4,
-          shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
+          shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
             child: Column(
@@ -211,7 +211,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.queue_music, color: ThemeUtils.getPrimary(context), size: 20),
+                        Icon(Icons.queue_music, color: Theme.of(context).colorScheme.primary, size: 20),
                         const SizedBox(width: 8),
                         Text('Tracks', style: ThemeUtils.getSubheadingStyle(context)),
                       ],

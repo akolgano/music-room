@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class DialogWidgets {
   static Color _getSurface(BuildContext context) => Theme.of(context).colorScheme.surface;
-  static Color _getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 
   static Future<String?> showTextInputDialog(
     BuildContext context, {
@@ -19,7 +18,7 @@ class DialogWidgets {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: _getSurface(context),
-        title: Text(title, style: TextStyle(color: _getOnSurface(context))),
+        title: Text(title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         content: Form(
           key: formKey,
           child: TextFormField(
@@ -50,14 +49,14 @@ class DialogWidgets {
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            style: TextStyle(color: _getOnSurface(context)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             maxLines: maxLines, validator: validator,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
+            child: Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
           ),
           ElevatedButton(
             onPressed: () {
@@ -88,12 +87,12 @@ class DialogWidgets {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: _getSurface(context),
-        title: Text(title, style: TextStyle(color: _getOnSurface(context))),
-        content: Text(message, style: TextStyle(color: _getOnSurface(context))),
+        title: Text(title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(cancelText, style: TextStyle(color: _getOnSurface(context).withValues(alpha: 0.7))),
+            child: Text(cancelText, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),

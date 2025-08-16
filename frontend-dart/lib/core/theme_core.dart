@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'responsive_core.dart' show MusicAppResponsive;
 
 class ThemeUtils {
-  static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
   static Color getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 
 

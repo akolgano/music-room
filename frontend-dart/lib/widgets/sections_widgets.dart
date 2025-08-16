@@ -5,6 +5,7 @@ import '../providers/profile_providers.dart';
 import '../providers/auth_providers.dart';
 import '../core/theme_core.dart';
 import '../core/constants_core.dart';
+import '../core/navigation_core.dart';
 import '../widgets/app_widgets.dart';
 import '../widgets/location_widgets.dart';
 import '../screens/profile/password_profile.dart';
@@ -456,7 +457,7 @@ class ProfileSectionsWidget extends StatelessWidget {
 
     if (!context.mounted) {
       if (kDebugMode) {
-        print('[DEBUG] Context not mounted at start - cannot edit music preferences');
+        AppLogger.debug('Context not mounted at start - cannot edit music preferences', 'ProfileSectionsWidget');
       }
       return;
     }
@@ -466,9 +467,7 @@ class ProfileSectionsWidget extends StatelessWidget {
     
     final rawPreferenceIds = profileProvider.musicPreferenceIds;
     if (rawPreferenceIds != null && rawPreferenceIds.isNotEmpty) {
-      currentPreferenceIds = rawPreferenceIds.map((id) {
-        return id is int ? id : int.tryParse(id.toString()) ?? 0;
-      }).toList();
+      currentPreferenceIds = rawPreferenceIds;
     } else if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
       currentPreferenceIds = [];
       for (final prefName in profileProvider.musicPreferences!) {
@@ -500,7 +499,7 @@ class ProfileSectionsWidget extends StatelessWidget {
         isLoadingDialogShown = true;
 
         if (kDebugMode) {
-          print('[DEBUG] Loading dialog shown, refreshing profile data...');
+          AppLogger.debug('Loading dialog shown, refreshing profile data...', 'ProfileSectionsWidget');
         }
 
         await profileProvider.loadProfile(auth.token).timeout(
@@ -511,9 +510,7 @@ class ProfileSectionsWidget extends StatelessWidget {
         
         final newRawPreferenceIds = profileProvider.musicPreferenceIds;
         if (newRawPreferenceIds != null && newRawPreferenceIds.isNotEmpty) {
-          currentPreferenceIds = newRawPreferenceIds.map((id) {
-            return id is int ? id : int.tryParse(id.toString()) ?? 0;
-          }).toList();
+          currentPreferenceIds = newRawPreferenceIds;
         } else if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
           currentPreferenceIds = [];
           for (final prefName in profileProvider.musicPreferences!) {
@@ -530,7 +527,7 @@ class ProfileSectionsWidget extends StatelessWidget {
         
       } catch (e) {
         if (kDebugMode) {
-          print('[DEBUG] Error loading preferences: $e');
+          AppLogger.error('Error loading preferences: $e', e, null, 'ProfileSectionsWidget');
         }
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -546,11 +543,11 @@ class ProfileSectionsWidget extends StatelessWidget {
           try {
             navigator.pop();
             if (kDebugMode) {
-              print('[DEBUG] Loading dialog dismissed');
+              AppLogger.debug('Loading dialog dismissed', 'ProfileSectionsWidget');
             }
           } catch (e) {
             if (kDebugMode) {
-              print('[DEBUG] Error dismissing dialog: $e');
+              AppLogger.error('Error dismissing dialog: $e', e, null, 'ProfileSectionsWidget');
             }
           }
         }
@@ -559,14 +556,14 @@ class ProfileSectionsWidget extends StatelessWidget {
 
     if (!context.mounted) {
       if (kDebugMode) {
-        print('[DEBUG] Context not mounted after loading - cannot show dialog');
+        AppLogger.debug('Context not mounted after loading - cannot show dialog', 'ProfileSectionsWidget');
       }
       return;
     }
 
     if (kDebugMode) {
-      print('[DEBUG] Loaded preference IDs: $currentPreferenceIds');
-      print('[DEBUG] Showing music preference dialog...');
+      AppLogger.debug('Loaded preference IDs: $currentPreferenceIds', 'ProfileSectionsWidget');
+      AppLogger.debug('Showing music preference dialog...', 'ProfileSectionsWidget');
     }
 
     try {
@@ -590,7 +587,7 @@ class ProfileSectionsWidget extends StatelessWidget {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('[DEBUG] Error showing music preference dialog: $e');
+        AppLogger.error('Error showing music preference dialog: $e', e, null, 'ProfileSectionsWidget');
       }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -668,8 +665,8 @@ class _MusicPreferenceDialogState extends State<MusicPreferenceDialog> {
             final isSelected = _selectedIds.contains(id);
             
             if (kDebugMode && index < 5) {  
-              print('[DEBUG] Preference "$name" (rawId: $rawId, id: $id, type: ${id.runtimeType}) - isSelected: $isSelected');
-              print('[DEBUG] _selectedIds contains $id: ${_selectedIds.contains(id)}, _selectedIds: $_selectedIds');
+              AppLogger.debug('Preference "$name" (rawId: $rawId, id: $id, type: ${id.runtimeType}) - isSelected: $isSelected', 'ProfileSectionsWidget');
+              AppLogger.debug('_selectedIds contains $id: ${_selectedIds.contains(id)}, _selectedIds: $_selectedIds', 'ProfileSectionsWidget');
             }
 
             return CheckboxListTile(

@@ -175,7 +175,6 @@ class BeaconProvider extends BaseProvider {
     return beacon != null && beacon.isNearby;
   }
 
-
   @override
   void dispose() {
     _beaconsSubscription?.cancel();

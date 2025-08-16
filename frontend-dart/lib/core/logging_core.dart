@@ -34,11 +34,36 @@ mixin UserActionLoggingMixin<T extends StatefulWidget> on State<T> {
   }
 
   void logError(String error, {StackTrace? stackTrace, Map<String, dynamic>? metadata}) {
-    _loggingService.logError(error, screenName, stackTrace: stackTrace, metadata: metadata);
+    _loggingService.logUserAction(
+      actionType: UserActionType.other,
+      description: 'Error occurred: $error',
+      level: LogLevel.error,
+      metadata: {
+        'error': error,
+        'stack_trace': stackTrace?.toString(),
+        ...?metadata,
+      },
+      screenName: screenName,
+    );
   }
 
   void logAuthAction(String action, {bool success = true, Map<String, dynamic>? metadata}) {
-    _loggingService.logAuthAction(action, success: success, metadata: metadata);
+    final actionType = action == 'login' ? UserActionType.login :
+                      action == 'logout' ? UserActionType.logout :
+                      action == 'signup' ? UserActionType.signup :
+                      UserActionType.other;
+    
+    _loggingService.logUserAction(
+      actionType: actionType,
+      description: 'Auth action: $action ${success ? 'successful' : 'failed'}',
+      level: success ? LogLevel.info : LogLevel.warning,
+      metadata: {
+        'action': action,
+        'success': success,
+        ...?metadata,
+      },
+      screenName: screenName,
+    );
   }
 
 

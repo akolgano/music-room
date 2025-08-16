@@ -70,7 +70,7 @@ void main() {
         const PlaylistTrack(trackId: '3', name: 'Song 3', position: 3, points: 10),
       ];
       
-      const sortOption = TrackSortOption(
+      final sortOption = TrackSortOption(
         displayName: 'By Points',
         field: TrackSortField.points,
         order: SortOrder.descending,

@@ -110,11 +110,7 @@ void main() {
 
 
       const isNotOwner = false;
-      final nonOwnerCanEdit = isNotOwner && actions['edit'] == true;
-      final nonOwnerCanDelete = isNotOwner && actions['delete'] == true;
-
-      expect(nonOwnerCanEdit, false);
-      expect(nonOwnerCanDelete, false);
+      expect(isNotOwner, false);
       expect(playlistId, 'playlist_123');
     });
 

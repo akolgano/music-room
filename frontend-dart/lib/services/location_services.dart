@@ -80,9 +80,10 @@ class LocationService {
 
         if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
           final Position position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.medium,
-            timeLimit: const Duration(seconds: 15),
-            forceAndroidLocationManager: false,
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 15),
+            ),
           );
           
           final gpsResult = await _reverseGeocode(position.latitude, position.longitude);

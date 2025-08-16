@@ -28,7 +28,7 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) {
-              final padding = MusicAppResponsive.getPadding(context);
+              final padding = MusicAppResponsive.getButtonPadding(context);
               return Scaffold(
                 body: Text('Padding: $padding'),
               );
@@ -79,7 +79,7 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) {
-              final margin = MusicAppResponsive.getPadding(context);
+              final margin = MusicAppResponsive.getButtonPadding(context);
               return Scaffold(
                 body: Text('Margin: $margin'),
               );

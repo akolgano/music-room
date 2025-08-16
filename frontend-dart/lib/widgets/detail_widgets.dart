@@ -107,7 +107,7 @@ class PlaylistDetailWidgets {
     return Card(
       color: Theme.of(context).colorScheme.surface,
       elevation: 4,
-      shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
+      shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
       child: Padding(
         padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
         child: Row(
@@ -130,7 +130,7 @@ class PlaylistDetailWidgets {
     return Card(
       color: Theme.of(context).colorScheme.surface,
       elevation: 4,
-      shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.1),
+      shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
       child: Padding(
         padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
         child: Column(
@@ -165,8 +165,8 @@ class PlaylistDetailWidgets {
                   icon: const Icon(Icons.casino),
                   label: const Text('Add Random Track'),
                   style: ThemeUtils.getSecondaryButtonStyle(context).copyWith(
-                    foregroundColor: WidgetStateProperty.all(ThemeUtils.getPrimary(context)),
-                    side: WidgetStateProperty.all(BorderSide(color: ThemeUtils.getPrimary(context))),
+                    foregroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary),
+                    side: WidgetStateProperty.all(BorderSide(color: Theme.of(context).colorScheme.primary)),
                   ),
                 ),
               ),

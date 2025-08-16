@@ -5,7 +5,6 @@ import '../core/animations_core.dart';
 
 class StateWidgets {
   static double _responsiveWidth(double value) => value.w;
-  static double _responsiveHeight(double value) => value.h;
   
   static TextStyle _secondaryStyle(BuildContext context) => 
       Theme.of(context).textTheme.bodyMedium!.copyWith(
@@ -30,7 +29,7 @@ class StateWidgets {
           children: [
             CircularProgressIndicator(color: colorScheme.primary),
             if (message != null) ...[
-              SizedBox(height: _responsiveHeight(12.0)), 
+              SizedBox(height: 12.0.h), 
               Text(message, style: _secondaryStyle(context))
             ],
           ],
@@ -53,7 +52,7 @@ class StateWidgets {
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
           final iconSize = (isConstrained ? 24.0 : 64.0).sp;
           final titleSize = (isConstrained ? 12.0 : 18.0).sp;
-          final spacing = _responsiveHeight(isConstrained ? 4.0 : 12.0);
+          final spacing = (isConstrained ? 4.0 : 12.0).h;
           final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
           
           Widget content = Padding(
@@ -106,7 +105,7 @@ class StateWidgets {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.error_outline, size: 64.0.sp, color: colorScheme.error),
-              SizedBox(height: _responsiveHeight(12.0)),
+              SizedBox(height: 12.0.h),
               Text(
                 message,
                 style: TextStyle(color: colorScheme.onSurface, fontSize: 18.0.sp,
@@ -115,7 +114,7 @@ class StateWidgets {
                 textAlign: TextAlign.center,
               ),
               if (onRetry != null) ...[
-                SizedBox(height: _responsiveHeight(16.0)),
+                SizedBox(height: 16.0.h),
                 ElevatedButton(
                   onPressed: onRetry,
                   child: Text(retryText ?? 'Retry'),

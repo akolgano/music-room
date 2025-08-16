@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum TrackSortField { name, artist, album, position, dateAdded }
+enum TrackSortField { name, artist, album, position, dateAdded, points }
 
 enum PlaylistSortField { name, creator, trackCount, dateCreated }
 
