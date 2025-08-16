@@ -39,9 +39,6 @@ class VotingProvider extends BaseProvider {
   }
 
 
-  bool hasUserVotedByIndex(int index) {
-    return _hasUserVotedForPlaylist;
-  }
 
   int getTrackPoints(int index) {
     return _trackPoints[index] ?? 0;

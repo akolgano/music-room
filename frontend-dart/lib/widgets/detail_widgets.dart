@@ -270,7 +270,7 @@ class PlaylistDetailWidgets {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
         final currentPoints = playlistTrack.points;
-        final hasUserVoted = votingProvider.hasUserVotedByIndex(index);
+        final hasUserVoted = votingProvider.hasUserVotedForPlaylist;
         final canVote = votingProvider.canVote && !hasUserVoted;
         
         return Container(

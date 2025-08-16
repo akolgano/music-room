@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class DialogWidgets {
-  static Color _getSurface(BuildContext context) => Theme.of(context).colorScheme.surface;
 
   static Future<String?> showTextInputDialog(
     BuildContext context, {
@@ -17,7 +16,7 @@ class DialogWidgets {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: _getSurface(context),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         content: Form(
           key: formKey,
@@ -26,7 +25,7 @@ class DialogWidgets {
             decoration: InputDecoration(
               hintText: hintText,
               filled: true,
-              fillColor: _getSurface(context),
+              fillColor: Theme.of(context).colorScheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
@@ -86,7 +85,7 @@ class DialogWidgets {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: _getSurface(context),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         content: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
         actions: [
