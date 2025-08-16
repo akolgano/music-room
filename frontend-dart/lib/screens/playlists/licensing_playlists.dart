@@ -469,8 +469,10 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
       showInfo('Getting your current location...');
       
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 15),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
       );
       
       setState(() {

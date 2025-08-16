@@ -21,6 +21,7 @@ class TrackSortingService {
         TrackSortField.artist => compareAsciiLowerCase(a.artist, b.artist),
         TrackSortField.album => compareAsciiLowerCase(a.album, b.album),
         TrackSortField.dateAdded => 0,
+        TrackSortField.points => 0,
       };
       return sortOption.order == SortOrder.ascending ? comparison : -comparison;
     });
@@ -44,6 +45,8 @@ class TrackSortingService {
         return compareAsciiLowerCase(aAlbum, bAlbum);
       case TrackSortField.dateAdded:
         return a.position.compareTo(b.position);
+      case TrackSortField.points:
+        return a.points.compareTo(b.points);
     }
   }
 

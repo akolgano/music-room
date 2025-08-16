@@ -144,14 +144,18 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
   
 
   void _showSortOptions() {
-    PlaylistSortBottomSheet.show(
-      context,
-      currentSort: _currentSort,
-      onSortChanged: (PlaylistSortOption newSort) {
-        setState(() {
-          _currentSort = newSort;
-        });
-      },
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => PlaylistSortBottomSheet(
+        currentSort: _currentSort,
+        onSortChanged: (PlaylistSortOption newSort) {
+          setState(() {
+            _currentSort = newSort;
+          });
+        },
+      ),
     );
   }
 

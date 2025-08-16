@@ -158,7 +158,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
             children: [
               Flexible(
                 child: Text(
-                  profileProvider.name ?? profileProvider.username ?? auth.displayName,
+                  profileProvider.name ?? profileProvider.username ?? auth.username ?? 'User',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

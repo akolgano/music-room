@@ -87,7 +87,50 @@ class ConnectionStatusIndicator extends StatelessWidget {
         }
 
         return GestureDetector(
-          onTap: () => _showConnectionDialog(context, connectivity),
+          onTap: () => showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Connection Status'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      ConnectionStatusIndicator(showText: false, compact: true),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          connectivity.detailedStatusText,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (connectivity.isDisconnected)
+                    const Text(
+                      'Some features may not work while offline. Changes will be saved locally when possible.',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                ],
+              ),
+              actions: [
+                if (connectivity.isDisconnected)
+                  TextButton(
+                    onPressed: () {
+                      connectivity.checkConnection();
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Retry Connection'),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          ),
           child: Container(
             padding: EdgeInsets.symmetric(
               horizontal: showText ? 12 : 8,
@@ -121,51 +164,5 @@ class ConnectionStatusIndicator extends StatelessWidget {
     );
   }
 
-  void _showConnectionDialog(BuildContext context, ConnectivityProvider connectivity) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Connection Status'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ConnectionStatusIndicator(showText: false, compact: true),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    connectivity.detailedStatusText,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (connectivity.isDisconnected)
-              const Text(
-                'Some features may not work while offline. Changes will be saved locally when possible.',
-                style: TextStyle(color: Colors.orange),
-              ),
-          ],
-        ),
-        actions: [
-          if (connectivity.isDisconnected)
-            TextButton(
-              onPressed: () {
-                connectivity.checkConnection();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Retry Connection'),
-            ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 

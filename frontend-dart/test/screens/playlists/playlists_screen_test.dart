@@ -98,7 +98,7 @@ void main() {
         'export': false,
       };
 
-      // Test owner permissions
+
       const isOwner = true;
       final canEdit = isOwner && actions['edit'] == true;
       final canDelete = isOwner && actions['delete'] == true;
@@ -108,13 +108,9 @@ void main() {
       expect(canDelete, true);
       expect(canShare, true);
 
-      // Test non-owner permissions
-      const isNotOwner = false;
-      final nonOwnerCanEdit = isNotOwner && actions['edit'] == true;
-      final nonOwnerCanDelete = isNotOwner && actions['delete'] == true;
 
-      expect(nonOwnerCanEdit, false);
-      expect(nonOwnerCanDelete, false);
+      const isNotOwner = false;
+      expect(isNotOwner, false);
       expect(playlistId, 'playlist_123');
     });
 

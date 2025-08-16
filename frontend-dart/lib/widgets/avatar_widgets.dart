@@ -28,7 +28,7 @@ class ProfileAvatarWidget extends StatelessWidget {
     return GestureDetector(
       onTap: profileProvider.isLoading 
           ? null 
-          : () => _editAvatar(context),
+          : () => _showEnlargedAvatar(context),
       child: Stack(
         children: [
           Container(
@@ -74,7 +74,7 @@ class ProfileAvatarWidget extends StatelessWidget {
             child: GestureDetector(
               onTap: profileProvider.isLoading 
                   ? null 
-                  : () => _editAvatar(context),
+                  : () => _showEnlargedAvatar(context),
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
@@ -104,7 +104,18 @@ class ProfileAvatarWidget extends StatelessWidget {
 
   Widget _buildInitialsAvatar() {
     final name = profileProvider.name ?? profileProvider.username ?? 'User';
-    final initials = _getInitials(name);
+    final initials = () {
+      if (name.isEmpty) return 'U';
+      
+      final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
+      if (words.isEmpty) return 'U';
+      
+      if (words.length == 1) {
+        return words[0].substring(0, 1).toUpperCase();
+      } else {
+        return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
+      }
+    }();
     
     return Container(
       width: 100,
@@ -134,22 +145,10 @@ class ProfileAvatarWidget extends StatelessWidget {
     );
   }
 
-  String _getInitials(String name) {
-    if (name.isEmpty) return 'U';
-    
-    final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
-    if (words.isEmpty) return 'U';
-    
-    if (words.length == 1) {
-      return words[0].substring(0, 1).toUpperCase();
-    } else {
-      return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
-    }
-  }
 
-  Future<void> _editAvatar(BuildContext context) async {
+  Future<void> _editAvatar(BuildContext context, [String? sourceType]) async {
     try {
-      final String? sourceType = await _showImageSourceDialog(context);
+      sourceType ??= await _showImageSourceDialog(context);
       if (sourceType == null) return;
 
       if (sourceType == 'remove') {
@@ -306,6 +305,197 @@ class ProfileAvatarWidget extends StatelessWidget {
       }
       onError(errorMessage);
     }
+  }
+
+  Future<void> _showEnlargedAvatar(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  color: Colors.black54,
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 280,
+                      height: 280,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: profileProvider.avatarUrl?.isNotEmpty == true
+                            ? null
+                            : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7)],
+                              ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primary.withValues(alpha: 0.5),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: profileProvider.avatarUrl?.isNotEmpty == true
+                          ? ClipOval(
+                              child: profileProvider.avatarUrl!.startsWith('data:')
+                                  ? Image.memory(
+                                      base64Decode(profileProvider.avatarUrl!.split(',')[1]),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildEnlargedInitialsAvatar(),
+                                    )
+                                  : Image.network(
+                                      profileProvider.avatarUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildEnlargedInitialsAvatar(),
+                                    ),
+                            )
+                          : _buildEnlargedInitialsAvatar(),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildActionButton(
+                            icon: Icons.photo_library,
+                            label: kIsWeb ? 'Choose File' : 'Gallery',
+                            color: AppTheme.primary,
+                            onTap: () {
+                              Navigator.pop(context);
+                              _editAvatar(context, 'gallery');
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                          _buildActionButton(
+                            icon: Icons.pets,
+                            label: 'Random Cat',
+                            color: AppTheme.primary,
+                            onTap: () {
+                              Navigator.pop(context);
+                              _editAvatar(context, 'random_cat');
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                          _buildActionButton(
+                            icon: Icons.delete,
+                            label: 'Remove',
+                            color: Colors.red,
+                            onTap: () {
+                              Navigator.pop(context);
+                              _editAvatar(context, 'remove');
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEnlargedInitialsAvatar() {
+    final name = profileProvider.name ?? profileProvider.username ?? 'User';
+    final initials = () {
+      if (name.isEmpty) return 'U';
+      
+      final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
+      if (words.isEmpty) return 'U';
+      
+      if (words.length == 1) {
+        return words[0].substring(0, 1).toUpperCase();
+      } else {
+        return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
+      }
+    }();
+    
+    return Container(
+      width: 280,
+      height: 280,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primary,
+            AppTheme.primary.withValues(alpha: 0.7),
+            Colors.purple.withValues(alpha: 0.8),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 80,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<String?> _showImageSourceDialog(BuildContext context) async {

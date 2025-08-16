@@ -34,7 +34,6 @@ class AuthProvider extends BaseProvider {
   bool get isLoggedIn => _authService.isLoggedIn;
   String? get userId => _authService.currentUser?.id;
   String? get username => _authService.currentUser?.username;
-  String get displayName => username ?? 'User';
   bool get hasValidToken => token != null && token!.isNotEmpty;
   User? get currentUser => _authService.currentUser;
 

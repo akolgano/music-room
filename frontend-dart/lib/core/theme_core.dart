@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'responsive_core.dart' show MusicAppResponsive;
 
 class ThemeUtils {
-  static Color getPrimary(BuildContext context) => Theme.of(context).colorScheme.primary;
   static Color getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 
 
@@ -37,10 +36,7 @@ class ThemeUtils {
   }
 
   static double getResponsiveButtonHeight(BuildContext context) {
-    return MusicAppResponsive.getResponsiveValue(context,
-      tiny: 32.0, small: 36.0, medium: 40.0,
-      large: 44.0, xlarge: 48.0, xxlarge: 56.0
-    );
+    return MusicAppResponsive.getButtonHeight(context);
   }
 
 

@@ -4,67 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class FormWidgets {
   
   
-  static Widget textField({
-    required BuildContext context, 
-    required TextEditingController controller,
-    required String labelText,
-    String? hintText,
-    IconData? prefixIcon,
-    bool obscureText = false,
-    String? Function(String?)? validator, 
-    ValueChanged<String>? onChanged, 
-    ValueChanged<String>? onFieldSubmitted,
-    int minLines = 1, 
-    int maxLines = 1
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      onChanged: onChanged,
-      onFieldSubmitted: onFieldSubmitted,
-      minLines: minLines, 
-      maxLines: maxLines,
-      style: Theme.of(context).textTheme.bodyLarge!,
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Theme.of(context).colorScheme.primary) : null,
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
-        ),
-        labelStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
-        hintStyle: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.0.w, 
-          vertical: 6.0.h
-        ),
-      ),
-    );
-  }
 
   static Widget buildButton({
     required BuildContext context,

@@ -233,7 +233,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       if (_isGetEmail) {
-        final success = await Provider.of<AuthProvider>(context, listen: false).forgotPassword(
+        final success = await Provider.of<AuthProvider>(context, listen: false).sendPasswordResetEmail(
           _emailController.text,
         );
 
@@ -245,7 +245,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           });
         }
       } else if (_isGetOtp) {
-        await Provider.of<AuthProvider>(context, listen: false).forgotChangePassword(
+        await Provider.of<AuthProvider>(context, listen: false).resetPasswordWithOtp(
           _emailController.text,
           _otpController.text,
           _passwordController.text,

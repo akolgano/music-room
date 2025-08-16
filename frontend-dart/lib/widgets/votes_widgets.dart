@@ -279,7 +279,7 @@ class PlaylistVotingWidgets {
     return Card(
       color: Theme.of(context).colorScheme.surface,
       elevation: 6,
-      shadowColor: ThemeUtils.getPrimary(context).withValues(alpha: 0.2),
+      shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -10,7 +10,6 @@ import '../models/api_models.dart';
 class SocialLoginUtils {
   static GoogleSignIn? _googleSignIn;
   static bool _isInitialized = false;
-  static bool _facebookInitialized = false;
 
 
   static Future<void> initialize() async {
@@ -21,7 +20,6 @@ class SocialLoginUtils {
         if (kIsWeb) {
           await FacebookAuth.instance.webAndDesktopInitialize(appId: fbAppId, cookie: true, xfbml: true, version: "v18.0");
         }
-        _facebookInitialized = true;
       }
       
       final googleClientId = kIsWeb ? dotenv.env['GOOGLE_CLIENT_ID_WEB'] : dotenv.env['GOOGLE_CLIENT_ID_APP'];

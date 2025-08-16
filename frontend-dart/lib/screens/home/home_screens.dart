@@ -501,36 +501,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     );
   }
 
-  Widget _buildPlaylists() {
-    return Consumer<MusicProvider>(
-      builder: (context, music, _) {
-        final auth = Provider.of<AuthProvider>(context, listen: false);
-        
-        if (music.isLoading) {
-          return AppWidgets.loading('Loading playlists...');
-        }
-        if (music.playlists.isEmpty) {
-          return AppWidgets.emptyState(
-            icon: Icons.playlist_play,
-            title: 'No playlists found',
-            subtitle: 'Create a playlist or wait for others to share theirs!',
-            buttonText: 'Create Playlist',
-            onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-          );
-        }
-        return RefreshIndicator(
-          onRefresh: _loadData,
-          color: AppTheme.primary,
-          child: CustomSingleChildScrollView(
-            padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
-            child: Column(
-              children: _buildOrganizedPlaylists(music.playlists, auth.username),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildFriendsTab() {
     return Consumer<FriendProvider>(
@@ -748,7 +718,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         }
       } catch (e) {
         retryCount++;
-        AppLogger.error('Playlist load attempt ${retryCount} failed', e, null, 'HomeScreen');
+        AppLogger.error('Playlist load attempt $retryCount failed', e, null, 'HomeScreen');
         
         if (retryCount < maxRetries) {
           AppLogger.debug('Retrying playlist load in ${retryDelay.inSeconds} seconds...', 'HomeScreen');

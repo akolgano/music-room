@@ -634,7 +634,7 @@ class Friend {
   });
   
   factory Friend.fromJson(Map<String, dynamic> json) => Friend(
-    id: json['friend_id'] as String? ?? json['id'] as String? ?? '',
+    id: (json['friend_id'] ?? json['id'])?.toString() ?? '',
     username: json['friend_username'] as String? ?? json['username'] as String? ?? 'Unknown User',
     profilePictureUrl: json['profile_picture_url'] as String?,
   );

@@ -16,22 +16,17 @@ class _TestWidgetWithLoggingState extends State<TestWidgetWithLogging> with User
       appBar: AppBar(title: const Text('Test')),
       body: Column(
         children: [
-          buildLoggingIconButton(
+          IconButton(
             icon: const Icon(Icons.science),
             onPressed: () => logButtonClick('test_button'),
-            buttonName: 'test_button',
           ),
-          buildLoggingButton<TextButton>(
+          TextButton(
             child: const Text('Text Button'),
             onPressed: () => logButtonClick('text_button'),
-            buttonName: 'text_button',
-            buttonBuilder: ({required onPressed, required child, style}) => 
-                TextButton(onPressed: onPressed, style: style, child: child),
           ),
-          buildLoggingElevatedButton(
+          ElevatedButton(
             child: const Text('Elevated Button'),
             onPressed: () => logButtonClick('elevated_button'),
-            buttonName: 'elevated_button',
           ),
         ],
       ),

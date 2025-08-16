@@ -57,7 +57,11 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
   }
 
   Future<void> _refreshBeacons() async {
-    await _beaconProvider.refreshBeacons();
+    if (_beaconProvider.isScanning) {
+      await _beaconProvider.stopScanning();
+      await Future.delayed(const Duration(milliseconds: 500));
+      await _beaconProvider.startScanning();
+    }
   }
 
   Future<void> _startPlaylistMonitoring() async {

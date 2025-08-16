@@ -24,14 +24,13 @@ class CustomSingleChildScrollView extends StatefulWidget {
 }
 
 class _CustomSingleChildScrollViewState extends State<CustomSingleChildScrollView> {
-  late ScrollController _scrollController;
+  final ScrollController _scrollController = ScrollController();
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {

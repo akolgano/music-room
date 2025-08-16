@@ -45,7 +45,7 @@ void main() {
         ),
       );
 
-      // Verify the screen renders without errors
+
       expect(find.byType(AdminWebViewScreen), findsOneWidget);
       expect(find.text('Dashboard Admin'), findsOneWidget);
     });

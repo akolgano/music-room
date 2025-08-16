@@ -175,14 +175,6 @@ class BeaconProvider extends BaseProvider {
     return beacon != null && beacon.isNearby;
   }
 
-  Future<void> refreshBeacons() async {
-    if (_isScanning) {
-      await stopScanning();
-      await Future.delayed(const Duration(milliseconds: 500));
-      await startScanning();
-    }
-  }
-
   @override
   void dispose() {
     _beaconsSubscription?.cancel();

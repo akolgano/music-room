@@ -84,11 +84,6 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     FocusScope.of(context).unfocus();
   }
 
-  void _hideSuggestions() {
-    setState(() {
-      _showSuggestions = false;
-    });
-  }
 
   Future<void> _detectCurrentLocation() async {
     setState(() {
@@ -284,7 +279,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
       if (_showSuggestions)
         Positioned.fill(
           child: GestureDetector(
-            onTap: _hideSuggestions,
+            onTap: () => setState(() => _showSuggestions = false),
             child: Container(color: Colors.transparent),
           ),
         ),

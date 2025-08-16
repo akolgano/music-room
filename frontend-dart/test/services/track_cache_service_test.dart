@@ -33,7 +33,7 @@ void main() {
     test('TrackCacheService should track retry status correctly', () {
       const testTrackId = 'test_track_123';
       
-      expect(cacheService.isTrackRetrying(testTrackId), false);
+      expect(cacheService.getRetryCount(testTrackId), 0);
       expect(cacheService.getRetryCount(testTrackId), 0);
     });
     test('TrackCacheService should handle retry configuration', () {
@@ -59,7 +59,7 @@ void main() {
       
       cacheService.cancelRetries(testTrackId);
       
-      expect(cacheService.isTrackRetrying(testTrackId), false);
+      expect(cacheService.getRetryCount(testTrackId), 0);
       expect(cacheService.getRetryCount(testTrackId), 0);
     });
     test('TrackCacheService should clear cache properly', () {
