@@ -135,9 +135,6 @@ class TrackCacheService {
   }
 
 
-  int getRetryCount(String deezerTrackId) {
-    return _retryCount[deezerTrackId] ?? 0;
-  }
 
 
   void cancelRetries(String deezerTrackId) {

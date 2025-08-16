@@ -5,6 +5,7 @@ import '../models/voting_models.dart';
 import '../widgets/app_widgets.dart';
 import '../core/theme_core.dart';
 import '../core/responsive_core.dart';
+import '../core/navigation_core.dart';
 import '../providers/voting_providers.dart';
 import '../providers/auth_providers.dart';
 
@@ -275,6 +276,7 @@ class PlaylistVotingWidgets {
     required VoidCallback onLoadData,
     required VoidCallback onSuggestTrackForVoting,
     required PlaylistVotingInfo? votingInfo,
+    String? playlistOwnerId,
   }) {
     return Card(
       color: Theme.of(context).colorScheme.surface,
@@ -323,7 +325,7 @@ class PlaylistVotingWidgets {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${tracks.length} track${tracks.length == 1 ? '' : 's'} available • Tap 👍 to vote',
+                          '${tracks.length} track${tracks.length == 1 ? '' : 's'} available • Tap to vote',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
                           ),
@@ -343,6 +345,7 @@ class PlaylistVotingWidgets {
                 tracks: tracks,
                 playlistId: playlistId,
                 onLoadData: onLoadData,
+                playlistOwnerId: playlistOwnerId,
               ),
             const SizedBox(height: 12),
             _buildAddTrackForVotingButton(
@@ -389,6 +392,7 @@ class PlaylistVotingWidgets {
     required List<PlaylistTrack> tracks,
     required String playlistId,
     required VoidCallback onLoadData,
+    String? playlistOwnerId,
   }) {
     return ListView.builder(
       shrinkWrap: true,
@@ -400,6 +404,7 @@ class PlaylistVotingWidgets {
         index: index,
         playlistId: playlistId,
         onLoadData: onLoadData,
+        playlistOwnerId: playlistOwnerId,
       ),
     );
   }
@@ -410,6 +415,7 @@ class PlaylistVotingWidgets {
     required int index,
     required String playlistId,
     required VoidCallback onLoadData,
+    String? playlistOwnerId,
   }) {
     final track = playlistTrack.track;
     if (track == null) return const SizedBox.shrink();
@@ -507,6 +513,7 @@ class PlaylistVotingWidgets {
                           voteScore: playlistTrack.points.toDouble(),
                         ),
                         onVoteSubmitted: onLoadData,
+                        playlistOwnerId: playlistOwnerId,
                       ),
                     ],
                   ),
@@ -544,6 +551,7 @@ class TrackVotingControls extends StatelessWidget {
   final bool isCompact;
   final VoteStats stats;
   final VoidCallback? onVoteSubmitted;
+  final String? playlistOwnerId;
 
   const TrackVotingControls({
     super.key,
@@ -553,6 +561,7 @@ class TrackVotingControls extends StatelessWidget {
     this.isCompact = false,
     required this.stats,
     this.onVoteSubmitted,
+    this.playlistOwnerId,
   });
 
   @override
@@ -622,10 +631,14 @@ class TrackVotingControls extends StatelessWidget {
       return;
     }
 
+    AppLogger.debug('About to vote with playlistOwnerId: $playlistOwnerId, currentUsername: ${authProvider.username}, currentUserId: ${authProvider.userId}', 'TrackVotingControls');
     final success = await votingProvider.voteForTrackByIndex(
       playlistId: playlistId,
       trackIndex: trackIndex,
       token: token,
+      playlistOwnerId: playlistOwnerId,
+      currentUserId: authProvider.userId,
+      currentUsername: authProvider.username,
     );
 
     if (success && onVoteSubmitted != null) {

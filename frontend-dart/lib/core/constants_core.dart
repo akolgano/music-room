@@ -110,7 +110,6 @@ class AppValidators {
     return null;
   }
 
-
   static String? phoneNumber(String? value, [bool required = false]) {
     if (!required && (value?.isEmpty ?? true)) { return null; }
     if (value == null || value.trim().isEmpty) { return required ? 'Please enter a phone number' : null; }

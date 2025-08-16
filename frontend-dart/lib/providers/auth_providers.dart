@@ -148,7 +148,17 @@ class AuthProvider extends BaseProvider {
   Future<bool> googleLogin() async {
     final success = await executeBool(
       () async {
-        final user = await googleSignIn.signIn();
+        GoogleSignInAccount? user;
+        
+        if (kIsWeb) {
+          user = await googleSignIn.signInSilently();
+          if (user == null) {
+            user = await googleSignIn.signIn();
+          }
+        } else {
+          user = await googleSignIn.signIn();
+        }
+        
         if (user == null) throw Exception("Google login failed!");
         
         final socialId = user.id;
@@ -167,6 +177,7 @@ class AuthProvider extends BaseProvider {
       
       },
       successMessage: 'Google login successful!',
+      errorMessage: 'Google login failed. Please try again.',
     );
     
     return success;

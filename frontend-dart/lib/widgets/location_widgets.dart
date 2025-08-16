@@ -84,7 +84,6 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     FocusScope.of(context).unfocus();
   }
 
-
   Future<void> _detectCurrentLocation() async {
     setState(() {
       _isDetectingLocation = true;

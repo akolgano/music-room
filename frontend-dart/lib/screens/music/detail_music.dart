@@ -17,7 +17,7 @@ import '../../models/voting_models.dart';
 class TrackDetailScreen extends StatefulWidget {
   final String? trackId;
   final Track? track;
-  final String? playlistId; 
+  final String? playlistId;
   
   const TrackDetailScreen({super.key, this.trackId, this.track, this.playlistId});
   
@@ -238,6 +238,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                     userHasVoted: false,
                     voteScore: 0.0,
                   ),
+                  playlistOwnerId: null, // Not available in this context
                 ),
               ],
             ),

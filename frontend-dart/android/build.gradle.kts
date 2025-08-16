@@ -15,6 +15,12 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(":app")
     
+    // Configure Java compilation for all subprojects
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.addAll(listOf("-Xlint:-options", "-Xlint:-deprecation"))
+        sourceCompatibility = JavaVersion.VERSION_17.toString()
+        targetCompatibility = JavaVersion.VERSION_17.toString()
+    }
 }
 
 tasks.register<Delete>("clean") {
