@@ -238,7 +238,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                     userHasVoted: false,
                     voteScore: 0.0,
                   ),
-                  playlistOwnerId: null, // Not available in this context
+                  playlistOwnerId: null,
                 ),
               ],
             ),

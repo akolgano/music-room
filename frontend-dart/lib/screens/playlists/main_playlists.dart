@@ -246,8 +246,6 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
   }
 
   void _refreshPlaylistsIfNeeded() {
-    // Refresh playlists if it's been more than 30 seconds since last refresh
-    // or if this is the first time
     if (_lastRefresh == null || DateTime.now().difference(_lastRefresh!).inSeconds > 30) {
       AppLogger.debug('Auto-refreshing playlists due to app resume', 'AllPlaylistsScreen');
       _loadPlaylists();

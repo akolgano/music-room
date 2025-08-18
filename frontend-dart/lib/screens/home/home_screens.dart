@@ -56,7 +56,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
   @override
   Widget build(BuildContext context) {
-    
     if (isLandscape) {
       return ConnectionStatusBanner(
         child: Scaffold(
@@ -503,7 +502,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     );
   }
 
-
   Widget _buildFriendsTab() {
     return Consumer<FriendProvider>(
       builder: (context, friendProvider, _) {
@@ -796,8 +794,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   }
 
   void _refreshPlaylistsIfNeeded() {
-    // Refresh playlists if it's been more than 30 seconds since last refresh
-    // or if this is the first time
     if (_lastPlaylistRefresh == null || DateTime.now().difference(_lastPlaylistRefresh!).inSeconds > 30) {
       AppLogger.debug('Auto-refreshing playlists due to app resume', 'HomeScreen');
       final music = Provider.of<MusicProvider>(context, listen: false);
