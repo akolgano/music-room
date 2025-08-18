@@ -137,13 +137,14 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             onChanged: (value) => setState(() => _isPublic = value),
             title: 'Public Playlist',
             subtitle: _isPublic 
-              ? 'Anyone can view this playlist' 
-              : 'Only you can view this playlist',
+              ? 'Anyone can view this playlist (no edit permissions)' 
+              : 'Only you and invited users can view this playlist',
             icon: _isPublic ? Icons.public : Icons.lock,
           ),
           const SizedBox(height: 16),
-          _buildEditPermissionSettings(),
-          const SizedBox(height: 24),
+          if (!_isPublic) _buildEditPermissionSettings(),
+          if (!_isPublic) const SizedBox(height: 24),
+          if (_isPublic) const SizedBox(height: 8),
           AppWidgets.primaryButton(
             context: context,
             text: _isEditMode ? 'Save Changes' : 'Create Playlist',

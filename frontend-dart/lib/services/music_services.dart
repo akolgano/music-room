@@ -159,5 +159,28 @@ class MusicService {
     }
   }
 
+  Future<void> deletePlaylist(String playlistId, String token) async {
+    await _api.deletePlaylist(playlistId, token); 
+  }
+
+  Future<List<Playlist>> getSavedEvents(String token) async {
+    final response = await _api.getSavedEvents(token); 
+    return response.playlists;
+  }
+
+  Future<List<Playlist>> getPublicEvents(String token) async {
+    final response = await _api.getPublicEvents(token); 
+    return response.playlists;
+  }
+
+  Future<List<Track>> getRandomTracksFromAPI({int count = 10}) async {
+    try {
+      final tracksData = await _api.getRandomTracks(count: count);
+      return tracksData.map((trackData) => Track.fromJson(trackData)).toList();
+    } catch (e) {
+      return getRandomTracks(count: count);
+    }
+  }
+
 }
 
