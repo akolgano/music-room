@@ -20,6 +20,9 @@ class Playlist(models.Model):
     users_saved = models.ManyToManyField(User, related_name='saved_playlists', blank=True)
     users_already_voted = models.ManyToManyField(User, related_name='already_voted', blank=True)
 
+    # Event association 
+    event = models.BooleanField(default=False)
+
     # License controls
     license_type = models.CharField(max_length=20, choices=LICENSE_CHOICES, default='open')
     invited_users = models.ManyToManyField(User, blank=True, related_name='invited_to_playlists')

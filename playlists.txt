@@ -63,3 +63,25 @@ curl -X PATCH http://127.0.0.1:8000/playlists/update_playlist/2  \
 
 curl -X POST http://127.0.0.1:8000/playlists/delete_playlist/2  \
 -H "Authorization: Token 01ec4caeb3b1c77c2a0288e896dee98779716075" 
+
+
+6) List of playlists for user:
+
+curl -X GET http://127.0.0.1:8000/playlists/saved_playlists/ \
+-H "Authorization: Token 01ec4caeb3b1c77c2a0288e896dee98779716075" \
+     -H "Content-Type: application/json"
+
+
+7) List of events for user:
+
+curl -X GET http://127.0.0.1:8000/playlists/saved_events/ \
+-H "Authorization: Token 01ec4caeb3b1c77c2a0288e896dee98779716075" \
+     -H "Content-Type: application/json"
+
+
+
+8) List of all public events:
+
+curl -X GET http://127.0.0.1:8000/playlists/public_events/ \
+-H "Authorization: Token 01ec4caeb3b1c77c2a0288e896dee98779716075" \
+     -H "Content-Type: application/json"
