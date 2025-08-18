@@ -397,7 +397,7 @@ class MusicProvider extends BaseProvider {
       final track = playlistTrack.track;
       
       if (track?.deezerTrackId != null && _trackCacheService.isTrackCached(track!.deezerTrackId!)) {
-        final cachedTrack = _trackCacheService.getCachedTrack(track.deezerTrackId!);
+        final cachedTrack = _trackCacheService[track.deezerTrackId!];
         if (cachedTrack != null && 
             (cachedTrack.artist != track.artist || 
              cachedTrack.album != track.album || 
@@ -506,5 +506,42 @@ class MusicProvider extends BaseProvider {
     notifyListeners();
     
     await fetchAllPlaylists(token);
+  }
+
+  Future<bool> deletePlaylist(String playlistId, String token) async {
+    final result = await executeAsync(
+      () async {
+        await _musicService.deletePlaylist(playlistId, token);
+        await fetchAllPlaylists(token);
+        return true;
+      },
+      successMessage: 'Playlist deleted successfully',
+      errorMessage: 'Failed to delete playlist',
+    );
+    return result ?? false;
+  }
+
+  Future<List<Playlist>> getSavedEvents(String token) async {
+    final result = await executeAsync(
+      () => _musicService.getSavedEvents(token),
+      errorMessage: 'Failed to load saved events',
+    );
+    return result ?? [];
+  }
+
+  Future<List<Playlist>> getPublicEvents(String token) async {
+    final result = await executeAsync(
+      () => _musicService.getPublicEvents(token),
+      errorMessage: 'Failed to load public events',
+    );
+    return result ?? [];
+  }
+
+  Future<List<Track>> getRandomTracksFromAPI({int count = 10}) async {
+    final result = await executeAsync(
+      () => _musicService.getRandomTracksFromAPI(count: count),
+      errorMessage: 'Failed to load random tracks',
+    );
+    return result ?? [];
   }
 }

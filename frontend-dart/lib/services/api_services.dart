@@ -117,6 +117,9 @@ class ApiService {
       _post('/users/reject_friend_request/$friendshipId/', {}, MessageResponse.fromJson, token: token);
   Future<void> removeFriend(String userId, String token) => _postVoid('/users/remove_friend/$userId/', {}, token: token);
 
+  Future<void> logActivity(String token, ActivityLogRequest request) => 
+      _postVoid('/users/log_activity/', request, token: token);
+
   Future<FriendInvitationsResponse> getReceivedInvitations(String token) => 
       _get('/users/invitations/received/', FriendInvitationsResponse.fromJson, token: token);
   Future<FriendInvitationsResponse> getSentInvitations(String token) => 
@@ -274,6 +277,15 @@ class ApiService {
   }
   Future<void> moveTrackInPlaylist(String playlistId, String token, MoveTrackRequest request) => 
       _postVoid('/playlists/$playlistId/move-track/', request, token: token);
+
+  Future<void> deletePlaylist(String playlistId, String token) => 
+      _postVoid('/playlists/delete_playlist/$playlistId', {}, token: token);
+  
+  Future<PlaylistsResponse> getSavedEvents(String token) => 
+      _get('/playlists/saved_events/', PlaylistsResponse.fromJson, token: token);
+  
+  Future<PlaylistsResponse> getPublicEvents(String token) => 
+      _get('/playlists/public_events/', PlaylistsResponse.fromJson, token: token);
   Future<VoteResponse> voteForTrack(String playlistId, String token, VoteRequest request) => 
       _post('/playlists/$playlistId/tracks/vote/', request, VoteResponse.fromJson, token: token);
 
@@ -300,6 +312,15 @@ class ApiService {
     
     return BatchAddResult(totalTracks: trackIds.length, successCount: successCount, 
         duplicateCount: duplicateCount, failureCount: failureCount, errors: errors);
+  }
+
+  Future<List<Map<String, dynamic>>> getRandomTracks({int count = 10}) async {
+    try {
+      final response = await _dio.get('/tracks/random/', queryParameters: {'count': count});
+      return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+    } catch (e) {
+      throw Exception('Failed to get random tracks: $e');
+    }
   }
 
   String get baseUrl => _dio.options.baseUrl;

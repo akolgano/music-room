@@ -848,6 +848,24 @@ class BatchLibraryAddResult {
   }
 }
 
+class ActivityLogRequest {
+  final String action;
+  final String? details;
+  final Map<String, dynamic>? metadata;
+  
+  const ActivityLogRequest({
+    required this.action, 
+    this.details, 
+    this.metadata
+  });
+  
+  Map<String, dynamic> toJson() => {
+    'action': action,
+    if (details != null) 'details': details,
+    if (metadata != null) 'metadata': metadata,
+  };
+}
+
 class SocialLoginResult {
   final bool success;
   final String? token;

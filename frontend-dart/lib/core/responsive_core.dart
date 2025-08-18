@@ -30,13 +30,13 @@ class MusicAppResponsive {
     return ScreenSize.xxlarge;
   }
 
-  static double getFontSize(BuildContext context, {
-    double tiny = 8.0,
-    double small = 10.0,
-    double medium = 12.0,
-    double large = 14.0,
-    double xlarge = 16.0,
-    double xxlarge = 18.0,
+  static T _getResponsiveValue<T>(BuildContext context, {
+    required T tiny,
+    required T small,
+    required T medium,
+    required T large,
+    required T xlarge,
+    required T xxlarge,
   }) {
     switch (getScreenSize(context)) {
       case ScreenSize.tiny: return tiny;
@@ -48,6 +48,16 @@ class MusicAppResponsive {
     }
   }
 
+  static double getFontSize(BuildContext context, {
+    double tiny = 8.0,
+    double small = 10.0,
+    double medium = 12.0,
+    double large = 14.0,
+    double xlarge = 16.0,
+    double xxlarge = 18.0,
+  }) => _getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
 
   static double getIconSize(BuildContext context, {
@@ -57,16 +67,9 @@ class MusicAppResponsive {
     double large = 24.0,
     double xlarge = 28.0,
     double xxlarge = 32.0,
-  }) {
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny;
-      case ScreenSize.small: return small;
-      case ScreenSize.medium: return medium;
-      case ScreenSize.large: return large;
-      case ScreenSize.xlarge: return xlarge;
-      case ScreenSize.xxlarge: return xxlarge;
-    }
-  }
+  }) => _getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
   static double getButtonHeight(BuildContext context, {
     double tiny = 32.0,
@@ -75,16 +78,9 @@ class MusicAppResponsive {
     double large = 44.0,
     double xlarge = 48.0,
     double xxlarge = 56.0,
-  }) {
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny;
-      case ScreenSize.small: return small;
-      case ScreenSize.medium: return medium;
-      case ScreenSize.large: return large;
-      case ScreenSize.xlarge: return xlarge;
-      case ScreenSize.xxlarge: return xxlarge;
-    }
-  }
+  }) => _getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
   static double getBorderRadius(BuildContext context, {
     double tiny = 2.0,
@@ -93,16 +89,9 @@ class MusicAppResponsive {
     double large = 8.0,
     double xlarge = 12.0,
     double xxlarge = 16.0,
-  }) {
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny;
-      case ScreenSize.small: return small;
-      case ScreenSize.medium: return medium;
-      case ScreenSize.large: return large;
-      case ScreenSize.xlarge: return xlarge;
-      case ScreenSize.xxlarge: return xxlarge;
-    }
-  }
+  }) => _getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
 
   static int getGridColumns(BuildContext context, {
@@ -112,16 +101,9 @@ class MusicAppResponsive {
     int large = 2,
     int xlarge = 3,
     int xxlarge = 4,
-  }) {
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny;
-      case ScreenSize.small: return small;
-      case ScreenSize.medium: return medium;
-      case ScreenSize.large: return large;
-      case ScreenSize.xlarge: return xlarge;
-      case ScreenSize.xxlarge: return xxlarge;
-    }
-  }
+  }) => _getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
   static bool isMobileSize(BuildContext context) {
     final size = getScreenSize(context);
@@ -205,15 +187,8 @@ class MusicAppResponsive {
     double large = 12.0,
     double xlarge = 16.0,
     double xxlarge = 20.0,
-  }) {
-    switch (getScreenSize(context)) {
-      case ScreenSize.tiny: return tiny;
-      case ScreenSize.small: return small;
-      case ScreenSize.medium: return medium;
-      case ScreenSize.large: return large;
-      case ScreenSize.xlarge: return xlarge;
-      case ScreenSize.xxlarge: return xxlarge;
-    }
-  }
+  }) => _getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
 }
