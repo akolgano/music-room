@@ -673,3 +673,39 @@ remove_friend_schema = extend_schema(
         ),
     }
 )
+
+
+log_activity_schema = extend_schema(
+    methods=["POST"],
+    summary="Log user activity",
+    request=ActivityLogRequestSerializer,
+    responses={
+        200: OpenApiResponse(
+            response=ActivityLogResponseSerializer,
+            description="Logs processed successfully",
+            examples=[
+                OpenApiExample(
+                    "Success",
+                    value={
+                        "status": "success",
+                        "received_logs": 2,
+                        "batch_size": 2
+                    }
+                )
+            ]
+        ),
+        500: OpenApiResponse(
+            response=ActivityLogResponseSerializer,
+            description="Internal Server error",
+            examples=[
+                OpenApiExample(
+                    "Error",
+                    value={
+                        "status": "error",
+                        "message": "Failed to process logs"
+                    }
+                )
+            ]
+        ),
+    },
+)

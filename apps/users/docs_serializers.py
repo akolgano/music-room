@@ -176,3 +176,26 @@ class FriendsListResponseSerializer(serializers.Serializer):
 #remove_friend
 class RemoveFriendResponseSerializer(serializers.Serializer):
     message = serializers.CharField()
+
+
+#log_activity
+class ActivityLogEntrySerializer(serializers.Serializer):
+    action = serializers.CharField(required=False, default="unknown")
+    screen = serializers.CharField(required=False, default="unknown")
+    timestamp = serializers.DateTimeField(required=False)
+    platform = serializers.CharField(required=False)
+    user_id = serializers.UUIDField(required=False)
+    metadata = serializers.DictField(
+        child=serializers.JSONField(),
+        required=False
+    )
+
+class ActivityLogRequestSerializer(serializers.Serializer):
+    logs = ActivityLogEntrySerializer(many=True)
+    batch_size = serializers.IntegerField(required=False)
+
+class ActivityLogResponseSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=["success", "error"])
+    received_logs = serializers.IntegerField(required=False)
+    batch_size = serializers.IntegerField(required=False)
+    message = serializers.CharField(required=False)
