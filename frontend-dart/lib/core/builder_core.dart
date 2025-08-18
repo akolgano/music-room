@@ -193,8 +193,9 @@ class AppBuilder {
     
     if (args == null) {
       AppLogger.warning('No arguments provided for playlist detail', 'AppBuilder');
-      return Scaffold(
-        body: AppWidgets.errorState(message: 'No playlist ID provided'),
+      return _AutoRedirectWidget(
+        message: 'No playlist ID provided',
+        redirectRoute: '/',
       );
     }
 
@@ -265,4 +266,78 @@ class AppBuilder {
   }
 
 
+}
+
+class _AutoRedirectWidget extends StatefulWidget {
+  final String message;
+  final String redirectRoute;
+  final Duration delay;
+
+  const _AutoRedirectWidget({
+    required this.message,
+    required this.redirectRoute,
+    this.delay = const Duration(seconds: 2),
+  });
+
+  @override
+  State<_AutoRedirectWidget> createState() => _AutoRedirectWidgetState();
+}
+
+class _AutoRedirectWidgetState extends State<_AutoRedirectWidget> {
+  @override
+  void initState() {
+    super.initState();
+    _scheduleRedirect();
+  }
+
+  void _scheduleRedirect() {
+    Future.delayed(widget.delay, () {
+      if (mounted) {
+        AppLogger.info('Auto-redirecting to ${widget.redirectRoute} due to: ${widget.message}', 'AutoRedirect');
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          widget.redirectRoute,
+          (route) => false,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              widget.message,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Redirecting to home page...',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const CircularProgressIndicator(),
+          ],
+        ),
+      ),
+    );
+  }
 }

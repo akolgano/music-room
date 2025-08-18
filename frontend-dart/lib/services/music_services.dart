@@ -3,7 +3,6 @@ import '../services/api_services.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import '../models/sort_models.dart';
-import '../core/navigation_core.dart';
 
 class TrackSortingService {
   static List<PlaylistTrack> sortTracks(List<PlaylistTrack> tracks, TrackSortOption sortOption) {
@@ -14,17 +13,18 @@ class TrackSortingService {
   }
 
   static List<Track> sortTrackList(List<Track> tracks, TrackSortOption sortOption) {
-    return tracks.sorted((a, b) {
-      final comparison = switch (sortOption.field) {
-        TrackSortField.position => 0,
-        TrackSortField.name => compareAsciiLowerCase(a.name, b.name),
-        TrackSortField.artist => compareAsciiLowerCase(a.artist, b.artist),
-        TrackSortField.album => compareAsciiLowerCase(a.album, b.album),
-        TrackSortField.dateAdded => 0,
-        TrackSortField.points => 0,
-      };
-      return sortOption.order == SortOrder.ascending ? comparison : -comparison;
-    });
+    final playlistTracks = tracks.asMap().entries.map((entry) => 
+      PlaylistTrack(
+        trackId: entry.value.id,
+        name: entry.value.name,
+        position: entry.key,
+        points: 0,
+        track: entry.value,
+      )
+    ).toList();
+    
+    final sortedPlaylistTracks = sortTracks(playlistTracks, sortOption);
+    return sortedPlaylistTracks.map((pt) => pt.track!).toList();
   }
 
   static int _getComparison(PlaylistTrack a, PlaylistTrack b, TrackSortField field) {
@@ -73,9 +73,7 @@ class MusicService {
   }
 
   Future<List<Playlist>> getPublicPlaylists(String token) async {
-    AppLogger.debug('MusicService: Calling API to get public playlists', 'MusicService');
     final response = await _api.getPublicPlaylists(token); 
-    AppLogger.debug('MusicService: API returned ${response.playlists.length} public playlists', 'MusicService');
     return response.playlists;
   }
 

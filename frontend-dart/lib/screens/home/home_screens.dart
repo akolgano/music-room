@@ -26,15 +26,17 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, UserActionLoggingMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, UserActionLoggingMixin, WidgetsBindingObserver {
   late TabController _tabController;
   int _currentIndex = 0;
   bool _isInitialLoading = true;
+  DateTime? _lastPlaylistRefresh;
   bool get isLandscape => MediaQuery.of(context).orientation == Orientation.landscape;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
     _currentIndex = 0;
     _tabController.addListener(() {
@@ -699,6 +701,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       try {
         AppLogger.debug('Loading playlists attempt ${retryCount + 1}/$maxRetries', 'HomeScreen');
         await music.fetchAllPlaylists(token);
+        _lastPlaylistRefresh = DateTime.now();
         
         if (mounted) {
           setState(() {});
@@ -779,7 +782,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _refreshPlaylistsIfNeeded();
+    }
+  }
+
+  void _refreshPlaylistsIfNeeded() {
+    // Refresh playlists if it's been more than 30 seconds since last refresh
+    // or if this is the first time
+    if (_lastPlaylistRefresh == null || DateTime.now().difference(_lastPlaylistRefresh!).inSeconds > 30) {
+      AppLogger.debug('Auto-refreshing playlists due to app resume', 'HomeScreen');
+      final music = Provider.of<MusicProvider>(context, listen: false);
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final token = auth.token;
+      if (token != null && mounted) {
+        music.fetchAllPlaylists(token).then((_) {
+          _lastPlaylistRefresh = DateTime.now();
+          if (mounted) setState(() {});
+        });
+      }
+    }
   }
 }

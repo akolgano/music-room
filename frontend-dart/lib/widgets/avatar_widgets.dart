@@ -102,21 +102,21 @@ class ProfileAvatarWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildInitialsAvatar() {
+  String _generateInitials() {
     final name = profileProvider.name ?? profileProvider.username ?? 'User';
-    final initials = () {
-      if (name.isEmpty) return 'U';
-      
-      final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
-      if (words.isEmpty) return 'U';
-      
-      if (words.length == 1) {
-        return words[0].substring(0, 1).toUpperCase();
-      } else {
-        return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
-      }
-    }();
+    if (name.isEmpty) return 'U';
     
+    final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
+    if (words.isEmpty) return 'U';
+    
+    if (words.length == 1) {
+      return words[0].substring(0, 1).toUpperCase();
+    } else {
+      return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
+    }
+  }
+
+  Widget _buildInitialsAvatar() {
     return Container(
       width: 100,
       height: 100,
@@ -134,7 +134,7 @@ class ProfileAvatarWidget extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          initials,
+          _generateInitials(),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 32,
@@ -423,20 +423,6 @@ class ProfileAvatarWidget extends StatelessWidget {
   }
 
   Widget _buildEnlargedInitialsAvatar() {
-    final name = profileProvider.name ?? profileProvider.username ?? 'User';
-    final initials = () {
-      if (name.isEmpty) return 'U';
-      
-      final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
-      if (words.isEmpty) return 'U';
-      
-      if (words.length == 1) {
-        return words[0].substring(0, 1).toUpperCase();
-      } else {
-        return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
-      }
-    }();
-    
     return Container(
       width: 280,
       height: 280,
@@ -454,7 +440,7 @@ class ProfileAvatarWidget extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          initials,
+          _generateInitials(),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 80,

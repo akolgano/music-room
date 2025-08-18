@@ -17,9 +17,10 @@ class AllPlaylistsScreen extends StatefulWidget {
   State<AllPlaylistsScreen> createState() => _AllPlaylistsScreenState();
 }
 
-class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
+class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with WidgetsBindingObserver {
   PlaylistSortOption _currentSort = PlaylistSortOption.defaultOptions.first;
   List<Playlist> _sortedPlaylists = [];
+  DateTime? _lastRefresh;
 
   @override
   String get screenTitle => 'All Playlists';
@@ -31,13 +32,59 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
       onPressed: () => _showSortOptions(),
       showLabel: false,
     ),
-    IconButton(icon: const Icon(Icons.refresh), onPressed: _loadPlaylists),
+    PopupMenuButton<String>(
+      icon: const Icon(Icons.refresh),
+      onSelected: (value) {
+        if (value == 'normal') {
+          _loadPlaylists();
+        } else if (value == 'force') {
+          _forceRefreshPlaylists();
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'normal',
+          child: Row(
+            children: [
+              Icon(Icons.refresh, size: 20),
+              SizedBox(width: 8),
+              Text('Refresh'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'force',
+          child: Row(
+            children: [
+              Icon(Icons.refresh_sharp, size: 20),
+              SizedBox(width: 8),
+              Text('Force Refresh'),
+            ],
+          ),
+        ),
+      ],
+    ),
   ];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylists());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _refreshPlaylistsIfNeeded();
+    }
   }
 
   @override
@@ -92,6 +139,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
         final musicProvider = getProvider<MusicProvider>();
         AppLogger.debug('Loading all playlists (user + public) with token: ${auth.token?.substring(0, 10)}...', 'AllPlaylistsScreen');
         await musicProvider.fetchAllPlaylists(auth.token!);
+        _lastRefresh = DateTime.now();
         AppLogger.debug('Loaded ${musicProvider.playlists.length} total playlists', 'AllPlaylistsScreen');
         
 
@@ -195,5 +243,28 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> {
         });
         break;
     }
+  }
+
+  void _refreshPlaylistsIfNeeded() {
+    // Refresh playlists if it's been more than 30 seconds since last refresh
+    // or if this is the first time
+    if (_lastRefresh == null || DateTime.now().difference(_lastRefresh!).inSeconds > 30) {
+      AppLogger.debug('Auto-refreshing playlists due to app resume', 'AllPlaylistsScreen');
+      _loadPlaylists();
+    }
+  }
+
+  Future<void> _forceRefreshPlaylists() async {
+    await runAsyncAction(
+      () async {
+        final musicProvider = getProvider<MusicProvider>();
+        AppLogger.debug('Force refreshing all playlists (clearing cache first)', 'AllPlaylistsScreen');
+        await musicProvider.forceRefreshPlaylists(auth.token!);
+        _lastRefresh = DateTime.now();
+        AppLogger.debug('Force refresh completed: ${musicProvider.playlists.length} total playlists', 'AllPlaylistsScreen');
+      },
+      errorMessage: 'Failed to refresh playlists',
+      successMessage: 'Playlists refreshed successfully',
+    );
   }
 }

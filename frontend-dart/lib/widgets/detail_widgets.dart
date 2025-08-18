@@ -52,10 +52,10 @@ class PlaylistDetailWidgets {
                         playlist.imageUrl!, 
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => 
-                          Icon(Icons.library_music, size: MusicAppResponsive.isSmallScreen(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
+                          Icon(Icons.library_music, size: MusicAppResponsive.isSmallScreen(context) ? 40 : 60, color: Theme.of(context).colorScheme.onSurface),
                       ),
                     )
-                  : Icon(Icons.library_music, size: MusicAppResponsive.isSmallScreen(context) ? 40 : 60, color: ThemeUtils.getOnSurface(context)),
+                  : Icon(Icons.library_music, size: MusicAppResponsive.isSmallScreen(context) ? 40 : 60, color: Theme.of(context).colorScheme.onSurface),
               ),
               SizedBox(height: MusicAppResponsive.isSmallScreen(context) ? 6 : 12),
               Text(
@@ -475,9 +475,57 @@ class PlaylistDetailWidgets {
     );
   }
 
-  static Widget buildErrorTrackItem(Key? key, PlaylistTrack playlistTrack, int index) {
+  static Widget buildErrorTrackItem(Key? key, PlaylistTrack playlistTrack, int index, {bool isLoading = false}) {
     final trackCacheService = getIt<TrackCacheService>();
     final trackId = playlistTrack.trackId;
+    final isRetrying = (trackCacheService.retryCount[trackId] ?? 0) > 0;
+    
+    Color backgroundColor;
+    Widget leadingIcon;
+    String subtitleText;
+    Color subtitleColor;
+    Widget? trailingWidget;
+    
+    if (isLoading) {
+      backgroundColor = Colors.grey.withValues(alpha: 0.3);
+      leadingIcon = const Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(Icons.music_note, color: Colors.white),
+          SizedBox(
+            width: 20,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
+          ),
+        ],
+      );
+      subtitleText = 'Loading track details...';
+      subtitleColor = Colors.grey;
+      trailingWidget = null;
+    } else {
+      backgroundColor = isRetrying 
+          ? Colors.orange.withValues(alpha: 0.3) 
+          : Colors.red.withValues(alpha: 0.3);
+      leadingIcon = isRetrying
+          ? const SizedBox(
+              width: 24,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+              ),
+            )
+          : const Icon(Icons.music_off, color: Colors.white);
+      subtitleText = _getTrackStatusText(trackCacheService, trackId);
+      subtitleColor = isRetrying ? Colors.orange : Colors.grey;
+      trailingWidget = isRetrying
+          ? IconButton(
+              icon: const Icon(Icons.cancel, color: Colors.orange),
+              onPressed: () => trackCacheService.cancelRetries(trackId),
+              tooltip: 'Cancel retries',
+            )
+          : null;
+    }
     
     return Container(
       key: key,
@@ -491,39 +539,20 @@ class PlaylistDetailWidgets {
           width: 56,
           height: 50,
           decoration: BoxDecoration(
-            color: (trackCacheService.retryCount[trackId] ?? 0) > 0 
-                ? Colors.orange.withValues(alpha: 0.3) 
-                : Colors.red.withValues(alpha: 0.3), 
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(8)
           ),
-          child: (trackCacheService.retryCount[trackId] ?? 0) > 0
-              ? const SizedBox(
-                  width: 24,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
-                  ),
-                )
-              : const Icon(Icons.music_off, color: Colors.white),
+          child: leadingIcon,
         ),
         title: Text(
-          playlistTrack.name,
+          playlistTrack.track?.name ?? playlistTrack.name,
           style: const TextStyle(color: Colors.white),
         ),
         subtitle: Text(
-          _getTrackStatusText(trackCacheService, trackId),
-          style: TextStyle(
-            color: (trackCacheService.retryCount[trackId] ?? 0) > 0 ? Colors.orange : Colors.grey
-          ),
+          subtitleText,
+          style: TextStyle(color: subtitleColor),
         ),
-        trailing: (trackCacheService.retryCount[trackId] ?? 0) > 0
-            ? IconButton(
-                icon: const Icon(Icons.cancel, color: Colors.orange),
-                onPressed: () => trackCacheService.cancelRetries(trackId),
-                tooltip: 'Cancel retries',
-              )
-            : null,
+        trailing: trailingWidget,
       ),
     );
   }
@@ -538,36 +567,6 @@ class PlaylistDetailWidgets {
     }
   }
 
-  static Widget buildLoadingTrackItem(Key? key, PlaylistTrack playlistTrack, int index) {
-    return Container(
-      key: key,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.surface, 
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 56,
-          height: 50,
-          decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(8)),
-          child: const Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(Icons.music_note, color: Colors.white),
-              SizedBox(
-                width: 20,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
-              ),
-            ],
-          ),
-        ),
-        title: Text(playlistTrack.track?.name ?? playlistTrack.name, style: const TextStyle(color: Colors.white)),
-        subtitle: const Text('Loading track details...', style: TextStyle(color: Colors.grey)),
-      ),
-    );
-  }
 
   static Color getPointsColor(int points) {
     if (points > 5) { return Colors.green; }

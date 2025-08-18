@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'responsive_core.dart' show MusicAppResponsive;
 
 class ThemeUtils {
-  static Color getOnSurface(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 
 
   static double getResponsivePadding(BuildContext context) {
@@ -46,7 +45,7 @@ class ThemeUtils {
       large: 20.0, xlarge: 22.0, xxlarge: 24.0
     );
     return TextStyle(
-      color: getOnSurface(context), 
+      color: Theme.of(context).colorScheme.onSurface, 
       fontSize: fontSize, 
       fontWeight: FontWeight.bold
     );
@@ -58,7 +57,7 @@ class ThemeUtils {
       large: 16.0, xlarge: 17.0, xxlarge: 18.0
     );
     return TextStyle(
-      color: getOnSurface(context), 
+      color: Theme.of(context).colorScheme.onSurface, 
       fontSize: fontSize, 
       fontWeight: FontWeight.w600,
     );
@@ -70,7 +69,7 @@ class ThemeUtils {
       large: 14.0, xlarge: 15.0, xxlarge: 16.0
     );
     return TextStyle(
-      color: getOnSurface(context),
+      color: Theme.of(context).colorScheme.onSurface,
       fontSize: fontSize,
     );
   }
@@ -81,7 +80,7 @@ class ThemeUtils {
       large: 12.0, xlarge: 13.0, xxlarge: 14.0
     );
     return TextStyle(
-      color: getOnSurface(context).withValues(alpha: 0.7),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
       fontSize: fontSize,
     );
   }
@@ -117,7 +116,7 @@ class ThemeUtils {
     final scaledHeight = (baseHeight * textScaleFactor).clamp(32.0, 72.0);
     
     return OutlinedButton.styleFrom(
-      foregroundColor: getOnSurface(context),
+      foregroundColor: Theme.of(context).colorScheme.onSurface,
       side: BorderSide(color: AppTheme.primary), 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(getResponsiveBorderRadius(context))),
       minimumSize: Size(MusicAppResponsive.getFontSize(context,
@@ -172,8 +171,8 @@ class ThemeUtils {
         borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
       ),
-      labelStyle: TextStyle(fontSize: 16, color: getOnSurface(context).withValues(alpha: 0.7)),
-      hintStyle: TextStyle(fontSize: 14, color: getOnSurface(context).withValues(alpha: 0.5)),
+      labelStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+      hintStyle: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
     );
   }
 }
