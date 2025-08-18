@@ -20,8 +20,6 @@ class MusicProvider extends BaseProvider {
   List<Track> _searchResults = [];
   List<PlaylistTrack> _playlistTracks = [];
   bool _hasConnectionError = false;
-  
-
   List<Playlist> get playlists => List.unmodifiable(_playlists);
   List<Playlist> get userPlaylists => List.unmodifiable(_userPlaylists);
   List<Playlist> get publicPlaylists => List.unmodifiable(_publicPlaylists);
@@ -79,7 +77,6 @@ class MusicProvider extends BaseProvider {
     AppLogger.debug('MusicProvider: Fetching all playlists (user + public)', 'MusicProvider');
     final result = await executeAsync(
       () async {
-
         final userPlaylistsFuture = _musicService.getUserPlaylists(token);
         final publicPlaylistsFuture = _musicService.getPublicPlaylists(token);
         
@@ -87,15 +84,12 @@ class MusicProvider extends BaseProvider {
         final userPlaylists = results[0];
         final publicPlaylists = results[1];
         
-
         final allPlaylists = <String, Playlist>{};
         
-
         for (final playlist in userPlaylists) {
           allPlaylists[playlist.id] = playlist;
         }
         
-
         for (final playlist in publicPlaylists) {
           if (!allPlaylists.containsKey(playlist.id)) {
             allPlaylists[playlist.id] = playlist;
@@ -131,7 +125,6 @@ class MusicProvider extends BaseProvider {
       errorMessage: 'Failed to load playlist details',
     );
   }
-
   Future<String?> createPlaylist(
     String name, 
     String description, 
@@ -147,7 +140,6 @@ class MusicProvider extends BaseProvider {
           name, description, isPublic, token, licenseType, deviceUuid
         );
         AppLogger.debug('Playlist created with ID: $id', 'MusicProvider');
-
         await fetchAllPlaylists(token);
         return id;
       },
@@ -157,7 +149,6 @@ class MusicProvider extends BaseProvider {
     return result;
   }
 
-
   Future<void> searchDeezerTracks(String query) async {
     final result = await executeAsync(
       () => _musicService.searchDeezerTracks(query),
@@ -165,7 +156,6 @@ class MusicProvider extends BaseProvider {
     );
     if (result != null) _searchResults = result;
   }
-
 
   Future<Track?> getDeezerTrack(String trackId, String token) async {
     try {
@@ -412,7 +402,6 @@ class MusicProvider extends BaseProvider {
             (cachedTrack.artist != track.artist || 
              cachedTrack.album != track.album || 
              cachedTrack.imageUrl != track.imageUrl)) {
-          
           _playlistTracks[i] = playlistTrack.copyWithTrack(cachedTrack);
           updated = true;
           AppLogger.debug('Updated track ${track.name} with cached details', 'MusicProvider');
@@ -431,7 +420,6 @@ class MusicProvider extends BaseProvider {
       _preloadTrackDetails(_playlistTracks);
     });
   }
-
 
   void updatePlaylistInCache(String playlistId, {
     String? name,
@@ -510,17 +498,13 @@ class MusicProvider extends BaseProvider {
     }
   }
 
-  /// Forces a refresh of all playlists (user + public)
-  /// This is useful when you suspect new playlists have been shared with the user
   Future<void> forceRefreshPlaylists(String token) async {
     AppLogger.debug('Force refreshing all playlists', 'MusicProvider');
-    // Clear existing playlists first to force a fresh fetch
     _playlists = [];
     _userPlaylists = [];
     _publicPlaylists = [];
     notifyListeners();
     
-    // Fetch all playlists again
     await fetchAllPlaylists(token);
   }
 }
