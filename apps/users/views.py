@@ -436,6 +436,8 @@ def signup_email_otp(request):
 
 logger = logging.getLogger(__name__)
 
+
+@log_activity_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([])
