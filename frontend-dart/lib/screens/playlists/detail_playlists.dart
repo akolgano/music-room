@@ -897,10 +897,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       
       if (_votingLicenseType == 'location_time') {
         if (_votingStartTime != null) {
-          voteStartTimeStr = _votingStartTime!.toIso8601String();
+          voteStartTimeStr = '${_votingStartTime!.hour.toString().padLeft(2, '0')}:${_votingStartTime!.minute.toString().padLeft(2, '0')}:${_votingStartTime!.second.toString().padLeft(2, '0')}';
         }
         if (_votingEndTime != null) {
-          voteEndTimeStr = _votingEndTime!.toIso8601String();
+          voteEndTimeStr = '${_votingEndTime!.hour.toString().padLeft(2, '0')}:${_votingEndTime!.minute.toString().padLeft(2, '0')}:${_votingEndTime!.second.toString().padLeft(2, '0')}';
         }
       }
 
@@ -955,10 +955,24 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         _votingLicenseType = licenseResponse.licenseType;
         
         if (licenseResponse.voteStartTime != null) {
-          _votingStartTime = DateTime.parse(licenseResponse.voteStartTime!);
+          final timeStr = licenseResponse.voteStartTime!;
+          final timeParts = timeStr.split(':');
+          if (timeParts.length >= 2) {
+            final hour = int.tryParse(timeParts[0]) ?? 0;
+            final minute = int.tryParse(timeParts[1]) ?? 0;
+            final second = timeParts.length > 2 ? (int.tryParse(timeParts[2]) ?? 0) : 0;
+            _votingStartTime = DateTime(2000, 1, 1, hour, minute, second);
+          }
         }
         if (licenseResponse.voteEndTime != null) {
-          _votingEndTime = DateTime.parse(licenseResponse.voteEndTime!);
+          final timeStr = licenseResponse.voteEndTime!;
+          final timeParts = timeStr.split(':');
+          if (timeParts.length >= 2) {
+            final hour = int.tryParse(timeParts[0]) ?? 0;
+            final minute = int.tryParse(timeParts[1]) ?? 0;
+            final second = timeParts.length > 2 ? (int.tryParse(timeParts[2]) ?? 0) : 0;
+            _votingEndTime = DateTime(2000, 1, 1, hour, minute, second);
+          }
         }
         
         _latitude = licenseResponse.latitude;

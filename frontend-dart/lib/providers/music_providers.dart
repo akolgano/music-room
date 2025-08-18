@@ -509,4 +509,18 @@ class MusicProvider extends BaseProvider {
       rethrow;
     }
   }
+
+  /// Forces a refresh of all playlists (user + public)
+  /// This is useful when you suspect new playlists have been shared with the user
+  Future<void> forceRefreshPlaylists(String token) async {
+    AppLogger.debug('Force refreshing all playlists', 'MusicProvider');
+    // Clear existing playlists first to force a fresh fetch
+    _playlists = [];
+    _userPlaylists = [];
+    _publicPlaylists = [];
+    notifyListeners();
+    
+    // Fetch all playlists again
+    await fetchAllPlaylists(token);
+  }
 }
