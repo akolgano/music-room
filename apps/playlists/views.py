@@ -18,6 +18,7 @@ from .serializers import PlaylistLicenseSerializer
 from apps.deezer.deezer_client import DeezerClient
 from .serializers import PlaylistLicenseSerializer, VoteSerializer
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -31,7 +32,7 @@ def create_new_playlist(request):
     description = request.data.get('description', '')
     public = request.data.get('public', True)
     license_type = request.data.get('license_type', 'open')
-    # public = True
+    event = request.data.get('event', False)
     if not name:
         return JsonResponse({"error": "Playlist name is required."}, status=400)
     playlist = Playlist.objects.create(
@@ -39,8 +40,10 @@ def create_new_playlist(request):
         description=description,
         public=public,
         license_type=license_type,
-        creator=user
+        creator=user,
+        event = event
     )
+    #playlist.users_saved.add(user)
     user.saved_playlists.add(playlist)
 
     return JsonResponse({
@@ -101,7 +104,9 @@ def delete_playlist(request, playlist_id):
 def get_user_saved_playlists(request):
     user = request.user
 
-    playlists = Playlist.objects.filter(users_saved=user)
+    
+    playlists = Playlist.objects.filter(Q(users_saved=user) | Q(creator=user),
+    event=False)
 
     playlist_data = []
     for playlist in playlists:
@@ -114,7 +119,7 @@ def get_user_saved_playlists(request):
             'description': playlist.description,
             'public': playlist.public,
             'creator': playlist.creator.username,
-            'license_type': playlist.license_type,
+            #'license_type': playlist.license_type,
             'tracks': track_list,
         })
 
@@ -126,7 +131,7 @@ def get_user_saved_playlists(request):
 @permission_classes([IsAuthenticated])
 def get_all_shared_playlists(request):
 
-    playlists = Playlist.objects.filter(public=True)
+    playlists = Playlist.objects.filter(public=True, event=False)
 
     playlist_data = []
     for playlist in playlists:
@@ -208,6 +213,7 @@ def get_playlist_info(request, playlist_id):
             'license_type': playlist.license_type,
             'tracks': track_list,
             'shared_with': shared_users,
+            'event': playlist.event,
         })
 
         return JsonResponse({'playlist': playlist_data})
@@ -426,6 +432,18 @@ def invite_user(request, playlist_id):
             return JsonResponse({'message': 'User already invited'}, status=200)
         playlist.users_saved.add(user_to_invite)
         print(playlist.users_saved.all())
+        data = [{"user_id": user_id, "text": "User invited to the playlist"}]
+        channel_layer = get_channel_layer()
+
+        # Broadcast
+        async_to_sync(channel_layer.group_send)(
+            f'playlist_{playlist_id}',
+            {
+                'type': 'playlist.update',
+                'playlist_id': playlist_id,
+                'data': data,
+            }
+        )
         return JsonResponse({'message': 'User invited to the playlist'}, status=201)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400) 
@@ -500,3 +518,54 @@ def vote_for_track(request, playlist_id):
 
         return JsonResponse({'playlist': playlist_data})
     return JsonResponse(serializer.errors, status=400)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_user_saved_events(request):
+    user = request.user
+
+    playlists = Playlist.objects.filter(Q(users_saved=user) | Q(creator=user), event=True)
+
+    playlist_data = []
+    for playlist in playlists:
+        tracks = playlist.tracks.all()
+        track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
+
+        playlist_data.append({
+            'id': playlist.id,
+            'name': playlist.name,
+            'description': playlist.description,
+            'public': playlist.public,
+            'creator': playlist.creator.username,
+            'license_type': playlist.license_type,
+            'tracks': track_list,
+        })
+
+    return JsonResponse({'events': playlist_data})
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_all_shared_events(request):
+
+    playlists = Playlist.objects.filter(public=True, event=True)
+
+    playlist_data = []
+    for playlist in playlists:
+        tracks = playlist.tracks.all()
+        track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
+
+        playlist_data.append({
+            'id': playlist.id,
+            'name': playlist.name,
+            'description': playlist.description,
+            'public': playlist.public,
+            'creator': playlist.creator.username,  # Show the creator of the playlist
+            'tracks': track_list,
+            'license_type': playlist.license_type,
+        })
+
+    return JsonResponse({'events': playlist_data})

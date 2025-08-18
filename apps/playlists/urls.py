@@ -16,4 +16,8 @@ urlpatterns = [
     path('<int:playlist_id>/invite-user/', views.invite_user),
     path('<int:playlist_id>/license/', views.patch_playlist_license),
     path('<int:playlist_id>/tracks/vote/', views.vote_for_track),
+
+    # GET events
+    path('saved_events/', views.get_user_saved_events, name='saved_events'),
+    path('public_events/', views.get_all_shared_events, name='public_events'),
 ]
