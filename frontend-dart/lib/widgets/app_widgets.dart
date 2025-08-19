@@ -9,9 +9,56 @@ import '../providers/theme_providers.dart';
 import 'dialog_widgets.dart';
 import 'votes_widgets.dart';
 import '../models/voting_models.dart';
-import 'scrollbar_widgets.dart';
 import 'state_widgets.dart';
 export 'player_widgets.dart';
+
+class CustomSingleChildScrollView extends StatefulWidget {
+  final Widget? child;
+  final Axis scrollDirection;
+  final bool reverse;
+  final ScrollPhysics? physics;
+  final EdgeInsets? padding;
+
+  const CustomSingleChildScrollView({
+    super.key,
+    this.child,
+    this.scrollDirection = Axis.vertical,
+    this.reverse = false,
+    this.physics,
+    this.padding,
+  });
+
+  @override
+  State<CustomSingleChildScrollView> createState() => _CustomSingleChildScrollViewState();
+}
+
+class _CustomSingleChildScrollViewState extends State<CustomSingleChildScrollView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scrollbar(
+      controller: _scrollController,
+      thumbVisibility: kIsWeb,
+      thickness: 12.0,
+      radius: const Radius.circular(8.0),
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        scrollDirection: widget.scrollDirection,
+        reverse: widget.reverse,
+        physics: widget.physics,
+        padding: widget.padding,
+        child: widget.child,
+      ),
+    );
+  }
+}
 
 class TrackActionsWidget extends StatelessWidget {
   final bool showAddButton;
@@ -871,7 +918,10 @@ static Widget emptyState({
     VoidCallback? onTap,
     VoidCallback? onPlay,
     VoidCallback? onCreatorTap,
+    VoidCallback? onDelete,
     bool showPlayButton = false,
+    bool showDeleteButton = false,
+    String? currentUsername,
   }) {
     return Builder(builder: (context) {
       return Card(
@@ -904,12 +954,23 @@ static Widget emptyState({
               ),
             ],
           ),
-          trailing: showPlayButton && onPlay != null
-              ? IconButton(
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showPlayButton && onPlay != null)
+                IconButton(
                   icon: Icon(Icons.play_arrow, color: Theme.of(context).colorScheme.primary),
                   onPressed: onPlay,
-                )
-              : null,
+                ),
+              if (showDeleteButton && 
+                  onDelete != null && 
+                  playlist.creator == currentUsername)
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: onDelete,
+                ),
+            ],
+          ),
           onTap: onTap,
         ),
       );

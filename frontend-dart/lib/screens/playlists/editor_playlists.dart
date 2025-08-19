@@ -11,7 +11,6 @@ import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/scrollbar_widgets.dart';
 import '../base_screens.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {

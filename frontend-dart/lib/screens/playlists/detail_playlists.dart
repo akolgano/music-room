@@ -21,7 +21,6 @@ import '../../widgets/detail_widgets.dart';
 import '../../widgets/sort_widgets.dart';
 import '../../models/voting_models.dart';
 import '../../widgets/votes_widgets.dart';
-import '../../widgets/scrollbar_widgets.dart';
 import '../../providers/auth_providers.dart';
 import '../../widgets/app_widgets.dart';
 import '../../models/api_models.dart';
@@ -140,6 +139,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         _refreshWithReconnect();
       },
       buttonName: 'refresh_playlist_button',
+    ),
+    if (_isOwner) buildLoggingIconButton(
+      icon: const Icon(Icons.delete, color: Colors.red), 
+      onPressed: () {
+        logButtonClick('delete_playlist', metadata: {'playlist_id': widget.playlistId});
+        _deletePlaylist();
+      },
+      buttonName: 'delete_playlist_button',
     ),
   ];
 
@@ -1056,6 +1063,28 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       } catch (e) {
         AppLogger.error('Failed to suggest track for voting', e, null, 'PlaylistDetailScreen');
       }
+    }
+  }
+
+  Future<void> _deletePlaylist() async {
+    final confirmed = await showConfirmDialog(
+      'Delete Playlist', 
+      'Are you sure you want to delete "${_playlist?.name}"? This action cannot be undone.'
+    );
+    
+    if (confirmed) {
+      await runAsyncAction(
+        () async {
+          final musicProvider = getProvider<MusicProvider>();
+          await musicProvider.deletePlaylist(widget.playlistId, auth.token!);
+          
+          if (mounted) {
+            Navigator.pop(context);
+            showSuccess('Playlist deleted successfully');
+          }
+        },
+        errorMessage: 'Failed to delete playlist',
+      );
     }
   }
 }

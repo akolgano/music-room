@@ -116,7 +116,10 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
                   playlist: playlist,
                   onTap: () => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id), 
                   onPlay: () => _playPlaylist(playlist),
+                  onDelete: () => _deletePlaylist(playlist),
                   showPlayButton: true,
+                  showDeleteButton: true,
+                  currentUsername: auth.username,
                 ),
                 emptyState: AppWidgets.emptyState( 
                   icon: Icons.playlist_play,
@@ -264,5 +267,23 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
       errorMessage: 'Failed to refresh playlists',
       successMessage: 'Playlists refreshed successfully',
     );
+  }
+
+  Future<void> _deletePlaylist(Playlist playlist) async {
+    final confirmed = await showConfirmDialog(
+      'Delete Playlist',
+      'Are you sure you want to delete "${playlist.name}"? This action cannot be undone.'
+    );
+    
+    if (confirmed) {
+      await runAsyncAction(
+        () async {
+          final musicProvider = getProvider<MusicProvider>();
+          await musicProvider.deletePlaylist(playlist.id, auth.token!);
+        },
+        successMessage: 'Playlist "${playlist.name}" deleted successfully',
+        errorMessage: 'Failed to delete playlist',
+      );
+    }
   }
 }

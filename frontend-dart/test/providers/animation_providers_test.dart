@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/providers/animation_providers.dart';
+import 'package:music_room/core/animations_core.dart';
 
 void main() {
   group('AnimationProviders', () {
