@@ -82,8 +82,8 @@ class MusicService {
     return response.playlist;
   }
 
-  Future<String> createPlaylist(String name, String description, bool isPublic, String token, String licenseType, [String? deviceUuid]) async {
-    final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, licenseType: licenseType, deviceUuid: deviceUuid);
+  Future<String> createPlaylist(String name, String description, bool isPublic, String token, String licenseType, bool isEvent, [String? deviceUuid]) async {
+    final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, licenseType: licenseType, event: isEvent, deviceUuid: deviceUuid);
     final response = await _api.createPlaylist(token, request); 
     return response.playlistId;
   }

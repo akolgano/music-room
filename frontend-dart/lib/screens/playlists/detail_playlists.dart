@@ -93,9 +93,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   @override
   List<Widget> get actions => [
-    buildLoggingIconButton(
+    if (_playlist != null && _playlist!.isEvent) buildLoggingIconButton(
       icon: Icon(_isVotingMode ? Icons.edit : Icons.how_to_vote),
       onPressed: () {
+        if (_playlist == null || !_playlist!.isEvent) return;
         logButtonClick('toggle_voting_mode', metadata: {
           'current_mode': _isVotingMode ? 'voting' : 'edit',
           'switching_to': _isVotingMode ? 'edit' : 'voting',
@@ -339,6 +340,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       onMoveDown: _canEditPlaylist && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
       canReorder: _canEditPlaylist,
       playlistId: widget.playlistId,
+      isEvent: _playlist?.isEvent ?? false,
       key: key,
     );
   }
@@ -454,6 +456,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           setState(() {
             _isOwner = _playlist!.creator == auth.username;
             _canEditPlaylist = _playlist!.canEdit(auth.username);
+            // Disable voting mode if playlist is not an event
+            if (!_playlist!.isEvent && _isVotingMode) {
+              _isVotingMode = false;
+            }
           });
           
           await _refreshTracksFromProvider();
