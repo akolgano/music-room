@@ -330,11 +330,6 @@ class BeaconService {
       ..sort((a, b) => a.distance.compareTo(b.distance));
   }
 
-  List<BeaconInfo> getBeaconsByProximity(String proximity) {
-    return discoveredBeacons
-        .where((beacon) => beacon.proximity == proximity)
-        .toList();
-  }
 
   Future<void> dispose() async {
     try {

@@ -25,7 +25,7 @@ class BeaconProvider extends BaseProvider {
   String? get selectedPlaylistId => _selectedPlaylistId;
   
   List<BeaconInfo> get nearbyBeacons => _beaconService.getNearbyBeacons();
-  List<BeaconInfo> get immediateBeacons => _beaconService.getBeaconsByProximity('immediate');
+  List<BeaconInfo> get immediateBeacons => _beaconService.discoveredBeacons.where((beacon) => beacon.isImmediate).toList();
 
   Future<bool> initializeBeacons() async {
     if (_isInitialized) return true;

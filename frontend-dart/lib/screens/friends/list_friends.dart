@@ -231,7 +231,11 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
     await runAsyncAction(
       () async {
         final friendProvider = getProvider<FriendProvider>();
-        await friendProvider.fetchAllFriendData(auth.token!);
+        await Future.wait([
+          friendProvider.fetchFriends(auth.token!),
+          friendProvider.fetchReceivedInvitations(auth.token!),
+          friendProvider.fetchSentInvitations(auth.token!),
+        ]);
       },
       errorMessage: 'Unable to load friends data',
     );

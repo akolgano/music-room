@@ -73,14 +73,6 @@ class FriendProvider extends BaseProvider {
     if (result != null) _sentInvitations = result;
   }
 
-  Future<void> fetchAllFriendData(String token) async {
-    await executeAsync(
-      () async {
-        await Future.wait([fetchFriends(token), fetchReceivedInvitations(token), fetchSentInvitations(token)]);
-      },
-      errorMessage: 'Failed to load friend data',
-    );
-  }
 
   Future<bool> sendFriendRequest(String token, String userId) async {
     return await executeBool(
@@ -96,7 +88,7 @@ class FriendProvider extends BaseProvider {
     return await executeBool(
       () async {
         await _friendService.acceptFriendRequest(friendshipId, token);
-        await fetchAllFriendData(token);
+        await Future.wait([fetchFriends(token), fetchReceivedInvitations(token), fetchSentInvitations(token)]);
       },
       successMessage: 'Friend request accepted!',
       errorMessage: 'Failed to accept request',
