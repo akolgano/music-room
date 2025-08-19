@@ -136,7 +136,11 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
     await runAsyncAction(
       () async {
         final friendProvider = getProvider<FriendProvider>();
-        await friendProvider.fetchAllFriendData(auth.token!);
+        await Future.wait([
+          friendProvider.fetchFriends(auth.token!),
+          friendProvider.fetchReceivedInvitations(auth.token!),
+          friendProvider.fetchSentInvitations(auth.token!),
+        ]);
         
         final isAlreadyFriend = friendProvider.friends.any((friend) => friend.id == userId);
         if (isAlreadyFriend) {

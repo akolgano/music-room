@@ -675,7 +675,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         await Future.wait([
           _loadPlaylistsWithRetry(music, auth.token!), 
           profileProvider.loadProfile(auth.token),
-          friendProvider.fetchAllFriendData(auth.token!),
+          friendProvider.fetchFriends(auth.token!),
+          friendProvider.fetchReceivedInvitations(auth.token!),
+          friendProvider.fetchSentInvitations(auth.token!),
         ]);
       }
     } catch (e) {

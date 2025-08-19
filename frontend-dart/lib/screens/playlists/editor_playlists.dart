@@ -43,6 +43,11 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     if (_playlist == null) return true; 
     return _playlist!.canEdit(auth.username);
   } 
+  
+  bool get _isOwner {
+    if (_playlist == null) return true;
+    return _playlist!.creator == auth.username;
+  } 
 
   @override
   String get screenTitle => _isEditMode ? 'Edit Playlist' : 'Create Playlist';
@@ -142,8 +147,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             icon: _isPublic ? Icons.public : Icons.lock,
           ),
           const SizedBox(height: 16),
-          if (!_isPublic) _buildEditPermissionSettings(),
-          if (!_isPublic) const SizedBox(height: 24),
+          if (!_isPublic && _isOwner) _buildEditPermissionSettings(),
+          if (!_isPublic && _isOwner) const SizedBox(height: 24),
           if (_isPublic) const SizedBox(height: 8),
           AppWidgets.primaryButton(
             context: context,

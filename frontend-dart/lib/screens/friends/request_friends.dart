@@ -284,7 +284,11 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     await runAsyncAction(
       () async {
         final friendProvider = getProvider<FriendProvider>();
-        await friendProvider.fetchAllFriendData(auth.token!);
+        await Future.wait([
+          friendProvider.fetchFriends(auth.token!),
+          friendProvider.fetchReceivedInvitations(auth.token!),
+          friendProvider.fetchSentInvitations(auth.token!),
+        ]);
       },
       errorMessage: 'Failed to load friend requests',
     );
