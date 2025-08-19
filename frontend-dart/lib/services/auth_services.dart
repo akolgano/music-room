@@ -90,15 +90,12 @@ class AuthService {
   }
 
 
-  Future<AuthResult> _performSocialLogin(SocialLoginRequest request, Future<AuthResult> Function(SocialLoginRequest) apiCall) async {
-    final result = await apiCall(request);
-    await _storeAuth(result.token, result.user);
-    return result;
-  }
 
   Future<AuthResult> facebookLogin(String accessToken) async {
     final request = SocialLoginRequest(fbAccessToken: accessToken);
-    return _performSocialLogin(request, _api.facebookLogin);
+    final result = await _api.facebookLogin(request);
+    await _storeAuth(result.token, result.user);
+    return result;
   }
 
   Future<AuthResult> googleLogin({String? idToken, String? socialId, String? socialEmail, String? socialName}) async {
@@ -108,7 +105,9 @@ class AuthService {
       socialEmail: socialEmail,
       socialName: socialName,
     );
-    return _performSocialLogin(request, _api.googleLogin);
+    final result = await _api.googleLogin(request);
+    await _storeAuth(result.token, result.user);
+    return result;
   }
 
   Future<void> _storeAuth(String token, User user) async {

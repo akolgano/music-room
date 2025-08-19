@@ -14,7 +14,8 @@ class MockMusicPlayerService extends ChangeNotifier {
   bool _hasPlaylist = false;
   double _playbackSpeed = 1.0;
   bool _isUsingFullAudio = false;
-  final String _currentTrackInfo = '1/10';
+  int _currentIndex = 0;
+  List<dynamic> _playlist = List.filled(10, null);
 
   Track? get currentTrack => _currentTrack;
 
@@ -33,8 +34,10 @@ class MockMusicPlayerService extends ChangeNotifier {
   double get playbackSpeed => _playbackSpeed;
 
   bool get isUsingFullAudio => _isUsingFullAudio;
-
-  String get currentTrackInfo => _currentTrackInfo;
+  
+  int get currentIndex => _currentIndex;
+  
+  List<dynamic> get playlist => _playlist;
 
   void setCurrentTrack(Track? track) {
     _currentTrack = track;

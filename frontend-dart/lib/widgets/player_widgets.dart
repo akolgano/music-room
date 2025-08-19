@@ -166,7 +166,7 @@ class MiniPlayerWidget extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    playerService.currentTrackInfo,
+                                    playerService.currentTrack == null ? '' : '${playerService.currentIndex + 1} of ${playerService.playlist.length}',
                                     style: const TextStyle(
                                       color: AppTheme.primary,
                                       fontSize: 12,

@@ -76,10 +76,6 @@ class MusicPlayerService with ChangeNotifier {
   bool get isUsingFullAudio => _isUsingFullAudio;
   double get playbackSpeed => _playbackSpeed;
 
-  String get currentTrackInfo {
-    if (_currentTrack == null) return '';
-    return '${_currentIndex + 1} of ${_playlist.length}';
-  }
 
 
   Future<void> setPlaylistAndPlay({
