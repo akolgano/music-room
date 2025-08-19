@@ -55,7 +55,8 @@ void main() {
       expect(musicPlayerService.playlistId, null);
     });
     test('MusicPlayerService should provide track info', () {
-      expect(musicPlayerService.currentTrackInfo, '');
+      expect(musicPlayerService.currentTrack, null);
+      expect(musicPlayerService.currentIndex, -1);
     });
     test('MusicPlayerService should handle Deezer integration', () {
       expect(musicPlayerService.isUsingFullAudio, false);

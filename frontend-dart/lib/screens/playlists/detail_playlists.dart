@@ -121,7 +121,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       },
       buttonName: 'edit_playlist_button',
     ),
-    buildLoggingIconButton(
+    if (_playlist != null && !_playlist!.isPublic) buildLoggingIconButton(
       icon: const Icon(Icons.share), 
       onPressed: () {
         logButtonClick('share_playlist', metadata: {'playlist_id': widget.playlistId});
