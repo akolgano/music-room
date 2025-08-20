@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/music_models.dart';
-import '../core/constants_core.dart';
 import 'state_widgets.dart';
 
 class AppWidgets {
@@ -20,19 +19,6 @@ class AppWidgets {
     }
   }
 
-  static IconButton _buildStyledIconButton(
-    IconData icon,
-    Color color,
-    double size,
-    VoidCallback onPressed, {
-    String? tooltip,
-  }) => IconButton(
-    icon: Icon(icon, color: color, size: _responsiveValue(size)),
-    onPressed: onPressed,
-    tooltip: tooltip,
-    padding: EdgeInsets.all(_responsiveWidth(4.0)),
-    constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
-  );
   
   static TextStyle _primaryStyle(BuildContext context) => TextStyle(
     color: Theme.of(context).colorScheme.onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
@@ -42,16 +28,10 @@ class AppWidgets {
     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
   );
 
-  static Color _getTrackCardColor(ColorScheme colorScheme, bool isSelected, bool isCurrentTrack) {
-    if (isSelected) return colorScheme.primary.withValues(alpha: 0.2);
-    if (isCurrentTrack) return colorScheme.primary.withValues(alpha: 0.1);
-    return colorScheme.surface;
-  }
 
   static Widget _buildImage(
     String? imageUrl, 
     double size, {
-    Widget? placeholder,
     Widget? errorWidget,
   }) {
     if (imageUrl == null || imageUrl.isEmpty) {
@@ -72,7 +52,7 @@ class AppWidgets {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble()),
-      child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover),
+      child: CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover),
     );
   }
 
@@ -517,7 +497,7 @@ class AppWidgets {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: playlist.description?.isNotEmpty == true
+          subtitle: playlist.description != null && playlist.description!.isNotEmpty
               ? Text(
                   playlist.description!,
                   style: _secondaryStyle(context),

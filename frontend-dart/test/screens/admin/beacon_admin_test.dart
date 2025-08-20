@@ -17,7 +17,6 @@ void main() {
     setUp(() {
       mockBeaconProvider = MockBeaconProvider();
       
-      // Set up default mock behaviors
       when(mockBeaconProvider.isLoading).thenReturn(false);
       when(mockBeaconProvider.hasError).thenReturn(false);
       when(mockBeaconProvider.errorMessage).thenReturn(null);
@@ -144,7 +143,7 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.refresh));
-        await tester.pump(); // Don't use pumpAndSettle due to Future.delayed
+        await tester.pump();
 
         verify(mockBeaconProvider.stopScanning()).called(1);
       });
@@ -171,10 +170,10 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('Yes'), findsOneWidget); // Initialized
-        expect(find.text('Active'), findsOneWidget); // Scanning
-        expect(find.text('1'), findsOneWidget); // Discovered beacons
-        expect(find.text('0'), findsOneWidget); // Nearby beacons
+        expect(find.text('Yes'), findsOneWidget);
+        expect(find.text('Active'), findsOneWidget);
+        expect(find.text('1'), findsOneWidget);
+        expect(find.text('0'), findsOneWidget);
       });
 
       testWidgets('should show nearest beacon distance when available', (WidgetTester tester) async {
@@ -273,8 +272,6 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pumpAndSettle();
 
-        // In loading state, buttons should be disabled
-        // We'll check this by looking for the loading indicator instead
         expect(find.text('Initializing beacons...'), findsOneWidget);
       });
     });
@@ -438,11 +435,8 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pumpAndSettle();
 
-        // Simulate provider state change
         when(mockBeaconProvider.isScanning).thenReturn(true);
         
-        // Note: In a real scenario, we would need to trigger notifyListeners()
-        // but with a mock, we can't easily test this without additional setup
         expect(find.byType(BeaconAdminScreen), findsOneWidget);
       });
     });
@@ -459,10 +453,8 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pumpAndSettle();
 
-        // Dispose the widget tree
         await tester.pumpWidget(Container());
         
-        // Should not throw any exceptions during disposal
         expect(tester.takeException(), isNull);
       });
     });

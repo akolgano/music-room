@@ -4,8 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/music_models.dart';
 
 class AppCardWidgets {
-  static double _responsiveWidth(double size) => kIsWeb ? size : size.w.toDouble();
-  static double _responsiveHeight(double size) => kIsWeb ? size : size.h.toDouble();
   static double _responsiveValue(double value) => kIsWeb ? value : value.sp.toDouble();
   
   static TextStyle _primaryStyle(BuildContext context) => TextStyle(

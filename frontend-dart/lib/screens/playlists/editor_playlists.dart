@@ -599,7 +599,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           (_playlist!.name != _nameController.text.trim() || 
            _playlist!.description != _descriptionController.text.trim());
       final hasVisibilityChanged = _playlist != null && _playlist!.isPublic != _isPublic;
-      final hasEventChanged = _playlist != null && _playlist!.isEvent != _isEvent;
       final hasLicenseTypeChanged = _playlist != null && _playlist!.licenseType != _licenseType;
       
       if (hasVisibilityChanged) {

@@ -20,11 +20,9 @@ import '../base_screens.dart';
 import '../../providers/voting_providers.dart'; 
 import '../../widgets/detail_widgets.dart';
 import '../../widgets/sort_widgets.dart';
-import '../../models/voting_models.dart';
 import '../../widgets/votes_widgets.dart';
 import '../../providers/auth_providers.dart';
 import '../../widgets/app_widgets.dart';
-import '../../models/api_models.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
