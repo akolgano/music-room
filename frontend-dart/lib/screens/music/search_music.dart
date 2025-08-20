@@ -558,8 +558,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
   Future<void> _loadUserPlaylists() async {
     await runAsyncAction(
       () async {
-        await getProvider<MusicProvider>().fetchUserPlaylists(auth.token!);
-        _userPlaylists = getProvider<MusicProvider>().userPlaylists;
+        await getProvider<MusicProvider>().fetchAllPlaylists(auth.token!);
+        _userPlaylists = getProvider<MusicProvider>().playlists;
       },
       errorMessage: 'Failed to load playlists',
     );
@@ -643,20 +643,120 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
 
   Future<void> _showPlaylistSelectionDialog(Track track) async {
     if (_userPlaylists.isEmpty) {
-      _showMessage('No playlists available. Create a playlist first.');
+      _showMessage('No playlists or events available. Create a playlist first.');
       return;
     }
-    final selectedIndex = await _showSelectionDialog(
-      title: 'Add to Playlist',
-      items: [..._userPlaylists.map((p) => p.name), 'Create New Playlist'],
-      icons: [..._userPlaylists.map((_) => Icons.library_music), Icons.add],
-    );
-    if (selectedIndex != null) {
-      if (selectedIndex == _userPlaylists.length) {
-        await _createNewPlaylistAndAddTrack(track);
-      } else {
-        await _addTrackToPlaylist(_userPlaylists[selectedIndex].id, track);
+    
+    // Separate playlists and events
+    final regularPlaylists = _userPlaylists.where((p) => !p.isEvent).toList();
+    final eventPlaylists = _userPlaylists.where((p) => p.isEvent).toList();
+    
+    // Build dialog items with sections
+    final List<String> items = [];
+    final List<IconData> icons = [];
+    
+    // Add playlists section
+    if (regularPlaylists.isNotEmpty) {
+      items.add('📚 PLAYLISTS');
+      icons.add(Icons.playlist_play);
+      for (final playlist in regularPlaylists) {
+        items.add('  ${playlist.name}');
+        icons.add(Icons.library_music);
       }
+    }
+    
+    // Add events section
+    if (eventPlaylists.isNotEmpty) {
+      items.add('🎉 EVENTS');
+      icons.add(Icons.event);
+      for (final event in eventPlaylists) {
+        items.add('  ${event.name}');
+        icons.add(Icons.event_available);
+      }
+    }
+    
+    // Add creation options
+    items.addAll(['Create New Playlist', 'Create New Event']);
+    icons.addAll([Icons.add, Icons.event_note]);
+    
+    final selectedIndex = await _showSelectionDialog(
+      title: 'Add Track To',
+      items: items,
+      icons: icons,
+    );
+    
+    if (selectedIndex != null) {
+      await _handlePlaylistSelection(selectedIndex, track, regularPlaylists, eventPlaylists);
+    }
+  }
+
+  Future<void> _handlePlaylistSelection(int selectedIndex, Track track, 
+      List<Playlist> regularPlaylists, List<Playlist> eventPlaylists) async {
+    int currentIndex = 0;
+    
+    // Skip playlist section header
+    if (regularPlaylists.isNotEmpty) {
+      currentIndex++; // Skip "PLAYLISTS" header
+      
+      if (selectedIndex <= currentIndex + regularPlaylists.length - 1) {
+        // Selected a regular playlist
+        final playlistIndex = selectedIndex - currentIndex;
+        await _addTrackToPlaylist(regularPlaylists[playlistIndex].id, track);
+        return;
+      }
+      currentIndex += regularPlaylists.length;
+    }
+    
+    // Skip events section header
+    if (eventPlaylists.isNotEmpty) {
+      currentIndex++; // Skip "EVENTS" header
+      
+      if (selectedIndex <= currentIndex + eventPlaylists.length - 1) {
+        // Selected an event
+        final eventIndex = selectedIndex - currentIndex;
+        await _addTrackToPlaylist(eventPlaylists[eventIndex].id, track);
+        return;
+      }
+      currentIndex += eventPlaylists.length;
+    }
+    
+    // Handle creation options
+    if (selectedIndex == currentIndex) {
+      await _createNewPlaylistAndAddTrack(track);
+    } else if (selectedIndex == currentIndex + 1) {
+      await _createNewEventAndAddTrack(track);
+    }
+  }
+
+  Future<void> _createNewEventAndAddTrack(Track track) async {
+    final eventName = await AppWidgets.showTextInputDialog(
+      context, 
+      title: 'Create New Event',
+      hintText: 'Enter event name',
+      validator: (value) => AppValidators.required(value, 'event name'),
+    );
+    
+    if (eventName != null && eventName.trim().isNotEmpty) {
+      await runAsyncAction(
+        () async {
+          final musicProvider = getProvider<MusicProvider>();
+          
+          // Create event with isEvent flag
+          final newEventId = await musicProvider.createPlaylist(
+            eventName.trim(),
+            '',
+            false, // isPublic
+            auth.token!,
+            'open', // licenseType
+            true, // isEvent
+          );
+          
+          // Add track to the new event
+          await _addTrackToPlaylist(newEventId!, track);
+        },
+        successMessage: 'Track added to new event "$eventName"',
+        errorMessage: 'Failed to create event and add track',
+      );
     }
   }
 

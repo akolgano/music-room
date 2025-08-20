@@ -480,7 +480,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
         }
         
         final musicProvider = getProvider<MusicProvider>();
-        await musicProvider.fetchUserPlaylists(auth.token!);
+        await musicProvider.fetchAllPlaylists(auth.token!);
         _userPlaylists = musicProvider.playlists;
         
         final themeProvider = getProvider<DynamicThemeProvider>();
@@ -568,36 +568,78 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
 
   void _showAddToPlaylistDialog() {
     if (_userPlaylists.isEmpty) {
-      showError('No playlists available. Create a playlist first.');
+      showError('No playlists or events available. Create a playlist first.');
       return;
     }
+    
+    // Separate playlists and events
+    final regularPlaylists = _userPlaylists.where((p) => !p.isEvent).toList();
+    final eventPlaylists = _userPlaylists.where((p) => p.isEvent).toList();
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surface,
-        title: const Text('Add to Playlist', style: TextStyle(color: Colors.white)),
+        title: const Text('Add Track To', style: TextStyle(color: Colors.white)),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true, 
-            itemCount: _userPlaylists.length,
-            itemBuilder: (context, index) {
-              final playlist = _userPlaylists[index];
-              return ListTile(
-                leading: Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.library_music, color: AppTheme.primary),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              // Playlists section
+              if (regularPlaylists.isNotEmpty) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.playlist_play, color: AppTheme.primary, size: 20),
+                      SizedBox(width: 8),
+                      Text('📚 PLAYLISTS', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
-                title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
-                subtitle: Text('${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addToPlaylist(playlist.id);
-                },
-              );
-            },
+                ...regularPlaylists.map((playlist) => ListTile(
+                  leading: Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.library_music, color: AppTheme.primary),
+                  ),
+                  title: Text('  ${playlist.name}', style: const TextStyle(color: Colors.white)),
+                  subtitle: Text('  ${playlist.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _addToPlaylist(playlist.id);
+                  },
+                )),
+              ],
+              
+              // Events section
+              if (eventPlaylists.isNotEmpty) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.event, color: Colors.orange, size: 20),
+                      SizedBox(width: 8),
+                      Text('🎉 EVENTS', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                ...eventPlaylists.map((event) => ListTile(
+                  leading: Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.event_available, color: Colors.orange),
+                  ),
+                  title: Text('  ${event.name}', style: const TextStyle(color: Colors.white)),
+                  subtitle: Text('  ${event.tracks.length} tracks', style: const TextStyle(color: Colors.grey)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _addToPlaylist(event.id);
+                  },
+                )),
+              ],
+            ],
           ),
         ),
         actions: [
