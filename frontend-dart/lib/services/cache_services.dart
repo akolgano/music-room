@@ -34,7 +34,7 @@ class TrackCacheService {
   TrackRetryConfig _retryConfig = TrackRetryConfig.standard;
 
   Future<Track?> getTrackDetails(String deezerTrackId, String token, ApiService apiService) async {
-    return await _getCachedTrack(deezerTrackId) ?? 
+    return _getCachedTrack(deezerTrackId) ?? 
            await _getOngoingRequest(deezerTrackId) ?? 
            await _fetchAndCacheTrack(deezerTrackId, token, apiService);
   }

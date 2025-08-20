@@ -3,8 +3,41 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:music_room/widgets/player_widgets.dart';
 import 'package:music_room/models/music_models.dart';
+import 'package:music_room/services/player_services.dart';
+import 'package:music_room/providers/theme_providers.dart';
 
-class MockMusicPlayerService extends ChangeNotifier {
+class MockAnimationSettingsProvider extends ChangeNotifier {
+  bool _pulsingEnabled = true;
+  Duration _pulsingDuration = const Duration(seconds: 2);
+  double _pulsingIntensity = 1.0;
+
+  bool get pulsingEnabled => _pulsingEnabled;
+  Duration get pulsingDuration => _pulsingDuration;
+  double get pulsingIntensity => _pulsingIntensity;
+
+  void setPulsingEnabled(bool enabled) {
+    if (_pulsingEnabled != enabled) {
+      _pulsingEnabled = enabled;
+      notifyListeners();
+    }
+  }
+
+  void setPulsingDuration(Duration duration) {
+    if (_pulsingDuration != duration) {
+      _pulsingDuration = duration;
+      notifyListeners();
+    }
+  }
+
+  void setPulsingIntensity(double intensity) {
+    if (_pulsingIntensity != intensity) {
+      _pulsingIntensity = intensity.clamp(0.1, 3.0);
+      notifyListeners();
+    }
+  }
+}
+
+class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerService {
   Track? _currentTrack;
   bool _isPlaying = false;
   Duration _position = Duration.zero;
@@ -15,29 +48,23 @@ class MockMusicPlayerService extends ChangeNotifier {
   double _playbackSpeed = 1.0;
   bool _isUsingFullAudio = false;
   final int _currentIndex = 0;
-  final List<dynamic> _playlist = List.filled(10, null);
+  final List<PlaylistTrack> _playlist = List.generate(10, (index) => PlaylistTrack(
+    trackId: 'track_$index',
+    name: 'Track $index',
+    position: index,
+  ));
 
   Track? get currentTrack => _currentTrack;
-
   bool get isPlaying => _isPlaying;
-
   Duration get position => _position;
-
   Duration get duration => _duration;
-
   bool get hasNextTrack => _hasNextTrack;
-
   bool get hasPreviousTrack => _hasPreviousTrack;
-
   bool get hasPlaylist => _hasPlaylist;
-
   double get playbackSpeed => _playbackSpeed;
-
   bool get isUsingFullAudio => _isUsingFullAudio;
-  
   int get currentIndex => _currentIndex;
-  
-  List<dynamic> get playlist => _playlist;
+  List<PlaylistTrack> get playlist => _playlist;
 
   void setCurrentTrack(Track? track) {
     _currentTrack = track;
@@ -106,6 +133,51 @@ class MockMusicPlayerService extends ChangeNotifier {
     _position = position;
     notifyListeners();
   }
+
+  // Required implementations for MusicPlayerService interface
+  @override
+  DynamicThemeProvider get themeProvider => DynamicThemeProvider();
+
+  @override
+  bool get isRepeatMode => false;
+
+  @override
+  bool get isShuffleMode => false;
+
+  @override
+  String? get playlistId => null;
+
+  @override
+  Future<void> play() async {}
+
+  @override
+  Future<void> pause() async {}
+
+  @override
+  Future<void> playTrack(Track track, String? fallbackUrl) async {}
+
+  @override
+  Future<void> playTrackAtIndex(int index) async {}
+
+  @override
+  Future<void> setPlaylistAndPlay({
+    required List<PlaylistTrack> playlist,
+    required int startIndex,
+    String? playlistId,
+    String? authToken,
+  }) async {}
+
+  @override
+  void toggleRepeat() {}
+
+  @override
+  void toggleShuffle() {}
+
+  @override
+  void clearPlaylist() {}
+
+  @override
+  void updatePlaylist(List<PlaylistTrack> updatedPlaylist) {}
 }
 
 void main() {
@@ -119,8 +191,15 @@ void main() {
     Widget createTestWidget({Widget? child}) {
       return MaterialApp(
         home: Scaffold(
-          body: ChangeNotifierProvider<MockMusicPlayerService>.value(
-            value: mockPlayerService,
+          body: MultiProvider(
+            providers: [
+              ChangeNotifierProvider<MusicPlayerService>.value(
+                value: mockPlayerService,
+              ),
+              ChangeNotifierProvider(
+                create: (_) => MockAnimationSettingsProvider(),
+              ),
+            ],
             child: child ?? const MiniPlayerWidget(),
           ),
         ),
@@ -337,7 +416,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pump();
 
-      expect(find.text('1/10'), findsOneWidget);
+      expect(find.text('1 of 10'), findsOneWidget);
     });
 
     testWidgets('should show playback speed button', (tester) async {
