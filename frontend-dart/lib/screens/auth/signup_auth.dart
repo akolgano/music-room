@@ -36,7 +36,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Create Account')),
       body: SafeArea(
         child: Center(
-          child: CustomSingleChildScrollView(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
             child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400), child: _buildForm()),
           ),

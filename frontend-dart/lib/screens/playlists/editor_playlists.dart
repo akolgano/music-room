@@ -91,7 +91,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       return _buildCollaborativeEditor();
     }
 
-    return CustomSingleChildScrollView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(4),
       child: Column(
         children: [

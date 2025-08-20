@@ -52,7 +52,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   @override
   Widget buildContent() {
     return Center(
-      child: CustomSingleChildScrollView(
+      child: SingleChildScrollView(
         padding: EdgeInsets.all(MusicAppResponsive.isSmallScreen(context) ? 8 : ThemeUtils.getResponsivePadding(context)),
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: MusicAppResponsive.isSmallScreen(context) ? double.infinity : 400),

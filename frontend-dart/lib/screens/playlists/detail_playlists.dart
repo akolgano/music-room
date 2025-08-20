@@ -8,6 +8,7 @@ import '../../services/player_services.dart';
 import '../../services/api_services.dart';
 import '../../services/cache_services.dart';
 import '../../services/websocket_services.dart';
+import '../../services/playlists_services.dart';
 import '../../core/locator_core.dart'; 
 import '../../models/music_models.dart';
 import '../../models/sort_models.dart';
@@ -36,28 +37,20 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   late final ApiService _apiService;
   late final TrackCacheService _trackCacheService;
   late final WebSocketService _webSocketService;
-  final Set<String> _fetchingTrackDetails = {};
+  late final PlaylistVotingService _votingService;
+  late final PlaylistTrackService _trackService;
+  late final PlaylistTimers _timers;
   final List<Completer> _pendingOperations = []; 
   Playlist? _playlist;
   List<PlaylistTrack> _tracks = [];
   bool _isOwner = false;
   bool _canEditPlaylist = false;
   VotingProvider? _votingProvider;
-  Timer? _autoRefreshTimer;
-  Timer? _trackCountValidationTimer;
   StreamSubscription<PlaylistUpdateMessage>? _playlistUpdateSubscription;
   
   final Map<String, String> _trackIdToPlaylistTrackId = {};
   
   bool _isVotingMode = false;
-  bool _isPublicVoting = true;
-  String _votingLicenseType = 'open';
-  DateTime? _votingStartTime;
-  DateTime? _votingEndTime;
-  PlaylistVotingInfo? _votingInfo;
-  double? _latitude;
-  double? _longitude;
-  int? _allowedRadiusMeters;
 
   @override
   String get screenTitle => _playlist?.name ?? 'Playlist Details';
@@ -68,14 +61,21 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     _apiService = getIt<ApiService>();
     _trackCacheService = getIt<TrackCacheService>();
     _webSocketService = getIt<WebSocketService>();
+    _votingService = PlaylistVotingService(playlistId: widget.playlistId);
+    _trackService = PlaylistTrackService(apiService: _apiService, trackCacheService: _trackCacheService);
+    _timers = PlaylistTimers(
+      onRefreshNeeded: _refreshPlaylistData,
+      onValidationNeeded: _validateTrackCounts,
+      onStateUpdate: () => mounted ? setState(() {}) : null,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _votingProvider = getProvider<VotingProvider>(listen: false);
         _votingProvider?.setVotingPermission(true);
         _setupWebSocketConnection();
         _loadData();
-        _startAutoRefresh();
-        _startTrackCountValidation();
+        _timers.startAutoRefresh();
+        _timers.startTrackCountValidation();
       }
     });
   }
@@ -83,8 +83,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   @override
   void dispose() {
     _cancelPendingOperations();
-    _stopAutoRefresh();
-    _stopTrackCountValidation();
+    _timers.dispose();
     _playlistUpdateSubscription?.cancel();
     _webSocketService.disconnect();
     super.dispose();
@@ -159,7 +158,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, _) {
-        return CustomSingleChildScrollView(
+        return SingleChildScrollView(
           padding: EdgeInsets.symmetric(
             vertical: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0),
             horizontal: MusicAppResponsive.getSpacing(context, tiny: 1.0, small: 1.5, medium: 2.0)
@@ -171,13 +170,13 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
               if (_isVotingMode) ...PlaylistVotingWidgets.buildVotingModeHeader(
                 context: context,
                 isOwner: _isOwner,
-                isPublicVoting: _isPublicVoting,
-                votingLicenseType: _votingLicenseType,
-                votingStartTime: _votingStartTime,
-                votingEndTime: _votingEndTime,
-                votingInfo: _votingInfo,
-                onPublicVotingChanged: (value) => setState(() => _isPublicVoting = value),
-                onLicenseTypeChanged: (value) => setState(() => _votingLicenseType = value),
+                isPublicVoting: _votingService.isPublicVoting,
+                votingLicenseType: _votingService.votingLicenseType,
+                votingStartTime: _votingService.votingStartTime,
+                votingEndTime: _votingService.votingEndTime,
+                votingInfo: _votingService.votingInfo,
+                onPublicVotingChanged: (value) => setState(() => _votingService.setPublicVoting(value)),
+                onLicenseTypeChanged: (value) => setState(() => _votingService.setVotingLicenseType(value)),
                 onApplyVotingSettings: _applyVotingSettings,
                 onSelectVotingDateTime: _selectVotingDateTime,
               ),
@@ -196,7 +195,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 playlistId: widget.playlistId,
                 onLoadData: () => _loadData(),
                 onSuggestTrackForVoting: _suggestTrackForVoting,
-                votingInfo: _votingInfo,
+                votingInfo: _votingService.votingInfo,
                 playlistOwnerId: _playlist?.creator,
               ) : _buildTracksSection(),
             ],
@@ -321,14 +320,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   Widget _buildTrackItem(PlaylistTrack playlistTrack, int index, {Key? key}) {
     final track = playlistTrack.track;
     
-    if (_needsTrackDetailsFetch(track) && mounted) {
+    if (_trackService.needsTrackDetailsFetch(track) && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchTrackDetailsIfNeeded(playlistTrack, index);
       });
     }
 
     if (track?.deezerTrackId != null && 
-        _fetchingTrackDetails.contains(track!.deezerTrackId!) &&
+        _trackService.fetchingTrackDetails.contains(track!.deezerTrackId!) &&
         _trackHasMissingDetails(track)) {
       return PlaylistDetailWidgets.buildErrorTrackItem(key, playlistTrack, index, isLoading: true);
     }
@@ -387,12 +386,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
   }
 
-  bool _needsTrackDetailsFetch(Track? track) {
-    return track?.deezerTrackId != null && 
-           _trackHasMissingDetails(track) &&
-           !_fetchingTrackDetails.contains(track!.deezerTrackId!);
-  }
-
   void _logError(String message, dynamic error) {
     AppLogger.error('ERROR $message', error, null, 'PlaylistDetailScreen');
   }
@@ -423,12 +416,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
   }
 
-  bool _shouldSkipTrackDetailsFetch(String? deezerTrackId, Track? track) {
-    return deezerTrackId == null || 
-           _fetchingTrackDetails.contains(deezerTrackId) || 
-           !mounted ||
-           (track != null && !_trackHasMissingDetails(track));
-  }
 
   void _updateTrackIdMapping(List<PlaylistTrack> webSocketTracks) {
     for (final playlistTrack in webSocketTracks) {
@@ -463,7 +450,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           setState(() {
             _isOwner = _playlist!.creator == auth.username;
             _canEditPlaylist = _playlist!.canEdit(auth.username);
-            // Disable voting mode if playlist is not an event
             if (!_playlist!.isEvent && _isVotingMode) {
               _isVotingMode = false;
             }
@@ -476,7 +462,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
             _votingProvider!.initializeTrackPoints(_tracks);
           }
           
-          await _loadVotingSettings();
+          await _votingService.loadVotingSettings(auth.token!);
           
           if (_playlist!.imageUrl?.isNotEmpty == true) {
             themeProvider.extractAndApplyDominantColor(_playlist!.imageUrl);
@@ -507,28 +493,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Future<void> _fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack, int index) async {
-    final track = playlistTrack.track;
-    final deezerTrackId = track?.deezerTrackId;
-    final trackId = playlistTrack.trackId;
-    
-    if (_shouldSkipTrackDetailsFetch(deezerTrackId, track)) {
-      return;
-    }
-
-    final nonNullDeezerTrackId = deezerTrackId!;
-    _fetchingTrackDetails.add(nonNullDeezerTrackId);
-    
-    try {
-      final trackDetails = await _trackCacheService.getTrackDetails(nonNullDeezerTrackId, auth.token!, _apiService);
-      if (!mounted) return;
-      
-      if (trackDetails != null) {
-        _updateTrackDetails(trackId, trackDetails);
-      }
-    } catch (e) {
-      _logError('fetching track details for $deezerTrackId', e);
-    } finally {
-      _fetchingTrackDetails.remove(nonNullDeezerTrackId);
+    final trackDetails = await _trackService.fetchTrackDetailsIfNeeded(playlistTrack, auth.token!);
+    if (trackDetails != null && mounted) {
+      _updateTrackDetails(playlistTrack.trackId, trackDetails);
     }
   }
 
@@ -559,25 +526,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     
     for (int i = 0; i < _tracks.length; i++) {
       final track = _tracks[i].track;
-      if (_needsTrackDetailsFetch(track)) {
+      if (_trackService.needsTrackDetailsFetch(track)) {
         tracksNeedingDetails.add(_tracks[i]);
       }
     }
     
-    if (tracksNeedingDetails.isEmpty) return;
-    
-    AppLogger.debug('Starting parallel fetch for ${tracksNeedingDetails.length} tracks', 'PlaylistDetailScreen');
-    
-    final futures = tracksNeedingDetails.map((playlistTrack) {
-      return _fetchTrackDetailsIfNeeded(playlistTrack, -1); 
-    }).toList();
-    
-    try {
-      await Future.wait(futures);
-      AppLogger.debug('Completed parallel fetch for ${tracksNeedingDetails.length} tracks', 'PlaylistDetailScreen');
-    } catch (e) {
-      _logError('in batch track fetch', e);
-    }
+    await _trackService.batchFetchTrackDetails(tracksNeedingDetails, auth.token!);
   }
 
   Future<void> _playPlaylist() async {
@@ -841,38 +795,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     if (result == true && mounted) await _loadData();
   }
 
-  void _startAutoRefresh() {
-    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      if (mounted) {
-        final trackCacheService = getIt<TrackCacheService>();
-        if (trackCacheService.retryCount.isNotEmpty) {
-          _refreshPlaylistData();
-        } else if (!_webSocketService.isConnected && timer.tick % 3 == 0) {
-          _refreshPlaylistData();
-        } else {
-          if (mounted) setState(() {});
-        }
-      }
-    });
-  }
-
-  void _stopAutoRefresh() {
-    _autoRefreshTimer?.cancel();
-    _autoRefreshTimer = null;
-  }
-
-  void _startTrackCountValidation() {
-    _trackCountValidationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        _validateTrackCounts();
-      }
-    });
-  }
-
-  void _stopTrackCountValidation() {
-    _trackCountValidationTimer?.cancel();
-    _trackCountValidationTimer = null;
-  }
 
   void _validateTrackCounts() {
     final musicProvider = _getMountedProvider<MusicProvider>();
@@ -893,7 +815,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       if (!completer.isCompleted) completer.complete();
     }
     _pendingOperations.clear();
-    _fetchingTrackDetails.clear();
+    _trackService.clearFetchingState();
     _trackIdToPlaylistTrackId.clear();
   }
 
@@ -905,46 +827,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
 
     try {
-      String? voteStartTimeStr;
-      String? voteEndTimeStr;
-      
-      if (_votingLicenseType == 'location_time') {
-        if (_votingStartTime != null) {
-          voteStartTimeStr = '${_votingStartTime!.hour.toString().padLeft(2, '0')}:${_votingStartTime!.minute.toString().padLeft(2, '0')}:${_votingStartTime!.second.toString().padLeft(2, '0')}';
-        }
-        if (_votingEndTime != null) {
-          voteEndTimeStr = '${_votingEndTime!.hour.toString().padLeft(2, '0')}:${_votingEndTime!.minute.toString().padLeft(2, '0')}:${_votingEndTime!.second.toString().padLeft(2, '0')}';
-        }
-      }
-
-      final request = PlaylistLicenseRequest(
-        licenseType: _votingLicenseType,
-        invitedUsers: _votingLicenseType != 'open' ? [] : null,
-        voteStartTime: voteStartTimeStr,
-        voteEndTime: voteEndTimeStr,
-        latitude: _votingLicenseType == 'location_time' ? _latitude : null,
-        longitude: _votingLicenseType == 'location_time' ? _longitude : null,
-        allowedRadiusMeters: _votingLicenseType == 'location_time' ? _allowedRadiusMeters : null,
-      );
-
-      final apiService = getIt<ApiService>();
-      await apiService.updatePlaylistLicense(widget.playlistId, auth.token!, request);
-      
+      await _votingService.applyVotingSettings(auth.token!);
       AppWidgets.showSnackBar(context, 'Voting settings updated successfully!', backgroundColor: Colors.green);
-      
-      await _loadVotingSettings();
-      
-      _votingInfo = PlaylistVotingInfo(
-        playlistId: widget.playlistId,
-        restrictions: VotingRestrictions(
-          licenseType: _votingLicenseType,
-          isInvited: true,
-          isInTimeWindow: _votingLicenseType != 'location_time' || _isInVotingTimeWindow(),
-          isInLocation: true,
-        ),
-        trackVotes: {},
-      );
-      
     } catch (e) {
       AppLogger.error('Failed to update voting settings', e, null, 'PlaylistDetailScreen');
       AppWidgets.showSnackBar(context, 'Failed to update voting settings: ${e.toString()}', backgroundColor: Colors.red);
@@ -953,93 +837,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     setState(() {});
   }
 
-  Future<void> _loadVotingSettings() async {
-    final auth = getProvider<AuthProvider>();
-    if (auth.token == null) {
-      AppLogger.warning('Cannot load voting settings - no authentication token', 'PlaylistDetailScreen');
-      return;
-    }
-
-    try {
-      final apiService = getIt<ApiService>();
-      final licenseResponse = await apiService.getPlaylistLicense(widget.playlistId, auth.token!);
-      
-      setState(() {
-        _votingLicenseType = licenseResponse.licenseType;
-        
-        if (licenseResponse.voteStartTime != null) {
-          final timeStr = licenseResponse.voteStartTime!;
-          final timeParts = timeStr.split(':');
-          if (timeParts.length >= 2) {
-            final hour = int.tryParse(timeParts[0]) ?? 0;
-            final minute = int.tryParse(timeParts[1]) ?? 0;
-            final second = timeParts.length > 2 ? (int.tryParse(timeParts[2]) ?? 0) : 0;
-            _votingStartTime = DateTime(2000, 1, 1, hour, minute, second);
-          }
-        }
-        if (licenseResponse.voteEndTime != null) {
-          final timeStr = licenseResponse.voteEndTime!;
-          final timeParts = timeStr.split(':');
-          if (timeParts.length >= 2) {
-            final hour = int.tryParse(timeParts[0]) ?? 0;
-            final minute = int.tryParse(timeParts[1]) ?? 0;
-            final second = timeParts.length > 2 ? (int.tryParse(timeParts[2]) ?? 0) : 0;
-            _votingEndTime = DateTime(2000, 1, 1, hour, minute, second);
-          }
-        }
-        
-        _latitude = licenseResponse.latitude;
-        _longitude = licenseResponse.longitude;
-        _allowedRadiusMeters = licenseResponse.allowedRadiusMeters;
-        
-        _isPublicVoting = licenseResponse.licenseType == 'open';
-      });
-      
-      AppLogger.info('Successfully loaded voting settings: ${licenseResponse.licenseType}', 'PlaylistDetailScreen');
-      
-    } catch (e) {
-      AppLogger.error('Failed to load voting settings: $e', null, null, 'PlaylistDetailScreen');
-    }
-  }
-
-  bool _isInVotingTimeWindow() {
-    final now = DateTime.now();
-    if (_votingStartTime != null && now.isBefore(_votingStartTime!)) return false;
-    if (_votingEndTime != null && now.isAfter(_votingEndTime!)) return false;
-    return true;
-  }
-
   Future<void> _selectVotingDateTime(bool isStartTime) async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-
-    if (date != null && mounted) {
-      final time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-
-      if (time != null) {
-        final dateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          time.hour,
-          time.minute,
-        );
-
-        setState(() {
-          if (isStartTime) {
-            _votingStartTime = dateTime;
-          } else {
-            _votingEndTime = dateTime;
-          }
-        });
-      }
+    final result = await _votingService.selectVotingDateTime(context, isStartTime);
+    if (result != null && mounted) {
+      setState(() {});
     }
   }
 

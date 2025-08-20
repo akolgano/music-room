@@ -6,220 +6,75 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/music_models.dart';
 import '../services/player_services.dart';
 import '../providers/theme_providers.dart';
-import 'dialog_widgets.dart';
 import 'votes_widgets.dart';
 import '../models/voting_models.dart';
-import 'state_widgets.dart';
+import 'action_widgets.dart';
 export 'player_widgets.dart';
+export 'action_widgets.dart';
+export 'card_widgets.dart';
+export 'app_core_widgets.dart';
 
-class CustomSingleChildScrollView extends StatefulWidget {
-  final Widget? child;
-  final Axis scrollDirection;
-  final bool reverse;
-  final ScrollPhysics? physics;
-  final EdgeInsets? padding;
+double _responsiveWidth(double size) => _responsive(size, type: 'w');
+double _responsiveHeight(double size) => _responsive(size, type: 'h');
+double _responsiveValue(double value) => _responsive(value);
 
-  const CustomSingleChildScrollView({
-    super.key,
-    this.child,
-    this.scrollDirection = Axis.vertical,
-    this.reverse = false,
-    this.physics,
-    this.padding,
-  });
-
-  @override
-  State<CustomSingleChildScrollView> createState() => _CustomSingleChildScrollViewState();
+double _responsive(double value, {String type = 'sp'}) {
+  if (kIsWeb) return value;
+  switch (type) {
+    case 'w': return value.w.toDouble();
+    case 'h': return value.h.toDouble();
+    case 'sp': default: return value.sp.toDouble();
+  }
 }
 
-class _CustomSingleChildScrollViewState extends State<CustomSingleChildScrollView> {
-  final ScrollController _scrollController = ScrollController();
+Color _getTrackCardColor(ColorScheme colorScheme, bool isSelected, bool isCurrentTrack) {
+  if (isSelected) return colorScheme.primary.withValues(alpha: 0.2);
+  if (isCurrentTrack) return colorScheme.primary.withValues(alpha: 0.1);
+  return colorScheme.surface;
+}
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scrollbar(
-      controller: _scrollController,
-      thumbVisibility: kIsWeb,
-      thickness: 12.0,
-      radius: const Radius.circular(8.0),
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        scrollDirection: widget.scrollDirection,
-        reverse: widget.reverse,
-        physics: widget.physics,
-        padding: widget.padding,
-        child: widget.child,
+Widget _buildImage(String? imageUrl, double size) {
+  if (imageUrl == null || imageUrl.isEmpty) {
+    return Container(
+      width: kIsWeb ? size : size.w.toDouble(),
+      height: kIsWeb ? size : size.h.toDouble(),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble())
+      ),
+      child: Icon(
+        Icons.music_note,
+        color: Colors.grey.shade600,
+        size: kIsWeb ? size * 0.5 : (size * 0.5).sp.toDouble()
       ),
     );
   }
-}
 
-class TrackActionsWidget extends StatelessWidget {
-  final bool showAddButton;
-  final bool showPlayButton;
-  final VoidCallback? onAdd;
-  final VoidCallback? onPlay;
-  final VoidCallback? onRemove;
-  final bool trackIsPlaying;
-  final bool isInPlaylist;
-
-  const TrackActionsWidget({
-    super.key,
-    required this.showAddButton,
-    required this.showPlayButton,
-    this.onAdd,
-    this.onPlay,
-    this.onRemove,
-    required this.trackIsPlaying,
-    required this.isInPlaylist,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final actions = <Widget>[];
-    
-    if (showPlayButton && onPlay != null) {
-      actions.add(AppWidgets._buildStyledIconButton(
-        trackIsPlaying ? Icons.pause : Icons.play_arrow, 
-        colorScheme.primary, 
-        20.0, 
-        onPlay!
-      ));
-    }
-    
-    if (showAddButton && onAdd != null && !isInPlaylist) {
-      actions.add(AppWidgets._buildStyledIconButton(
-        Icons.add_circle_outline, 
-        colorScheme.onSurface, 
-        18.0, 
-        onAdd!, 
-        tooltip: 'Add to Playlist'
-      ));
-    }
-    
-    if (isInPlaylist) {
-      actions.add(Padding(
-        padding: EdgeInsets.all(AppWidgets._responsiveWidth(4.0)),
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble()),
+    child: CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: kIsWeb ? size : size.w.toDouble(),
+      height: kIsWeb ? size : size.h.toDouble(),
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Container(
+        color: Colors.grey.shade300,
         child: Icon(
-          Icons.check_circle, 
-          color: Colors.green, 
-          size: AppWidgets._responsiveValue(18.0) 
+          Icons.music_note,
+          color: Colors.grey.shade600,
+          size: kIsWeb ? size * 0.5 : (size * 0.5).sp.toDouble()
         ),
-      ));
-    }
-    
-    if (onRemove != null) {
-      actions.add(AppWidgets._buildStyledIconButton(
-        Icons.remove_circle_outline, 
-        colorScheme.error, 
-        18.0, 
-        onRemove!
-      ));
-    }
-    
-    if (actions.isEmpty) return const SizedBox.shrink();
-    final displayedActions = actions.take(2).toList();
-    return Row(mainAxisSize: MainAxisSize.min, children: displayedActions);
-  }
-}
-
-class EmptyStateContentWidget extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final String? buttonText;
-  final VoidCallback? onButtonPressed;
-  final bool isConstrained;
-  final double iconSize;
-  final double titleSize;
-  final double spacing;
-
-  const EmptyStateContentWidget({
-    super.key,
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.buttonText,
-    this.onButtonPressed,
-    required this.isConstrained,
-    required this.iconSize,
-    required this.titleSize,
-    required this.spacing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: iconSize, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-          SizedBox(height: spacing),
-          Text(
-            title, 
-            style: AppWidgets._primaryStyle(context).copyWith(fontSize: titleSize, fontWeight: FontWeight.bold), 
-            textAlign: TextAlign.center,
-            maxLines: isConstrained ? 2 : null,
-            overflow: isConstrained ? TextOverflow.ellipsis : null,
-          ),
-          if (subtitle != null) ...[
-            SizedBox(height: spacing / 2), 
-            Text(
-              subtitle!, 
-              style: AppWidgets._secondaryStyle(context).copyWith(
-                fontSize: isConstrained ? AppWidgets._responsiveValue(10.0) : null,
-              ), 
-              textAlign: TextAlign.center,
-              maxLines: isConstrained ? 1 : null,
-              overflow: isConstrained ? TextOverflow.ellipsis : null,
-            )
-          ],
-          if (buttonText != null && onButtonPressed != null) ...[
-            SizedBox(height: isConstrained ? spacing / 2 : spacing),
-            isConstrained 
-              ? TextButton(
-                  onPressed: onButtonPressed,
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppWidgets._responsiveWidth(8.0),
-                      vertical: AppWidgets._responsiveHeight(2.0),
-                    ),
-                    minimumSize: Size.zero,
-                  ),
-                  child: Text(
-                    buttonText!,
-                    style: TextStyle(
-                      fontSize: AppWidgets._responsiveValue(10.0),
-                      color: theme.colorScheme.primary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )
-              : ElevatedButton(
-                  onPressed: onButtonPressed, 
-                  child: Text(
-                    buttonText!, 
-                    style: TextStyle(fontSize: AppWidgets._responsiveValue(14.0)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  )
-                ),
-          ],
-        ],
       ),
-    );
-  }
+      errorWidget: (context, url, error) => Container(
+        color: Colors.grey.shade300,
+        child: Icon(
+          Icons.music_note,
+          color: Colors.grey.shade600,
+          size: kIsWeb ? size * 0.5 : (size * 0.5).sp.toDouble()
+        ),
+      ),
+    ),
+  );
 }
 
 class TrackCardWidget extends StatelessWidget {
@@ -273,23 +128,23 @@ class TrackCardWidget extends StatelessWidget {
 
         return Container(
           margin: EdgeInsets.symmetric(
-            vertical: AppWidgets._responsiveHeight(2.0),
-            horizontal: AppWidgets._responsiveWidth(4.0),
+            vertical: _responsiveHeight(2.0),
+            horizontal: _responsiveWidth(4.0),
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.0),
-            color: AppWidgets._getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
+            color: _getTrackCardColor(colorScheme, isSelected, isCurrentTrack),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(8.0),
             onTap: onTap,
             child: Padding(
-              padding: EdgeInsets.all(AppWidgets._responsiveWidth(8.0)),
+              padding: EdgeInsets.all(_responsiveWidth(8.0)),
               child: Row(
                 children: [
                   if (onSelectionChanged != null)
                     Container(
-                      margin: EdgeInsets.only(right: AppWidgets._responsiveWidth(8.0)),
+                      margin: EdgeInsets.only(right: _responsiveWidth(8.0)),
                       child: Checkbox(
                         value: isSelected,
                         onChanged: onSelectionChanged,
@@ -300,10 +155,10 @@ class TrackCardWidget extends StatelessWidget {
                     child: SizedBox(
                       width: 56,
                       height: 56,
-                      child: AppWidgets._buildImage(context, track.imageUrl, 56, colorScheme.surface, Icons.music_note),
+                      child: _buildImage(track.imageUrl, 56),
                     ),
                   ),
-                  SizedBox(width: AppWidgets._responsiveWidth(12.0)),
+                  SizedBox(width: _responsiveWidth(12.0)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +167,7 @@ class TrackCardWidget extends StatelessWidget {
                           track.name,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            fontSize: AppWidgets._responsiveValue(14.0),
+                            fontSize: _responsiveValue(14.0),
                             color: colorScheme.onSurface,
                           ),
                           maxLines: 1,
@@ -322,7 +177,7 @@ class TrackCardWidget extends StatelessWidget {
                           Text(
                             displayArtist,
                             style: TextStyle(
-                              fontSize: AppWidgets._responsiveValue(12.0),
+                              fontSize: _responsiveValue(12.0),
                               color: colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                             maxLines: 1,
@@ -336,7 +191,7 @@ class TrackCardWidget extends StatelessWidget {
                     children: [
                       if (showVotingControls && playlistId != null)
                         Container(
-                          margin: EdgeInsets.only(bottom: AppWidgets._responsiveHeight(4.0)),
+                          margin: EdgeInsets.only(bottom: _responsiveHeight(4.0)),
                           child: TrackVotingControls(
                             playlistId: playlistId!,
                             trackId: track.id,
@@ -371,702 +226,4 @@ class TrackCardWidget extends StatelessWidget {
       },
     );
   }
-}
-
-class AppWidgets {
-  static IconButton _buildStyledIconButton(
-    IconData icon,
-    Color color,
-    double size,
-    VoidCallback onPressed, {
-    String? tooltip,
-  }) => IconButton(
-    icon: Icon(icon, color: color, size: _responsiveValue(size)),
-    onPressed: onPressed,
-    tooltip: tooltip,
-    padding: EdgeInsets.all(_responsiveWidth(4.0)),
-    constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
-  );
-  
-  static TextStyle _primaryStyle(BuildContext context) => TextStyle(
-    color: Theme.of(context).colorScheme.onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
-  );
-  
-  static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
-    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
-  );
-
-
-  static double _responsiveWidth(double size) => _responsive(size, type: 'w');
-  static double _responsiveHeight(double size) => _responsive(size, type: 'h');
-  static double _responsiveValue(double value) => _responsive(value);
-  
-  static double _responsive(double value, {String type = 'sp'}) {
-    if (kIsWeb) return value;
-    switch (type) {
-      case 'w': return value.w.toDouble();
-      case 'h': return value.h.toDouble();
-      case 'sp': default: return value.sp.toDouble();
-    }
-  }
-
-  static Color _getTrackCardColor(ColorScheme colorScheme, bool isSelected, bool isCurrentTrack) {
-    if (isSelected) return colorScheme.primary.withValues(alpha: 0.2);
-    if (isCurrentTrack) return colorScheme.primary.withValues(alpha: 0.1);
-    return colorScheme.surface;
-  }
-
-  static Widget textField({
-    required BuildContext context, 
-    required TextEditingController controller,
-    required String labelText,
-    String? hintText,
-    IconData? prefixIcon,
-    bool obscureText = false,
-    String? Function(String?)? validator, 
-    ValueChanged<String>? onChanged, 
-    ValueChanged<String>? onFieldSubmitted,
-    int minLines = 1, 
-    int maxLines = 1
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      onChanged: onChanged,
-      onFieldSubmitted: onFieldSubmitted,
-      minLines: minLines, 
-      maxLines: maxLines,
-      style: Theme.of(context).textTheme.bodyLarge!,
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Theme.of(context).colorScheme.primary) : null,
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
-        ),
-        labelStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
-        hintStyle: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.0.w, 
-          vertical: 6.0.h
-        ),
-      ),
-    );
-  }
-
-  static Widget _buildImage(
-    BuildContext context,
-    String? imageUrl,
-    double size,
-    Color backgroundColor,
-    IconData defaultIcon,
-  ) {
-    return Container(
-      width: kIsWeb ? size : size.w.toDouble(), 
-      height: kIsWeb ? size : size.h.toDouble(),
-      decoration: BoxDecoration(
-        color: backgroundColor, 
-        borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble())
-      ),
-      child: imageUrl?.isNotEmpty == true
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(kIsWeb ? 8.0 : 8.r.toDouble()), 
-              child: CachedNetworkImage(imageUrl: imageUrl!, fit: BoxFit.cover)
-            )
-          : Icon(
-              defaultIcon, 
-              color: Theme.of(context).colorScheme.onSurface, 
-              size: kIsWeb ? size * 0.5 : (size * 0.5).sp.toDouble()
-            ),
-    );
-  }
-
-
-  static Widget loading([String? message]) => StateWidgets.loading(message);
-
-  static Widget primaryButton({
-    required BuildContext context,
-    required String text,
-    required VoidCallback? onPressed,
-    IconData? icon,
-    bool isLoading = false,
-    bool fullWidth = true,
-  }) {
-    final theme = Theme.of(context);
-    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
-    final scaledHeight = (40.0 * textScaleFactor).clamp(32.0, 72.0);
-    
-    final content = isLoading 
-      ? SizedBox(
-          width: (16.0 * textScaleFactor).clamp(12.0, 24.0), 
-          height: (16.0 * textScaleFactor).clamp(12.0, 24.0), 
-          child: CircularProgressIndicator(
-            strokeWidth: 2, 
-            color: theme.colorScheme.onPrimary
-          )
-        )
-      : Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: (16.0 * textScaleFactor).clamp(14.0, 22.0)), 
-              SizedBox(width: 8.0.w)
-            ],
-            Flexible(
-              child: Text(
-                text, 
-                overflow: TextOverflow.visible,
-                textAlign: TextAlign.center, 
-                maxLines: 1
-              )
-            ),
-          ],
-        );
-    
-    final button = ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      style: theme.elevatedButtonTheme.style?.copyWith(
-        minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
-        padding: WidgetStateProperty.all(EdgeInsets.symmetric(
-          horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
-          vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
-        )),
-      ),
-      child: content,
-    );
-    
-    return fullWidth ? SizedBox(
-      width: double.infinity, 
-      height: scaledHeight, 
-      child: button
-    ) : button;
-  }
-
-  static Widget secondaryButton({
-    required BuildContext context, 
-    required String text, 
-    required VoidCallback? onPressed, 
-    IconData? icon, 
-    bool fullWidth = true,
-  }) {
-    final theme = Theme.of(context);
-    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
-    final scaledHeight = (40.0 * textScaleFactor).clamp(32.0, 72.0);
-    
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: (16.0 * textScaleFactor).clamp(14.0, 22.0)), 
-          SizedBox(width: 8.0.w)
-        ],
-        Flexible(
-          child: Text(
-            text, 
-            overflow: TextOverflow.visible,
-            textAlign: TextAlign.center, 
-            maxLines: 1
-          )
-        ),
-      ],
-    );
-    
-    final button = OutlinedButton(
-      onPressed: onPressed,
-      style: theme.outlinedButtonTheme.style?.copyWith(
-        minimumSize: WidgetStateProperty.all(Size(88 * textScaleFactor, scaledHeight)),
-        padding: WidgetStateProperty.all(EdgeInsets.symmetric(
-          horizontal: (16.0 * textScaleFactor).clamp(8.0, 24.0),
-          vertical: (8.0 * textScaleFactor).clamp(4.0, 16.0),
-        )),
-      ),
-      child: content,
-    );
-    
-    return fullWidth ? SizedBox(
-      width: double.infinity, 
-      height: scaledHeight, 
-      child: button
-    ) : button;
-  }
-
-  static Widget infoBanner({
-    required String title,
-    required String message,
-    required IconData icon,
-    Color? color,
-    String? actionText,
-    VoidCallback? onAction,
-  }) {
-    return Builder(builder: (context) {
-      final colorScheme = Theme.of(context).colorScheme;
-      final bannerColor = color ?? colorScheme.primary;
-      return Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: _responsiveWidth(16.0), 
-          vertical: _responsiveHeight(6.0)
-        ),
-        padding: EdgeInsets.all(_responsiveWidth(16.0)),
-        decoration: BoxDecoration(
-          color: bannerColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(_responsiveWidth(12.0)),
-          border: Border.all(color: bannerColor.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: bannerColor, size: _responsiveValue(20.0)),
-                SizedBox(width: _responsiveWidth(8.0)),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: bannerColor,
-                      fontSize: _responsiveValue(16.0),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: _responsiveHeight(6.0)),
-            Text(
-              message,
-              style: TextStyle(
-                color: bannerColor,
-                fontSize: _responsiveValue(14.0),
-              ),
-            ),
-            if (actionText != null && onAction != null) ...[
-              SizedBox(height: _responsiveHeight(8.0)),
-              TextButton(
-                onPressed: onAction,
-                child: Text(
-                  actionText,
-                  style: TextStyle(
-                    color: bannerColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      );
-    });
-  }
-
-  static Widget errorBanner({
-    required String message,
-    VoidCallback? onDismiss,
-  }) {
-    return Builder(builder: (context) {
-      final colorScheme = Theme.of(context).colorScheme;
-      final errorColor = colorScheme.error;
-      return Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: _responsiveWidth(16.0), 
-          vertical: _responsiveHeight(6.0)
-        ),
-        padding: EdgeInsets.all(_responsiveWidth(16.0)),
-        decoration: BoxDecoration(
-          color: errorColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(_responsiveWidth(12.0)),
-          border: Border.all(color: errorColor.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.error, color: errorColor, size: _responsiveValue(20.0)),
-            SizedBox(width: _responsiveWidth(8.0)),
-            Expanded(
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: errorColor,
-                  fontSize: _responsiveValue(14.0),
-                ),
-              ),
-            ),
-            if (onDismiss != null)
-              IconButton(
-                onPressed: onDismiss,
-                icon: Icon(Icons.close, color: errorColor, size: _responsiveValue(20.0)),
-              ),
-          ],
-        ),
-      );
-    });
-  }
-
-  static void showSnackBar(BuildContext context, String message, {Color? backgroundColor}) {
-    final theme = Theme.of(context);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    scaffoldMessenger.showSnackBar(SnackBar(
-      content: Text(message, style: TextStyle(fontSize: _responsiveValue(14.0))),
-      backgroundColor: backgroundColor ?? theme.colorScheme.primary,
-      behavior: SnackBarBehavior.fixed,
-      duration: const Duration(seconds: 2),
-      action: SnackBarAction(
-        label: 'Dismiss', 
-        textColor: backgroundColor != null ? Colors.white : theme.colorScheme.onPrimary,
-        onPressed: () => scaffoldMessenger.hideCurrentSnackBar(),
-      ),
-    ));
-  }
-
-
-static Widget emptyState({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    String? buttonText,
-    VoidCallback? onButtonPressed,
-  }) {
-    return Builder(builder: (context) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final hasFiniteHeight = constraints.maxHeight.isFinite;
-          final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
-          final iconSize = _responsiveValue(isConstrained ? 24.0 : 64.0);
-          final titleSize = _responsiveValue(isConstrained ? 12.0 : 18.0);
-          final spacing = _responsiveHeight(isConstrained ? 4.0 : 12.0);
-          final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
-          
-          Widget content = Padding(
-            padding: EdgeInsets.all(padding),
-            child: EmptyStateContentWidget(
-              icon: icon,
-              title: title,
-              subtitle: subtitle,
-              buttonText: buttonText,
-              onButtonPressed: onButtonPressed,
-              isConstrained: isConstrained,
-              iconSize: iconSize,
-              titleSize: titleSize,
-              spacing: spacing,
-            ),
-          );
-          
-          if (!hasFiniteHeight) {
-            return Center(child: content);
-          } else if (constraints.maxHeight > 0) {
-            return SizedBox(
-              height: constraints.maxHeight,
-              child: isConstrained
-                  ? SingleChildScrollView(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                          ),
-                          child: IntrinsicHeight(child: content),
-                        ),
-                      ),
-                    )
-                  : Center(child: content),
-            );
-          } else {
-            return SizedBox(height: 150, child: Center(child: content));
-          }
-        },
-      );
-    });
-  }
-
-  static Widget errorState({required String message, VoidCallback? onRetry, String? retryText}) {
-    return emptyState(
-      icon: Icons.error_outline,
-      title: message,
-      buttonText: onRetry != null ? (retryText ?? 'Retry') : null,
-      onButtonPressed: onRetry,
-    );
-  }
-
-  static Widget refreshableList<E>({
-    required List<E> items,
-    required Widget Function(E, int) itemBuilder,
-    required Future<void> Function() onRefresh,
-    Widget? emptyState,
-    EdgeInsets? padding,
-  }) {
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: items.isEmpty && emptyState != null
-          ? LayoutBuilder(
-              builder: (context, constraints) {
-                return CustomSingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Container(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight.isFinite
-                          ? constraints.maxHeight
-                          : MediaQuery.of(context).size.height * 0.5,
-                    ),
-                    child: emptyState,
-                  ),
-                );
-              },
-            )
-          : CustomSingleChildScrollView(
-              padding: padding,
-              child: Column(
-                children: items.asMap().entries.map((entry) => 
-                  itemBuilder(entry.value, entry.key)
-                ).toList(),
-              ),
-            ),
-    );
-  }
-
-  static Widget tabScaffold({
-    required List<Tab> tabs,
-    required List<Widget> tabViews,
-    TabController? controller,
-  }) {
-    return DefaultTabController(
-      length: tabs.length,
-      child: Column(
-        children: [
-          TabBar(controller: controller, tabs: tabs),
-          Expanded(
-            child: TabBarView(
-              controller: controller,
-              children: tabViews,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget sectionTitle(String title) {
-    return Builder(builder: (context) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(
-          title,
-          style: _primaryStyle(context).copyWith(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
-    });
-  }
-
-  static Widget quickActionCard({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Builder(builder: (context) {
-      return Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: color, size: 32),
-                const SizedBox(height: 8),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: _primaryStyle(context).copyWith(fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    });
-  }
-
-  static Widget playlistCard({
-    required Playlist playlist,
-    VoidCallback? onTap,
-    VoidCallback? onPlay,
-    VoidCallback? onCreatorTap,
-    VoidCallback? onDelete,
-    bool showPlayButton = false,
-    bool showDeleteButton = false,
-    String? currentUsername,
-  }) {
-    return Builder(builder: (context) {
-      return Card(
-        child: ListTile(
-          leading: Container(
-            width: 56,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.library_music),
-          ),
-          title: Text(playlist.name, style: _primaryStyle(context)),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${playlist.tracks.length} tracks', style: _secondaryStyle(context)),
-              GestureDetector(
-                onTap: onCreatorTap,
-                child: Text(
-                  'by ${playlist.creator}',
-                  style: _secondaryStyle(context).copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    decoration: TextDecoration.underline,
-                    decorationColor: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (showPlayButton && onPlay != null)
-                IconButton(
-                  icon: Icon(Icons.play_arrow, color: Theme.of(context).colorScheme.primary),
-                  onPressed: onPlay,
-                ),
-              if (showDeleteButton && 
-                  onDelete != null && 
-                  playlist.creator == currentUsername)
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: onDelete,
-                ),
-            ],
-          ),
-          onTap: onTap,
-        ),
-      );
-    });
-  }
-
-  static Widget settingsSection({
-    required String title,
-    required List<Widget> items,
-  }) {
-    return Builder(builder: (context) {
-      return Card(
-        color: Theme.of(context).colorScheme.surface,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                title, style: _primaryStyle(context).copyWith(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ...items,
-          ],
-        ),
-      );
-    });
-  }
-
-  static Widget settingsItem({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required VoidCallback onTap,
-    Color? color,
-  }) {
-    return Builder(builder: (context) {
-      final itemColor = color ?? Theme.of(context).colorScheme.onSurface;
-      return ListTile(
-        leading: Icon(icon, color: itemColor),
-        title: Text(title, style: TextStyle(color: itemColor)),
-        subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle(context)) : null,
-        onTap: onTap,
-        trailing: Icon(Icons.chevron_right, color: itemColor.withValues(alpha: 0.5)),
-      );
-    });
-  }
-
-  static Widget switchTile({
-    required bool value,
-    required ValueChanged<bool> onChanged,
-    required String title,
-    String? subtitle,
-    IconData? icon,
-  }) {
-    return Builder(builder: (context) {
-      return ListTile(
-        leading: icon != null ? Icon(icon, color: Theme.of(context).colorScheme.primary) : null,
-        title: Text(title, style: _primaryStyle(context)),
-        subtitle: subtitle != null ? Text(subtitle, style: _secondaryStyle(context)) : null,
-        trailing: Switch(value: value, onChanged: onChanged, activeTrackColor: Theme.of(context).colorScheme.primary),
-      );
-    });
-  }
-
-  static Future<String?> showTextInputDialog(
-    BuildContext context, {
-    required String title,
-    String? initialValue,
-    String? hintText,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) => DialogWidgets.showTextInputDialog(
-    context,
-    title: title,
-    initialValue: initialValue,
-    hintText: hintText,
-    maxLines: maxLines,
-    validator: validator,
-  );
-
-  static Future<bool> showConfirmDialog(
-    BuildContext context, {
-    required String title,
-    required String message,
-    bool isDangerous = false,
-    String confirmText = 'Confirm',
-    String cancelText = 'Cancel',
-  }) => DialogWidgets.showConfirmDialog(
-    context,
-    title: title,
-    message: message,
-    isDangerous: isDangerous,
-    confirmText: confirmText,
-    cancelText: cancelText,
-  );
-
-
 }

@@ -21,7 +21,6 @@ class ActivityService {
       );
       await _api.logActivity(token, request);
     } catch (e) {
-      // Silent fail for activity logging to not disrupt user experience
     }
   }
 
@@ -61,7 +60,6 @@ class ActivityService {
     );
   }
 
-  // Convenience methods that automatically get token from AuthProvider
   Future<void> logActivity({
     required String action,
     String? details,
