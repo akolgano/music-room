@@ -34,30 +34,46 @@ class TrackCacheService {
   TrackRetryConfig _retryConfig = TrackRetryConfig.standard;
 
   Future<Track?> getTrackDetails(String deezerTrackId, String token, ApiService apiService) async {
+    return await _getCachedTrack(deezerTrackId) ?? 
+           await _getOngoingRequest(deezerTrackId) ?? 
+           await _fetchAndCacheTrack(deezerTrackId, token, apiService);
+  }
+
+  Track? _getCachedTrack(String deezerTrackId) {
     if (_trackCache.containsKey(deezerTrackId)) {
       AppLogger.debug('Track $deezerTrackId found in cache', 'TrackCacheService');
       return _trackCache[deezerTrackId];
     }
+    return null;
+  }
 
+  Future<Track?> _getOngoingRequest(String deezerTrackId) async {
     if (_ongoingRequests.containsKey(deezerTrackId)) {
       AppLogger.debug('Track $deezerTrackId already being fetched, waiting for result', 'TrackCacheService');
       return await _ongoingRequests[deezerTrackId];
     }
+    return null;
+  }
 
+  Future<Track?> _fetchAndCacheTrack(String deezerTrackId, String token, ApiService apiService) async {
     AppLogger.debug('Fetching track details for $deezerTrackId from API', 'TrackCacheService');
 
-    final Future<Track?> request = _fetchTrackWithRetry(deezerTrackId, token, apiService);
+    final request = _fetchTrackWithRetry(deezerTrackId, token, apiService);
     _ongoingRequests[deezerTrackId] = request;
 
     try {
       final track = await request;
-      if (track != null) {
-        _trackCache[deezerTrackId] = track;
-        AppLogger.debug('Track $deezerTrackId cached successfully', 'TrackCacheService');
-      }
+      _cacheTrackIfValid(deezerTrackId, track);
       return track;
     } finally {
       _ongoingRequests.remove(deezerTrackId);
+    }
+  }
+
+  void _cacheTrackIfValid(String deezerTrackId, Track? track) {
+    if (track != null) {
+      _trackCache[deezerTrackId] = track;
+      AppLogger.debug('Track $deezerTrackId cached successfully', 'TrackCacheService');
     }
   }
 
