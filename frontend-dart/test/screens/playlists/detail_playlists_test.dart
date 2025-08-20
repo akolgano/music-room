@@ -56,6 +56,7 @@ class MockMusicProvider extends MusicProvider {
     notifyListeners();
   }
 
+  @override
   Future<bool> deletePlaylist(String playlistId, String token) async {
     return true;
   }

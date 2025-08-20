@@ -140,7 +140,7 @@ class PlaylistVotingService {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
 
-    if (date != null) {
+    if (date != null && context.mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),

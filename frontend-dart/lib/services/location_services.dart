@@ -70,48 +70,62 @@ class LocationService {
   }
 
   static Future<LocationSuggestion?> getCurrentLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (serviceEnabled) {
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.denied) {
-          permission = await Geolocator.requestPermission();
-        }
+    return await _tryGpsLocation() ?? 
+           await _tryIpLocation() ?? 
+           _throwLocationError();
+  }
 
-        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-          final Position position = await Geolocator.getCurrentPosition(
-            locationSettings: const LocationSettings(
-              accuracy: LocationAccuracy.medium,
-              timeLimit: Duration(seconds: 15),
-            ),
-          );
-          
-          final gpsResult = await _reverseGeocode(position.latitude, position.longitude);
-          if (gpsResult != null) {
-            return gpsResult;
-          }
-        }
+  static Future<LocationSuggestion?> _tryGpsLocation() async {
+    try {
+      final position = await _getGpsPosition();
+      if (position != null) {
+        return await _reverseGeocode(position.latitude, position.longitude);
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('GPS location failed, trying IP fallback: $e');
-      }
+      _debugLog('GPS location failed, trying IP fallback: $e');
+    }
+    return null;
+  }
+
+  static Future<Position?> _getGpsPosition() async {
+    if (!await Geolocator.isLocationServiceEnabled()) return null;
+    
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
     }
 
+    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+    }
+    return null;
+  }
+
+  static Future<LocationSuggestion?> _tryIpLocation() async {
     try {
-      final ipResult = await getLocationByIP();
-      if (ipResult != null) {
-        if (kDebugMode) {
-          debugPrint('Location detected via IP: ${ipResult.displayName}');
-        }
-        return ipResult;
+      final result = await getLocationByIP();
+      if (result != null) {
+        _debugLog('Location detected via IP: ${result.displayName}');
       }
+      return result;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('IP location also failed: $e');
-      }
+      _debugLog('IP location also failed: $e');
+      return null;
     }
+  }
 
+  static void _debugLog(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
+  }
+
+  static Never _throwLocationError() {
     String errorMessage = 'Unable to detect location automatically.';
     if (kIsWeb) {
       errorMessage += ' GPS requires HTTPS and location permissions. Tried IP-based detection as backup.';

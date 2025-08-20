@@ -20,6 +20,13 @@ class _PendingNotification {
   });
 }
 
+class OverlayInfo {
+  final OverlayState overlay;
+  final ThemeData theme;
+
+  OverlayInfo({required this.overlay, required this.theme});
+}
+
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
@@ -103,40 +110,55 @@ class NotificationService {
 
   void _showNotificationNow(String message, String? title, Map<String, dynamic>? data, 
                            Duration duration, Color? backgroundColor, IconData? icon) {
+    final overlayInfo = _getOverlayInfo();
+    if (overlayInfo == null) return;
+
+    _prepareForNewNotification();
+    _displayNotification(overlayInfo, message, title, data, backgroundColor, icon);
+    _scheduleHiding(duration);
+    
+    AppLogger.debug('Showing notification: $title - $message', 'NotificationService');
+  }
+
+  OverlayInfo? _getOverlayInfo() {
     final context = navigatorKey.currentContext;
     if (context == null) {
       AppLogger.debug('Cannot show notification: no context available', 'NotificationService');
-      return;
+      return null;
     }
-
-    _hideCurrentNotification();
 
     final overlay = Overlay.maybeOf(context);
     if (overlay == null) {
       AppLogger.debug('Cannot show notification: no Overlay widget found in context', 'NotificationService');
-      return;
+      return null;
     }
-    
-    final theme = Theme.of(context);
-    
+
+    return OverlayInfo(overlay: overlay, theme: Theme.of(context));
+  }
+
+  void _prepareForNewNotification() {
+    _hideCurrentNotification();
+  }
+
+  void _displayNotification(OverlayInfo overlayInfo, String message, String? title, 
+                          Map<String, dynamic>? data, Color? backgroundColor, IconData? icon) {
     _currentOverlay = OverlayEntry(
       builder: (context) => _buildNotificationWidget(
         context,
         message: message,
         title: title,
         data: data,
-        theme: theme,
+        theme: overlayInfo.theme,
         backgroundColor: backgroundColor,
         icon: icon,
       ),
     );
 
-    overlay.insert(_currentOverlay!);
-    AppLogger.debug('Showing notification: $title - $message', 'NotificationService');
+    overlayInfo.overlay.insert(_currentOverlay!);
+  }
 
-    _hideTimer = Timer(duration, () {
-      _hideCurrentNotification();
-    });
+  void _scheduleHiding(Duration duration) {
+    _hideTimer = Timer(duration, _hideCurrentNotification);
   }
 
 

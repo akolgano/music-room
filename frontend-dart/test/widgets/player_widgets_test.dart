@@ -14,8 +14,8 @@ class MockMusicPlayerService extends ChangeNotifier {
   bool _hasPlaylist = false;
   double _playbackSpeed = 1.0;
   bool _isUsingFullAudio = false;
-  int _currentIndex = 0;
-  List<dynamic> _playlist = List.filled(10, null);
+  final int _currentIndex = 0;
+  final List<dynamic> _playlist = List.filled(10, null);
 
   Track? get currentTrack => _currentTrack;
 

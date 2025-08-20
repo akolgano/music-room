@@ -497,9 +497,9 @@ class AppWidgets {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: playlist.description != null && playlist.description!.isNotEmpty
+          subtitle: playlist.description.isNotEmpty
               ? Text(
-                  playlist.description!,
+                  playlist.description,
                   style: _secondaryStyle(context),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
