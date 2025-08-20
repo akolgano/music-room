@@ -12,7 +12,7 @@ import '../providers/profile_providers.dart';
 import '../providers/theme_providers.dart';
 import '../providers/voting_providers.dart';
 import '../providers/connectivity_providers.dart';
-import '../providers/animation_providers.dart';
+import 'animations_core.dart';
 import '../services/player_services.dart';
 import '../models/music_models.dart';
 import '../screens/auth/auth_screens.dart';

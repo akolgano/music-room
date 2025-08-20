@@ -1,8 +1,8 @@
 import '../core/navigation_core.dart';
 import 'package:flutter/material.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../core/theme_core.dart';
+import '../services/color_palette_service.dart';
 
 class DynamicThemeProvider with ChangeNotifier {
   Color _primaryColor = AppTheme.primary;
@@ -195,13 +195,13 @@ class DynamicThemeProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
+      final ColorPalette colorPalette = await ColorPaletteService.extractColorsFromImageProvider(
         CachedNetworkImageProvider(imageUrl),
-        size: const Size(100, 100),
+        targetSize: const Size(100, 100),
         maximumColorCount: 32, 
       );
 
-      final colorScheme = _generateColorScheme(paletteGenerator);
+      final colorScheme = _generateColorScheme(colorPalette);
       _colorCache[imageUrl] = colorScheme;
       _applyColorScheme(colorScheme);
     } catch (e) {
@@ -213,8 +213,8 @@ class DynamicThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  ColorScheme _generateColorScheme(PaletteGenerator paletteGenerator) {
-    Color primary = _selectBestColor(paletteGenerator);
+  ColorScheme _generateColorScheme(ColorPalette colorPalette) {
+    Color primary = _selectBestColor(colorPalette);
     primary = _adjustColorForDarkTheme(primary);
 
     final HSLColor hslPrimary = HSLColor.fromColor(primary);
@@ -243,15 +243,15 @@ class DynamicThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Color _selectBestColor(PaletteGenerator paletteGenerator) {
+  Color _selectBestColor(ColorPalette colorPalette) {
     final colorCandidates = [
-      paletteGenerator.vibrantColor?.color,
-      paletteGenerator.lightVibrantColor?.color,
-      paletteGenerator.darkVibrantColor?.color,
-      paletteGenerator.dominantColor?.color,
-      paletteGenerator.mutedColor?.color,
-      paletteGenerator.lightMutedColor?.color,
-      paletteGenerator.darkMutedColor?.color,
+      colorPalette.vibrantColor,
+      colorPalette.lightVibrantColor,
+      colorPalette.darkVibrantColor,
+      colorPalette.dominantColor,
+      colorPalette.mutedColor,
+      colorPalette.lightMutedColor,
+      colorPalette.darkMutedColor,
     ];
 
     for (final color in colorCandidates) {

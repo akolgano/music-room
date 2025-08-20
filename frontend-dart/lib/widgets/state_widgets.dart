@@ -155,47 +155,49 @@ class EmptyStateContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: iconSize, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-        SizedBox(height: spacing),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: titleSize,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-          ),
-          textAlign: TextAlign.center,
-        ),
-        if (subtitle != null) ...[
-          SizedBox(height: spacing / 2),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: iconSize, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+          SizedBox(height: spacing),
           Text(
-            subtitle!,
+            title,
             style: TextStyle(
-              fontSize: titleSize * 0.8,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              fontSize: titleSize,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),
-        ],
-        if (buttonText != null && onButtonPressed != null) ...[
-          SizedBox(height: spacing * 1.5),
-          if (!isConstrained)
-            ElevatedButton(
-              onPressed: onButtonPressed,
-              child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.9)),
-            )
-          else
-            TextButton(
-              onPressed: onButtonPressed,
-              child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.8)),
+          if (subtitle != null) ...[
+            SizedBox(height: spacing / 2),
+            Text(
+              subtitle!,
+              style: TextStyle(
+                fontSize: titleSize * 0.8,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+              textAlign: TextAlign.center,
             ),
+          ],
+          if (buttonText != null && onButtonPressed != null) ...[
+            SizedBox(height: spacing * 1.5),
+            if (!isConstrained)
+              ElevatedButton(
+                onPressed: onButtonPressed,
+                child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.9)),
+              )
+            else
+              TextButton(
+                onPressed: onButtonPressed,
+                child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.8)),
+              ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

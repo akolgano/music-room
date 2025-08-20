@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-"""
-clean_fixture.py
-"""
-
 import json
+
 
 def clean_sample_fixture():
     fixture_paths = [
@@ -44,6 +41,7 @@ def clean_sample_fixture():
     
     print("No fixture file found")
     return False
+
 
 if __name__ == "__main__":
     clean_sample_fixture()

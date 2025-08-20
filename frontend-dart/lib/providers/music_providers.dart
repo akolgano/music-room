@@ -131,13 +131,14 @@ class MusicProvider extends BaseProvider {
     bool isPublic, 
     String token, 
     String licenseType, 
+    bool isEvent,
     [String? deviceUuid]
   ) async {
-    AppLogger.debug('Creating playlist: $name (public: $isPublic)', 'MusicProvider');
+    AppLogger.debug('Creating playlist: $name (public: $isPublic, event: $isEvent)', 'MusicProvider');
     final result = await executeAsync(
       () async {
         final id = await _musicService.createPlaylist(
-          name, description, isPublic, token, licenseType, deviceUuid
+          name, description, isPublic, token, licenseType, isEvent, deviceUuid
         );
         AppLogger.debug('Playlist created with ID: $id', 'MusicProvider');
         await fetchAllPlaylists(token);
@@ -427,6 +428,7 @@ class MusicProvider extends BaseProvider {
     bool? isPublic,
     List<Track>? tracks,
     String? licenseType,
+    bool? isEvent,
     List<User>? sharedWith,
   }) {
     final index = _playlists.indexWhere((p) => p.id == playlistId);
@@ -441,6 +443,7 @@ class MusicProvider extends BaseProvider {
         tracks: tracks ?? currentPlaylist.tracks,
         imageUrl: currentPlaylist.imageUrl,
         licenseType: licenseType ?? currentPlaylist.licenseType,
+        isEvent: isEvent ?? currentPlaylist.isEvent,
         sharedWith: sharedWith ?? currentPlaylist.sharedWith,
       );
       notifyListeners();

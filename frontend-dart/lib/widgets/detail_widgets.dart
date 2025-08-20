@@ -188,6 +188,7 @@ class PlaylistDetailWidgets {
     VoidCallback? onMoveDown,
     bool canReorder = false,
     String? playlistId,
+    bool isEvent = false,
     Key? key,
   }) {
     final track = playlistTrack.track;
@@ -240,7 +241,7 @@ class PlaylistDetailWidgets {
                 ],
               ),
             ),
-            if (playlistId != null) ...[
+            if (playlistId != null && isEvent) ...[
               SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 7.0, medium: 8.0)),
               SizedBox(
                 width: 60,

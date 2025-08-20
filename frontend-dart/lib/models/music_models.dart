@@ -123,6 +123,7 @@ class Playlist {
   final String? imageUrl;
   final String licenseType;
   final List<User> sharedWith;
+  final bool isEvent;
 
   const Playlist({
     required this.id,
@@ -134,6 +135,7 @@ class Playlist {
     this.imageUrl,
     this.licenseType = 'open',
     this.sharedWith = const [],
+    this.isEvent = false,
   });
 
   factory Playlist.fromJson(Map<String, dynamic> json) => Playlist(
@@ -146,6 +148,7 @@ class Playlist {
     imageUrl: json['image_url'] as String?,
     licenseType: json['license_type'] as String? ?? 'open',
     sharedWith: (json['shared_with'] as List<dynamic>?) ?.map((u) => User.fromJson(u as Map<String, dynamic>)).toList() ?? [],
+    isEvent: json['event'] ?? false,
   );
 
   bool canEdit(String? username) {
@@ -164,6 +167,7 @@ class Playlist {
     'image_url': imageUrl,
     'license_type': licenseType,
     'shared_with': sharedWith.map((u) => u.toJson()).toList(),
+    'event': isEvent,
   };
 }
 

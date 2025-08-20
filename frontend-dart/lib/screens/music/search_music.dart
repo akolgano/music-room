@@ -677,6 +677,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
             true, 
             auth.token!,
             'open',
+            false,
           );
         if (playlistId?.isNotEmpty == true) {
           final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);
