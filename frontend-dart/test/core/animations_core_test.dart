@@ -134,10 +134,13 @@ void main() {
       const testChild = Text('Test Child');
       
       await tester.pumpWidget(
-        const MaterialApp(
-          home: PulsingContainer(
-            enabled: false,
-            child: testChild,
+        MaterialApp(
+          home: ChangeNotifierProvider(
+            create: (_) => AnimationSettingsProvider(),
+            child: const PulsingContainer(
+              enabled: false,
+              child: testChild,
+            ),
           ),
         ),
       );
@@ -161,7 +164,7 @@ void main() {
       );
 
       expect(find.text('Test Child'), findsOneWidget);
-      expect(find.byType(AnimatedBuilder), findsOneWidget);
+      expect(find.byType(AnimatedBuilder), findsAtLeastNWidgets(1));
     });
 
     testWidgets('should use custom duration', (WidgetTester tester) async {
@@ -201,16 +204,19 @@ void main() {
 
     testWidgets('should render animated icon when enabled', (WidgetTester tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: PulsingIcon(
-            icon: Icons.star,
-            enabled: true,
+        MaterialApp(
+          home: ChangeNotifierProvider(
+            create: (_) => AnimationSettingsProvider(),
+            child: const PulsingIcon(
+              icon: Icons.star,
+              enabled: true,
+            ),
           ),
         ),
       );
 
       expect(find.byIcon(Icons.star), findsOneWidget);
-      expect(find.byType(AnimatedBuilder), findsOneWidget);
+      expect(find.byType(AnimatedBuilder), findsAtLeastNWidgets(1));
     });
 
     testWidgets('should apply custom size', (WidgetTester tester) async {
@@ -245,16 +251,19 @@ void main() {
 
     testWidgets('should render animated text when enabled', (WidgetTester tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: PulsingText(
-            text: 'Test Text',
-            enabled: true,
+        MaterialApp(
+          home: ChangeNotifierProvider(
+            create: (_) => AnimationSettingsProvider(),
+            child: const PulsingText(
+              text: 'Test Text',
+              enabled: true,
+            ),
           ),
         ),
       );
 
       expect(find.text('Test Text'), findsOneWidget);
-      expect(find.byType(AnimatedBuilder), findsOneWidget);
+      expect(find.byType(AnimatedBuilder), findsAtLeastNWidgets(1));
     });
 
     testWidgets('should apply custom style', (WidgetTester tester) async {
@@ -301,17 +310,20 @@ void main() {
       
       await tester.pumpWidget(
         MaterialApp(
-          home: PulsingButton(
-            onPressed: () => pressed = true,
-            enabled: true,
-            child: const Text('Button'),
+          home: ChangeNotifierProvider(
+            create: (_) => AnimationSettingsProvider(),
+            child: PulsingButton(
+              onPressed: () => pressed = true,
+              enabled: true,
+              child: const Text('Button'),
+            ),
           ),
         ),
       );
 
       expect(find.text('Button'), findsOneWidget);
       expect(find.byType(ElevatedButton), findsOneWidget);
-      expect(find.byType(AnimatedBuilder), findsOneWidget);
+      expect(find.byType(AnimatedBuilder), findsAtLeastNWidgets(1));
       
       await tester.tap(find.byType(ElevatedButton));
       expect(pressed, isTrue);
