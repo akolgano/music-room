@@ -103,45 +103,58 @@ class ColorPaletteService {
   static ColorPalette _generatePalette(List<Color> colors) {
     if (colors.isEmpty) return const ColorPalette();
 
-    Color? dominantColor = colors.isNotEmpty ? colors.first : null;
-    Color? vibrantColor;
-    Color? darkVibrantColor;
-    Color? lightVibrantColor;
-    Color? mutedColor;
-    Color? darkMutedColor;
-    Color? lightMutedColor;
-
+    final colorVariants = _ColorVariants();
+    
     for (final color in colors) {
-      final HSLColor hsl = HSLColor.fromColor(color);
-      
-      if (hsl.saturation > 0.6) {
-        if (vibrantColor == null) {
-          vibrantColor = color;
-        } else if (hsl.lightness > 0.6 && lightVibrantColor == null) {
-          lightVibrantColor = color;
-        } else if (hsl.lightness < 0.4 && darkVibrantColor == null) {
-          darkVibrantColor = color;
-        }
-      }
-      else if (hsl.saturation < 0.4) {
-        if (mutedColor == null) {
-          mutedColor = color;
-        } else if (hsl.lightness > 0.6 && lightMutedColor == null) {
-          lightMutedColor = color;
-        } else if (hsl.lightness < 0.4 && darkMutedColor == null) {
-          darkMutedColor = color;
-        }
-      }
+      final hsl = HSLColor.fromColor(color);
+      _assignColorToVariant(color, hsl, colorVariants);
     }
 
     return ColorPalette(
-      dominantColor: dominantColor,
-      vibrantColor: vibrantColor,
-      darkVibrantColor: darkVibrantColor,
-      lightVibrantColor: lightVibrantColor,
-      mutedColor: mutedColor,
-      darkMutedColor: darkMutedColor,
-      lightMutedColor: lightMutedColor,
+      dominantColor: colors.first,
+      vibrantColor: colorVariants.vibrant,
+      darkVibrantColor: colorVariants.darkVibrant,
+      lightVibrantColor: colorVariants.lightVibrant,
+      mutedColor: colorVariants.muted,
+      darkMutedColor: colorVariants.darkMuted,
+      lightMutedColor: colorVariants.lightMuted,
     );
   }
+
+  static void _assignColorToVariant(Color color, HSLColor hsl, _ColorVariants variants) {
+    if (hsl.saturation > 0.6) {
+      _assignVibrantColor(color, hsl, variants);
+    } else if (hsl.saturation < 0.4) {
+      _assignMutedColor(color, hsl, variants);
+    }
+  }
+
+  static void _assignVibrantColor(Color color, HSLColor hsl, _ColorVariants variants) {
+    if (variants.vibrant == null) {
+      variants.vibrant = color;
+    } else if (hsl.lightness > 0.6 && variants.lightVibrant == null) {
+      variants.lightVibrant = color;
+    } else if (hsl.lightness < 0.4 && variants.darkVibrant == null) {
+      variants.darkVibrant = color;
+    }
+  }
+
+  static void _assignMutedColor(Color color, HSLColor hsl, _ColorVariants variants) {
+    if (variants.muted == null) {
+      variants.muted = color;
+    } else if (hsl.lightness > 0.6 && variants.lightMuted == null) {
+      variants.lightMuted = color;
+    } else if (hsl.lightness < 0.4 && variants.darkMuted == null) {
+      variants.darkMuted = color;
+    }
+  }
+}
+
+class _ColorVariants {
+  Color? vibrant;
+  Color? darkVibrant;
+  Color? lightVibrant;
+  Color? muted;
+  Color? darkMuted;
+  Color? lightMuted;
 }

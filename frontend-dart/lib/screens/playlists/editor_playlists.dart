@@ -180,19 +180,25 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       titleIcon: Icons.edit,
       child: Column(
         children: [
-          RadioListTile<String>(
+          ListTile(
             title: const Text('Open Editing'),
             subtitle: const Text('Anyone with access can edit'),
-            value: 'open',
-            groupValue: _licenseType,
-            onChanged: (value) => setState(() => _licenseType = value!),
+            leading: Radio<String>(
+              value: 'open',
+              groupValue: _licenseType,
+              onChanged: (value) => setState(() => _licenseType = value!),
+            ),
+            onTap: () => setState(() => _licenseType = 'open'),
           ),
-          RadioListTile<String>(
+          ListTile(
             title: const Text('Invite Only'),
             subtitle: const Text('Only invited collaborators can edit'),
-            value: 'invite_only',
-            groupValue: _licenseType,
-            onChanged: (value) => setState(() => _licenseType = value!),
+            leading: Radio<String>(
+              value: 'invite_only',
+              groupValue: _licenseType,
+              onChanged: (value) => setState(() => _licenseType = value!),
+            ),
+            onTap: () => setState(() => _licenseType = 'invite_only'),
           ),
         ],
       ),

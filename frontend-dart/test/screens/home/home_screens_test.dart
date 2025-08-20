@@ -12,7 +12,7 @@ import 'package:music_room/models/api_models.dart';
 class MockAuthProvider extends AuthProvider {
   bool _isLoggedIn = true;
   String? _token = 'mock_token';
-  final String? _username = 'testuser';
+  final String _username = 'testuser';
 
   @override
   bool get isLoggedIn => _isLoggedIn;
@@ -73,7 +73,7 @@ class MockMusicProvider extends MusicProvider {
 
 class MockProfileProvider extends ProfileProvider {
   String? _name = 'Test User';
-  final String? _email = 'test@example.com';
+  final String _email = 'test@example.com';
   bool _isLoading = false;
 
   @override

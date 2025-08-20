@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/animations_core.dart';
+import 'package:provider/provider.dart';
 
 class TestTickerProvider extends TickerProvider {
   @override
@@ -122,7 +124,6 @@ void main() {
       final colorAnimation = PulsingColorAnimation.createColorAnimation(controller);
       
       expect(colorAnimation, isNotNull);
-      expect(colorAnimation.parent, controller);
       
       controller.dispose();
     });

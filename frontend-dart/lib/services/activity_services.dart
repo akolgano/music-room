@@ -3,6 +3,7 @@ import '../services/api_services.dart';
 import '../models/api_models.dart';
 import '../providers/auth_providers.dart';
 import '../core/locator_core.dart';
+import '../core/navigation_core.dart';
 
 class ActivityService {
   final ApiService _api = getIt<ApiService>();
@@ -21,6 +22,7 @@ class ActivityService {
       );
       await _api.logActivity(token, request);
     } catch (e) {
+      AppLogger.error('Failed to log user activity', e, null, 'ActivityService');
     }
   }
 

@@ -826,10 +826,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
     try {
       await _votingService.applyVotingSettings(auth.token!);
-      AppWidgets.showSnackBar(context, 'Voting settings updated successfully!', backgroundColor: Colors.green);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, 'Voting settings updated successfully!', backgroundColor: Colors.green);
+      }
     } catch (e) {
       AppLogger.error('Failed to update voting settings', e, null, 'PlaylistDetailScreen');
-      AppWidgets.showSnackBar(context, 'Failed to update voting settings: ${e.toString()}', backgroundColor: Colors.red);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, 'Failed to update voting settings: ${e.toString()}', backgroundColor: Colors.red);
+      }
     }
     
     setState(() {});

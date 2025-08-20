@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../core/animations_core.dart';
+import '../core/responsive_core.dart';
 
 class StateWidgets {
   static double _responsiveWidth(double value) => value.w;
@@ -50,8 +51,15 @@ class StateWidgets {
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
-          final iconSize = (isConstrained ? 24.0 : 64.0).sp;
-          final titleSize = (isConstrained ? 12.0 : 18.0).sp;
+          
+          final iconSize = isConstrained 
+            ? MusicAppResponsive.getIconSize(context, tiny: 16, small: 18, medium: 20, large: 22, xlarge: 24, xxlarge: 26)
+            : MusicAppResponsive.getIconSize(context, tiny: 40, small: 48, medium: 56, large: 64, xlarge: 72, xxlarge: 80);
+            
+          final titleSize = isConstrained
+            ? MusicAppResponsive.getFontSize(context, tiny: 10, small: 11, medium: 12, large: 13, xlarge: 14, xxlarge: 15)
+            : MusicAppResponsive.getFontSize(context, tiny: 14, small: 16, medium: 18, large: 20, xlarge: 22, xxlarge: 24);
+            
           final spacing = (isConstrained ? 4.0 : 12.0).h;
           final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
           

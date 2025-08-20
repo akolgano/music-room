@@ -176,26 +176,35 @@ class PlaylistVotingWidgets {
           ),
         ),
         const SizedBox(height: 6),
-        RadioListTile<String>(
+        ListTile(
           title: const Text('Open Voting'),
           subtitle: const Text('Anyone can vote'),
-          value: 'open',
-          groupValue: votingLicenseType,
-          onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
+          leading: Radio<String>(
+            value: 'open',
+            groupValue: votingLicenseType,
+            onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
+          ),
+          onTap: () => onLicenseTypeChanged('open'),
         ),
-        RadioListTile<String>(
+        ListTile(
           title: const Text('Invite Only'),
           subtitle: const Text('Only invited users can vote'),
-          value: 'invite_only',
-          groupValue: votingLicenseType,
-          onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
+          leading: Radio<String>(
+            value: 'invite_only',
+            groupValue: votingLicenseType,
+            onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
+          ),
+          onTap: () => onLicenseTypeChanged('invite_only'),
         ),
-        RadioListTile<String>(
+        ListTile(
           title: const Text('Location & Time Restricted'),
           subtitle: const Text('Vote only at specific location and time'),
-          value: 'location_time',
-          groupValue: votingLicenseType,
-          onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
+          leading: Radio<String>(
+            value: 'location_time',
+            groupValue: votingLicenseType,
+            onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
+          ),
+          onTap: () => onLicenseTypeChanged('location_time'),
         ),
         if (votingLicenseType == 'location_time') _buildVotingTimeSettings(
           context: context,
