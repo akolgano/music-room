@@ -19,10 +19,13 @@ from apps.deezer.deezer_client import DeezerClient
 from .serializers import PlaylistLicenseSerializer, VoteSerializer
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
+from .docs import *
+
 
 User = get_user_model()
 
-
+@create_new_playlist_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -51,6 +54,8 @@ def create_new_playlist(request):
         "playlist_id": playlist.id
     }, status=201)
 
+
+@update_playlist_schema
 @api_view(['PATCH'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -82,6 +87,7 @@ def update_playlist(request, playlist_id):
     return JsonResponse({"message": "Playlist updated successfully."}, status=200)
 
 
+@delete_playlist_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -98,6 +104,7 @@ def delete_playlist(request, playlist_id):
     return JsonResponse({"message": "Playlist deleted successfully."}, status=200)
 
 
+@get_user_saved_playlists_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -126,6 +133,7 @@ def get_user_saved_playlists(request):
     return JsonResponse({'playlists': playlist_data})
 
 
+@get_all_shared_playlists_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -189,6 +197,7 @@ def save_shared_playlist(request):
     }, status=201)
 
 
+@get_playlist_info_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -221,6 +230,7 @@ def get_playlist_info(request, playlist_id):
         return JsonResponse({"error": "Playlist not found."}, status=404)
 
 
+@playlist_tracks_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -239,6 +249,8 @@ def playlist_tracks(request, playlist_id):
 
     return JsonResponse({'playlist': playlist.name, 'tracks': data})
 
+
+@add_track_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -293,6 +305,7 @@ def add_track(request, playlist_id):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@move_track_in_playlist_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -350,6 +363,7 @@ def move_track_in_playlist(request, playlist_id):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@delete_track_from_playlist_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -403,6 +417,8 @@ def delete_track_from_playlist(request, playlist_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+
+@change_visibility_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -417,6 +433,8 @@ def change_visibility(request, playlist_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)    
 
+
+@invite_user_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -446,8 +464,10 @@ def invite_user(request, playlist_id):
         )
         return JsonResponse({'message': 'User invited to the playlist'}, status=201)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400) 
+        return JsonResponse({'error': str(e)}, status=400)
 
+
+@patch_playlist_license_schema
 @api_view(['PATCH'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -466,6 +486,8 @@ def patch_playlist_license(request, playlist_id):
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
 
+
+@vote_for_track_schema
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
