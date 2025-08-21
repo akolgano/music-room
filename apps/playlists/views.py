@@ -468,7 +468,7 @@ def invite_user(request, playlist_id):
 
 
 @patch_playlist_license_schema
-@api_view(['PATCH'])
+@api_view(['GET', 'PATCH'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def patch_playlist_license(request, playlist_id):
@@ -479,6 +479,10 @@ def patch_playlist_license(request, playlist_id):
 
     if playlist.creator != request.user:
         return JsonResponse({'detail': 'You do not have permission to edit this playlist license.'}, status=403)
+
+    if request.method == 'GET':
+        serializer = PlaylistLicenseSerializer(playlist)
+        return JsonResponse(serializer.data, status=200)
 
     serializer = PlaylistLicenseSerializer(playlist, data=request.data, partial=True)
     if serializer.is_valid():
