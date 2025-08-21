@@ -94,16 +94,6 @@ class MusicAppResponsive {
       large: large, xlarge: xlarge, xxlarge: xxlarge);
 
 
-  static int getGridColumns(BuildContext context, {
-    int tiny = 1,
-    int small = 1,
-    int medium = 2,
-    int large = 2,
-    int xlarge = 3,
-    int xxlarge = 4,
-  }) => _getResponsiveValue(context,
-      tiny: tiny, small: small, medium: medium,
-      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
   static bool isMobileSize(BuildContext context) {
     final size = getScreenSize(context);

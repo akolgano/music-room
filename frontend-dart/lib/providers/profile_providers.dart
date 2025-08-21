@@ -7,6 +7,7 @@ import '../core/locator_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../core/provider_core.dart'; 
+import '../core/google_signin_core.dart';
 import '../models/api_models.dart';
 
 enum VisibilityLevel { public, friends, private }
@@ -40,9 +41,7 @@ extension VisibilityLevelExtension on VisibilityLevel {
 class ProfileProvider extends BaseProvider { 
   final ApiService _apiService;  
 
-  final googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile', 'openid'],
-  );
+  GoogleSignIn get googleSignIn => GoogleSignInCore.instance;
 
   String? _userId;
   String? _username;
@@ -217,14 +216,29 @@ class ProfileProvider extends BaseProvider {
       () async {
         GoogleSignInAccount? user;
         
-        if (kIsWeb) {
-          user = await googleSignIn.signInSilently();
-          user ??= await googleSignIn.signIn();
-        } else {
-          user = await googleSignIn.signIn();
+        try {
+          if (kIsWeb) {
+            user = await googleSignIn.signInSilently();
+            user ??= await googleSignIn.signIn();
+          } else {
+            user = await googleSignIn.signIn();
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] Google Sign-In error: $e');
+          }
+          
+          final errorString = e.toString().toLowerCase();
+          if (errorString.contains('popup_closed') || errorString.contains('cancelled')) {
+            throw Exception("Google Sign-In was cancelled");
+          } else if (errorString.contains('network_error') || errorString.contains('error retrieving a token')) {
+            throw Exception("Network error during Google Sign-In. Please check your connection and try again");
+          } else {
+            throw Exception("Google Sign-In failed: ${e.toString()}");
+          }
         }
         
-        if (user == null) throw Exception("Google login failed!");
+        if (user == null) throw Exception("Google Sign-In was cancelled");
 
         final socialId = user.id;
         final socialEmail = user.email;
@@ -233,15 +247,15 @@ class ProfileProvider extends BaseProvider {
         final auth = await user.authentication;
         final idToken = auth.idToken;
 
-        if (idToken != null) {
+        if (idToken != null && idToken.isNotEmpty) {
           await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken));
         }
         else {
-          await _apiService.googleLink(token!, SocialLinkRequest(socialId: socialId, socialEmail: socialEmail, socialName: socialName));
+            await _apiService.googleLink(token!, SocialLinkRequest(socialId: socialId, socialEmail: socialEmail, socialName: socialName));
         }
       },
       successMessage: 'Google account linked successfully',
-      errorMessage: 'Failed to link Google account',
+      errorMessage: null,
     );
   }
 

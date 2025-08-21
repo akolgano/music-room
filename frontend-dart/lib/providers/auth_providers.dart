@@ -9,6 +9,7 @@ import '../models/music_models.dart';
 import '../models/api_models.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../core/google_signin_core.dart';
 
 class AuthProvider extends BaseProvider {
   late final AuthService _authService;
@@ -39,9 +40,7 @@ class AuthProvider extends BaseProvider {
 
   String? get token => _authService.currentToken;
 
-  final googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile', 'openid'],
-  );
+  GoogleSignIn get googleSignIn => GoogleSignInCore.instance;
 
 
   Map<String, String> get authHeaders => {
@@ -150,14 +149,29 @@ class AuthProvider extends BaseProvider {
       () async {
         GoogleSignInAccount? user;
         
-        if (kIsWeb) {
-          user = await googleSignIn.signInSilently();
-          user ??= await googleSignIn.signIn();
-        } else {
-          user = await googleSignIn.signIn();
+        try {
+          if (kIsWeb) {
+            user = await googleSignIn.signInSilently();
+            user ??= await googleSignIn.signIn();
+          } else {
+            user = await googleSignIn.signIn();
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            developer.log('Google Sign-In error: $e', name: 'AuthProvider');
+          }
+          
+          final errorString = e.toString().toLowerCase();
+          if (errorString.contains('popup_closed') || errorString.contains('cancelled')) {
+            throw Exception("Google Sign-In was cancelled");
+          } else if (errorString.contains('network_error') || errorString.contains('error retrieving a token')) {
+            throw Exception("Network error during Google Sign-In. Please check your connection and try again");
+          } else {
+            throw Exception("Google Sign-In failed: ${e.toString()}");
+          }
         }
         
-        if (user == null) throw Exception("Google login failed!");
+        if (user == null) throw Exception("Google login was cancelled or failed");
         
         final socialId = user.id;
         final socialEmail = user.email;
@@ -166,7 +180,7 @@ class AuthProvider extends BaseProvider {
         final auth = await user.authentication;
         final idToken = auth.idToken;
 
-        if (idToken != null) {
+        if (idToken != null && idToken.isNotEmpty) {
           await _authService.googleLogin(idToken: idToken);
         }
         else {
@@ -175,7 +189,7 @@ class AuthProvider extends BaseProvider {
       
       },
       successMessage: 'Google login successful!',
-      errorMessage: 'Google login failed. Please try again.',
+      errorMessage: null,
     );
     
     return success;
@@ -189,11 +203,18 @@ class AuthProvider extends BaseProvider {
           final fbAccessToken = result.accessToken!.tokenString;
           await _authService.facebookLogin(fbAccessToken);
         } else {
-          throw Exception(result.message ?? "Facebook login failed!");
+          final message = result.message ?? "Facebook login failed";
+          if (result.status == LoginStatus.cancelled) {
+            throw Exception("Facebook login was cancelled");
+          } else if (result.status == LoginStatus.failed) {
+            throw Exception("Facebook login failed: $message");
+          } else {
+            throw Exception("Facebook login failed: $message");
+          }
         }
       },
       successMessage: 'Facebook login successful!',
-      errorMessage: 'Facebook login failed',
+      errorMessage: null,
     );
     
     return success;

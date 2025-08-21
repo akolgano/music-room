@@ -647,15 +647,12 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       return;
     }
     
-    // Separate playlists and events
     final regularPlaylists = _userPlaylists.where((p) => !p.isEvent).toList();
     final eventPlaylists = _userPlaylists.where((p) => p.isEvent).toList();
     
-    // Build dialog items with sections
     final List<String> items = [];
     final List<IconData> icons = [];
     
-    // Add playlists section
     if (regularPlaylists.isNotEmpty) {
       items.add('📚 PLAYLISTS');
       icons.add(Icons.playlist_play);
@@ -665,7 +662,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       }
     }
     
-    // Add events section
     if (eventPlaylists.isNotEmpty) {
       items.add('🎉 EVENTS');
       icons.add(Icons.event);
@@ -675,7 +671,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       }
     }
     
-    // Add creation options
     items.addAll(['Create New Playlist', 'Create New Event']);
     icons.addAll([Icons.add, Icons.event_note]);
     
@@ -694,12 +689,10 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       List<Playlist> regularPlaylists, List<Playlist> eventPlaylists) async {
     int currentIndex = 0;
     
-    // Skip playlist section header
     if (regularPlaylists.isNotEmpty) {
-      currentIndex++; // Skip "PLAYLISTS" header
+      currentIndex++;
       
       if (selectedIndex <= currentIndex + regularPlaylists.length - 1) {
-        // Selected a regular playlist
         final playlistIndex = selectedIndex - currentIndex;
         await _addTrackToPlaylist(regularPlaylists[playlistIndex].id, track);
         return;
@@ -707,12 +700,10 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       currentIndex += regularPlaylists.length;
     }
     
-    // Skip events section header
     if (eventPlaylists.isNotEmpty) {
-      currentIndex++; // Skip "EVENTS" header
+      currentIndex++;
       
       if (selectedIndex <= currentIndex + eventPlaylists.length - 1) {
-        // Selected an event
         final eventIndex = selectedIndex - currentIndex;
         await _addTrackToPlaylist(eventPlaylists[eventIndex].id, track);
         return;
@@ -720,7 +711,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       currentIndex += eventPlaylists.length;
     }
     
-    // Handle creation options
     if (selectedIndex == currentIndex) {
       await _createNewPlaylistAndAddTrack(track);
     } else if (selectedIndex == currentIndex + 1) {
@@ -741,7 +731,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
         () async {
           final musicProvider = getProvider<MusicProvider>();
           
-          // Create event with isEvent flag
           final newEventId = await musicProvider.createPlaylist(
             eventName.trim(),
             '',
@@ -751,7 +740,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
             true, // isEvent
           );
           
-          // Add track to the new event
           await _addTrackToPlaylist(newEventId!, track);
         },
         successMessage: 'Track added to new event "$eventName"',

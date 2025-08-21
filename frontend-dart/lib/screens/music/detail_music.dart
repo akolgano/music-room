@@ -572,7 +572,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
       return;
     }
     
-    // Separate playlists and events
     final regularPlaylists = _userPlaylists.where((p) => !p.isEvent).toList();
     final eventPlaylists = _userPlaylists.where((p) => p.isEvent).toList();
     
@@ -586,7 +585,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
           child: ListView(
             shrinkWrap: true,
             children: [
-              // Playlists section
               if (regularPlaylists.isNotEmpty) ...[
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
@@ -613,7 +611,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                 )),
               ],
               
-              // Events section
               if (eventPlaylists.isNotEmpty) ...[
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),

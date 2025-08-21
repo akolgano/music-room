@@ -184,8 +184,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',  # for authenticated users
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '10/minute',     # max 10 requests per minute for anonymous users
-        'user': '1000/day',      # max 1000 requests per day for authenticated users
+        'anon': '20/minute',     # max 20 requests per minute for anonymous users
+        'user': '100/minute',    # max 100 requests per minute for authenticated users
     }
 }
 
