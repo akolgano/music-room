@@ -81,7 +81,6 @@ class MusicProvider extends BaseProvider {
         
         final allPlaylists = <String, Playlist>{};
         
-        // Fetch regular playlists
         try {
           final userPlaylists = await _musicService.getUserPlaylists(token);
           AppLogger.debug('MusicProvider: Got ${userPlaylists.length} user playlists', 'MusicProvider');
@@ -106,7 +105,6 @@ class MusicProvider extends BaseProvider {
           AppLogger.error('Failed to fetch public playlists', e, null, 'MusicProvider');
         }
         
-        // Fetch events (which are also playlists but marked as events)
         try {
           final userEvents = await _musicService.getSavedEvents(token);
           AppLogger.debug('MusicProvider: Got ${userEvents.length} user events', 'MusicProvider');

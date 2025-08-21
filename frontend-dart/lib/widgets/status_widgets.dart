@@ -97,7 +97,7 @@ class ConnectionStatusIndicator extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      ConnectionStatusIndicator(showText: false, compact: true),
+                      Icon(icon, color: color, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(

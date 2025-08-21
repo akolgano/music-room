@@ -190,27 +190,21 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
   
 
   void _showSortOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => PlaylistSortBottomSheet(
-        currentSort: _currentSort,
-        onSortChanged: (PlaylistSortOption newSort) {
-          setState(() {
-            _currentSort = newSort;
-          });
-        },
-      ),
+    PlaylistSortBottomSheet.show(
+      context,
+      currentSort: _currentSort,
+      onSortChanged: (PlaylistSortOption newSort) {
+        setState(() {
+          _currentSort = newSort;
+        });
+      },
     );
   }
 
   void _updateSortedPlaylistsAndEvents(List<Playlist> allPlaylists) {
-    // Separate playlists and events
     _sortedPlaylists = allPlaylists.where((p) => !p.isEvent).toList();
     _sortedEvents = allPlaylists.where((p) => p.isEvent).toList();
     
-    // Apply sorting to both lists
     _sortPlaylists(_sortedPlaylists);
     _sortPlaylists(_sortedEvents);
   }

@@ -79,8 +79,17 @@ abstract class BaseProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       if (kDebugMode) {
+        final errorString = e.toString().toLowerCase();
+        final isUserCancellation = errorString.contains('popup_closed') || 
+                                  errorString.contains('cancelled') ||
+                                  errorString.contains('sign-in was cancelled') ||
+                                  errorString.contains('facebook login failed') ||
+                                  errorString.contains('login cancelled') ||
+                                  errorString.contains('user cancelled');
+        
         debugPrint('[BaseProvider] executeBool error: ${_extractErrorMessage(e)}');
-        if (e is! DioException) {
+        
+        if (e is! DioException && !isUserCancellation) {
           debugPrint('[BaseProvider] Full error: $e');
           debugPrint('[BaseProvider] Stack trace: ${StackTrace.current}');
         }

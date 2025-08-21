@@ -561,7 +561,6 @@ class PlaylistsResponse {
   const PlaylistsResponse({required this.playlists});
   
   factory PlaylistsResponse.fromJson(Map<String, dynamic> json) {
-    // Handle both 'playlists' and 'events' fields from different API endpoints
     final playlistsData = json['playlists'] as List<dynamic>?;
     final eventsData = json['events'] as List<dynamic>?;
     

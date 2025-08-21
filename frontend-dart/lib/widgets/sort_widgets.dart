@@ -247,5 +247,20 @@ class PlaylistSortBottomSheet extends StatelessWidget {
     );
   }
 
+  static void show(
+    BuildContext context, {
+    required PlaylistSortOption currentSort,
+    required Function(PlaylistSortOption) onSortChanged,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => PlaylistSortBottomSheet(
+        currentSort: currentSort,
+        onSortChanged: onSortChanged,
+      ),
+    );
+  }
 }
 

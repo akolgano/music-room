@@ -162,8 +162,6 @@ class AppBuilder {
         return _buildUserPage(settings);
       case AppRoutes.adminDashboard:
         return const AdminDashboardScreen();
-      case '/profile_info':
-        return const ProfileScreen();
       case AppRoutes.playlistEditor:
         return _buildPlaylistEditor(settings);
       case AppRoutes.playlistDetail:

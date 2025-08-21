@@ -96,22 +96,25 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
       return;
     }
 
-    await runAsyncAction(
-      () async {
-
-        final profileProvider = getProvider<ProfileProvider>();
-        if (provider == 'Facebook') {
-          await profileProvider.facebookLink(auth.token);
-        }
-        else if (provider == 'Google') {
-          await profileProvider.googleLink(auth.token);
-        }
+    try {
+      final profileProvider = getProvider<ProfileProvider>();
+      bool success = false;
+      
+      if (provider == 'Facebook') {
+        success = await profileProvider.facebookLink(auth.token);
+      }
+      else if (provider == 'Google') {
+        success = await profileProvider.googleLink(auth.token);
+      }
+      
+      if (success) {
         await profileProvider.loadProfile(auth.token);
-
-      },
-      successMessage: '$provider account linked successfully!',
-      errorMessage: 'Failed to link $provider account',
-    );
-
+        showSuccess('$provider account linked successfully!');
+      } else {
+        showError('Failed to link $provider account');
+      }
+    } catch (e) {
+      showError('Failed to link $provider account');
+    }
   }
 }

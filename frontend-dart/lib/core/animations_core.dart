@@ -215,58 +215,6 @@ class _PulsingIconState extends State<PulsingIcon>
   }
 }
 
-class PulsingText extends StatefulWidget {
-  final String text;
-  final TextStyle? style;
-  final Duration duration;
-  final bool enabled;
-
-  const PulsingText({
-    super.key,
-    required this.text,
-    this.style,
-    this.duration = PulsingColorAnimation.defaultDuration,
-    this.enabled = true,
-  });
-
-  @override
-  State<PulsingText> createState() => _PulsingTextState();
-}
-
-class _PulsingTextState extends State<PulsingText>
-    with TickerProviderStateMixin, PulsingColorMixin {
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.enabled) {
-      initializePulsingController(duration: widget.duration);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.enabled) {
-      return Text(
-        widget.text,
-        style: widget.style?.copyWith(color: AppTheme.primary) ?? 
-               TextStyle(color: AppTheme.primary),
-      );
-    }
-
-    return AnimatedBuilder(
-      animation: _pulsingColorAnimation,
-      builder: (context, child) {
-        return Text(
-          widget.text,
-          style: widget.style?.copyWith(
-            color: _pulsingColorAnimation.value ?? AppTheme.primary,
-          ) ?? TextStyle(color: _pulsingColorAnimation.value ?? AppTheme.primary),
-        );
-      },
-    );
-  }
-}
 
 class PulsingButton extends StatefulWidget {
   final Widget child;

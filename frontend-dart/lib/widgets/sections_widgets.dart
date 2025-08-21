@@ -477,18 +477,15 @@ class ProfileSectionsWidget extends StatelessWidget {
   }
 
   List<int> _getCurrentPreferenceIds() {
-    // First try to get IDs directly
     final rawPreferenceIds = profileProvider.musicPreferenceIds;
     if (rawPreferenceIds != null && rawPreferenceIds.isNotEmpty) {
       return rawPreferenceIds;
     }
 
-    // Fallback: convert preference names to IDs
     if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
       return _convertPreferenceNamesToIds(profileProvider.musicPreferences!);
     }
 
-    // Return empty list if no preferences
     return [];
   }
 

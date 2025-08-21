@@ -281,9 +281,6 @@ class FrontendLoggingService {
     );
   }
 
-
-
-
   void _startBatchTimer() {
     _batchTimer?.cancel();
     _batchTimer = Timer.periodic(_batchInterval, (timer) {
