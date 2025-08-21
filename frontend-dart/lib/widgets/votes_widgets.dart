@@ -284,6 +284,7 @@ class PlaylistVotingWidgets {
     required VoidCallback onSuggestTrackForVoting,
     required PlaylistVotingInfo? votingInfo,
     String? playlistOwnerId,
+    bool isEvent = false,
   }) {
     return Card(
       color: Theme.of(context).colorScheme.surface,
@@ -353,6 +354,7 @@ class PlaylistVotingWidgets {
                 playlistId: playlistId,
                 onLoadData: onLoadData,
                 playlistOwnerId: playlistOwnerId,
+                isEvent: isEvent,
               ),
             const SizedBox(height: 12),
             _buildAddTrackForVotingButton(
@@ -400,6 +402,7 @@ class PlaylistVotingWidgets {
     required String playlistId,
     required VoidCallback onLoadData,
     String? playlistOwnerId,
+    bool isEvent = false,
   }) {
     return ListView.builder(
       shrinkWrap: true,
@@ -412,6 +415,7 @@ class PlaylistVotingWidgets {
         playlistId: playlistId,
         onLoadData: onLoadData,
         playlistOwnerId: playlistOwnerId,
+        isEvent: isEvent,
       ),
     );
   }
@@ -423,6 +427,7 @@ class PlaylistVotingWidgets {
     required String playlistId,
     required VoidCallback onLoadData,
     String? playlistOwnerId,
+    bool isEvent = false,
   }) {
     final track = playlistTrack.track;
     if (track == null) return const SizedBox.shrink();
@@ -521,6 +526,7 @@ class PlaylistVotingWidgets {
                         ),
                         onVoteSubmitted: onLoadData,
                         playlistOwnerId: playlistOwnerId,
+                        isEvent: isEvent,
                       ),
                     ],
                   ),
@@ -558,6 +564,7 @@ class TrackVotingControls extends StatelessWidget {
   final VoteStats stats;
   final VoidCallback? onVoteSubmitted;
   final String? playlistOwnerId;
+  final bool isEvent;
 
   const TrackVotingControls({
     super.key,
@@ -568,6 +575,7 @@ class TrackVotingControls extends StatelessWidget {
     required this.stats,
     this.onVoteSubmitted,
     this.playlistOwnerId,
+    this.isEvent = false,
   });
 
   @override
@@ -586,13 +594,14 @@ class TrackVotingControls extends StatelessWidget {
             padding: const EdgeInsets.all(4),
             constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
           ),
-          Text(
-            '${stats.totalVotes}',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[700],
-              fontWeight: FontWeight.bold,
+          if (isEvent)
+            Text(
+              '${stats.totalVotes}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[700],
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
         ],
       );
     }
@@ -606,13 +615,14 @@ class TrackVotingControls extends StatelessWidget {
           ),
           onPressed: stats.userHasVoted ? null : () => _handleVote(context),
         ),
-        Text(
-          '${stats.totalVotes}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[700],
-            fontWeight: FontWeight.bold,
+        if (isEvent)
+          Text(
+            '${stats.totalVotes}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey[700],
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
       ],
     );
   }
