@@ -145,19 +145,17 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
     super.dispose();
   }
   
-  void _handleTap() {
-    _controller.forward().then((_) {
-      _controller.reverse();
-      widget.onPressed();
-    });
-  }
-  
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _scaleAnimation,
       child: FloatingActionButton(
-        onPressed: _handleTap,
+        onPressed: () {
+          _controller.forward().then((_) {
+            _controller.reverse();
+            widget.onPressed();
+          });
+        },
         backgroundColor: widget.backgroundColor ?? AppTheme.primary,
         foregroundColor: widget.foregroundColor ?? Colors.white,
         mini: widget.mini,

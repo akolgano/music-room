@@ -31,7 +31,6 @@ void main() async {
     await setupServiceLocator();
     try {
       await SocialLoginUtils.initialize();
-      await GoogleSignInCore.initialize();
     } catch (e) {
       AppLogger.error('Failed to initialize social login: ${e.toString()}', null, null, 'Main');
     }

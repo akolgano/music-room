@@ -267,7 +267,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       
       final isEmailAvailable = await authProvider.checkEmailAvailability(_emailController.text);
       if (!isEmailAvailable) {
-        _showError('This email is already registered. Please use a different email or try logging in.');
+        AppWidgets.showSnackBar(context, 'This email is already registered. Please use a different email or try logging in.', backgroundColor: AppTheme.error);
         setState(() => _isLoading = false);
         return;
       }
@@ -278,7 +278,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       _showSuccess('Email is available! Please create your account.');
     } catch (e) {
       AppLogger.error('Error checking email', e, null, 'SignupWithOtpScreen');
-      _showError('Error checking email: ${e.toString()}');
+      AppWidgets.showSnackBar(context, 'Error checking email: ${e.toString()}', backgroundColor: AppTheme.error);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -302,11 +302,11 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         _startResendCountdown();
         _showSuccess('Verification code sent to ${_emailController.text}');
       } else {
-        _showError('Failed to send verification code');
+        AppWidgets.showSnackBar(context, 'Failed to send verification code', backgroundColor: AppTheme.error);
       }
     } catch (e) {
       AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
-      _showError('Error: ${e.toString()}');
+      AppWidgets.showSnackBar(context, 'Error: ${e.toString()}', backgroundColor: AppTheme.error);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -331,11 +331,11 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
           Navigator.pushReplacementNamed(context, '/');
         }
       } else {
-        _showError(authProvider.errorMessage ?? 'Signup failed. Please check your verification code.');
+        AppWidgets.showSnackBar(context, authProvider.errorMessage ?? 'Signup failed. Please check your verification code.', backgroundColor: AppTheme.error);
       }
     } catch (e) {
       AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
-      _showError('Error: ${e.toString()}');
+      AppWidgets.showSnackBar(context, 'Error: ${e.toString()}', backgroundColor: AppTheme.error);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -371,10 +371,6 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   void _showSuccess(String message) {
     AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
-  }
-
-  void _showError(String message) {
-    AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
   }
 
   @override

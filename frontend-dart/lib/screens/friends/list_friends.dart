@@ -122,7 +122,14 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
       margin: const EdgeInsets.only(bottom: 6),
       color: AppTheme.surface,
       child: ListTile(
-        onTap: () => _navigateToUserPage(friend.id),
+        onTap: () => Navigator.pushNamed(
+          context,
+          AppRoutes.userPage,
+          arguments: {
+            'userId': friend.id,
+            'username': null,
+          },
+        ),
         leading: CircleAvatar(
           backgroundColor: ThemeUtils.getColorFromString(friend.id),
           child: const Icon(Icons.person, color: Colors.white),
@@ -166,7 +173,14 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       color: AppTheme.surface,
       child: InkWell(
-        onTap: fromUserId != null ? () => _navigateToUserPage(fromUserId) : null,
+        onTap: fromUserId != null ? () => Navigator.pushNamed(
+          context,
+          AppRoutes.userPage,
+          arguments: {
+            'userId': fromUserId,
+            'username': null,
+          },
+        ) : null,
         child: Padding(
           padding: const EdgeInsets.all(3),
           child: Row(
@@ -264,7 +278,14 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
   void _handleFriendAction(String action, String friendId) async {
     switch (action) {
       case 'view_profile':
-        _navigateToUserPage(friendId);
+        Navigator.pushNamed(
+          context,
+          AppRoutes.userPage,
+          arguments: {
+            'userId': friendId,
+            'username': null,
+          },
+        );
         break;
       case 'remove':
         final confirmed = await showConfirmDialog(
@@ -275,17 +296,6 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
         if (confirmed) await _removeFriend(friendId);
         break;
     }
-  }
-
-  void _navigateToUserPage(String userId) {
-    Navigator.pushNamed(
-      context,
-      AppRoutes.userPage,
-      arguments: {
-        'userId': userId,
-        'username': null,
-      },
-    );
   }
 
   Future<void> _removeFriend(String friendId) async {
