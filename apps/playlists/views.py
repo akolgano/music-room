@@ -546,6 +546,7 @@ def vote_for_track(request, playlist_id):
     return JsonResponse(serializer.errors, status=400)
 
 
+@get_user_saved_events_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -572,6 +573,7 @@ def get_user_saved_events(request):
     return JsonResponse({'events': playlist_data})
 
 
+@get_all_shared_events_schema
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])

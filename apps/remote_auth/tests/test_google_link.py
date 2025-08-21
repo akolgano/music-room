@@ -6,7 +6,7 @@ from conftest import MockResponse
 from apps.users.tests.conftest import authenticated_user
 from apps.remote_auth.models import SocialNetwork
 from django.contrib.auth import get_user_model
-
+from uuid import UUID
 
 User = get_user_model()
 
@@ -187,5 +187,6 @@ def test_google_link_success(authenticated_user):
     response = client.post(url, payload, format="json")
 
     assert response.status_code == 200
-    assert response.json() == {"id": user.id}
+    data = response.json()
+    assert UUID(data["id"]) == user.id
     assert SocialNetwork.objects.filter(user=user, social_id="111111").exists()

@@ -626,8 +626,8 @@ invite_user_schema = extend_schema(
 
 
 patch_playlist_license_schema = extend_schema(
-    methods=["PATCH"],
-    summary="Update playlist license",
+    methods=["PATCH", "GET"],
+    summary="Get or Update playlist license",
     parameters=[
         OpenApiParameter(
             name="playlist_id",
@@ -640,7 +640,6 @@ patch_playlist_license_schema = extend_schema(
     responses={
         200: OpenApiResponse(
             response=PlaylistLicenseSerializer,
-            description="Playlist license updated successfully"
         ),
         400: OpenApiResponse(
             description="Invalid data provided"
@@ -720,6 +719,44 @@ vote_for_track_schema = extend_schema(
                 )
             ]
         ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    },
+)
+
+
+get_user_saved_events_schema = extend_schema(
+    methods=["GET"],
+    summary="Get user saved events",
+    responses={
+        200: EventsResponseSerializer,
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=UnauthorizedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                )
+            ]
+        ),
+    },
+)
+
+
+get_all_shared_events_schema = extend_schema(
+    methods=["GET"],
+    summary="Get all shared events",
+    responses={
+        200: AllSharedEventsResponseSerializer,
         401: OpenApiResponse(
             description="Unauthorized",
             response=UnauthorizedResponseSerializer,
