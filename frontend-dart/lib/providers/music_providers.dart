@@ -372,7 +372,9 @@ class MusicProvider extends BaseProvider {
     
     notifyListeners();
     
-    _loadMissingTrackDetailsInBackground();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _preloadTrackDetails(_playlistTracks);
+    });
     
     AppLogger.debug('Completed playlist tracks update and triggered UI refresh', 'MusicProvider');
   }
@@ -445,12 +447,6 @@ class MusicProvider extends BaseProvider {
       AppLogger.debug('Refreshing UI with updated track details', 'MusicProvider');
       notifyListeners();
     }
-  }
-
-  void _loadMissingTrackDetailsInBackground() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _preloadTrackDetails(_playlistTracks);
-    });
   }
 
   void updatePlaylistInCache(String playlistId, {

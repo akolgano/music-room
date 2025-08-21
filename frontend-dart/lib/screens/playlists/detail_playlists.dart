@@ -178,7 +178,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 onApplyVotingSettings: _applyVotingSettings,
                 onSelectVotingDateTime: _selectVotingDateTime,
               ),
-              PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks),
+              PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks, isEvent: _playlist?.isEvent ?? false),
               SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
               PlaylistDetailWidgets.buildThemedPlaylistActions(
                 context, 
@@ -195,6 +195,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 onSuggestTrackForVoting: _suggestTrackForVoting,
                 votingInfo: _votingService.votingInfo,
                 playlistOwnerId: _playlist?.creator,
+                isEvent: _playlist?.isEvent ?? false,
               ) : _buildTracksSection(),
             ],
           ),
