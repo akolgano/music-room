@@ -152,9 +152,7 @@ class AuthProvider extends BaseProvider {
         
         if (kIsWeb) {
           user = await googleSignIn.signInSilently();
-          if (user == null) {
-            user = await googleSignIn.signIn();
-          }
+          user ??= await googleSignIn.signIn();
         } else {
           user = await googleSignIn.signIn();
         }

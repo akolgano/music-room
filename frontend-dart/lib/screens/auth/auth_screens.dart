@@ -7,7 +7,6 @@ import '../../core/responsive_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/logging_core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/scrollbar_widgets.dart';
 import '../base_screens.dart';
 import 'signup_auth.dart';
 
@@ -53,7 +52,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
   @override
   Widget buildContent() {
     return Center(
-      child: CustomSingleChildScrollView(
+      child: SingleChildScrollView(
         padding: EdgeInsets.all(MusicAppResponsive.isSmallScreen(context) ? 8 : ThemeUtils.getResponsivePadding(context)),
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: MusicAppResponsive.isSmallScreen(context) ? double.infinity : 400),

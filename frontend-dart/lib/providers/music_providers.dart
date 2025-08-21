@@ -74,42 +74,76 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<void> fetchAllPlaylists(String token) async {
-    AppLogger.debug('MusicProvider: Fetching all playlists (user + public)', 'MusicProvider');
+    AppLogger.debug('MusicProvider: Fetching all playlists and events', 'MusicProvider');
     final result = await executeAsync(
       () async {
-        final userPlaylistsFuture = _musicService.getUserPlaylists(token);
-        final publicPlaylistsFuture = _musicService.getPublicPlaylists(token);
-        
-        final results = await Future.wait([userPlaylistsFuture, publicPlaylistsFuture]);
-        final userPlaylists = results[0];
-        final publicPlaylists = results[1];
+        AppLogger.debug('MusicProvider: Starting playlist and events fetch...', 'MusicProvider');
         
         final allPlaylists = <String, Playlist>{};
         
-        for (final playlist in userPlaylists) {
-          allPlaylists[playlist.id] = playlist;
-        }
-        
-        for (final playlist in publicPlaylists) {
-          if (!allPlaylists.containsKey(playlist.id)) {
+        // Fetch regular playlists
+        try {
+          final userPlaylists = await _musicService.getUserPlaylists(token);
+          AppLogger.debug('MusicProvider: Got ${userPlaylists.length} user playlists', 'MusicProvider');
+          for (final playlist in userPlaylists) {
             allPlaylists[playlist.id] = playlist;
+            AppLogger.debug('MusicProvider: Added user playlist: ${playlist.name} (${playlist.id})', 'MusicProvider');
           }
+        } catch (e) {
+          AppLogger.error('Failed to fetch user playlists', e, null, 'MusicProvider');
         }
         
-        return allPlaylists.values.toList();
+        try {
+          final publicPlaylists = await _musicService.getPublicPlaylists(token);
+          AppLogger.debug('MusicProvider: Got ${publicPlaylists.length} public playlists', 'MusicProvider');
+          for (final playlist in publicPlaylists) {
+            if (!allPlaylists.containsKey(playlist.id)) {
+              allPlaylists[playlist.id] = playlist;
+              AppLogger.debug('MusicProvider: Added public playlist: ${playlist.name} (${playlist.id})', 'MusicProvider');
+            }
+          }
+        } catch (e) {
+          AppLogger.error('Failed to fetch public playlists', e, null, 'MusicProvider');
+        }
+        
+        // Fetch events (which are also playlists but marked as events)
+        try {
+          final userEvents = await _musicService.getSavedEvents(token);
+          AppLogger.debug('MusicProvider: Got ${userEvents.length} user events', 'MusicProvider');
+          for (final event in userEvents) {
+            allPlaylists[event.id] = event;
+            AppLogger.debug('MusicProvider: Added user event: ${event.name} (${event.id})', 'MusicProvider');
+          }
+        } catch (e) {
+          AppLogger.error('Failed to fetch user events', e, null, 'MusicProvider');
+        }
+        
+        try {
+          final publicEvents = await _musicService.getPublicEvents(token);
+          AppLogger.debug('MusicProvider: Got ${publicEvents.length} public events', 'MusicProvider');
+          for (final event in publicEvents) {
+            if (!allPlaylists.containsKey(event.id)) {
+              allPlaylists[event.id] = event;
+              AppLogger.debug('MusicProvider: Added public event: ${event.name} (${event.id})', 'MusicProvider');
+            }
+          }
+        } catch (e) {
+          AppLogger.error('Failed to fetch public events', e, null, 'MusicProvider');
+        }
+
+        AppLogger.debug('MusicProvider: Total playlists and events combined: ${allPlaylists.length}', 'MusicProvider');
+        
+        final resultList = allPlaylists.values.toList();
+        AppLogger.debug('MusicProvider: Returning ${resultList.length} playlists and events', 'MusicProvider');
+        return resultList;
       },
-      errorMessage: 'Failed to load playlists',
+      errorMessage: 'Failed to load playlists and events',
     );
     
     if (result != null) {
-      final userPlaylists = await _musicService.getUserPlaylists(token);
-      final publicPlaylists = await _musicService.getPublicPlaylists(token);
-      
-      _userPlaylists = userPlaylists;
-      _publicPlaylists = publicPlaylists;
       _playlists = result;
       _hasConnectionError = false;
-      AppLogger.debug('MusicProvider: Combined ${_playlists.length} total playlists (${_userPlaylists.length} user + ${_publicPlaylists.length} public)', 'MusicProvider');
+      AppLogger.debug('MusicProvider: Combined ${_playlists.length} total playlists (including regular playlists and events)', 'MusicProvider');
     } else {
       _hasConnectionError = true;
     }
@@ -131,13 +165,14 @@ class MusicProvider extends BaseProvider {
     bool isPublic, 
     String token, 
     String licenseType, 
+    bool isEvent,
     [String? deviceUuid]
   ) async {
-    AppLogger.debug('Creating playlist: $name (public: $isPublic)', 'MusicProvider');
+    AppLogger.debug('Creating playlist: $name (public: $isPublic, event: $isEvent)', 'MusicProvider');
     final result = await executeAsync(
       () async {
         final id = await _musicService.createPlaylist(
-          name, description, isPublic, token, licenseType, deviceUuid
+          name, description, isPublic, token, licenseType, isEvent, deviceUuid
         );
         AppLogger.debug('Playlist created with ID: $id', 'MusicProvider');
         await fetchAllPlaylists(token);
@@ -427,6 +462,7 @@ class MusicProvider extends BaseProvider {
     bool? isPublic,
     List<Track>? tracks,
     String? licenseType,
+    bool? isEvent,
     List<User>? sharedWith,
   }) {
     final index = _playlists.indexWhere((p) => p.id == playlistId);
@@ -441,6 +477,7 @@ class MusicProvider extends BaseProvider {
         tracks: tracks ?? currentPlaylist.tracks,
         imageUrl: currentPlaylist.imageUrl,
         licenseType: licenseType ?? currentPlaylist.licenseType,
+        isEvent: isEvent ?? currentPlaylist.isEvent,
         sharedWith: sharedWith ?? currentPlaylist.sharedWith,
       );
       notifyListeners();

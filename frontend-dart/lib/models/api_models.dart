@@ -368,6 +368,7 @@ class CreatePlaylistRequest {
   final bool public;
   final String? deviceUuid;
   final String licenseType;
+  final bool event;
   
   const CreatePlaylistRequest({
     required this.name, 
@@ -375,10 +376,11 @@ class CreatePlaylistRequest {
     required this.public, 
     this.deviceUuid,
     this.licenseType = 'open',
+    this.event = false,
   });
   
   Map<String, dynamic> toJson() {
-    final json = { 'name': name, 'description': description, 'public': public, 'license_type': licenseType };
+    final json = { 'name': name, 'description': description, 'public': public, 'license_type': licenseType, 'event': event };
     if (deviceUuid != null) { json['device_uuid'] = deviceUuid!; }
     return json;
   }
@@ -558,12 +560,19 @@ class PlaylistsResponse {
   
   const PlaylistsResponse({required this.playlists});
   
-  factory PlaylistsResponse.fromJson(Map<String, dynamic> json) => 
-      PlaylistsResponse(
-        playlists: (json['playlists'] as List<dynamic>)
-            .map((p) => Playlist.fromJson(p as Map<String, dynamic>))
-            .toList(),
-      );
+  factory PlaylistsResponse.fromJson(Map<String, dynamic> json) {
+    // Handle both 'playlists' and 'events' fields from different API endpoints
+    final playlistsData = json['playlists'] as List<dynamic>?;
+    final eventsData = json['events'] as List<dynamic>?;
+    
+    final dataList = playlistsData ?? eventsData ?? [];
+    
+    return PlaylistsResponse(
+      playlists: dataList
+          .map((p) => Playlist.fromJson(p as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }
 
 class PlaylistDetailResponse {
@@ -804,20 +813,18 @@ class FriendInvitationsResponse {
   const FriendInvitationsResponse({required this.invitations});
   
   factory FriendInvitationsResponse.fromJson(Map<String, dynamic> json) {
-    List<Map<String, dynamic>> parseInvitations(List<dynamic>? rawList) {
-      if (rawList == null) return [];
-      return rawList.whereType<Map<String, dynamic>>().toList();
+    final possibleKeys = ['received_invitations', 'sent_invitations', 'invitations'];
+    
+    for (final key in possibleKeys) {
+      final rawList = json[key] as List<dynamic>?;
+      if (rawList != null && rawList.isNotEmpty) {
+        return FriendInvitationsResponse(
+          invitations: rawList.whereType<Map<String, dynamic>>().toList(),
+        );
+      }
     }
     
-    List<Map<String, dynamic>> invitations = parseInvitations(json['received_invitations'] as List<dynamic>?);
-    if (invitations.isEmpty) {
-      invitations = parseInvitations(json['sent_invitations'] as List<dynamic>?);
-    }
-    if (invitations.isEmpty) {
-      invitations = parseInvitations(json['invitations'] as List<dynamic>?);
-    }
-    
-    return FriendInvitationsResponse(invitations: invitations);
+    return const FriendInvitationsResponse(invitations: []);
   }
 }
 

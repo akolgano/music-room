@@ -76,17 +76,33 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    if (_currentUser != null && _currentToken != null) {
-      try {
-        final request = LogoutRequest(username: _currentUser!.username);
-        await _api.logout(_currentToken!, request);
-      } catch (e) {
-        if (kDebugMode) {
-          AppLogger.error('Error during logout API call: ${e.toString()}', null, null, 'AuthService');
-        }
-      }
-    }
+    await _performServerLogout();
     await _clearAuth();
+  }
+
+  Future<void> _performServerLogout() async {
+    if (!_canPerformServerLogout()) return;
+    
+    try {
+      final request = _createLogoutRequest();
+      await _api.logout(_currentToken!, request);
+    } catch (e) {
+      _logLogoutError(e);
+    }
+  }
+
+  bool _canPerformServerLogout() {
+    return _currentUser != null && _currentToken != null;
+  }
+
+  LogoutRequest _createLogoutRequest() {
+    return LogoutRequest(username: _currentUser!.username);
+  }
+
+  void _logLogoutError(dynamic error) {
+    if (kDebugMode) {
+      AppLogger.error('Error during logout API call: ${error.toString()}', null, null, 'AuthService');
+    }
   }
 
 

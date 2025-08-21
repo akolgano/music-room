@@ -7,7 +7,6 @@ import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/scrollbar_widgets.dart';
 
 class SignupWithOtpScreen extends StatefulWidget {
   const SignupWithOtpScreen({super.key});
@@ -37,7 +36,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       appBar: AppBar(backgroundColor: AppTheme.background, title: const Text('Create Account')),
       body: SafeArea(
         child: Center(
-          child: CustomSingleChildScrollView(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
             child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400), child: _buildForm()),
           ),

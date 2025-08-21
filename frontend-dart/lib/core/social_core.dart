@@ -40,12 +40,10 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final providerLower = provider.toLowerCase();
-    
     late IconData icon;
     late Color color;
     
-    switch (providerLower) {
+    switch (provider.toLowerCase()) {
       case 'google':
         icon = Icons.g_mobiledata;
         color = Colors.red;

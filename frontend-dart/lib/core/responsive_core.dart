@@ -115,12 +115,6 @@ class MusicAppResponsive {
     return size == ScreenSize.tiny || size == ScreenSize.small;
   }
 
-  static bool isTabletSize(BuildContext context) {
-    final size = getScreenSize(context);
-    return size == ScreenSize.large || size == ScreenSize.xlarge;
-  }
-
-
   static EdgeInsets getButtonPadding(BuildContext context, {
     EdgeInsets? tiny,
     EdgeInsets? small,

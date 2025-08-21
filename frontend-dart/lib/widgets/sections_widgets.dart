@@ -456,121 +456,62 @@ class ProfileSectionsWidget extends StatelessWidget {
   );
 
   Future<void> _editMusicPreferences(BuildContext context) async {
+    if (!_canEditMusicPreferences(context)) return;
+
+    final currentPreferenceIds = _getCurrentPreferenceIds();
+    await _showMusicPreferenceDialog(context, currentPreferenceIds);
+  }
+
+  bool _canEditMusicPreferences(BuildContext context) {
     if (musicPreferences.isEmpty) {
-      return;
+      _showError(context, 'No music preferences available');
+      return false;
     }
 
     if (!context.mounted) {
-      if (kDebugMode) {
-        AppLogger.debug('Context not mounted at start - cannot edit music preferences', 'ProfileSectionsWidget');
-      }
-      return;
+      AppLogger.debug('Context not mounted - cannot edit music preferences', 'ProfileSectionsWidget');
+      return false;
     }
 
-    List<int> currentPreferenceIds = [];
-    
-    
+    return true;
+  }
+
+  List<int> _getCurrentPreferenceIds() {
+    // First try to get IDs directly
     final rawPreferenceIds = profileProvider.musicPreferenceIds;
     if (rawPreferenceIds != null && rawPreferenceIds.isNotEmpty) {
-      currentPreferenceIds = rawPreferenceIds;
-    } else if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
-      currentPreferenceIds = [];
-      for (final prefName in profileProvider.musicPreferences!) {
-        final matchingPref = musicPreferences.firstWhere(
-          (pref) => pref['name']?.toString().toLowerCase() == prefName.toLowerCase(),
-          orElse: () => <String, dynamic>{},
-        );
-        if (matchingPref.isNotEmpty && matchingPref['id'] != null) {
-          final id = matchingPref['id'] is int ? matchingPref['id'] as int : int.tryParse(matchingPref['id'].toString()) ?? 0;
-          if (id > 0) currentPreferenceIds.add(id);
-        }
+      return rawPreferenceIds;
+    }
+
+    // Fallback: convert preference names to IDs
+    if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
+      return _convertPreferenceNamesToIds(profileProvider.musicPreferences!);
+    }
+
+    // Return empty list if no preferences
+    return [];
+  }
+
+  List<int> _convertPreferenceNamesToIds(List<String> preferenceNames) {
+    final List<int> ids = [];
+    for (final prefName in preferenceNames) {
+      final matchingPref = musicPreferences.firstWhere(
+        (pref) => pref['name']?.toString().toLowerCase() == prefName.toLowerCase(),
+        orElse: () => <String, dynamic>{},
+      );
+      if (matchingPref.isNotEmpty && matchingPref['id'] != null) {
+        final id = _parsePreferenceId(matchingPref['id']);
+        if (id > 0) ids.add(id);
       }
     }
+    return ids;
+  }
 
-    
-    if (currentPreferenceIds.isEmpty && (profileProvider.musicPreferences?.isEmpty ?? true) && (profileProvider.musicPreferenceIds?.isEmpty ?? true)) {
-      bool isLoadingDialogShown = false;
-      late NavigatorState navigator;
-      
-      try {
-        navigator = Navigator.of(context);
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-        isLoadingDialogShown = true;
+  int _parsePreferenceId(dynamic rawId) {
+    return rawId is int ? rawId : int.tryParse(rawId.toString()) ?? 0;
+  }
 
-        if (kDebugMode) {
-          AppLogger.debug('Loading dialog shown, refreshing profile data...', 'ProfileSectionsWidget');
-        }
-
-        await profileProvider.loadProfile(auth.token).timeout(
-          const Duration(seconds: 3),
-          onTimeout: () => throw Exception('Profile loading timed out'),
-        );
-        
-        
-        final newRawPreferenceIds = profileProvider.musicPreferenceIds;
-        if (newRawPreferenceIds != null && newRawPreferenceIds.isNotEmpty) {
-          currentPreferenceIds = newRawPreferenceIds;
-        } else if (profileProvider.musicPreferences != null && profileProvider.musicPreferences!.isNotEmpty) {
-          currentPreferenceIds = [];
-          for (final prefName in profileProvider.musicPreferences!) {
-            final matchingPref = musicPreferences.firstWhere(
-              (pref) => pref['name']?.toString().toLowerCase() == prefName.toLowerCase(),
-              orElse: () => <String, dynamic>{},
-            );
-            if (matchingPref.isNotEmpty && matchingPref['id'] != null) {
-              final id = matchingPref['id'] is int ? matchingPref['id'] as int : int.tryParse(matchingPref['id'].toString()) ?? 0;
-              if (id > 0) currentPreferenceIds.add(id);
-            }
-          }
-        }
-        
-      } catch (e) {
-        if (kDebugMode) {
-          AppLogger.error('Error loading preferences: $e', e, null, 'ProfileSectionsWidget');
-        }
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to load music preferences: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
-      } finally {
-        if (isLoadingDialogShown && navigator.mounted) {
-          try {
-            navigator.pop();
-            if (kDebugMode) {
-              AppLogger.debug('Loading dialog dismissed', 'ProfileSectionsWidget');
-            }
-          } catch (e) {
-            if (kDebugMode) {
-              AppLogger.error('Error dismissing dialog: $e', e, null, 'ProfileSectionsWidget');
-            }
-          }
-        }
-      }
-    }
-
-    if (!context.mounted) {
-      if (kDebugMode) {
-        AppLogger.debug('Context not mounted after loading - cannot show dialog', 'ProfileSectionsWidget');
-      }
-      return;
-    }
-
-    if (kDebugMode) {
-      AppLogger.debug('Loaded preference IDs: $currentPreferenceIds', 'ProfileSectionsWidget');
-      AppLogger.debug('Showing music preference dialog...', 'ProfileSectionsWidget');
-    }
-
+  Future<void> _showMusicPreferenceDialog(BuildContext context, List<int> currentPreferenceIds) async {
     try {
       final selectedIds = await showDialog<List<int>>(
         context: context,
@@ -581,28 +522,37 @@ class ProfileSectionsWidget extends StatelessWidget {
       );
 
       if (selectedIds != null && context.mounted) {
-        final success = await profileProvider.updateProfile(
-          auth.token,
-          musicPreferencesIds: selectedIds,
-          availableMusicPreferences: musicPreferences,
-        );
-        if (success && context.mounted) {
-          handleUpdateSuccess('Music preferences', profileProvider);
-        }
+        await _updateMusicPreferences(context, selectedIds);
       }
     } catch (e) {
-      if (kDebugMode) {
-        AppLogger.error('Error showing music preference dialog: $e', e, null, 'ProfileSectionsWidget');
-      }
+      AppLogger.error('Error showing music preference dialog: $e', e, null, 'ProfileSectionsWidget');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error opening music preferences: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showError(context, 'Error opening music preferences: ${e.toString()}');
       }
     }
+  }
+
+  Future<void> _updateMusicPreferences(BuildContext context, List<int> selectedIds) async {
+    final success = await profileProvider.updateProfile(
+      auth.token,
+      musicPreferencesIds: selectedIds,
+      availableMusicPreferences: musicPreferences,
+    );
+    
+    if (success && context.mounted) {
+      handleUpdateSuccess('Music preferences', profileProvider);
+    } else if (context.mounted) {
+      _showError(context, 'Failed to update music preferences');
+    }
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   Future<void> _editField(

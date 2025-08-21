@@ -11,7 +11,6 @@ import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/scrollbar_widgets.dart';
 import '../base_screens.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
@@ -27,6 +26,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isPublic = true;
+  bool _isEvent = false;
   bool _isLoading = false;
   String _licenseType = 'open';
   
@@ -91,7 +91,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       return _buildCollaborativeEditor();
     }
 
-    return CustomSingleChildScrollView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(4),
       child: Column(
         children: [
@@ -147,8 +147,20 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             icon: _isPublic ? Icons.public : Icons.lock,
           ),
           const SizedBox(height: 16),
-          if (!_isPublic && _isOwner) _buildEditPermissionSettings(),
-          if (!_isPublic && _isOwner) const SizedBox(height: 24),
+          AppWidgets.switchTile(
+            value: _isEvent,
+            onChanged: (value) => setState(() => _isEvent = value),
+            title: 'Event',
+            subtitle: _isEvent 
+              ? (_isPublic 
+                  ? 'Public event - anyone can vote' 
+                  : 'Private event - only invited users can vote')
+              : 'Regular playlist - no voting available',
+            icon: _isEvent ? Icons.event : Icons.playlist_play,
+          ),
+          const SizedBox(height: 16),
+          if (!_isPublic && _isEvent && _isOwner) _buildEditPermissionSettings(),
+          if (!_isPublic && _isEvent && _isOwner) const SizedBox(height: 24),
           if (_isPublic) const SizedBox(height: 8),
           AppWidgets.primaryButton(
             context: context,
@@ -168,19 +180,25 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       titleIcon: Icons.edit,
       child: Column(
         children: [
-          RadioListTile<String>(
+          ListTile(
             title: const Text('Open Editing'),
             subtitle: const Text('Anyone with access can edit'),
-            value: 'open',
-            groupValue: _licenseType,
-            onChanged: (value) => setState(() => _licenseType = value!),
+            leading: Radio<String>(
+              value: 'open',
+              groupValue: _licenseType,
+              onChanged: (value) => setState(() => _licenseType = value!),
+            ),
+            onTap: () => setState(() => _licenseType = 'open'),
           ),
-          RadioListTile<String>(
+          ListTile(
             title: const Text('Invite Only'),
             subtitle: const Text('Only invited collaborators can edit'),
-            value: 'invite_only',
-            groupValue: _licenseType,
-            onChanged: (value) => setState(() => _licenseType = value!),
+            leading: Radio<String>(
+              value: 'invite_only',
+              groupValue: _licenseType,
+              onChanged: (value) => setState(() => _licenseType = value!),
+            ),
+            onTap: () => setState(() => _licenseType = 'invite_only'),
           ),
         ],
       ),
@@ -523,6 +541,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             _nameController.text = _playlist!.name;
             _descriptionController.text = _playlist!.description;
             _isPublic = _playlist!.isPublic;
+            _isEvent = _playlist!.isEvent;
             _licenseType = _playlist!.licenseType;
           });
 
@@ -555,6 +574,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         _isPublic,
         auth.token!,
         _licenseType,
+        _isEvent,
       );
 
       if (playlistId?.isEmpty ?? true) {
@@ -614,6 +634,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         isPublic: _isPublic,
+        isEvent: _isEvent,
         licenseType: _licenseType,
       );
       

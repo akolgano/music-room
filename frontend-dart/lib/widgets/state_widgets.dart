@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../core/animations_core.dart';
+import '../core/responsive_core.dart';
 
 class StateWidgets {
   static double _responsiveWidth(double value) => value.w;
@@ -50,8 +51,15 @@ class StateWidgets {
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
-          final iconSize = (isConstrained ? 24.0 : 64.0).sp;
-          final titleSize = (isConstrained ? 12.0 : 18.0).sp;
+          
+          final iconSize = isConstrained 
+            ? MusicAppResponsive.getIconSize(context, tiny: 16, small: 18, medium: 20, large: 22, xlarge: 24, xxlarge: 26)
+            : MusicAppResponsive.getIconSize(context, tiny: 40, small: 48, medium: 56, large: 64, xlarge: 72, xxlarge: 80);
+            
+          final titleSize = isConstrained
+            ? MusicAppResponsive.getFontSize(context, tiny: 10, small: 11, medium: 12, large: 13, xlarge: 14, xxlarge: 15)
+            : MusicAppResponsive.getFontSize(context, tiny: 14, small: 16, medium: 18, large: 20, xlarge: 22, xxlarge: 24);
+            
           final spacing = (isConstrained ? 4.0 : 12.0).h;
           final padding = _responsiveWidth(isConstrained ? 8.0 : 32.0);
           
@@ -155,47 +163,49 @@ class EmptyStateContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: iconSize, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-        SizedBox(height: spacing),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: titleSize,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-          ),
-          textAlign: TextAlign.center,
-        ),
-        if (subtitle != null) ...[
-          SizedBox(height: spacing / 2),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: iconSize, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+          SizedBox(height: spacing),
           Text(
-            subtitle!,
+            title,
             style: TextStyle(
-              fontSize: titleSize * 0.8,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              fontSize: titleSize,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),
-        ],
-        if (buttonText != null && onButtonPressed != null) ...[
-          SizedBox(height: spacing * 1.5),
-          if (!isConstrained)
-            ElevatedButton(
-              onPressed: onButtonPressed,
-              child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.9)),
-            )
-          else
-            TextButton(
-              onPressed: onButtonPressed,
-              child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.8)),
+          if (subtitle != null) ...[
+            SizedBox(height: spacing / 2),
+            Text(
+              subtitle!,
+              style: TextStyle(
+                fontSize: titleSize * 0.8,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+              textAlign: TextAlign.center,
             ),
+          ],
+          if (buttonText != null && onButtonPressed != null) ...[
+            SizedBox(height: spacing * 1.5),
+            if (!isConstrained)
+              ElevatedButton(
+                onPressed: onButtonPressed,
+                child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.9)),
+              )
+            else
+              TextButton(
+                onPressed: onButtonPressed,
+                child: Text(buttonText!, style: TextStyle(fontSize: titleSize * 0.8)),
+              ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

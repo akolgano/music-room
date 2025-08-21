@@ -20,10 +20,11 @@ class AllPlaylistsScreen extends StatefulWidget {
 class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with WidgetsBindingObserver {
   PlaylistSortOption _currentSort = PlaylistSortOption.defaultOptions.first;
   List<Playlist> _sortedPlaylists = [];
+  List<Playlist> _sortedEvents = [];
   DateTime? _lastRefresh;
 
   @override
-  String get screenTitle => 'All Playlists';
+  String get screenTitle => 'Playlists & Events';
 
   @override
   List<Widget> get actions => [
@@ -91,10 +92,10 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
   Widget buildContent() {
     return buildConsumerContent<MusicProvider>(
       builder: (context, musicProvider) {
-        _updateSortedPlaylists(musicProvider.playlists);
+        _updateSortedPlaylistsAndEvents(musicProvider.playlists);
         return Column(
           children: [
-            if (_sortedPlaylists.isNotEmpty && _currentSort.displayName != PlaylistSortOption.defaultOptions.first.displayName)
+            if ((_sortedPlaylists.isNotEmpty || _sortedEvents.isNotEmpty) && _currentSort.displayName != PlaylistSortOption.defaultOptions.first.displayName)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
@@ -109,21 +110,18 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
                 ),
               ),
             Expanded(
-              child: buildListWithRefresh<Playlist>(
-                items: _sortedPlaylists,
+              child: RefreshIndicator(
                 onRefresh: _loadPlaylists,
-                itemBuilder: (playlist, index) => AppWidgets.playlistCard( 
-                  playlist: playlist,
-                  onTap: () => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id), 
-                  onPlay: () => _playPlaylist(playlist),
-                  showPlayButton: true,
-                ),
-                emptyState: AppWidgets.emptyState( 
-                  icon: Icons.playlist_play,
-                  title: 'No playlists found',
-                  subtitle: 'Your playlists and public playlists from other users will appear here',
-                  buttonText: 'Create Playlist',
-                  onButtonPressed: () => navigateTo(AppRoutes.playlistEditor),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPlaylistsSection(),
+                      const SizedBox(height: 16),
+                      _buildEventsSection(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -207,26 +205,34 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
     );
   }
 
-  void _updateSortedPlaylists(List<Playlist> playlists) {
-    _sortedPlaylists = List.from(playlists);
+  void _updateSortedPlaylistsAndEvents(List<Playlist> allPlaylists) {
+    // Separate playlists and events
+    _sortedPlaylists = allPlaylists.where((p) => !p.isEvent).toList();
+    _sortedEvents = allPlaylists.where((p) => p.isEvent).toList();
     
+    // Apply sorting to both lists
+    _sortPlaylists(_sortedPlaylists);
+    _sortPlaylists(_sortedEvents);
+  }
+
+  void _sortPlaylists(List<Playlist> playlists) {
     switch (_currentSort.field) {
       case PlaylistSortField.name:
-        _sortedPlaylists.sort((a, b) {
+        playlists.sort((a, b) {
           final comparison = a.name.toLowerCase().compareTo(b.name.toLowerCase());
           return _currentSort.order == SortOrder.ascending ? comparison : -comparison;
         });
         break;
         
       case PlaylistSortField.creator:
-        _sortedPlaylists.sort((a, b) {
+        playlists.sort((a, b) {
           final comparison = a.creator.toLowerCase().compareTo(b.creator.toLowerCase());
           return _currentSort.order == SortOrder.ascending ? comparison : -comparison;
         });
         break;
         
       case PlaylistSortField.trackCount:
-        _sortedPlaylists.sort((a, b) {
+        playlists.sort((a, b) {
           final aCount = a.tracks.length;
           final bCount = b.tracks.length;
           final comparison = aCount.compareTo(bCount);
@@ -235,14 +241,99 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
         break;
         
       case PlaylistSortField.dateCreated:
-
-        _sortedPlaylists.sort((a, b) {
-
+        playlists.sort((a, b) {
           final comparison = a.name.toLowerCase().compareTo(b.name.toLowerCase());
           return _currentSort.order == SortOrder.ascending ? comparison : -comparison;
         });
         break;
     }
+  }
+
+  Widget _buildPlaylistsSection() {
+    return _buildSection(
+      title: 'Playlists',
+      icon: Icons.playlist_play,
+      items: _sortedPlaylists,
+      emptyMessage: 'No playlists found',
+      emptySubtitle: 'Your regular playlists will appear here',
+      createButtonText: 'Create Playlist',
+      onCreatePressed: () => navigateTo(AppRoutes.playlistEditor),
+    );
+  }
+
+  Widget _buildEventsSection() {
+    return _buildSection(
+      title: 'Events',
+      icon: Icons.event,
+      items: _sortedEvents,
+      emptyMessage: 'No events found',
+      emptySubtitle: 'Your event playlists will appear here',
+      createButtonText: 'Create Event',
+      onCreatePressed: () => navigateTo(AppRoutes.playlistEditor, arguments: {'isEvent': true}),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<Playlist> items,
+    required String emptyMessage,
+    required String emptySubtitle,
+    required String createButtonText,
+    required VoidCallback onCreatePressed,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: Colors.white70),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${items.length}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (items.isEmpty)
+            AppWidgets.emptyState(
+              icon: icon,
+              title: emptyMessage,
+              subtitle: emptySubtitle,
+              buttonText: createButtonText,
+              onButtonPressed: onCreatePressed,
+            )
+          else
+            ...items.map((playlist) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: AppWidgets.playlistCard(
+                playlist: playlist,
+                onTap: () => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id),
+                onPlay: () => _playPlaylist(playlist),
+                onDelete: () => _deletePlaylist(playlist),
+                showPlayButton: true,
+                showDeleteButton: true,
+                currentUsername: auth.username,
+              ),
+            )),
+        ],
+      ),
+    );
   }
 
   void _refreshPlaylistsIfNeeded() {
@@ -264,5 +355,23 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
       errorMessage: 'Failed to refresh playlists',
       successMessage: 'Playlists refreshed successfully',
     );
+  }
+
+  Future<void> _deletePlaylist(Playlist playlist) async {
+    final confirmed = await showConfirmDialog(
+      'Delete Playlist',
+      'Are you sure you want to delete "${playlist.name}"? This action cannot be undone.'
+    );
+    
+    if (confirmed) {
+      await runAsyncAction(
+        () async {
+          final musicProvider = getProvider<MusicProvider>();
+          await musicProvider.deletePlaylist(playlist.id, auth.token!);
+        },
+        successMessage: 'Playlist "${playlist.name}" deleted successfully',
+        errorMessage: 'Failed to delete playlist',
+      );
+    }
   }
 }

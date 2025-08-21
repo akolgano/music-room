@@ -482,6 +482,7 @@ def patch_playlist_license(request, playlist_id):
     if request.method == 'GET':
         serializer = PlaylistLicenseSerializer(playlist)
         return JsonResponse(serializer.data, status=200)
+
     serializer = PlaylistLicenseSerializer(playlist, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()

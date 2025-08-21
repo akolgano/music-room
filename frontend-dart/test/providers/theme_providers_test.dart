@@ -103,6 +103,7 @@ void main() {
       try {
         await provider.extractAndApplyDominantColor('https://invalid-url.com/image.jpg');
       } catch (e) {
+        // Expected to fail with invalid URL
       }
 
       expect(provider.isExtracting, isFalse);

@@ -13,7 +13,6 @@ import '../../core/constants_core.dart';
 import '../../core/logging_core.dart';
 import '../../core/animations_core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/scrollbar_widgets.dart';
 import '../../widgets/status_widgets.dart';
 import '../../models/music_models.dart';
 import '../profile/profile_screens.dart';
@@ -65,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
-                return CustomSingleChildScrollView(
+                return SingleChildScrollView(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minHeight: constraints.maxHeight),
                     child: IntrinsicHeight(
@@ -353,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         return RefreshIndicator(
           onRefresh: _loadData,
           color: AppTheme.primary,
-          child: CustomSingleChildScrollView(
+          child: SingleChildScrollView(
             padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -507,7 +506,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       builder: (context, friendProvider, _) {
         if (friendProvider.isLoading) return AppWidgets.loading('Loading friends...');
         final pendingRequests = friendProvider.receivedInvitations;
-        return CustomSingleChildScrollView(
+        return SingleChildScrollView(
           padding: EdgeInsets.all(ThemeUtils.getResponsivePadding(context)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

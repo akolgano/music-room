@@ -46,6 +46,20 @@ class PlaylistUpdateMessage {
   }
 }
 
+class _NotificationInfo {
+  final String title;
+  final String message;
+  final Color backgroundColor;
+  final IconData icon;
+
+  _NotificationInfo({
+    required this.title,
+    required this.message,
+    required this.backgroundColor,
+    required this.icon,
+  });
+}
+
 class WebSocketService {
   WebSocketChannel? _channel;
   StreamController<PlaylistUpdateMessage>? _playlistUpdateController;
@@ -132,44 +146,86 @@ class WebSocketService {
   void _handleIncomingMessage(dynamic message) {
     _log('Received message: $message');
     
+    final data = _parseMessage(message);
+    if (data == null) return;
+    
+    _broadcastRawMessage(data);
+    _showNotificationForMessage(data);
+    _processMessageByType(data);
+  }
+
+  Map<String, dynamic>? _parseMessage(dynamic message) {
     try {
-      final data = jsonDecode(message as String) as Map<String, dynamic>;
-      
-      _rawMessageController?.add(data);
-      
-      if (getIt.isRegistered<NotificationService>()) {
-        final hasVotingData = data['data'] != null && data['data'] is List && (data['data'] as List).isNotEmpty;
-        getIt<NotificationService>().showNotification(
-          title: hasVotingData ? 'Playlist Updated' : 'Playlist Activity',
-          message: hasVotingData ? 'New votes received!' : 'Playlist has been updated',
-          backgroundColor: hasVotingData 
-            ? Colors.orange.withValues(alpha: 0.9)
-            : Colors.blue.withValues(alpha: 0.9),
-          icon: hasVotingData ? Icons.how_to_vote : Icons.playlist_play,
-        );
-      }
-      
-      final messageType = PlaylistWebSocketMessageType.fromString(data['type']);
-      
-      switch (messageType) {
-        case PlaylistWebSocketMessageType.playlistUpdate:
-        case PlaylistWebSocketMessageType.playlistUpdateDot:
-          try {
-            final updateMessage = PlaylistUpdateMessage.fromJson(data);
-            _playlistUpdateController?.add(updateMessage);
-            _log('Parsed playlist update: ${updateMessage.tracks.length} tracks');
-            
-            _updateProvidersWithPlaylistData(updateMessage);
-          } catch (e) {
-            _log('Error parsing playlist update: $e');
-          }
-          break;
-        case null:
-          _log('Unknown message type: ${data['type']}');
-          break;
-      }
+      return jsonDecode(message as String) as Map<String, dynamic>;
     } catch (e) {
       _log('Error parsing message: $e');
+      return null;
+    }
+  }
+
+  void _broadcastRawMessage(Map<String, dynamic> data) {
+    _rawMessageController?.add(data);
+  }
+
+  void _showNotificationForMessage(Map<String, dynamic> data) {
+    if (!getIt.isRegistered<NotificationService>()) return;
+    
+    final hasVotingData = _hasVotingData(data);
+    final notificationInfo = _getNotificationInfo(hasVotingData);
+    
+    getIt<NotificationService>().showNotification(
+      title: notificationInfo.title,
+      message: notificationInfo.message,
+      backgroundColor: notificationInfo.backgroundColor,
+      icon: notificationInfo.icon,
+    );
+  }
+
+  bool _hasVotingData(Map<String, dynamic> data) {
+    return data['data'] != null && 
+           data['data'] is List && 
+           (data['data'] as List).isNotEmpty;
+  }
+
+  _NotificationInfo _getNotificationInfo(bool hasVotingData) {
+    return hasVotingData
+        ? _NotificationInfo(
+            title: 'Playlist Updated',
+            message: 'New votes received!',
+            backgroundColor: Colors.orange.withValues(alpha: 0.9),
+            icon: Icons.how_to_vote,
+          )
+        : _NotificationInfo(
+            title: 'Playlist Activity',
+            message: 'Playlist has been updated',
+            backgroundColor: Colors.blue.withValues(alpha: 0.9),
+            icon: Icons.playlist_play,
+          );
+  }
+
+  void _processMessageByType(Map<String, dynamic> data) {
+    final messageType = PlaylistWebSocketMessageType.fromString(data['type']);
+    
+    switch (messageType) {
+      case PlaylistWebSocketMessageType.playlistUpdate:
+      case PlaylistWebSocketMessageType.playlistUpdateDot:
+        _handlePlaylistUpdate(data);
+        break;
+      case null:
+        _log('Unknown message type: ${data['type']}');
+        break;
+    }
+  }
+
+  void _handlePlaylistUpdate(Map<String, dynamic> data) {
+    try {
+      final updateMessage = PlaylistUpdateMessage.fromJson(data);
+      _playlistUpdateController?.add(updateMessage);
+      _log('Parsed playlist update: ${updateMessage.tracks.length} tracks');
+      
+      _updateProvidersWithPlaylistData(updateMessage);
+    } catch (e) {
+      _log('Error parsing playlist update: $e');
     }
   }
 
