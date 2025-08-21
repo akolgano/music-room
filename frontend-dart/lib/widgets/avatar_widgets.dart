@@ -145,10 +145,8 @@ class ProfileAvatarWidget extends StatelessWidget {
     );
   }
 
-  Future<void> _editAvatar(BuildContext context, [String? sourceType]) async {
+  Future<void> _editAvatar(BuildContext context, String sourceType) async {
     try {
-      sourceType ??= await _showImageSourceDialog(context);
-      if (sourceType == null) return;
 
       if (sourceType == 'remove') {
         await profileProvider.deleteAvatar(auth.token);
@@ -480,56 +478,6 @@ class ProfileAvatarWidget extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Future<String?> _showImageSourceDialog(BuildContext context) async {
-    return await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppTheme.surface,
-          title: const Text(
-            'Select Image Source',
-            style: TextStyle(color: Colors.white),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_library, color: AppTheme.primary),
-                title: Text(
-                  kIsWeb ? 'Choose File' : 'Gallery',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                onTap: () => Navigator.pop(context, 'gallery'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.pets, color: AppTheme.primary),
-                title: const Text(
-                  'Random Cat Picture',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: () => Navigator.pop(context, 'random_cat'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
-                  'Remove Avatar',
-                  style: TextStyle(color: Colors.red),
-                ),
-                onTap: () => Navigator.pop(context, 'remove'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-          ],
-        );
-      },
     );
   }
 

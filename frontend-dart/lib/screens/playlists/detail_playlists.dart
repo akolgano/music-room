@@ -458,7 +458,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
             _votingProvider!.initializeTrackPoints(_tracks);
           }
           
-          await _votingService.loadVotingSettings(auth.token!);
+          await _votingService.loadVotingSettings(auth.token!, isOwner: _isOwner);
           
           if (_playlist!.imageUrl?.isNotEmpty == true) {
             themeProvider.extractAndApplyDominantColor(_playlist!.imageUrl);

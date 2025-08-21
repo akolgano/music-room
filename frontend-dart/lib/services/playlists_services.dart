@@ -83,7 +83,14 @@ class PlaylistVotingService {
     }
   }
 
-  Future<void> loadVotingSettings(String authToken) async {
+  Future<void> loadVotingSettings(String authToken, {bool isOwner = true}) async {
+    if (!isOwner) {
+      _votingLicenseType = 'open';
+      _isPublicVoting = true;
+      AppLogger.info('Skipping voting settings for non-owner', 'PlaylistVotingService');
+      return;
+    }
+    
     try {
       final apiService = getIt<ApiService>();
       final licenseResponse = await apiService.getPlaylistLicense(playlistId, authToken);
