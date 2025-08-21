@@ -467,6 +467,7 @@ def invite_user(request, playlist_id):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@patch_playlist_license_schema
 @api_view(['GET', 'PATCH'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
