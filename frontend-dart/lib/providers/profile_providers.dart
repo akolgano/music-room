@@ -218,70 +218,33 @@ class ProfileProvider extends BaseProvider {
         if (kDebugMode) {
           debugPrint('[ProfileProvider] Starting Google Sign-In process');
           debugPrint('[ProfileProvider] Platform: ${kIsWeb ? "Web" : "Android"}');
-          debugPrint('[ProfileProvider] Using google_sign_in v7 API');
+          debugPrint('[ProfileProvider] Using google_sign_in v6 API');
         }
         
-        await GoogleSignInCore.initialize();
-        
-        GoogleSignInAccount? user;
-        
         try {
-          try {
-            await googleSignIn.signOut();
-            if (kDebugMode) {
-              debugPrint('[ProfileProvider] Signed out previous session');
-            }
-          } catch (e) {
-            if (kDebugMode) {
-              debugPrint('[ProfileProvider] No previous session: $e');
-            }
-          }
-          
+          await googleSignIn.signOut();
           if (kDebugMode) {
-            debugPrint('[ProfileProvider] Showing Google account picker...');
-          }
-          
-          if (googleSignIn.supportsAuthenticate()) {
-            user = await googleSignIn.authenticate(
-              scopeHint: ['email', 'profile'],
-            );
-          } else {
-            throw Exception('Google Sign-In not supported on this platform');
-          }
-          
-          if (kDebugMode) {
-            debugPrint('[ProfileProvider] Sign-in successful: ${user.email}');
-          }
-          
-        } on GoogleSignInException catch (e) {
-          if (kDebugMode) {
-            debugPrint('[ProfileProvider] Google Sign-In error: code: ${e.code.name} description:${e.description} details:${e.details}');
-          }
-          
-          if (e.code == GoogleSignInExceptionCode.canceled) {
-            throw Exception("Google Sign-In was cancelled.");
-          } else if (e.code == GoogleSignInExceptionCode.interrupted) {
-            throw Exception("Network error during Google Sign-In. Please check your connection.");
-          } else if (e.code == GoogleSignInExceptionCode.clientConfigurationError) {
-            throw Exception(
-              "SHA fingerprint mismatch! Fix:\n"
-              "1. Run: cd android && gradlew signingReport\n"
-              "2. Copy SHA1 and SHA256 for debug variant\n"
-              "3. Add to Firebase Console > Project Settings\n"
-              "4. Download new google-services.json\n"
-              "5. Replace android/app/google-services.json\n"
-              "6. Clean rebuild: flutter clean && flutter run"
-            );
-          } else {
-            throw Exception(e.description ?? "Google Sign-In failed. Please try again.");
+            debugPrint('[ProfileProvider] Signed out previous session');
           }
         } catch (e) {
           if (kDebugMode) {
-            debugPrint('[ProfileProvider] Unexpected error: $e');
+            debugPrint('[ProfileProvider] No previous session: $e');
           }
-          throw Exception("Google Sign-In failed. Please try again.");
         }
         
+        if (kDebugMode) {
+          debugPrint('[ProfileProvider] Showing Google account picker...');
+        }
+        
+        final user = await googleSignIn.signIn();
+        
+        if (kDebugMode) {
+          debugPrint('[ProfileProvider] Sign-in successful: ${user?.email}');
+        }
+        
+        if (user == null) {
+          throw Exception('Google Sign-In failed: No user returned');
+        }
         
         final socialId = user.id;
         final socialEmail = user.email;
@@ -303,7 +266,7 @@ class ProfileProvider extends BaseProvider {
             socialName: socialName
           ));
         } else {
-          final auth = user.authentication;
+          final auth = await user.authentication;
           final idToken = auth.idToken;
           
           if (kDebugMode) {

@@ -148,53 +148,30 @@ class AuthProvider extends BaseProvider {
         if (kDebugMode) {
           developer.log('Starting Google Sign-In process', name: 'AuthProvider');
           developer.log('Platform: ${kIsWeb ? "Web" : "Android"}', name: 'AuthProvider');
-          developer.log('Using google_sign_in v7 API', name: 'AuthProvider');
-        }
-        
-        await GoogleSignInCore.initialize();
-        
-        GoogleSignInAccount? user;
-        
-        try {
-          await googleSignIn.disconnect();
-        } catch (e) {
-          if (kDebugMode) {
-            developer.log('Disconnect failed (normal if no previous account): $e', name: 'AuthProvider');
-          }
+          developer.log('Using google_sign_in v6 API', name: 'AuthProvider');
         }
         
         try {
-          user = await googleSignIn.attemptLightweightAuthentication();
+          await googleSignIn.signOut();
           if (kDebugMode) {
-            developer.log('Lightweight auth result: ${user?.email}', name: 'AuthProvider');
+            developer.log('Signed out previous session', name: 'AuthProvider');
           }
         } catch (e) {
           if (kDebugMode) {
-            developer.log('Lightweight auth failed: $e', name: 'AuthProvider');
+            developer.log('No previous session: $e', name: 'AuthProvider');
           }
         }
+        
+        if (kDebugMode) {
+          developer.log('Showing Google account picker...', name: 'AuthProvider');
+        }
+        
+        final user = await googleSignIn.signIn();
+        
         
         if (user == null) {
-          if (kDebugMode) {
-            developer.log('Lightweight auth failed, trying full auth', name: 'AuthProvider');
-          }
-          
-          if (googleSignIn.supportsAuthenticate()) {
-            try {
-              user = await googleSignIn.authenticate(
-                scopeHint: ['email', 'profile'],
-              );
-            } on GoogleSignInException catch (e) {
-              if (kDebugMode) {
-                developer.log('Google Sign-In error: code: ${e.code.name} description:${e.description} details:${e.details}', name: 'AuthProvider');
-              }
-              throw Exception(e.description ?? 'Google authentication failed');
-            }
-          } else {
-            throw Exception('Google Sign-In not supported on this platform');
-          }
+          throw Exception('Google Sign-In failed: No user returned');
         }
-        
         
         final socialId = user.id;
         final socialEmail = user.email;
@@ -214,7 +191,7 @@ class AuthProvider extends BaseProvider {
             socialName: socialName
           );
         } else {
-          final auth = user.authentication;
+          final auth = await user.authentication;
           final idToken = auth.idToken;
           
           if (kDebugMode) {
@@ -235,6 +212,30 @@ class AuthProvider extends BaseProvider {
             );
           }
         }
+      },
+      successMessage: 'Google login successful!',
+      errorMessage: null,
+    );
+    
+    return success;
+  }
+
+  Future<bool> handleWebGoogleSignIn(GoogleSignInAccount user) async {
+    final success = await executeBool(
+      () async {
+        final socialId = user.id;
+        final socialEmail = user.email;
+        final socialName = user.displayName;
+        
+        if (kDebugMode) {
+          developer.log('Web Google Sign-In successful: $socialEmail', name: 'AuthProvider');
+        }
+        
+        await _authService.googleLogin(
+          socialId: socialId,
+          socialEmail: socialEmail,
+          socialName: socialName
+        );
       },
       successMessage: 'Google login successful!',
       errorMessage: null,

@@ -69,9 +69,17 @@ class LocationService {
   }
 
   static Future<LocationSuggestion?> getCurrentLocation() async {
-    return await _tryGpsLocation() ?? 
-           await _tryIpLocation() ?? 
-           _throwLocationError();
+    final gpsLocation = await _tryGpsLocation();
+    if (gpsLocation != null) return gpsLocation;
+    
+    final ipLocation = await _tryIpLocation();
+    if (ipLocation != null) return ipLocation;
+    
+    String errorMessage = 'Unable to detect location automatically.';
+    if (kIsWeb) {
+      errorMessage += ' GPS requires HTTPS and location permissions. Tried IP-based detection as backup.';
+    }
+    throw LocationException(errorMessage);
   }
 
   static Future<LocationSuggestion?> _tryGpsLocation() async {
@@ -122,14 +130,6 @@ class LocationService {
       }
       return null;
     }
-  }
-
-  static Never _throwLocationError() {
-    String errorMessage = 'Unable to detect location automatically.';
-    if (kIsWeb) {
-      errorMessage += ' GPS requires HTTPS and location permissions. Tried IP-based detection as backup.';
-    }
-    throw LocationException(errorMessage);
   }
 
   static Future<LocationSuggestion?> _reverseGeocode(double latitude, double longitude) async {
