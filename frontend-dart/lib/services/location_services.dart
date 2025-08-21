@@ -16,7 +16,6 @@ class LocationService {
   static const String _geonamesBaseUrl = 'http://api.geonames.org';
   static const String _ipApiUrl = 'http://ip-api.com/json';
   
-  
   static Future<List<LocationSuggestion>> searchCities(String query) async {
     if (query.trim().isEmpty || query.length < 2) {
       return [];
@@ -82,7 +81,9 @@ class LocationService {
         return await _reverseGeocode(position.latitude, position.longitude);
       }
     } catch (e) {
-      _debugLog('GPS location failed, trying IP fallback: $e');
+      if (kDebugMode) {
+        debugPrint('GPS location failed, trying IP fallback: $e');
+      }
     }
     return null;
   }
@@ -110,18 +111,16 @@ class LocationService {
     try {
       final result = await getLocationByIP();
       if (result != null) {
-        _debugLog('Location detected via IP: ${result.displayName}');
+        if (kDebugMode) {
+          debugPrint('Location detected via IP: ${result.displayName}');
+        }
       }
       return result;
     } catch (e) {
-      _debugLog('IP location also failed: $e');
+      if (kDebugMode) {
+        debugPrint('IP location also failed: $e');
+      }
       return null;
-    }
-  }
-
-  static void _debugLog(String message) {
-    if (kDebugMode) {
-      debugPrint(message);
     }
   }
 
@@ -186,7 +185,6 @@ class LocationSuggestion {
     }
     return '$name, $country';
   }
-  
   
   @override
   bool operator ==(Object other) =>

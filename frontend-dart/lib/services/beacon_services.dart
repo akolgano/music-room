@@ -319,17 +319,12 @@ class BeaconService {
     stopMonitoring();
   }
 
-  BeaconInfo? getBeaconById(String identifier) {
-    return _discoveredBeacons[identifier];
-  }
-
   List<BeaconInfo> getNearbyBeacons({double maxDistance = 2.0}) {
     return discoveredBeacons
         .where((beacon) => beacon.distance <= maxDistance && beacon.proximity != 'unknown')
         .toList()
       ..sort((a, b) => a.distance.compareTo(b.distance));
   }
-
 
   Future<void> dispose() async {
     try {

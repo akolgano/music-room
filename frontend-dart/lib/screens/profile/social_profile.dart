@@ -37,6 +37,7 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
           child: AppTheme.buildFormCard( 
             title: 'Link with Social Network',
             titleIcon: Icons.link,
+            context: context,
             child: buildConsumerContent<ProfileProvider>(
               builder: (context, profileProvider) {
                 return Column(
@@ -62,14 +63,43 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
                         Expanded(
                           child: SocialLoginButton(
                             provider: 'Google', 
-                            onPressed: () => _linkWithSocial('Google'), 
+                            onPressed: profileProvider.isLoading ? null : () async {
+                              if (auth.token == null) {
+                                showError('Not authenticated');
+                                return;
+                              }
+                              try {
+                                final success = await profileProvider.googleLink(auth.token);
+                                if (success) {
+                                  await profileProvider.loadProfile(auth.token);
+                                  showSuccess('Google account linked successfully!');
+                                }
+                              } catch (e) {
+                                showError('Failed to link Google account');
+                              }
+                            }, 
                             isLoading: profileProvider.isLoading,
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: SocialLoginButton(
-                            provider: 'Facebook', onPressed: () => _linkWithSocial('Facebook'),
+                            provider: 'Facebook', 
+                            onPressed: profileProvider.isLoading ? null : () async {
+                              if (auth.token == null) {
+                                showError('Not authenticated');
+                                return;
+                              }
+                              try {
+                                final success = await profileProvider.facebookLink(auth.token);
+                                if (success) {
+                                  await profileProvider.loadProfile(auth.token);
+                                  showSuccess('Facebook account linked successfully!');
+                                }
+                              } catch (e) {
+                                showError('Failed to link Facebook account');
+                              }
+                            },
                             isLoading: profileProvider.isLoading,
                           ),
                         ),
@@ -88,33 +118,5 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
         ),
       ),
     );
-  }
-
-  Future<void> _linkWithSocial(String provider) async {
-    if (auth.token == null) {
-      showError('Not authenticated');
-      return;
-    }
-
-    try {
-      final profileProvider = getProvider<ProfileProvider>();
-      bool success = false;
-      
-      if (provider == 'Facebook') {
-        success = await profileProvider.facebookLink(auth.token);
-      }
-      else if (provider == 'Google') {
-        success = await profileProvider.googleLink(auth.token);
-      }
-      
-      if (success) {
-        await profileProvider.loadProfile(auth.token);
-        showSuccess('$provider account linked successfully!');
-      } else {
-        showError('Failed to link $provider account');
-      }
-    } catch (e) {
-      showError('Failed to link $provider account');
-    }
   }
 }

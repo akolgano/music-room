@@ -85,10 +85,6 @@ class ActivityService {
     }
   }
 
-  Future<void> logButtonClickAuto(String buttonName, {Map<String, dynamic>? metadata}) async {
-    await logActivity(action: 'button_click', details: buttonName, metadata: metadata);
-  }
-
   Future<void> logScreenViewAuto(String screenName, {Map<String, dynamic>? metadata}) async {
     await logActivity(action: 'screen_view', details: screenName, metadata: metadata);
   }

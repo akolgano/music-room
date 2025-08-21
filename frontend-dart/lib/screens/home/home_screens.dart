@@ -774,7 +774,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     AppWidgets.showSnackBar(context, message);
   }
 
-
   void _showError(String message) {
     AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
   }

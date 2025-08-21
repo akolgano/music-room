@@ -61,7 +61,6 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
     }
   }
 
-
   @override
   Widget buildContent() {
     return Consumer<ProfileProvider>(

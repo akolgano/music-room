@@ -66,8 +66,6 @@ mixin UserActionLoggingMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-
-
   Widget buildLoggingInkWell({
     required Widget child,
     required VoidCallback onTap,
@@ -104,7 +102,6 @@ mixin UserActionLoggingMixin<T extends StatefulWidget> on State<T> {
       child: child,
     );
   }
-
 
   Widget buildLoggingIconButton({
     required Widget icon,

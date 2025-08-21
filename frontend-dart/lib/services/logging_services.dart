@@ -110,13 +110,13 @@ class FrontendLoggingService {
       final value = entry.value;
       
       if (_sensitiveKeys.any((sensitiveKey) => key.contains(sensitiveKey))) {
-        sanitized[entry.key] = value == null ? null : _maskValue(value);
+        sanitized[entry.key] = value == null ? null : '[MASKED]';
       } else if (value is Map<String, dynamic>) {
         sanitized[entry.key] = sanitizeMetadata(value);
       } else if (value is List) {
         sanitized[entry.key] = _sanitizeList(value);
       } else if (value is String && _containsSensitivePattern(value)) {
-        sanitized[entry.key] = _maskValue(value);
+        sanitized[entry.key] = '[MASKED]';
       } else if (value == null || value == '') {
         sanitized[entry.key] = value;
       } else {
@@ -134,7 +134,7 @@ class FrontendLoggingService {
       } else if (item is List) {
         return _sanitizeList(item);
       } else if (item is String && _containsSensitivePattern(item)) {
-        return _maskValue(item);
+        return '[MASKED]';
       }
       return item;
     }).toList();
@@ -152,14 +152,6 @@ class FrontendLoggingService {
     ];
     
     return patterns.any((pattern) => pattern.hasMatch(value));
-  }
-
-  String _maskValue(dynamic value) {
-    if (value == null) return '[MASKED:NULL]';
-    final stringValue = value.toString();
-    if (stringValue.isEmpty) return '[MASKED:EMPTY]';
-    if (stringValue.length <= 3) return '[MASKED]';
-    return '${stringValue.substring(0, 2)}${'*' * (stringValue.length - 4)}${stringValue.substring(stringValue.length - 2)}';
   }
 
   Future<void> initialize() async {
@@ -293,13 +285,11 @@ class FrontendLoggingService {
   Future<void> _sendPendingLogs() async {
     if (_pendingLogs.isEmpty) return;
 
-    
     if (_currentUserId == null) {
       _pendingLogs.clear();
       return;
     }
 
-    
     String? authToken;
     try {
       final storageService = getIt<StorageService>();

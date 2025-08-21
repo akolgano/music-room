@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
@@ -7,7 +8,7 @@ import '../core/locator_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../core/provider_core.dart'; 
-import '../core/google_signin_core.dart';
+import '../core/signin_core.dart';
 import '../models/api_models.dart';
 
 enum VisibilityLevel { public, friends, private }
@@ -214,44 +215,114 @@ class ProfileProvider extends BaseProvider {
   Future<bool> googleLink(String? token) async {
     return await executeBool(
       () async {
+        if (kDebugMode) {
+          debugPrint('[ProfileProvider] Starting Google Sign-In process');
+          debugPrint('[ProfileProvider] Platform: ${kIsWeb ? "Web" : "Android"}');
+          debugPrint('[ProfileProvider] Using google_sign_in v7 API');
+        }
+        
+        await GoogleSignInCore.initialize();
+        
         GoogleSignInAccount? user;
         
         try {
-          if (kIsWeb) {
-            user = await googleSignIn.signInSilently();
-            user ??= await googleSignIn.signIn();
+          try {
+            await googleSignIn.signOut();
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] Signed out previous session');
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] No previous session: $e');
+            }
+          }
+          
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] Showing Google account picker...');
+          }
+          
+          if (googleSignIn.supportsAuthenticate()) {
+            user = await googleSignIn.authenticate(
+              scopeHint: ['email', 'profile'],
+            );
           } else {
-            user = await googleSignIn.signIn();
+            throw Exception('Google Sign-In not supported on this platform');
+          }
+          
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] Sign-in successful: ${user.email}');
+          }
+          
+        } on GoogleSignInException catch (e) {
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] Google Sign-In error: code: ${e.code.name} description:${e.description} details:${e.details}');
+          }
+          
+          if (e.code == GoogleSignInExceptionCode.canceled) {
+            throw Exception("Google Sign-In was cancelled.");
+          } else if (e.code == GoogleSignInExceptionCode.interrupted) {
+            throw Exception("Network error during Google Sign-In. Please check your connection.");
+          } else if (e.code == GoogleSignInExceptionCode.clientConfigurationError) {
+            throw Exception(
+              "SHA fingerprint mismatch! Fix:\n"
+              "1. Run: cd android && gradlew signingReport\n"
+              "2. Copy SHA1 and SHA256 for debug variant\n"
+              "3. Add to Firebase Console > Project Settings\n"
+              "4. Download new google-services.json\n"
+              "5. Replace android/app/google-services.json\n"
+              "6. Clean rebuild: flutter clean && flutter run"
+            );
+          } else {
+            throw Exception(e.description ?? "Google Sign-In failed. Please try again.");
           }
         } catch (e) {
           if (kDebugMode) {
-            debugPrint('[ProfileProvider] Google Sign-In error: $e');
+            debugPrint('[ProfileProvider] Unexpected error: $e');
           }
-          
-          final errorString = e.toString().toLowerCase();
-          if (errorString.contains('popup_closed') || errorString.contains('cancelled')) {
-            throw Exception("Google Sign-In was cancelled");
-          } else if (errorString.contains('network_error') || errorString.contains('error retrieving a token')) {
-            throw Exception("Network error during Google Sign-In. Please check your connection and try again");
-          } else {
-            throw Exception("Google Sign-In failed: ${e.toString()}");
-          }
+          throw Exception("Google Sign-In failed. Please try again.");
         }
         
-        if (user == null) throw Exception("Google Sign-In was cancelled");
-
+        
         final socialId = user.id;
         final socialEmail = user.email;
         final socialName = user.displayName;
-
-        final auth = await user.authentication;
-        final idToken = auth.idToken;
-
-        if (idToken != null && idToken.isNotEmpty) {
-          await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken));
+        
+        if (kDebugMode) {
+          debugPrint('[ProfileProvider] Google Sign-In successful');
+          debugPrint('[ProfileProvider] User: $socialEmail');
+          debugPrint('[ProfileProvider] ID: $socialId');
         }
-        else {
-            await _apiService.googleLink(token!, SocialLinkRequest(socialId: socialId, socialEmail: socialEmail, socialName: socialName));
+        
+        if (kIsWeb) {
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] Web platform - sending social credentials directly');
+          }
+          await _apiService.googleLink(token!, SocialLinkRequest(
+            socialId: socialId,
+            socialEmail: socialEmail,
+            socialName: socialName
+          ));
+        } else {
+          final auth = user.authentication;
+          final idToken = auth.idToken;
+          
+          if (kDebugMode) {
+            debugPrint('[ProfileProvider] Android platform - using idToken');
+            debugPrint('[ProfileProvider] idToken present: ${idToken != null && idToken.isNotEmpty}');
+          }
+          
+          if (idToken != null && idToken.isNotEmpty) {
+            await _apiService.googleLink(token!, SocialLinkRequest(idToken: idToken));
+          } else {
+            if (kDebugMode) {
+              debugPrint('[ProfileProvider] No idToken, falling back to social credentials');
+            }
+            await _apiService.googleLink(token!, SocialLinkRequest(
+              socialId: socialId,
+              socialEmail: socialEmail,
+              socialName: socialName
+            ));
+          }
         }
       },
       successMessage: 'Google account linked successfully',

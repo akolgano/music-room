@@ -338,7 +338,14 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         children: [
           TextSpan(text: _isLogin ? 'Don\'t have an account? ' : 'Already have an account? '),
           TextSpan(text: _isLogin ? 'Sign Up' : 'Sign In',
-            style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: AppTheme.primary, 
+              fontWeight: FontWeight.w600,
+              fontSize: MusicAppResponsive.getFontSize(context, 
+                tiny: 12.0, small: 14.0, medium: 16.0, 
+                large: 18.0, xlarge: 20.0, xxlarge: 22.0
+              ),
+            ),
           ),
         ],
       ),

@@ -107,7 +107,11 @@ class ColorPaletteService {
     
     for (final color in colors) {
       final hsl = HSLColor.fromColor(color);
-      _assignColorToVariant(color, hsl, colorVariants);
+      if (hsl.saturation > 0.6) {
+        _assignVibrantColor(color, hsl, colorVariants);
+      } else if (hsl.saturation < 0.4) {
+        _assignMutedColor(color, hsl, colorVariants);
+      }
     }
 
     return ColorPalette(
@@ -119,14 +123,6 @@ class ColorPaletteService {
       darkMutedColor: colorVariants.darkMuted,
       lightMutedColor: colorVariants.lightMuted,
     );
-  }
-
-  static void _assignColorToVariant(Color color, HSLColor hsl, _ColorVariants variants) {
-    if (hsl.saturation > 0.6) {
-      _assignVibrantColor(color, hsl, variants);
-    } else if (hsl.saturation < 0.4) {
-      _assignMutedColor(color, hsl, variants);
-    }
   }
 
   static void _assignVibrantColor(Color color, HSLColor hsl, _ColorVariants variants) {

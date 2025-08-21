@@ -2,7 +2,7 @@ import '../core/navigation_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../core/theme_core.dart';
-import '../services/color_palette_service.dart';
+import '../services/palette_service.dart';
 
 class DynamicThemeProvider with ChangeNotifier {
   Color _primaryColor = AppTheme.primary;
@@ -309,7 +309,6 @@ class DynamicThemeProvider with ChangeNotifier {
         .withSaturation((primaryHsl.saturation * 0.6).clamp(0.1, 0.8))
         .toColor();
   }
-
 
   Color _getContrastColor(Color backgroundColor) {
     final double luminance = backgroundColor.computeLuminance();

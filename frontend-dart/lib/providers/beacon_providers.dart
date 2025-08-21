@@ -157,7 +157,6 @@ class BeaconProvider extends BaseProvider {
     _nearestBeacon = nearby.isNotEmpty ? nearby.first : null;
   }
 
-
   BeaconInfo? getBeaconForPlaylist(String playlistId) {
     final expectedMajor = int.tryParse(playlistId.replaceAll(RegExp(r'\D'), '').substring(0, 4)) ?? 1;
     

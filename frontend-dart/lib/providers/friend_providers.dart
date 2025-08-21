@@ -73,7 +73,6 @@ class FriendProvider extends BaseProvider {
     if (result != null) _sentInvitations = result;
   }
 
-
   Future<bool> sendFriendRequest(String token, String userId) async {
     return await executeBool(
       () async {

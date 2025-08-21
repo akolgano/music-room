@@ -48,7 +48,6 @@ class MusicProvider extends BaseProvider {
     notifyListeners();
   }
 
-
   Future<void> fetchUserPlaylists(String token) async {
     final result = await executeAsync(
       () => _musicService.getUserPlaylists(token),

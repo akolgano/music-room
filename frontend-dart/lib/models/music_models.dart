@@ -35,11 +35,9 @@ class Track {
     return id;
   }
 
-
   bool get isDeezerTrack {
     return deezerTrackId != null || id.startsWith('deezer_');
   }
-
 
   factory Track.fromJson(Map<String, dynamic> json) {
     String trackId;

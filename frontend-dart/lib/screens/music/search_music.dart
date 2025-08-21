@@ -734,10 +734,10 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
           final newEventId = await musicProvider.createPlaylist(
             eventName.trim(),
             '',
-            false, // isPublic
+            false,
             auth.token!,
-            'open', // licenseType
-            true, // isEvent
+            'open',
+            true,
           );
           
           await _addTrackToPlaylist(newEventId!, track);

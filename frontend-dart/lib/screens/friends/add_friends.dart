@@ -114,7 +114,6 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
     );
   }
 
-
   Future<void> _sendFriendRequest() async {
     if (!_formKey.currentState!.validate()) {
       return;

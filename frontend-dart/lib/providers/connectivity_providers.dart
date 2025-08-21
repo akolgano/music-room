@@ -174,4 +174,3 @@ class ConnectivityProvider extends BaseProvider {
     super.dispose();
   }
 }
-

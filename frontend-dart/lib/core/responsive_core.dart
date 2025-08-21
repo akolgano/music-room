@@ -20,7 +20,14 @@ class MusicAppResponsive {
   };
 
   static ScreenSize getScreenSize(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final mediaQuery = MediaQuery.of(context);
+    final width = mediaQuery.size.width;
+    final height = mediaQuery.size.height;
+    final aspectRatio = width / height;
+    
+    if (aspectRatio >= 3.0) {
+      return width <= _breakpoints[ScreenSize.small]! ? ScreenSize.tiny : ScreenSize.small;
+    }
     
     if (width <= _breakpoints[ScreenSize.tiny]!) return ScreenSize.tiny;
     if (width <= _breakpoints[ScreenSize.small]!) return ScreenSize.small;
@@ -55,10 +62,21 @@ class MusicAppResponsive {
     double large = 14.0,
     double xlarge = 16.0,
     double xxlarge = 18.0,
-  }) => _getResponsiveValue(context,
-      tiny: tiny, small: small, medium: medium,
-      large: large, xlarge: xlarge, xxlarge: xxlarge);
-
+  }) {
+    final mediaQuery = MediaQuery.of(context);
+    final aspectRatio = mediaQuery.size.width / mediaQuery.size.height;
+    
+    double multiplier = 1.0;
+    if (aspectRatio >= 3.0) {
+      multiplier = 0.75;
+    }
+    
+    final baseSize = _getResponsiveValue(context,
+        tiny: tiny, small: small, medium: medium,
+        large: large, xlarge: xlarge, xxlarge: xxlarge);
+        
+    return baseSize * multiplier;
+  }
 
   static double getIconSize(BuildContext context, {
     double tiny = 12.0,
@@ -93,8 +111,6 @@ class MusicAppResponsive {
       tiny: tiny, small: small, medium: medium,
       large: large, xlarge: xlarge, xxlarge: xxlarge);
 
-
-
   static bool isMobileSize(BuildContext context) {
     final size = getScreenSize(context);
     return size == ScreenSize.tiny || size == ScreenSize.small || size == ScreenSize.medium;
@@ -103,6 +119,12 @@ class MusicAppResponsive {
   static bool isSmallScreen(BuildContext context) {
     final size = getScreenSize(context);
     return size == ScreenSize.tiny || size == ScreenSize.small;
+  }
+
+  static bool shouldHideHeader(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final aspectRatio = mediaQuery.size.width / mediaQuery.size.height;
+    return aspectRatio >= 3.0;
   }
 
   static EdgeInsets getButtonPadding(BuildContext context, {

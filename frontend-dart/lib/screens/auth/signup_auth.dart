@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../providers/auth_providers.dart';
 import '../../core/theme_core.dart';
+import '../../core/responsive_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
@@ -201,7 +202,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
             onPressed: _canResendOtp ? _sendOtp : null,
             child: Text(
               _canResendOtp ? 'Resend Code' : 'Resend in $_resendCountdown s',
-              style: TextStyle(color: _canResendOtp ? AppTheme.primary : Colors.grey),
+              style: TextStyle(
+                color: _canResendOtp ? AppTheme.primary : Colors.grey,
+                fontSize: MusicAppResponsive.getFontSize(context, 
+                  tiny: 12.0, small: 13.0, medium: 14.0, 
+                  large: 15.0, xlarge: 16.0, xxlarge: 17.0
+                ),
+              ),
             ),
           ),
           const Spacer(),

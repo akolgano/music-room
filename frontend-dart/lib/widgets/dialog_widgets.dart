@@ -139,5 +139,4 @@ class DialogWidgets {
     return result ?? false;
   }
 
-
 }

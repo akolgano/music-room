@@ -652,7 +652,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     }
   }
 
-
   Future<void> _initializeWebSocket() async {
     try {
       getIt<WebSocketService>();
@@ -660,8 +659,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       AppLogger.error('WebSocket connection failed: ${e.toString()}', null, null, 'PlaylistEditorScreen');
     }
   }
-
-
 
   Future<void> _addTrackToPlaylist() async {
     final selectedTrack = await Navigator.pushNamed(

@@ -63,20 +63,15 @@ class TrackCacheService {
 
     try {
       final track = await request;
-      _cacheTrackIfValid(deezerTrackId, track);
+      if (track != null) {
+        _trackCache[deezerTrackId] = track;
+        AppLogger.debug('Track $deezerTrackId cached successfully', 'TrackCacheService');
+      }
       return track;
     } finally {
       _ongoingRequests.remove(deezerTrackId);
     }
   }
-
-  void _cacheTrackIfValid(String deezerTrackId, Track? track) {
-    if (track != null) {
-      _trackCache[deezerTrackId] = track;
-      AppLogger.debug('Track $deezerTrackId cached successfully', 'TrackCacheService');
-    }
-  }
-
 
   Future<Track?> _fetchTrackWithRetry(String deezerTrackId, String token, ApiService apiService) async {
     final currentRetries = _retryCount[deezerTrackId] ?? 0;
@@ -132,8 +127,6 @@ class TrackCacheService {
 
   Track? operator [](String deezerTrackId) => _trackCache[deezerTrackId];
 
-
-
   Future<void> preloadTracks(List<String> deezerTrackIds, String token, ApiService apiService) async {
     final List<Future<Track?>> futures = [];
     
@@ -148,9 +141,6 @@ class TrackCacheService {
       await Future.wait(futures);
     }
   }
-
-
-
 
   void cancelRetries(String deezerTrackId) {
     _retryCount.remove(deezerTrackId);
@@ -173,6 +163,5 @@ class TrackCacheService {
     _lastRetryTime.clear();
     AppLogger.debug('Track cache and retry tracking cleared', 'TrackCacheService');
   }
-
 
 }

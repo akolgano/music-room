@@ -5,7 +5,6 @@ import 'responsive_core.dart' show MusicAppResponsive;
 
 class ThemeUtils {
 
-
   static double getResponsivePadding(BuildContext context) {
     return MusicAppResponsive.getSpacing(context,
       tiny: 2.0, small: 4.0, medium: 6.0, 
@@ -38,11 +37,10 @@ class ThemeUtils {
     return MusicAppResponsive.getButtonHeight(context);
   }
 
-
   static TextStyle getHeadingStyle(BuildContext context) {
     final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 14.0, small: 16.0, medium: 18.0,
-      large: 20.0, xlarge: 22.0, xxlarge: 24.0
+      tiny: 14.0, small: 18.0, medium: 20.0,
+      large: 22.0, xlarge: 24.0, xxlarge: 26.0
     );
     return TextStyle(
       color: Theme.of(context).colorScheme.onSurface, 
@@ -53,8 +51,8 @@ class ThemeUtils {
 
   static TextStyle getSubheadingStyle(BuildContext context) {
     final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 12.0, small: 13.0, medium: 14.0,
-      large: 16.0, xlarge: 17.0, xxlarge: 18.0
+      tiny: 12.0, small: 15.0, medium: 16.0,
+      large: 18.0, xlarge: 19.0, xxlarge: 20.0
     );
     return TextStyle(
       color: Theme.of(context).colorScheme.onSurface, 
@@ -65,8 +63,8 @@ class ThemeUtils {
 
   static TextStyle getBodyStyle(BuildContext context) {
     final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 10.0, small: 11.0, medium: 12.0,
-      large: 14.0, xlarge: 15.0, xxlarge: 16.0
+      tiny: 10.0, small: 13.0, medium: 14.0,
+      large: 16.0, xlarge: 17.0, xxlarge: 18.0
     );
     return TextStyle(
       color: Theme.of(context).colorScheme.onSurface,
@@ -76,8 +74,8 @@ class ThemeUtils {
 
   static TextStyle getCaptionStyle(BuildContext context) {
     final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 8.0, small: 9.0, medium: 10.0,
-      large: 12.0, xlarge: 13.0, xxlarge: 14.0
+      tiny: 8.0, small: 11.0, medium: 12.0,
+      large: 14.0, xlarge: 15.0, xxlarge: 16.0
     );
     return TextStyle(
       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -171,8 +169,8 @@ class ThemeUtils {
         borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
       ),
-      labelStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
-      hintStyle: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+      labelStyle: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+      hintStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
     );
   }
 }
@@ -239,14 +237,14 @@ class AppTheme {
         backgroundColor: background, 
         foregroundColor: Colors.white, 
         elevation: 0,
-        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       ),
@@ -286,8 +284,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
         ),
-        labelStyle: const TextStyle(color: Colors.white70, fontSize: 12),
-        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
+        labelStyle: const TextStyle(color: Colors.white70, fontSize: 14),
+        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
       ),
       cardTheme: CardThemeData(color: surface,
         elevation: 2,
@@ -347,28 +345,26 @@ class AppTheme {
         selectedTileColor: primary.withValues(alpha: 0.1),
       ),
       textTheme: const TextTheme(
-        displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-        displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-        displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-        headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
-        headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
-        headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-        titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
-        titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
-        titleSmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
-        bodyLarge: TextStyle(fontSize: 16, color: Colors.white),
-        bodyMedium: TextStyle(fontSize: 14, color: Colors.white),
-        bodySmall: TextStyle(fontSize: 12, color: Colors.white70),
-        labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
-        labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
-        labelSmall: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white),
+        displayLarge: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
+        displayMedium: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+        displaySmall: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+        headlineLarge: TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: Colors.white),
+        headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.white),
+        headlineSmall: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
+        titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white),
+        titleMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white),
+        titleSmall: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+        bodyLarge: TextStyle(fontSize: 18, color: Colors.white),
+        bodyMedium: TextStyle(fontSize: 16, color: Colors.white),
+        bodySmall: TextStyle(fontSize: 14, color: Colors.white70),
+        labelLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+        labelMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
+        labelSmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
       ),
     );
   }
 
   static ThemeData get darkTheme => _buildTheme();
-
-
 
   static Widget buildHeaderCard({required Widget child}) => Card(
     color: surface,
@@ -380,7 +376,7 @@ class AppTheme {
     child: Padding(padding: EdgeInsets.all(kIsWeb ? 12 : 12.w), child: child),
   );
 
-  static Widget buildFormCard({required String title, IconData? titleIcon, required Widget child}) => Card(
+  static Widget buildFormCard({required String title, IconData? titleIcon, required Widget child, BuildContext? context}) => Card(
     color: surface,
     elevation: 4,
     margin: EdgeInsets.zero,
@@ -400,7 +396,16 @@ class AppTheme {
               ],
               Flexible(
                 child: Text(title, 
-                  style: TextStyle(fontSize: kIsWeb ? 18 : 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: context != null 
+                      ? MusicAppResponsive.getFontSize(context, 
+                          tiny: 14.0, small: 16.0, medium: 18.0, 
+                          large: 20.0, xlarge: 22.0, xxlarge: 24.0
+                        )
+                      : (kIsWeb ? 18 : 18.sp), 
+                    fontWeight: FontWeight.bold, 
+                    color: Colors.white
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ), 
               ),

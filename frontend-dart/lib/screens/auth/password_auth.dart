@@ -21,8 +21,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   var _isGetEmail = true;
   var _isGetOtp = false;
 
-
-
   @override
   Widget build(BuildContext context) {
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;

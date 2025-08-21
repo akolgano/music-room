@@ -76,8 +76,6 @@ class MusicPlayerService with ChangeNotifier {
   bool get isUsingFullAudio => _isUsingFullAudio;
   double get playbackSpeed => _playbackSpeed;
 
-
-
   Future<void> setPlaylistAndPlay({
     required List<PlaylistTrack> playlist,
     required int startIndex,
@@ -269,32 +267,14 @@ class MusicPlayerService with ChangeNotifier {
     
     if (_isRepeatMode && _playlist.isNotEmpty) {
       AppLogger.debug('Repeat mode enabled, auto-progressing to next track', 'MusicPlayerService');
-      _autoProgressToNext();
+      playNext();
     } else if (hasNextTrack) {
       AppLogger.debug('Auto-progressing to next track', 'MusicPlayerService');
-      _autoProgressToNext();
+      playNext();
     } else {
       AppLogger.debug('No more tracks to play, stopping', 'MusicPlayerService');
       stop();
     }
-  }
-
-  Future<void> _autoProgressToNext() async {
-    int nextIndex = _calculateNextSequentialIndex();
-    
-    if (nextIndex == -1) {
-      if (_isRepeatMode && _playlist.isNotEmpty) {
-        _currentIndex = 0;
-        _lastPlayedIndex = -1;
-      } else {
-        return;
-      }
-    } else {
-      _currentIndex = nextIndex;
-    }
-    
-    AppLogger.debug('Auto-progressed from $_lastPlayedIndex to $_currentIndex: ${_playlist[_currentIndex].name}', 'MusicPlayerService');
-    await _playCurrentTrack();
   }
 
   int _calculateNextSequentialIndex() {
