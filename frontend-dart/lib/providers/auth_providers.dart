@@ -9,7 +9,7 @@ import '../models/music_models.dart';
 import '../models/api_models.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../core/google_signin_core.dart';
+import '../core/signin_core.dart';
 
 class AuthProvider extends BaseProvider {
   late final AuthService _authService;
@@ -41,7 +41,6 @@ class AuthProvider extends BaseProvider {
   String? get token => _authService.currentToken;
 
   GoogleSignIn get googleSignIn => GoogleSignInCore.instance;
-
 
   Map<String, String> get authHeaders => {
     'Content-Type': 'application/json',
@@ -103,7 +102,6 @@ class AuthProvider extends BaseProvider {
     return success;
   }
 
-
   Future<bool> resetPasswordWithOtp(String email, String otp, String newPassword) async {
     return await executeBool(
       () async {
@@ -147,46 +145,96 @@ class AuthProvider extends BaseProvider {
   Future<bool> googleLogin() async {
     final success = await executeBool(
       () async {
+        if (kDebugMode) {
+          developer.log('Starting Google Sign-In process', name: 'AuthProvider');
+          developer.log('Platform: ${kIsWeb ? "Web" : "Android"}', name: 'AuthProvider');
+          developer.log('Using google_sign_in v7 API', name: 'AuthProvider');
+        }
+        
+        await GoogleSignInCore.initialize();
+        
         GoogleSignInAccount? user;
         
         try {
-          if (kIsWeb) {
-            user = await googleSignIn.signInSilently();
-            user ??= await googleSignIn.signIn();
-          } else {
-            user = await googleSignIn.signIn();
-          }
+          await googleSignIn.disconnect();
         } catch (e) {
           if (kDebugMode) {
-            developer.log('Google Sign-In error: $e', name: 'AuthProvider');
-          }
-          
-          final errorString = e.toString().toLowerCase();
-          if (errorString.contains('popup_closed') || errorString.contains('cancelled')) {
-            throw Exception("Google Sign-In was cancelled");
-          } else if (errorString.contains('network_error') || errorString.contains('error retrieving a token')) {
-            throw Exception("Network error during Google Sign-In. Please check your connection and try again");
-          } else {
-            throw Exception("Google Sign-In failed: ${e.toString()}");
+            developer.log('Disconnect failed (normal if no previous account): $e', name: 'AuthProvider');
           }
         }
         
-        if (user == null) throw Exception("Google login was cancelled or failed");
+        try {
+          user = await googleSignIn.attemptLightweightAuthentication();
+          if (kDebugMode) {
+            developer.log('Lightweight auth result: ${user?.email}', name: 'AuthProvider');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            developer.log('Lightweight auth failed: $e', name: 'AuthProvider');
+          }
+        }
+        
+        if (user == null) {
+          if (kDebugMode) {
+            developer.log('Lightweight auth failed, trying full auth', name: 'AuthProvider');
+          }
+          
+          if (googleSignIn.supportsAuthenticate()) {
+            try {
+              user = await googleSignIn.authenticate(
+                scopeHint: ['email', 'profile'],
+              );
+            } on GoogleSignInException catch (e) {
+              if (kDebugMode) {
+                developer.log('Google Sign-In error: code: ${e.code.name} description:${e.description} details:${e.details}', name: 'AuthProvider');
+              }
+              throw Exception(e.description ?? 'Google authentication failed');
+            }
+          } else {
+            throw Exception('Google Sign-In not supported on this platform');
+          }
+        }
+        
         
         final socialId = user.id;
         final socialEmail = user.email;
         final socialName = user.displayName;
-
-        final auth = await user.authentication;
-        final idToken = auth.idToken;
-
-        if (idToken != null && idToken.isNotEmpty) {
-          await _authService.googleLogin(idToken: idToken);
+        
+        if (kDebugMode) {
+          developer.log('Google Sign-In successful: $socialEmail', name: 'AuthProvider');
         }
-        else {
-          await _authService.googleLogin(socialId: socialId, socialEmail: socialEmail, socialName: socialName);
+        
+        if (kIsWeb) {
+          if (kDebugMode) {
+            developer.log('Web platform - using social credentials', name: 'AuthProvider');
+          }
+          await _authService.googleLogin(
+            socialId: socialId,
+            socialEmail: socialEmail,
+            socialName: socialName
+          );
+        } else {
+          final auth = user.authentication;
+          final idToken = auth.idToken;
+          
+          if (kDebugMode) {
+            developer.log('Android platform - using idToken', name: 'AuthProvider');
+            developer.log('idToken present: ${idToken != null && idToken.isNotEmpty}', name: 'AuthProvider');
+          }
+          
+          if (idToken != null && idToken.isNotEmpty) {
+            await _authService.googleLogin(idToken: idToken);
+          } else {
+            if (kDebugMode) {
+              developer.log('No idToken, falling back to social credentials', name: 'AuthProvider');
+            }
+            await _authService.googleLogin(
+              socialId: socialId,
+              socialEmail: socialEmail,
+              socialName: socialName
+            );
+          }
         }
-      
       },
       successMessage: 'Google login successful!',
       errorMessage: null,

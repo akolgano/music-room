@@ -97,7 +97,6 @@ class WebSocketService {
     await _attemptConnectionToPlaylist(playlistId, token);
   }
 
-
   Future<void> _attemptConnectionToPlaylist(String playlistId, String token) async {
     try {
       String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
@@ -149,7 +148,7 @@ class WebSocketService {
     final data = _parseMessage(message);
     if (data == null) return;
     
-    _broadcastRawMessage(data);
+    _rawMessageController?.add(data);
     _showNotificationForMessage(data);
     _processMessageByType(data);
   }
@@ -161,10 +160,6 @@ class WebSocketService {
       _log('Error parsing message: $e');
       return null;
     }
-  }
-
-  void _broadcastRawMessage(Map<String, dynamic> data) {
-    _rawMessageController?.add(data);
   }
 
   void _showNotificationForMessage(Map<String, dynamic> data) {

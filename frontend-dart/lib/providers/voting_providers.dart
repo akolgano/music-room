@@ -39,10 +39,6 @@ class VotingProvider extends BaseProvider {
     return _trackVotes[trackKey];
   }
 
-  int getTrackPoints(int index) {
-    return _trackPoints[index] ?? 0;
-  }
-
   void updateTrackPoints(int index, int points) {
     AppLogger.debug('Updating track $index points to $points', 'VotingProvider');
     _trackPoints[index] = points;

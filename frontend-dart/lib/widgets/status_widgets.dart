@@ -165,4 +165,3 @@ class ConnectionStatusIndicator extends StatelessWidget {
   }
 
 }
-

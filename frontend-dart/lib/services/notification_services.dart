@@ -38,7 +38,6 @@ class NotificationService {
   Timer? _retryTimer;
   final List<_PendingNotification> _pendingNotifications = [];
 
-
   void showNotification({
     required String message,
     String? title,
@@ -113,7 +112,7 @@ class NotificationService {
     final overlayInfo = _getOverlayInfo();
     if (overlayInfo == null) return;
 
-    _prepareForNewNotification();
+    _hideCurrentNotification();
     _displayNotification(overlayInfo, message, title, data, backgroundColor, icon);
     _scheduleHiding(duration);
     
@@ -136,10 +135,6 @@ class NotificationService {
     return OverlayInfo(overlay: overlay, theme: Theme.of(context));
   }
 
-  void _prepareForNewNotification() {
-    _hideCurrentNotification();
-  }
-
   void _displayNotification(OverlayInfo overlayInfo, String message, String? title, 
                           Map<String, dynamic>? data, Color? backgroundColor, IconData? icon) {
     _currentOverlay = OverlayEntry(
@@ -160,7 +155,6 @@ class NotificationService {
   void _scheduleHiding(Duration duration) {
     _hideTimer = Timer(duration, _hideCurrentNotification);
   }
-
 
   Widget _buildNotificationWidget(
     BuildContext context, {

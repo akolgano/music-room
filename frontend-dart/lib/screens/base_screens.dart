@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_providers.dart';
 import '../core/theme_core.dart';
+import '../core/responsive_core.dart';
 import '../widgets/app_widgets.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
@@ -16,9 +17,11 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   @override
   Widget build(BuildContext context) {
+    final shouldHideHeader = MusicAppResponsive.shouldHideHeader(context);
+    
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
+      appBar: shouldHideHeader ? null : AppBar(
         backgroundColor: AppTheme.background,
         title: Text(screenTitle),
         actions: actions,

@@ -96,7 +96,6 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
     );
   }
 
-
   Widget _buildFriendsList() {
     final currentUserId = auth.currentUser?.id;
     final actualSharedUsers = widget.playlist.sharedWith.where((user) => user.id != currentUserId).toList();

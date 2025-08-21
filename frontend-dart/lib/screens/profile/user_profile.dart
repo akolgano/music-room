@@ -283,7 +283,6 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     );
   }
 
-
   String _getInitials(String name) {
     if (name.isEmpty) return 'U';
     

@@ -57,7 +57,6 @@ class AppBuilder {
     ];
   }
 
-
   static Widget _buildAuthenticatedRoute(Widget Function() builder) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
@@ -239,7 +238,6 @@ class AppBuilder {
     );
   }
 
-
   static Widget _buildUserPage(RouteSettings settings) {
     final args = settings.arguments;
     
@@ -263,7 +261,6 @@ class AppBuilder {
     );
   }
 
-
 }
 
 class _AutoRedirectWidget extends StatefulWidget {
@@ -285,10 +282,6 @@ class _AutoRedirectWidgetState extends State<_AutoRedirectWidget> {
   @override
   void initState() {
     super.initState();
-    _scheduleRedirect();
-  }
-
-  void _scheduleRedirect() {
     Future.delayed(widget.delay, () {
       if (mounted) {
         AppLogger.info('Auto-redirecting to ${widget.redirectRoute} due to: ${widget.message}', 'AutoRedirect');

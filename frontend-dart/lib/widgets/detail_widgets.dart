@@ -568,7 +568,6 @@ class PlaylistDetailWidgets {
     }
   }
 
-
   static Color getPointsColor(int points) {
     if (points > 5) { return Colors.green; }
     if (points > 0) { return Colors.orange; }

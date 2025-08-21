@@ -290,7 +290,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     );
   }
 
-
   Widget _buildProgressBar(MusicPlayerService playerService) {
     return Column(
       children: [

@@ -349,8 +349,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     );
   }
 
-
-
   void _setupWebSocketConnection() {
     _playlistUpdateSubscription = _webSocketService.playlistUpdateStream.listen(
       (updateMessage) {
@@ -413,7 +411,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       _votingProvider!.refreshVotingData(_tracks);
     }
   }
-
 
   void _updateTrackIdMapping(List<PlaylistTrack> webSocketTracks) {
     for (final playlistTrack in webSocketTracks) {
@@ -643,7 +640,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           AppLogger.debug('Removing track: Track.id=$trackId, using PlaylistTrackId=$playlistTrackId', 'PlaylistDetailScreen');
           AppLogger.debug('TrackId mapping size: ${_trackIdToPlaylistTrackId.length}', 'PlaylistDetailScreen');
           
-          
           try {
             int.parse(playlistTrackId);
             AppLogger.debug('PlaylistTrackId $playlistTrackId is valid integer', 'PlaylistDetailScreen');
@@ -670,10 +666,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final musicProvider = getProvider<MusicProvider>();
     final currentSort = musicProvider.currentSortOption;
     
-    
     if (currentSort.field != TrackSortField.position) {
       musicProvider.resetToCustomOrder();
-      
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -685,10 +679,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         );
       }
       
-      
       await Future.delayed(const Duration(milliseconds: 100));
     }
-    
     
     await _moveTrack(fromIndex, toIndex);
   }
@@ -727,8 +719,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
     try {
       final musicProvider = getProvider<MusicProvider>();
-      
-      
       
       int adjustedInsertBefore = newIndex;
       if (newIndex > oldIndex) {
@@ -776,7 +766,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     });
   }
 
-
   Future<void> _sharePlaylist() async {
     if (_playlist != null && mounted) {
       final result = await Navigator.pushNamed(context, AppRoutes.playlistSharing, arguments: _playlist);
@@ -792,7 +781,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final result = await Navigator.pushNamed(context, AppRoutes.trackSearch, arguments: widget.playlistId);
     if (result == true && mounted) await _loadData();
   }
-
 
   void _validateTrackCounts() {
     final musicProvider = _getMountedProvider<MusicProvider>();

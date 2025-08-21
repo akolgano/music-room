@@ -140,7 +140,6 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
         _lastRefresh = DateTime.now();
         AppLogger.debug('Loaded ${musicProvider.playlists.length} total playlists', 'AllPlaylistsScreen');
         
-
         if (musicProvider.playlists.isEmpty) {
           AppLogger.debug('NO PLAYLISTS FOUND - This could be the issue!', 'AllPlaylistsScreen');
         } else {
@@ -153,8 +152,6 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
     );
   }
 
- 
-  
   void _playPlaylist(Playlist playlist) async {
     if (playlist.tracks.isNotEmpty != true) {
       showInfo('This playlist is empty or tracks are not loaded');
@@ -188,9 +185,8 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
     }
   }
   
-
   void _showSortOptions() {
-    PlaylistSortBottomSheet.show(
+    TrackSortBottomSheet.showPlaylistSort(
       context,
       currentSort: _currentSort,
       onSortChanged: (PlaylistSortOption newSort) {

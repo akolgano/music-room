@@ -519,7 +519,6 @@ class _PlaylistLicensingScreenState extends BaseScreen<PlaylistLicensingScreen> 
     }
   }
 
-
   Future<void> _saveSettings() async {
     setState(() => _isLoading = true);
     

@@ -145,7 +145,6 @@ class ProfileAvatarWidget extends StatelessWidget {
     );
   }
 
-
   Future<void> _editAvatar(BuildContext context, [String? sourceType]) async {
     try {
       sourceType ??= await _showImageSourceDialog(context);
@@ -533,6 +532,5 @@ class ProfileAvatarWidget extends StatelessWidget {
       },
     );
   }
-
 
 }

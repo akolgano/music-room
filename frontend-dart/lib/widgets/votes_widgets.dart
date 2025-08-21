@@ -132,7 +132,6 @@ class PlaylistVotingWidgets {
     );
   }
 
-
   static Widget _buildCollapsibleVotingSettings({
     required BuildContext context,
     required bool isPublicVoting,
@@ -155,7 +154,6 @@ class PlaylistVotingWidgets {
       onSelectVotingDateTime: onSelectVotingDateTime,
     );
   }
-
 
   static Widget _buildVotingLicenseSettings({
     required BuildContext context,
@@ -534,7 +532,6 @@ class PlaylistVotingWidgets {
       ),
     );
   }
-
 
   static Widget _buildAddTrackForVotingButton({
     required BuildContext context,

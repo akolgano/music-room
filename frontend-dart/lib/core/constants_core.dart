@@ -122,7 +122,6 @@ class AppValidators {
     }
   }
   
-  
   static String? bio(String? value) =>
       ValidationBuilder().maxLength(500, 'Bio must be less than 500 characters').build()(value);
   

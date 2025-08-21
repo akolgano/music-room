@@ -4,14 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/music_models.dart';
 
 class AppCardWidgets {
-  static double _responsiveValue(double value) => kIsWeb ? value : value.sp.toDouble();
   
   static TextStyle _primaryStyle(BuildContext context) => TextStyle(
-    color: Theme.of(context).colorScheme.onSurface, fontSize: _responsiveValue(16.0), fontWeight: FontWeight.w600
+    color: Theme.of(context).colorScheme.onSurface, fontSize: kIsWeb ? 16.0 : 16.0.sp, fontWeight: FontWeight.w600
   );
   
   static TextStyle _secondaryStyle(BuildContext context) => TextStyle(
-    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: _responsiveValue(14.0)
+    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: kIsWeb ? 14.0 : 14.0.sp
   );
 
   static Widget sectionTitle(String title) {

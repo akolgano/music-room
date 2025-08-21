@@ -82,7 +82,6 @@ mixin PulsingColorMixin<T extends StatefulWidget> on State<T>, TickerProviderSta
   late Animation<double> _pulsingIntensityAnimation;
   bool _mixinControllerCreated = false;
 
-
   void initializePulsingController({Duration? duration}) {
     if (!_mixinControllerCreated) {
       _pulsingController = PulsingColorAnimation.createController(
@@ -214,7 +213,6 @@ class _PulsingIconState extends State<PulsingIcon>
     );
   }
 }
-
 
 class PulsingButton extends StatefulWidget {
   final Widget child;

@@ -39,7 +39,28 @@ class MiniPlayerWidget extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildProgressBar(context, playerService),
+              playerService.duration.inSeconds == 0
+                ? Container(
+                    height: 2,
+                    color: AppTheme.primary.withValues(alpha: 0.2),
+                  )
+                : SizedBox(
+                    height: 2,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 0),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
+                        activeTrackColor: AppTheme.primary,
+                        inactiveTrackColor: AppTheme.primary.withValues(alpha: 0.2),
+                      ),
+                      child: Slider(
+                        value: playerService.position.inSeconds.toDouble(),
+                        max: playerService.duration.inSeconds.toDouble(),
+                        onChanged: (value) => playerService.seek(Duration(seconds: value.toInt())),
+                      ),
+                    ),
+                  ),
               Expanded(
                 child: GestureDetector(
                   onTap: () => Navigator.push(
@@ -328,36 +349,6 @@ class MiniPlayerWidget extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildProgressBar(BuildContext context, MusicPlayerService playerService) {
-    final duration = playerService.duration;
-    final position = playerService.position;
-    
-    if (duration.inSeconds == 0) {
-      return Container(
-        height: 2,
-        color: AppTheme.primary.withValues(alpha: 0.2),
-      );
-    }
-
-    return SizedBox(
-      height: 2,
-      child: SliderTheme(
-        data: SliderTheme.of(context).copyWith(
-          trackHeight: 3,
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 0),
-          overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
-          activeTrackColor: AppTheme.primary,
-          inactiveTrackColor: AppTheme.primary.withValues(alpha: 0.2),
-        ),
-        child: Slider(
-          value: position.inSeconds.toDouble(),
-          max: duration.inSeconds.toDouble(),
-          onChanged: (value) => playerService.seek(Duration(seconds: value.toInt())),
-        ),
-      ),
     );
   }
 

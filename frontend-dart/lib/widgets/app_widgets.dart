@@ -12,7 +12,7 @@ import 'action_widgets.dart';
 export 'player_widgets.dart';
 export 'action_widgets.dart';
 export 'card_widgets.dart';
-export 'app_core_widgets.dart';
+export 'core_widgets.dart';
 
 double _responsiveWidth(double size) => _responsive(size, type: 'w');
 double _responsiveHeight(double size) => _responsive(size, type: 'h');

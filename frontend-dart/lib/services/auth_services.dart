@@ -81,7 +81,7 @@ class AuthService {
   }
 
   Future<void> _performServerLogout() async {
-    if (!_canPerformServerLogout()) return;
+    if (_currentUser == null || _currentToken == null) return;
     
     try {
       final request = _createLogoutRequest();
@@ -89,10 +89,6 @@ class AuthService {
     } catch (e) {
       _logLogoutError(e);
     }
-  }
-
-  bool _canPerformServerLogout() {
-    return _currentUser != null && _currentToken != null;
   }
 
   LogoutRequest _createLogoutRequest() {
@@ -104,8 +100,6 @@ class AuthService {
       AppLogger.error('Error during logout API call: ${error.toString()}', null, null, 'AuthService');
     }
   }
-
-
 
   Future<AuthResult> facebookLogin(String accessToken) async {
     final request = SocialLoginRequest(fbAccessToken: accessToken);

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'core/theme_core.dart';
 import 'core/social_core.dart';
+import 'core/signin_core.dart';
 import 'core/constants_core.dart';
 import 'core/locator_core.dart';
 import 'core/builder_core.dart';
@@ -30,6 +31,7 @@ void main() async {
     await setupServiceLocator();
     try {
       await SocialLoginUtils.initialize();
+      await GoogleSignInCore.initialize();
     } catch (e) {
       AppLogger.error('Failed to initialize social login: ${e.toString()}', null, null, 'Main');
     }

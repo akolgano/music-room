@@ -85,8 +85,6 @@ class ApiService {
       {String? token}) async => _request('PATCH', endpoint, data: data, fromJson: fromJson, token: token);
   Future<void> _postVoid(String endpoint, dynamic data, {String? token}) async => 
       _request<void>('POST', endpoint, data: data, token: token);
-  Future<void> _patchVoid(String endpoint, dynamic data, {String? token}) async => 
-      _request<void>('PATCH', endpoint, data: data, token: token, debug: true);
   Future<void> _delete(String endpoint, {String? token, dynamic data}) async => 
       _request<void>('DELETE', endpoint, data: data, token: token);
 
@@ -133,7 +131,8 @@ class ApiService {
       _get('/profile/$userId/', ProfileByIdResponse.fromJson, token: token);
   Future<ProfileResponse> getMyProfile(String token) => 
       _get('/profile/me/', ProfileResponse.fromJson, token: token);
-  Future<void> updateProfile(String token, Map<String, dynamic> data) => _patchVoid('/profile/me/', data, token: token);
+  Future<void> updateProfile(String token, Map<String, dynamic> data) => 
+      _request<void>('PATCH', '/profile/me/', data: data, token: token, debug: true);
   Future<ProfileResponse> updateProfileFull(String token, ProfileUpdateRequest request) => 
       _patch('/profile/me/', request, ProfileResponse.fromJson, token: token);
 
@@ -229,7 +228,7 @@ class ApiService {
       options: Options(headers: {'Authorization': 'Token $token'}))).data);
 
   Future<void> updatePlaylist(String playlistId, String token, UpdatePlaylistRequest request) => 
-      _patchVoid('/playlists/update_playlist/$playlistId', request, token: token);
+      _request<void>('PATCH', '/playlists/update_playlist/$playlistId', data: request, token: token, debug: true);
 
   Future<void> changePlaylistVisibility(String playlistId, String token, VisibilityRequest request) => 
       _postVoid('/playlists/$playlistId/change-visibility/', request, token: token);
@@ -250,7 +249,6 @@ class ApiService {
     final tracksResponse = await getPlaylistTracks(playlistId, token);
     PlaylistTrack? targetTrack;
     
-    
     for (final track in tracksResponse.tracks) {
       if (track.trackId == trackId) {
         targetTrack = track;
@@ -261,7 +259,6 @@ class ApiService {
     if (targetTrack == null) {
       throw Exception('Track not found in playlist');
     }
-    
     
     final idToUse = targetTrack.playlistTrackId ?? trackId;
     
