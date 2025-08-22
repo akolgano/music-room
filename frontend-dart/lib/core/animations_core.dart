@@ -40,16 +40,6 @@ class PulsingColorAnimation {
   static Color mediumGreen = AppTheme.primary;
   static Color darkGreen = const Color(0xFF0F7A2E);
 
-  static AnimationController createController({
-    required TickerProvider vsync,
-    Duration duration = defaultDuration,
-  }) {
-    return AnimationController(
-      duration: duration,
-      vsync: vsync,
-    )..repeat(reverse: true);
-  }
-
   static Animation<Color?> createColorAnimation(AnimationController controller) {
     return TweenSequence<Color?>([
       TweenSequenceItem(
@@ -84,10 +74,10 @@ mixin PulsingColorMixin<T extends StatefulWidget> on State<T>, TickerProviderSta
 
   void initializePulsingController({Duration? duration}) {
     if (!_mixinControllerCreated) {
-      _pulsingController = PulsingColorAnimation.createController(
-        vsync: this, 
-        duration: duration ?? PulsingColorAnimation.defaultDuration
-      );
+      _pulsingController = AnimationController(
+        duration: duration ?? PulsingColorAnimation.defaultDuration,
+        vsync: this,
+      )..repeat(reverse: true);
       _pulsingColorAnimation = PulsingColorAnimation.createColorAnimation(_pulsingController);
       _pulsingIntensityAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
         CurvedAnimation(parent: _pulsingController, curve: Curves.easeInOut),

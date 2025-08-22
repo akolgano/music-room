@@ -262,7 +262,7 @@ class ProfileAvatarWidget extends StatelessWidget {
       if (kDebugMode) {
         debugPrint('[ProfileAvatarWidget] Uploading avatar: size=${imageBytes.length} bytes, type=$mimeType');
         debugPrint('[ProfileAvatarWidget] Base64 image length: ${base64Image.length}');
-        debugPrint('[ProfileAvatarWidget] Auth token: ${auth.token != null ? 'present' : 'null'}');
+        debugPrint('[ProfileAvatarWidget] Auth token: ${auth.token != null ? '[PRESENT]' : '[NULL]'}');
       }
 
       final success = await profileProvider.updateProfile(

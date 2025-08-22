@@ -125,7 +125,7 @@ class PlaylistDetailWidgets {
 
   static Widget buildThemedPlaylistActions(BuildContext context, {
     required VoidCallback onPlayAll,
-    required VoidCallback onShuffle,
+    required VoidCallback onPlayRandom,
     VoidCallback? onAddRandomTrack,
   }) {
     return Card(
@@ -149,9 +149,9 @@ class PlaylistDetailWidgets {
                 SizedBox(width: MusicAppResponsive.getSpacing(context)),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: onShuffle,
-                    icon: const Icon(Icons.shuffle),
-                    label: const Text('Shuffle'),
+                    onPressed: onPlayRandom,
+                    icon: const Icon(Icons.casino),
+                    label: const Text('Random'),
                     style: ThemeUtils.getSecondaryButtonStyle(context),
                   ),
                 ),

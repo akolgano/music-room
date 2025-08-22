@@ -108,9 +108,9 @@ class ColorPaletteService {
     for (final color in colors) {
       final hsl = HSLColor.fromColor(color);
       if (hsl.saturation > 0.6) {
-        _assignVibrantColor(color, hsl, colorVariants);
+        _assignColorVariant(color, hsl, colorVariants, isVibrant: true);
       } else if (hsl.saturation < 0.4) {
-        _assignMutedColor(color, hsl, colorVariants);
+        _assignColorVariant(color, hsl, colorVariants, isVibrant: false);
       }
     }
 
@@ -125,23 +125,23 @@ class ColorPaletteService {
     );
   }
 
-  static void _assignVibrantColor(Color color, HSLColor hsl, _ColorVariants variants) {
-    if (variants.vibrant == null) {
-      variants.vibrant = color;
-    } else if (hsl.lightness > 0.6 && variants.lightVibrant == null) {
-      variants.lightVibrant = color;
-    } else if (hsl.lightness < 0.4 && variants.darkVibrant == null) {
-      variants.darkVibrant = color;
-    }
-  }
-
-  static void _assignMutedColor(Color color, HSLColor hsl, _ColorVariants variants) {
-    if (variants.muted == null) {
-      variants.muted = color;
-    } else if (hsl.lightness > 0.6 && variants.lightMuted == null) {
-      variants.lightMuted = color;
-    } else if (hsl.lightness < 0.4 && variants.darkMuted == null) {
-      variants.darkMuted = color;
+  static void _assignColorVariant(Color color, HSLColor hsl, _ColorVariants variants, {required bool isVibrant}) {
+    if (isVibrant) {
+      if (variants.vibrant == null) {
+        variants.vibrant = color;
+      } else if (hsl.lightness > 0.6 && variants.lightVibrant == null) {
+        variants.lightVibrant = color;
+      } else if (hsl.lightness < 0.4 && variants.darkVibrant == null) {
+        variants.darkVibrant = color;
+      }
+    } else {
+      if (variants.muted == null) {
+        variants.muted = color;
+      } else if (hsl.lightness > 0.6 && variants.lightMuted == null) {
+        variants.lightMuted = color;
+      } else if (hsl.lightness < 0.4 && variants.darkMuted == null) {
+        variants.darkMuted = color;
+      }
     }
   }
 }

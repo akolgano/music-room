@@ -40,15 +40,17 @@ Dio _createConfiguredDio() {
   dio.options.receiveTimeout = const Duration(seconds: 10);
   dio.options.sendTimeout = const Duration(seconds: 10);
 
-  dio.interceptors.add(PrettyDioLogger(
-    requestHeader: true,
-    requestBody: true,
-    responseBody: true,
-    responseHeader: false,
-    error: true,
-    compact: true,
-    maxWidth: 120,
-  ));
+  if (kDebugMode) {
+    dio.interceptors.add(PrettyDioLogger(
+      requestHeader: false,
+      requestBody: false,
+      responseBody: false,
+      responseHeader: false,
+      error: true,
+      compact: true,
+      maxWidth: 120,
+    ));
+  }
 
   dio.interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) {
@@ -60,17 +62,22 @@ Dio _createConfiguredDio() {
       }
       
       if (kDebugMode) {
-        debugPrint('[ServiceLocator] API Request: ${options.method} ${options.uri}');
-      }
-      if (options.data != null && kDebugMode) {
-        debugPrint('[ServiceLocator] Request Data: ${options.data}');
+        final uri = options.uri.toString();
+        final sanitizedUri = uri.contains('login') || uri.contains('signup') || uri.contains('password')
+            ? '${options.uri.scheme}://${options.uri.host}${options.uri.path} [SENSITIVE]'
+            : uri;
+        debugPrint('[ServiceLocator] API Request: ${options.method} $sanitizedUri');
       }
       
       handler.next(options);
     },
     onResponse: (response, handler) {
       if (kDebugMode) {
-        debugPrint('[ServiceLocator] API Response: ${response.statusCode} ${response.requestOptions.uri}');
+        final uri = response.requestOptions.uri.toString();
+        final sanitizedUri = uri.contains('login') || uri.contains('signup') || uri.contains('password')
+            ? '${response.requestOptions.uri.path} [SENSITIVE]'
+            : uri;
+        debugPrint('[ServiceLocator] API Response: ${response.statusCode} $sanitizedUri');
       }
       handler.next(response);
     },
