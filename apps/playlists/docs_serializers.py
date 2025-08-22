@@ -169,3 +169,25 @@ class PlaylistDataSerializer(serializers.Serializer):
 class PlaylistResponseSerializer(serializers.Serializer):
     playlist = PlaylistDataSerializer()
 
+
+#get_user_saved_events
+class EventTrackSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    artist = serializers.CharField()
+
+class EventSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    description = serializers.CharField(allow_blank=True, required=False)
+    public = serializers.BooleanField()
+    creator = serializers.CharField()
+    license_type = serializers.CharField()
+    tracks = EventTrackSerializer(many=True)
+
+class EventsResponseSerializer(serializers.Serializer):
+    events = EventSerializer(many=True)
+
+
+#get_all_shared_events
+class AllSharedEventsResponseSerializer(serializers.Serializer):
+    events = EventSerializer(many=True)

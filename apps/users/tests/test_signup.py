@@ -80,11 +80,18 @@ def test_signup_email_in_socialnetwork():
         expired_at=timezone.now() + timedelta(minutes=5)
     )
 
+    user = User.objects.create_user(
+        username='user123',
+        email="user248@gmail.com",
+        password='somePassword123'
+    )
+    
     SocialNetwork.objects.create(
-        email=email,
-        type="facebook",
-        social_id="111111",
-        user_id=1
+        email="user123@example.com",
+        user=user,
+        type='facebook',
+        social_id='111111',
+        name='user248'
     )
 
     payload = {
