@@ -271,7 +271,7 @@ class ProfileProvider extends BaseProvider {
           
           if (kDebugMode) {
             debugPrint('[ProfileProvider] Android platform - using idToken');
-            debugPrint('[ProfileProvider] idToken present: ${idToken != null && idToken.isNotEmpty}');
+            debugPrint('[ProfileProvider] idToken present: ${idToken != null && idToken.isNotEmpty ? '[PRESENT]' : '[NULL]'}');
           }
           
           if (idToken != null && idToken.isNotEmpty) {

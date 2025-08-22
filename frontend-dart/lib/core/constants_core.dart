@@ -51,9 +51,6 @@ class FormatUtils {
 }
 
 class AppValidators {
-  static String? required(String? value, [String? fieldName]) =>
-      ValidationBuilder().required('Please enter ${fieldName ?? 'this field'}').build()(value);
-  
   static String? email(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter an email address';

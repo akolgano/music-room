@@ -723,7 +723,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       context, 
       title: 'Create New Event',
       hintText: 'Enter event name',
-      validator: (value) => AppValidators.required(value, 'event name'),
+      validator: (value) => (value == null || value.trim().isEmpty) ? 'Please enter event name' : null,
     );
     
     if (eventName != null && eventName.trim().isNotEmpty) {
@@ -753,7 +753,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
       context, 
       title: 'Create New Playlist',
       hintText: 'Enter playlist name',
-      validator: (value) => AppValidators.required(value, 'playlist name'),
+      validator: (value) => (value == null || value.trim().isEmpty) ? 'Please enter playlist name' : null,
     );
     if (playlistName?.isNotEmpty == true) {
       await runAsyncAction(

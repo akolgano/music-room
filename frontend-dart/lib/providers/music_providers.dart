@@ -201,7 +201,7 @@ class MusicProvider extends BaseProvider {
         final track = playlistTrack.track;
         if (track?.deezerTrackId != null && 
             (track?.artist.isEmpty == true || track?.album.isEmpty == true) &&
-            !_trackCacheService.isTrackCached(track!.deezerTrackId!)) {
+            _trackCacheService[track!.deezerTrackId!] == null) {
           trackIdsToPreload.add(track.deezerTrackId!);
         }
       }
@@ -375,7 +375,7 @@ class MusicProvider extends BaseProvider {
         final track = playlistTrack.track;
         if (track?.deezerTrackId != null && 
             (track?.artist.isEmpty == true || track?.album.isEmpty == true || track?.imageUrl?.isEmpty == true) &&
-            !_trackCacheService.isTrackCached(track!.deezerTrackId!)) {
+            _trackCacheService[track!.deezerTrackId!] == null) {
           trackIdsToPreload.add(track.deezerTrackId!);
         }
       }
@@ -402,7 +402,7 @@ class MusicProvider extends BaseProvider {
       final playlistTrack = _playlistTracks[i];
       final track = playlistTrack.track;
       
-      if (track?.deezerTrackId != null && _trackCacheService.isTrackCached(track!.deezerTrackId!)) {
+      if (track?.deezerTrackId != null && _trackCacheService[track!.deezerTrackId!] != null) {
         final cachedTrack = _trackCacheService[track.deezerTrackId!];
         if (cachedTrack != null && 
             (cachedTrack.artist != track.artist || 

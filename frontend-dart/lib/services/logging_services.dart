@@ -99,6 +99,14 @@ class FrontendLoggingService {
     'client_secret',
   ];
 
+  static String maskSensitiveString(String? value, {int showChars = 0}) {
+    if (value == null || value.isEmpty) return '[NULL]';
+    if (showChars > 0 && value.length > showChars) {
+      return '${value.substring(0, showChars)}...[MASKED]';
+    }
+    return '[MASKED]';
+  }
+
   @visibleForTesting
   Map<String, dynamic> sanitizeMetadata(Map<String, dynamic>? metadata) {
     if (metadata == null) return {};

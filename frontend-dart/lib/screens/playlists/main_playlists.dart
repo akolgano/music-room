@@ -135,7 +135,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
     await runAsyncAction(
       () async {
         final musicProvider = getProvider<MusicProvider>();
-        AppLogger.debug('Loading all playlists (user + public) with token: ${auth.token?.substring(0, 10)}...', 'AllPlaylistsScreen');
+        AppLogger.debug('Loading all playlists (user + public)', 'AllPlaylistsScreen');
         await musicProvider.fetchAllPlaylists(auth.token!);
         _lastRefresh = DateTime.now();
         AppLogger.debug('Loaded ${musicProvider.playlists.length} total playlists', 'AllPlaylistsScreen');
@@ -144,7 +144,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
           AppLogger.debug('NO PLAYLISTS FOUND - This could be the issue!', 'AllPlaylistsScreen');
         } else {
           for (final playlist in musicProvider.playlists) {
-            AppLogger.debug('Playlist: ID=${playlist.id}, Name="${playlist.name}", Public=${playlist.isPublic}, Creator="${playlist.creator}", Current User: ${auth.username}', 'AllPlaylistsScreen');
+            AppLogger.debug('Playlist: ID=${playlist.id}, Name="${playlist.name}", Public=${playlist.isPublic}', 'AllPlaylistsScreen');
           }
         }
       },

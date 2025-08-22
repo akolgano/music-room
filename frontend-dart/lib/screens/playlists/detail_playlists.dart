@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import '../../core/navigation_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -183,7 +184,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
               PlaylistDetailWidgets.buildThemedPlaylistActions(
                 context, 
                 onPlayAll: _playPlaylist, 
-                onShuffle: _shufflePlaylist,
+                onPlayRandom: _playRandomTrack,
                 onAddRandomTrack: _canEditPlaylist ? _addRandomTrack : null,
               ),
               SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
@@ -558,36 +559,35 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
   }
 
-  Future<void> _shufflePlaylist() async {
+  Future<void> _playRandomTrack() async {
     final musicProvider = getProvider<MusicProvider>();
     final sortedTracks = musicProvider.sortedPlaylistTracks;
     
     if (sortedTracks.isEmpty) {
+      showError('No tracks available to play');
       return;
     }
     
-    if (!_canEditPlaylist) {
-      return;
+    try {
+      final random = Random();
+      final randomIndex = random.nextInt(sortedTracks.length);
+      
+      final playerService = getProvider<MusicPlayerService>();
+      await playerService.setPlaylistAndPlay(
+        playlist: sortedTracks,
+        startIndex: randomIndex,
+        playlistId: widget.playlistId,
+        authToken: auth.token,
+      );
+      
+      final track = sortedTracks[randomIndex].track;
+      if (track != null) {
+        showSuccess('Playing random track: ${track.name}');
+      }
+    } catch (e) {
+      AppLogger.error('Failed to play random track', e, null, 'PlaylistDetailScreen');
+      showError('Failed to play random track');
     }
-    
-    await runAsyncAction(
-      () async {
-        await musicProvider.shufflePlaylistTracks(widget.playlistId, auth.token!);
-        
-        final playerService = getProvider<MusicPlayerService>();
-        final shuffledTracks = List<PlaylistTrack>.from(musicProvider.sortedPlaylistTracks);
-        
-        await playerService.setPlaylistAndPlay(
-          playlist: shuffledTracks,
-          startIndex: 0,
-          playlistId: widget.playlistId,
-          authToken: auth.token,
-        );
-        playerService.toggleShuffle();
-      },
-      successMessage: 'Shuffled "${_playlist!.name}"',
-      errorMessage: 'Failed to shuffle playlist',
-    );
   }
 
   Future<void> _addRandomTrack() async {

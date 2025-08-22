@@ -121,17 +121,13 @@ class TrackCacheService {
     return null;
   }
 
-  bool isTrackCached(String deezerTrackId) {
-    return _trackCache.containsKey(deezerTrackId);
-  }
-
   Track? operator [](String deezerTrackId) => _trackCache[deezerTrackId];
 
   Future<void> preloadTracks(List<String> deezerTrackIds, String token, ApiService apiService) async {
     final List<Future<Track?>> futures = [];
     
     for (final trackId in deezerTrackIds) {
-      if (!isTrackCached(trackId) && !_ongoingRequests.containsKey(trackId)) {
+      if (this[trackId] == null && !_ongoingRequests.containsKey(trackId)) {
         futures.add(getTrackDetails(trackId, token, apiService));
       }
     }

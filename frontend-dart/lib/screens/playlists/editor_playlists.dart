@@ -124,7 +124,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             controller: _nameController,
             labelText: 'Playlist Name',
             prefixIcon: Icons.title,
-            validator: (value) => AppValidators.required(value, 'playlist name'),
+            validator: (value) => (value == null || value.trim().isEmpty) ? 'Please enter playlist name' : null,
             onFieldSubmitted: kIsWeb ? (_) => (_isEditMode ? _saveChanges() : _createPlaylist()) : null,
           ),
           const SizedBox(height: 16),

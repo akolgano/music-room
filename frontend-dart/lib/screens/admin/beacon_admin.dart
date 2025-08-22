@@ -184,7 +184,7 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
               controller: _playlistIdController,
               labelText: 'Playlist ID',
               hintText: 'Enter playlist ID to monitor',
-              validator: AppValidators.required,
+              validator: (value) => (value == null || value.trim().isEmpty) ? 'Please enter this field' : null,
             ),
             const SizedBox(height: 16),
             Row(

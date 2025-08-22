@@ -58,7 +58,23 @@ abstract class BaseProvider extends ChangeNotifier {
       }
       return result;
     } catch (e) {
-      setError(errorMessage ?? e.toString());
+      if (kDebugMode) {
+        final errorString = e.toString().toLowerCase();
+        final isUserCancellation = errorString.contains('popup_closed') || 
+                                  errorString.contains('cancelled') ||
+                                  errorString.contains('sign-in was cancelled') ||
+                                  errorString.contains('facebook login failed') ||
+                                  errorString.contains('login cancelled') ||
+                                  errorString.contains('user cancelled');
+        
+        debugPrint('[BaseProvider] executeAsync error: ${_extractErrorMessage(e)}');
+        
+        if (e is! DioException && !isUserCancellation) {
+          debugPrint('[BaseProvider] Full error: $e');
+          debugPrint('[BaseProvider] Stack trace: ${StackTrace.current}');
+        }
+      }
+      setError(errorMessage ?? _extractErrorMessage(e));
       return null;
     }
   }

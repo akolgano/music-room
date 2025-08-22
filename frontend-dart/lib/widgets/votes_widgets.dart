@@ -647,7 +647,7 @@ class TrackVotingControls extends StatelessWidget {
       return;
     }
 
-    AppLogger.debug('About to vote with playlistOwnerId: $playlistOwnerId, currentUsername: ${authProvider.username}, currentUserId: ${authProvider.userId}', 'TrackVotingControls');
+    AppLogger.debug('About to vote - user authenticated: ${authProvider.isLoggedIn}', 'TrackVotingControls');
     final success = await votingProvider.voteForTrackByIndex(
       playlistId: playlistId,
       trackIndex: trackIndex,

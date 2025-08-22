@@ -240,7 +240,7 @@ class _PlaylistSharingScreenState extends BaseScreen<PlaylistSharingScreen> {
       AppLogger.debug('MusicService obtained: $musicService', 'PlaylistSharingScreen');
       AppLogger.debug('Getting auth token...', 'PlaylistSharingScreen');
       final token = auth.token!;
-      AppLogger.debug('Auth token obtained (length: ${token.length})', 'PlaylistSharingScreen');
+      AppLogger.debug('Auth token obtained', 'PlaylistSharingScreen');
       
       AppLogger.debug('Starting to share playlist ${widget.playlist.id} with friends: $_selectedFriends', 'PlaylistSharingScreen');
       

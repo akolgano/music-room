@@ -112,7 +112,7 @@ class WebSocketService {
       
       final uri = Uri.parse('$wsUrl/ws/playlists/$playlistId/?token=$token');
       
-      _log('Connecting to: $uri (attempt ${_reconnectAttempts + 1})');
+      _log('Connecting to: $wsUrl/ws/playlists/$playlistId/?token=[MASKED] (attempt ${_reconnectAttempts + 1})');
 
       _channel = WebSocketChannel.connect(uri);
 
@@ -144,7 +144,7 @@ class WebSocketService {
   }
 
   void _handleIncomingMessage(dynamic message) {
-    _log('Received message: $message');
+    _log('Received WebSocket message');
     
     final data = _parseMessage(message);
     if (data == null) return;

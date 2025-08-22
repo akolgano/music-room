@@ -57,14 +57,6 @@ class AppBuilder {
     ];
   }
 
-  static Widget _buildAuthenticatedRoute(Widget Function() builder) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
-        if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
-        return builder();
-      },
-    );
-  }
 
   static final Set<String> _protectedRoutes = {
     AppRoutes.profile,
@@ -87,7 +79,12 @@ class AppBuilder {
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => _buildAuthenticatedRoute(() => const HomeScreen()),
+        builder: (context) => Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            return const HomeScreen();
+          },
+        ),
       );
     }
 
@@ -108,7 +105,12 @@ class AppBuilder {
     if (_protectedRoutes.contains(settings.name)) {
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => _buildAuthenticatedRoute(() => _buildProtectedRoute(settings)),
+        builder: (context) => Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            return _buildProtectedRoute(settings);
+          },
+        ),
       );
     }
 
@@ -116,7 +118,12 @@ class AppBuilder {
       final playlistId = settings.name!.split('/').last;
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => _buildAuthenticatedRoute(() => PlaylistDetailScreen(playlistId: playlistId)),
+        builder: (context) => Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            return PlaylistDetailScreen(playlistId: playlistId);
+          },
+        ),
       );
     }
 
@@ -124,7 +131,12 @@ class AppBuilder {
       final trackId = settings.name!.split('/').last;
       return MaterialPageRoute(
         settings: settings,
-        builder: (context) => _buildAuthenticatedRoute(() => TrackDetailScreen(trackId: trackId)),
+        builder: (context) => Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            if (!authProvider.isLoggedIn || !authProvider.hasValidToken) return const AuthScreen();
+            return TrackDetailScreen(trackId: trackId);
+          },
+        ),
       );
     }
 
