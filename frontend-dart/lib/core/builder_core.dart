@@ -240,20 +240,21 @@ class AppBuilder {
 
   static Widget _buildUserPage(RouteSettings settings) {
     final args = settings.arguments;
+    String? userId;
+    String? username;
     
     if (args is Map<String, dynamic>) {
-      final userId = args['userId'];
-      final username = args['username'] as String?;
-      
-      if (userId is String) {
-        return UserPageScreen(userId: userId, username: username);
-      } else if (userId is int) {
-        return UserPageScreen(userId: userId.toString(), username: username);
-      }
+      final id = args['userId'];
+      userId = id is int ? id.toString() : id as String?;
+      username = args['username'] as String?;
     } else if (args is String) {
-      return UserPageScreen(userId: args);
+      userId = args;
     } else if (args is int) {
-      return UserPageScreen(userId: args.toString());
+      userId = args.toString();
+    }
+    
+    if (userId != null) {
+      return UserPageScreen(userId: userId, username: username);
     }
     
     return Scaffold(

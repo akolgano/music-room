@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/music_models.dart';
 import '../core/navigation_core.dart';
 import '../core/locator_core.dart';
+import '../core/theme_core.dart';
 import '../providers/music_providers.dart';
 import '../providers/voting_providers.dart';
 import 'notification_services.dart';
@@ -193,7 +194,7 @@ class WebSocketService {
         : _NotificationInfo(
             title: 'Playlist Activity',
             message: 'Playlist has been updated',
-            backgroundColor: Colors.blue.withValues(alpha: 0.9),
+            backgroundColor: AppTheme.primary.withValues(alpha: 0.9),
             icon: Icons.playlist_play,
           );
   }

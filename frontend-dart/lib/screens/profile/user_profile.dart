@@ -344,7 +344,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
             icon: Icons.notification_important,
             title: 'Friend Request Received',
             subtitle: 'This user sent you a friend request',
-            color: Colors.blue,
+            color: AppTheme.primary,
           )
         else
           AppWidgets.settingsItem(

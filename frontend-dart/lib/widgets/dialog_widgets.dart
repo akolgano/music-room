@@ -20,7 +20,7 @@ class DialogWidgets {
       onSave: () => _validateAndGetText(formKey, controller, context),
     );
 
-    _cleanupController(controller);
+    controller.dispose();
     return result;
   }
 
@@ -98,12 +98,6 @@ class DialogWidgets {
     if (formKey.currentState?.validate() ?? true) {
       Navigator.pop(context, controller.text);
     }
-  }
-
-  static void _cleanupController(TextEditingController controller) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.dispose();
-    });
   }
 
   static Future<bool> showConfirmDialog(
