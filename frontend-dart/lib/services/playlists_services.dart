@@ -8,6 +8,7 @@ import '../services/cache_services.dart';
 import '../services/websocket_services.dart';
 import '../core/locator_core.dart';
 import '../core/navigation_core.dart';
+import '../core/logging_core.dart';
 
 class PlaylistVotingService {
   final String playlistId;
@@ -250,6 +251,40 @@ class PlaylistTrackService {
       AppLogger.error('Error in batch track fetch', e, null, 'PlaylistTrackService');
       return [];
     }
+  }
+
+  Future<void> batchFetchTrackDetailsProgressive(
+    List<PlaylistTrack> tracksNeedingDetails,
+    String authToken, {
+    required Function(PlaylistTrack, Track?) onTrackLoaded,
+  }) async {
+    if (tracksNeedingDetails.isEmpty) return;
+    
+    AppLogger.debug('Starting progressive fetch for ${tracksNeedingDetails.length} tracks', 'PlaylistTrackService');
+    
+    const batchSize = 5;
+    for (int i = 0; i < tracksNeedingDetails.length; i += batchSize) {
+      final end = (i + batchSize < tracksNeedingDetails.length) 
+          ? i + batchSize 
+          : tracksNeedingDetails.length;
+      final batch = tracksNeedingDetails.sublist(i, end);
+      
+      for (final playlistTrack in batch) {
+        fetchTrackDetailsIfNeeded(playlistTrack, authToken).then((trackDetails) {
+          if (trackDetails != null) {
+            onTrackLoaded(playlistTrack, trackDetails);
+          }
+        }).catchError((e) {
+          AppLogger.error('Error fetching track ${playlistTrack.trackId}', e, null, 'PlaylistTrackService');
+        });
+      }
+      
+      if (end < tracksNeedingDetails.length) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+    
+    AppLogger.debug('Progressive fetch initiated for all tracks', 'PlaylistTrackService');
   }
 
   void clearFetchingState() {
