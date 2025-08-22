@@ -109,7 +109,9 @@ class BeaconService {
       _bluetoothStateSubscription = flutterBeacon.bluetoothStateChanged().listen((state) {
         AppLogger.debug('Bluetooth state changed: $state', 'BeaconService');
         if (state == BluetoothState.stateOff) {
-          _handleBluetoothDisabled();
+          AppLogger.warning('Bluetooth disabled - stopping beacon operations', 'BeaconService');
+          stopScanning();
+          stopMonitoring();
         }
       });
       
@@ -311,12 +313,6 @@ class BeaconService {
 
   void _handleMonitoringError(dynamic error) {
     AppLogger.error('Beacon monitoring error: $error', null, null, 'BeaconService');
-  }
-
-  void _handleBluetoothDisabled() {
-    AppLogger.warning('Bluetooth disabled - stopping beacon operations', 'BeaconService');
-    stopScanning();
-    stopMonitoring();
   }
 
   List<BeaconInfo> getNearbyBeacons({double maxDistance = 2.0}) {

@@ -144,21 +144,6 @@ class SocialSharingUtils {
 
     AppLogger.debug('WhatsApp share: $content', 'SocialSharingUtils');
   }
-  
-  static String generateShareUrl(String platform, Map<String, String> params) {
-    switch (platform.toLowerCase()) {
-      case 'facebook':
-        return 'https://www.facebook.com/sharer/sharer.php?u=${params['url']}';
-      case 'twitter':
-        return 'https://twitter.com/intent/tweet?text=${params['text']}&url=${params['url']}';
-      case 'linkedin':
-        return 'https://www.linkedin.com/sharing/share-offsite/?url=${params['url']}';
-      case 'whatsapp':
-        return 'https://wa.me/?text=${params['text']} ${params['url']}';
-      default:
-        return '';
-    }
-  }
 }
 
 class SocialProfileWidget extends StatelessWidget {

@@ -130,11 +130,6 @@ class NavigationHelper {
     );
   }
   
-  static void navigateToFirst(BuildContext context) {
-    AppLogger.debug('Navigating to first route', 'NavigationHelper');
-    Navigator.popUntil(context, (route) => route.isFirst);
-  }
-  
   static void pop<T>(BuildContext context, [T? result]) {
     AppLogger.debug('Popping current route', 'NavigationHelper');
     Navigator.pop<T>(context, result);
