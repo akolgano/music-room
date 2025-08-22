@@ -83,7 +83,6 @@ class AppBuilder {
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
-    AppLogger.debug('Generating route for: ${settings.name} with arguments: ${settings.arguments}', 'AppBuilder');
 
     if (settings.name == '/' || settings.name == null || settings.name!.isEmpty) {
       return MaterialPageRoute(
@@ -138,7 +137,6 @@ class AppBuilder {
   }
 
   static Widget _buildProtectedRoute(RouteSettings settings) {
-    AppLogger.debug('Building protected route: ${settings.name} with arguments: ${settings.arguments}', 'AppBuilder');
     
     switch (settings.name) {
       case AppRoutes.profile:
@@ -186,7 +184,6 @@ class AppBuilder {
 
   static Widget _buildPlaylistDetail(RouteSettings settings) {
     final args = settings.arguments;
-    AppLogger.debug('Playlist detail args: $args, type: ${args.runtimeType}', 'AppBuilder');
     
     if (args == null) {
       AppLogger.warning('No arguments provided for playlist detail', 'AppBuilder');
@@ -215,7 +212,6 @@ class AppBuilder {
       );
     }
 
-    AppLogger.debug('Building PlaylistDetailScreen with ID: $playlistId', 'AppBuilder');
     return PlaylistDetailScreen(playlistId: playlistId);
   }
 

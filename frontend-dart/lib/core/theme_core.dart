@@ -27,14 +27,10 @@ class ThemeUtils {
   }
 
   static double getResponsiveIconSize(BuildContext context) {
-    return MusicAppResponsive.getIconSize(context,
+    return MusicAppResponsive.getResponsiveValue<double>(context,
       tiny: 14.0, small: 18.0, medium: 20.0,
       large: 24.0, xlarge: 28.0, xxlarge: 32.0
     );
-  }
-
-  static double getResponsiveButtonHeight(BuildContext context) {
-    return MusicAppResponsive.getButtonHeight(context);
   }
 
   static TextStyle getHeadingStyle(BuildContext context) {
@@ -85,7 +81,7 @@ class ThemeUtils {
 
   static ButtonStyle getPrimaryButtonStyle(BuildContext context) {
     final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
-    final baseHeight = getResponsiveButtonHeight(context);
+    final baseHeight = MusicAppResponsive.getButtonHeight(context);
     final scaledHeight = (baseHeight * textScaleFactor).clamp(32.0, 72.0);
     
     return ElevatedButton.styleFrom(
@@ -110,7 +106,7 @@ class ThemeUtils {
 
   static ButtonStyle getSecondaryButtonStyle(BuildContext context) {
     final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
-    final baseHeight = getResponsiveButtonHeight(context);
+    final baseHeight = MusicAppResponsive.getButtonHeight(context);
     final scaledHeight = (baseHeight * textScaleFactor).clamp(32.0, 72.0);
     
     return OutlinedButton.styleFrom(

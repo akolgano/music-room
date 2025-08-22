@@ -250,7 +250,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           children: [
               SizedBox(
                 width: double.infinity,
-                height: ThemeUtils.getResponsiveButtonHeight(context),
+                height: MusicAppResponsive.getButtonHeight(context),
                 child: ElevatedButton.icon(
                   onPressed: authProvider.isLoading ? null : () => _socialLogin('Google'),
                   icon: authProvider.isLoading 
@@ -280,7 +280,7 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
             SizedBox(height: MusicAppResponsive.isSmallScreen(context) ? 6 : 12),
             SizedBox(
               width: double.infinity,
-              height: ThemeUtils.getResponsiveButtonHeight(context),
+              height: MusicAppResponsive.getButtonHeight(context),
               child: ElevatedButton.icon(
                 onPressed: authProvider.isLoading ? null : () => _socialLogin('Facebook'),
                 icon: authProvider.isLoading 
@@ -371,11 +371,11 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
         final authProvider = getProvider<AuthProvider>();
         bool success = await authProvider.login(_usernameController.text, _passwordController.text);
         if (success) {
-          logAuthAction(_isLogin ? 'login' : 'signup', success: true, metadata: {'username': _usernameController.text});
+          logButtonClick(_isLogin ? 'login_submit' : 'signup_submit', metadata: {'username': _usernameController.text, 'success': true});
           navigateToHome();
         }
         else {
-          logAuthAction(_isLogin ? 'login' : 'signup', success: false, metadata: {'username': _usernameController.text, 'error': authProvider.errorMessage});
+          logButtonClick(_isLogin ? 'login_submit' : 'signup_submit', metadata: {'username': _usernameController.text, 'success': false, 'error': authProvider.errorMessage});
           throw Exception(authProvider.errorMessage ?? 'Login failed');
         }
       },
@@ -398,12 +398,12 @@ class _AuthScreenState extends BaseScreen<AuthScreen> with TickerProviderStateMi
           success = await authProvider.facebookLogin();
         }
         if (success) {
-          logAuthAction('social_login', success: true, metadata: {'provider': provider});
+          logButtonClick('social_login_$provider', metadata: {'success': true});
           if (mounted) {
             Navigator.pushReplacementNamed(context, '/');
           }
         } else {
-          logAuthAction('social_login', success: false, metadata: {'provider': provider, 'error': authProvider.errorMessage});
+          logButtonClick('social_login_$provider', metadata: {'success': false, 'error': authProvider.errorMessage});
           throw Exception(authProvider.errorMessage ?? '$provider authentication failed');
         }
       },

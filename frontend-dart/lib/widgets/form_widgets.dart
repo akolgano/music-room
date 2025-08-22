@@ -7,6 +7,19 @@ import '../core/theme_core.dart';
 import '../core/responsive_core.dart';
 import 'core_widgets.dart';
 
+double _responsive(double value, {String type = 'sp'}) {
+  if (kIsWeb) return value;
+  switch (type) {
+    case 'w':
+      return value.w;
+    case 'h':
+      return value.h;
+    case 'sp':
+    default:
+      return value.sp;
+  }
+}
+
 class FormWidgets {
   
   static Widget passwordField({
@@ -495,19 +508,6 @@ class FormWidgets {
       ],
     );
   }
-  
-  static double _responsive(double value, {String type = 'sp'}) {
-    if (kIsWeb) return value;
-    switch (type) {
-      case 'w':
-        return value.w;
-      case 'h':
-        return value.h;
-      case 'sp':
-      default:
-        return value.sp;
-    }
-  }
 }
 
 class RadioOption<T> {
@@ -699,18 +699,5 @@ class FormDecorationPresets {
         vertical: _responsive(12.0, type: 'h'),
       ),
     );
-  }
-  
-  static double _responsive(double value, {String type = 'sp'}) {
-    if (kIsWeb) return value;
-    switch (type) {
-      case 'w':
-        return value.w;
-      case 'h':
-        return value.h;
-      case 'sp':
-      default:
-        return value.sp;
-    }
   }
 }

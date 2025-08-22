@@ -53,8 +53,8 @@ class StateWidgets {
           final isConstrained = hasFiniteHeight && constraints.maxHeight < 200;
           
           final iconSize = isConstrained 
-            ? MusicAppResponsive.getIconSize(context, tiny: 16, small: 18, medium: 20, large: 22, xlarge: 24, xxlarge: 26)
-            : MusicAppResponsive.getIconSize(context, tiny: 40, small: 48, medium: 56, large: 64, xlarge: 72, xxlarge: 80);
+            ? MusicAppResponsive.getResponsiveValue<double>(context, tiny: 16, small: 18, medium: 20, large: 22, xlarge: 24, xxlarge: 26)
+            : MusicAppResponsive.getResponsiveValue<double>(context, tiny: 40, small: 48, medium: 56, large: 64, xlarge: 72, xxlarge: 80);
             
           final titleSize = isConstrained
             ? MusicAppResponsive.getFontSize(context, tiny: 10, small: 11, medium: 12, large: 13, xlarge: 14, xxlarge: 15)

@@ -388,16 +388,19 @@ class CreatePlaylistRequest {
 class UpdatePlaylistRequest {
   final String? name;
   final String? description;
+  final bool? isEvent;
   
   const UpdatePlaylistRequest({
     this.name,
     this.description,
+    this.isEvent,
   });
   
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (name != null) json['name'] = name;
     if (description != null) json['description'] = description;
+    if (isEvent != null) json['event'] = isEvent;
     return json;
   }
 }

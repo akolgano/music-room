@@ -306,7 +306,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
     final canReorder = currentSort.field == TrackSortField.position && _canEditPlaylist;
-    AppLogger.debug('Building tracks list: canReorder=$canReorder, tracks.length=${tracks.length}, _canEditPlaylist=$_canEditPlaylist', 'PlaylistDetailScreen');
     
     return ListView.builder(
       shrinkWrap: true, 

@@ -37,7 +37,7 @@ class MusicAppResponsive {
     return ScreenSize.xxlarge;
   }
 
-  static T _getResponsiveValue<T>(BuildContext context, {
+  static T getResponsiveValue<T>(BuildContext context, {
     required T tiny,
     required T small,
     required T medium,
@@ -71,23 +71,12 @@ class MusicAppResponsive {
       multiplier = 0.75;
     }
     
-    final baseSize = _getResponsiveValue(context,
+    final baseSize = getResponsiveValue(context,
         tiny: tiny, small: small, medium: medium,
         large: large, xlarge: xlarge, xxlarge: xxlarge);
         
     return baseSize * multiplier;
   }
-
-  static double getIconSize(BuildContext context, {
-    double tiny = 12.0,
-    double small = 16.0,
-    double medium = 20.0,
-    double large = 24.0,
-    double xlarge = 28.0,
-    double xxlarge = 32.0,
-  }) => _getResponsiveValue(context,
-      tiny: tiny, small: small, medium: medium,
-      large: large, xlarge: xlarge, xxlarge: xxlarge);
 
   static double getButtonHeight(BuildContext context, {
     double tiny = 32.0,
@@ -96,7 +85,7 @@ class MusicAppResponsive {
     double large = 44.0,
     double xlarge = 48.0,
     double xxlarge = 56.0,
-  }) => _getResponsiveValue(context,
+  }) => getResponsiveValue(context,
       tiny: tiny, small: small, medium: medium,
       large: large, xlarge: xlarge, xxlarge: xxlarge);
 
@@ -107,7 +96,7 @@ class MusicAppResponsive {
     double large = 8.0,
     double xlarge = 12.0,
     double xxlarge = 16.0,
-  }) => _getResponsiveValue(context,
+  }) => getResponsiveValue(context,
       tiny: tiny, small: small, medium: medium,
       large: large, xlarge: xlarge, xxlarge: xxlarge);
 
@@ -193,7 +182,7 @@ class MusicAppResponsive {
     double large = 12.0,
     double xlarge = 16.0,
     double xxlarge = 20.0,
-  }) => _getResponsiveValue(context,
+  }) => getResponsiveValue(context,
       tiny: tiny, small: small, medium: medium,
       large: large, xlarge: xlarge, xxlarge: xxlarge);
 

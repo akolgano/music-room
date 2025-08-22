@@ -136,18 +136,30 @@ class Playlist {
     this.isEvent = false,
   });
 
-  factory Playlist.fromJson(Map<String, dynamic> json) => Playlist(
-    id: json['id'].toString(),
-    name: (json['name'] ?? json['playlist_name']) as String,
-    description: json['description'] as String,
-    isPublic: json['public'] ?? false,
-    creator: json['creator'] as String,
-    tracks: (json['tracks'] as List<dynamic>?) ?.map((t) => Track.fromJson(t as Map<String, dynamic>)).toList() ?? [],
-    imageUrl: json['image_url'] as String?,
-    licenseType: json['license_type'] as String? ?? 'open',
-    sharedWith: (json['shared_with'] as List<dynamic>?) ?.map((u) => User.fromJson(u as Map<String, dynamic>)).toList() ?? [],
-    isEvent: json['event'] ?? false,
-  );
+  factory Playlist.fromJson(Map<String, dynamic> json) {
+    final playlist = Playlist(
+      id: json['id'].toString(),
+      name: (json['name'] ?? json['playlist_name']) as String,
+      description: json['description'] as String,
+      isPublic: json['public'] ?? false,
+      creator: json['creator'] as String,
+      tracks: (json['tracks'] as List<dynamic>?) ?.map((t) => Track.fromJson(t as Map<String, dynamic>)).toList() ?? [],
+      imageUrl: json['image_url'] as String?,
+      licenseType: json['license_type'] as String? ?? 'open',
+      sharedWith: (json['shared_with'] as List<dynamic>?) ?.map((u) => User.fromJson(u as Map<String, dynamic>)).toList() ?? [],
+      isEvent: json['event'] ?? false,
+    );
+    
+    print('========================================');
+    print('DEBUG: PARSING PLAYLIST FROM JSON');
+    print('Playlist ID: ${playlist.id}');
+    print('Playlist Name: ${playlist.name}');
+    print('Raw event field from JSON: ${json['event']}');
+    print('Parsed isEvent: ${playlist.isEvent}');
+    print('========================================');
+    
+    return playlist;
+  }
 
   bool canEdit(String? username) {
     if (username == creator) return true;
