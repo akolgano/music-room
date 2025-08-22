@@ -186,7 +186,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
   }
   
   void _showSortOptions() {
-    TrackSortBottomSheet.showPlaylistSort(
+    PlaylistSortBottomSheet.show(
       context,
       currentSort: _currentSort,
       onSortChanged: (PlaylistSortOption newSort) {

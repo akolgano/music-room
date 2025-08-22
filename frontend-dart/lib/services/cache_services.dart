@@ -148,11 +148,6 @@ class TrackCacheService {
     AppLogger.debug('Cancelled retries for track $deezerTrackId', 'TrackCacheService');
   }
 
-  void setRetryConfig(TrackRetryConfig config) {
-    _retryConfig = config;
-    AppLogger.debug('Updated retry config: maxRetries=${config.maxRetries}, baseDelayMs=${config.baseDelayMs}', 'TrackCacheService');
-  }
-
   TrackRetryConfig get retryConfig => _retryConfig;
 
   Map<String, int> get retryCount => Map.unmodifiable(_retryCount);

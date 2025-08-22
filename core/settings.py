@@ -185,7 +185,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '16/minute',    # max requests per minute for anonymous users
-        'user': '128/minute',   # max requests per minute for authenticated users
+        'user': '256/minute',   # max requests per minute for authenticated users
     }
 }
 

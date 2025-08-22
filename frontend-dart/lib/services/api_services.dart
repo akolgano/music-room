@@ -2,14 +2,20 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_it/get_it.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import '../core/navigation_core.dart';
+import 'api_rate_monitor_service.dart';
+import 'notification_services.dart';
 
 class ApiService {
   final Dio _dio;
+  final ApiRateMonitorService _rateMonitor = ApiRateMonitorService();
 
-  ApiService([Dio? dio]) : _dio = dio ?? _createConfiguredDio();
+  ApiService([Dio? dio]) : _dio = dio ?? _createConfiguredDio() {
+    _rateMonitor.startMonitoring();
+  }
 
   static Dio _createConfiguredDio() {
     final baseUrl = (dotenv.env['API_BASE_URL']?.isNotEmpty == true 
@@ -44,6 +50,10 @@ class ApiService {
     bool debug = false,
   }) async {
     if (debug && kDebugMode) debugPrint('[ApiService] $method called: $endpoint with data: $data');
+    
+    final getIt = GetIt.instance;
+    final context = getIt<NotificationService>().navigatorKey.currentContext;
+    _rateMonitor.recordApiCall(context);
     
     final options = token != null ? Options(headers: {'Authorization': 'Token $token'}) : null;
     dynamic processedData;
@@ -321,4 +331,8 @@ class ApiService {
   }
 
   String get baseUrl => _dio.options.baseUrl;
+  
+  void dispose() {
+    _rateMonitor.dispose();
+  }
 }
