@@ -427,7 +427,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
               Text(
                 'Recently ${recentEdit.action} by ${recentEdit.userName}',
                 style: TextStyle(
-                  color: Colors.blue[700],
+                  color: AppTheme.primary,
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
                 ),
@@ -537,6 +537,13 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         _playlist = await musicProvider.getPlaylistDetails(widget.playlistId!, auth.token!);
         
         if (_playlist != null) {
+          // Check if user is the owner
+          if (_playlist!.creator != auth.username) {
+            showError('You do not have permission to edit this playlist');
+            navigateTo(AppRoutes.playlistDetail, arguments: widget.playlistId);
+            return;
+          }
+          
           setState(() {
             _nameController.text = _playlist!.name;
             _descriptionController.text = _playlist!.description;
@@ -593,6 +600,14 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
   Future<void> _saveChanges() async {
     if (!_isEditMode) return;
+    
+    // Verify user is still the owner
+    if (_playlist != null && _playlist!.creator != auth.username) {
+      showError('You do not have permission to edit this playlist');
+      navigateTo(AppRoutes.playlistDetail, arguments: widget.playlistId);
+      return;
+    }
+    
     if (_nameController.text.trim().isEmpty) {
       showError('Please enter a playlist name');
       return;

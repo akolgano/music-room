@@ -105,39 +105,33 @@ class FrontendLoggingService {
     
     final sanitized = <String, dynamic>{};
     
+    dynamic sanitizeValue(dynamic value) {
+      if (value is Map<String, dynamic>) {
+        return sanitizeMetadata(value);
+      } else if (value is List) {
+        return value.map((item) => sanitizeValue(item)).toList();
+      } else if (value is String && _containsSensitivePattern(value)) {
+        return '[MASKED]';
+      }
+      return value;
+    }
+    
     for (final entry in metadata.entries) {
       final key = entry.key.toLowerCase();
       final value = entry.value;
       
       if (_sensitiveKeys.any((sensitiveKey) => key.contains(sensitiveKey))) {
         sanitized[entry.key] = value == null ? null : '[MASKED]';
-      } else if (value is Map<String, dynamic>) {
-        sanitized[entry.key] = sanitizeMetadata(value);
-      } else if (value is List) {
-        sanitized[entry.key] = _sanitizeList(value);
+      } else if (value is Map<String, dynamic> || value is List) {
+        sanitized[entry.key] = sanitizeValue(value);
       } else if (value is String && _containsSensitivePattern(value)) {
         sanitized[entry.key] = '[MASKED]';
-      } else if (value == null || value == '') {
-        sanitized[entry.key] = value;
       } else {
         sanitized[entry.key] = value;
       }
     }
     
     return sanitized;
-  }
-
-  List<dynamic> _sanitizeList(List<dynamic> list) {
-    return list.map((item) {
-      if (item is Map<String, dynamic>) {
-        return sanitizeMetadata(item);
-      } else if (item is List) {
-        return _sanitizeList(item);
-      } else if (item is String && _containsSensitivePattern(item)) {
-        return '[MASKED]';
-      }
-      return item;
-    }).toList();
   }
 
   bool _containsSensitivePattern(String value) {

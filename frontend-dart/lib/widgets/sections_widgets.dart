@@ -217,7 +217,7 @@ class ProfileSectionsWidget extends StatelessWidget {
           title: 'Admin Dashboard',
           subtitle: 'Access Django admin and API routes',
           onTap: () => Navigator.pushNamed(context, AppRoutes.adminDashboard),
-          color: Colors.blue,
+          color: AppTheme.primary,
         ),
         AppWidgets.settingsItem(
           icon: Icons.logout,
@@ -317,7 +317,7 @@ class ProfileSectionsWidget extends StatelessWidget {
                   value: VisibilityLevel.friends,
                   child: Row(
                     children: [
-                      Icon(Icons.people, color: Colors.blue, size: 16),
+                      Icon(Icons.people, color: AppTheme.primary, size: 16),
                       SizedBox(width: 8),
                       Text('Friends Only'),
                     ],
@@ -351,7 +351,7 @@ class ProfileSectionsWidget extends StatelessWidget {
       case VisibilityLevel.public:
         return const Icon(Icons.public, color: Colors.green, size: 16);
       case VisibilityLevel.friends:
-        return const Icon(Icons.people, color: Colors.blue, size: 16);
+        return const Icon(Icons.people, color: AppTheme.primary, size: 16);
       case VisibilityLevel.private:
         return const Icon(Icons.lock, color: Colors.orange, size: 16);
       default:

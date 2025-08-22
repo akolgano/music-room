@@ -131,7 +131,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
                     value: VisibilityLevel.friends,
                     child: Row(
                       children: [
-                        Icon(Icons.people, color: Colors.blue, size: 16),
+                        Icon(Icons.people, color: AppTheme.primary, size: 16),
                         SizedBox(width: 8),
                         Text('Friends Only'),
                       ],
@@ -202,7 +202,7 @@ class _ProfileScreenState extends BaseScreen<ProfileScreen> with UserActionLoggi
       case VisibilityLevel.public:
         return const Icon(Icons.public, color: Colors.green, size: 16);
       case VisibilityLevel.friends:
-        return const Icon(Icons.people, color: Colors.blue, size: 16);
+        return const Icon(Icons.people, color: AppTheme.primary, size: 16);
       case VisibilityLevel.private:
         return const Icon(Icons.lock, color: Colors.orange, size: 16);
       default:

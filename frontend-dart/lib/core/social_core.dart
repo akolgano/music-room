@@ -53,7 +53,7 @@ class SocialLoginButton extends StatelessWidget {
         break;
       case 'facebook':
         icon = Icons.facebook;
-        color = Colors.blue;
+        color = const Color(0xFF1877F2);
         break;
       default:
         throw ArgumentError('Unsupported social login provider: $provider');

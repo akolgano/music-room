@@ -110,7 +110,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       },
       buttonName: 'add_songs_button',
     ),
-    if (_canEditPlaylist) buildLoggingIconButton(
+    if (_isOwner) buildLoggingIconButton(
       icon: const Icon(Icons.edit), 
       onPressed: () {
         logButtonClick('edit_playlist', metadata: {'playlist_id': widget.playlistId});
@@ -683,7 +683,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           SnackBar(
             content: const Text('Switched to Custom Order to enable track reordering'),
             duration: const Duration(seconds: 2),
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: AppTheme.primary,
           ),
         );
       }
