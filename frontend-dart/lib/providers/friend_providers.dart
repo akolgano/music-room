@@ -80,6 +80,7 @@ class FriendProvider extends BaseProvider {
         await fetchSentInvitations(token);
       },
       successMessage: 'Friend request sent!',
+      errorMessage: 'Failed to send friend request. User may not exist or request already sent.',
     );
   }
 

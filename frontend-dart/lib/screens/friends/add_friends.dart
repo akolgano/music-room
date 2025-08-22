@@ -56,6 +56,10 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
                     prefixIcon: Icons.person_search,
                     validator: (value) {
                       if (value?.isEmpty ?? true) return 'Please enter a user ID';
+                      final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+                      if (!uuidRegex.hasMatch(value!.trim())) {
+                        return 'Please enter a valid UUID format';
+                      }
                       return null;
                     },
                     onChanged: (value) => setState(() {}),
@@ -125,6 +129,12 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
       return;
     }
 
+    final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    if (!uuidRegex.hasMatch(userInput)) {
+      showError('Invalid UUID format. Please enter a valid user ID');
+      return;
+    }
+
     final userId = userInput;
 
     if (userId == auth.userId) {
@@ -168,7 +178,10 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           throw Exception('This user has already sent you a friend request. Check your pending requests.');
         }
         
-        await friendProvider.sendFriendRequest(auth.token!, userId);
+        final success = await friendProvider.sendFriendRequest(auth.token!, userId);
+        if (!success) {
+          throw Exception(friendProvider.errorMessage ?? 'Failed to send friend request');
+        }
         _userIdController.clear();
       },
       successMessage: 'Friend request sent successfully!',
