@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
@@ -33,7 +33,6 @@ class ApiService {
             requestHeader: true, requestBody: true, responseBody: true, 
             responseHeader: false, error: true, compact: true, maxWidth: 120),
         InterceptorsWrapper(onRequest: (options, handler) => handler.next(options), onError: (error, handler) {
-          if (error.response?.statusCode == 401 && kDebugMode) debugPrint('[ApiService] Unauthorized request detected');
           handler.next(error);
         })
       ]);
@@ -49,7 +48,6 @@ class ApiService {
     T Function(Map<String, dynamic>)? fromJson,
     bool debug = false,
   }) async {
-    if (debug && kDebugMode) debugPrint('[ApiService] $method called: $endpoint with data: $data');
     
     final getIt = GetIt.instance;
     final context = getIt<NotificationService>().navigatorKey.currentContext;
@@ -80,8 +78,6 @@ class ApiService {
       default:
         throw ArgumentError('Unsupported HTTP method: $method');
     }
-    
-    if (debug && kDebugMode) debugPrint('[ApiService] $method completed: $endpoint');
     
     return fromJson != null ? fromJson(response.data) : response.data;
   }
@@ -169,14 +165,8 @@ class ApiService {
   }
 
   Future<ProfileResponse> _updateProfileWithFormData(String token, FormData formData, [bool debug = false]) async {
-    if (debug && kDebugMode) {
-      debugPrint('[ApiService] updateProfileWithFileWeb: Sending multipart form data to /profile/me/');
-    }
     final response = await _dio.patch('/profile/me/', data: formData, 
         options: Options(headers: {'Authorization': 'Token $token'}, contentType: 'multipart/form-data'));
-    if (debug && kDebugMode) {
-      debugPrint('[ApiService] updateProfileWithFileWeb: Response received with status ${response.statusCode}');
-    }
     return ProfileResponse.fromJson(response.data);
   }
 
@@ -255,7 +245,6 @@ class ApiService {
       _postVoid('/playlists/$playlistId/add/', request, token: token);
 
   Future<void> removeTrackFromPlaylist(String playlistId, String trackId, String token) async {
-    
     final tracksResponse = await getPlaylistTracks(playlistId, token);
     PlaylistTrack? targetTrack;
     
@@ -276,7 +265,6 @@ class ApiService {
     try {
       parsedId = int.parse(idToUse);
     } catch (e) {
-      AppLogger.error('Failed to parse ID as integer: $idToUse', e, null, 'ApiService');
       throw Exception('Invalid ID format: $idToUse');
     }
     

@@ -544,6 +544,13 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             return;
           }
           
+          print('========================================');
+          print('DEBUG: PLAYLIST EDITOR - LOADING DATA');
+          print('Playlist ID: ${widget.playlistId}');
+          print('Playlist Name: ${_playlist!.name}');
+          print('isEvent from API: ${_playlist!.isEvent}');
+          print('========================================');
+          
           setState(() {
             _nameController.text = _playlist!.name;
             _descriptionController.text = _playlist!.description;
@@ -619,21 +626,31 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       final hasNameOrDescriptionChanged = _playlist != null && 
           (_playlist!.name != _nameController.text.trim() || 
            _playlist!.description != _descriptionController.text.trim());
+      final hasEventChanged = _playlist != null && _playlist!.isEvent != _isEvent;
       final hasVisibilityChanged = _playlist != null && _playlist!.isPublic != _isPublic;
       final hasLicenseTypeChanged = _playlist != null && _playlist!.licenseType != _licenseType;
+      
+      print('========================================');
+      print('DEBUG: SAVING PLAYLIST CHANGES');
+      print('Playlist ID: ${widget.playlistId}');
+      print('Current isEvent: ${_playlist!.isEvent}');
+      print('New isEvent: $_isEvent');
+      print('hasEventChanged: $hasEventChanged');
+      print('========================================');
       
       if (hasVisibilityChanged) {
         final visibilityRequest = VisibilityRequest(public: _isPublic);
         await apiService.changePlaylistVisibility(widget.playlistId!, auth.token!, visibilityRequest);
       }
       
-      if (hasNameOrDescriptionChanged) {
+      if (hasNameOrDescriptionChanged || hasEventChanged) {
         final musicProvider = getProvider<MusicProvider>();
         await musicProvider.updatePlaylistDetails(
           widget.playlistId!,
           auth.token!,
           name: _nameController.text.trim(),
           description: _descriptionController.text.trim(),
+          isEvent: _isEvent,
         );
       }
       

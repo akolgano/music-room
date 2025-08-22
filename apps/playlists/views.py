@@ -72,6 +72,7 @@ def update_playlist(request, playlist_id):
     description = request.data.get('description')
     public = request.data.get('public')
     license_type = request.data.get('license_type')
+    event = request.data.get('event')
 
     if name is not None:
         playlist.name = name
@@ -81,6 +82,8 @@ def update_playlist(request, playlist_id):
         playlist.public = public
     if license_type is not None:
         playlist.license_type = license_type
+    if event is not None:
+        playlist.event = event
 
     playlist.save()
 

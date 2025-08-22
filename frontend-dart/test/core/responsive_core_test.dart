@@ -131,7 +131,7 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) {
-              final height = ThemeUtils.getResponsiveButtonHeight(context);
+              final height = MusicAppResponsive.getButtonHeight(context);
               return Scaffold(
                 body: Text('Button Height: $height'),
               );

@@ -72,8 +72,19 @@ class LocationService {
     final gpsLocation = await _tryGpsLocation();
     if (gpsLocation != null) return gpsLocation;
     
-    final ipLocation = await _tryIpLocation();
-    if (ipLocation != null) return ipLocation;
+    try {
+      final ipLocation = await getLocationByIP();
+      if (ipLocation != null) {
+        if (kDebugMode) {
+          debugPrint('Location detected via IP: ${ipLocation.displayName}');
+        }
+        return ipLocation;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('IP location also failed: $e');
+      }
+    }
     
     String errorMessage = 'Unable to detect location automatically.';
     if (kIsWeb) {
@@ -113,23 +124,6 @@ class LocationService {
       );
     }
     return null;
-  }
-
-  static Future<LocationSuggestion?> _tryIpLocation() async {
-    try {
-      final result = await getLocationByIP();
-      if (result != null) {
-        if (kDebugMode) {
-          debugPrint('Location detected via IP: ${result.displayName}');
-        }
-      }
-      return result;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('IP location also failed: $e');
-      }
-      return null;
-    }
   }
 
   static Future<LocationSuggestion?> _reverseGeocode(double latitude, double longitude) async {

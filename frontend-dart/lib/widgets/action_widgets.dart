@@ -3,6 +3,19 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../core/theme_core.dart';
 
+double _responsive(double value, {String type = 'sp'}) {
+  if (kIsWeb) return value;
+  switch (type) {
+    case 'w':
+      return value.w;
+    case 'h':
+      return value.h;
+    case 'sp':
+    default:
+      return value.sp;
+  }
+}
+
 class TrackActionsWidget extends StatelessWidget {
   final bool showAddButton;
   final bool showPlayButton;
@@ -85,15 +98,6 @@ class TrackActionsWidget extends StatelessWidget {
     padding: EdgeInsets.all(_responsive(4.0, type: 'w')),
     constraints: const BoxConstraints(minWidth: 32, minHeight: 32, maxWidth: 40),
   );
-
-  static double _responsive(double value, {String type = 'sp'}) {
-    if (kIsWeb) return value;
-    switch (type) {
-      case 'w': return value.w.toDouble();
-      case 'h': return value.h.toDouble();
-      case 'sp': default: return value.sp.toDouble();
-    }
-  }
 }
 
 class AnimatedActionButton extends StatefulWidget {
@@ -447,19 +451,6 @@ class SwipeActionWidget extends StatelessWidget {
         size: _responsive(24.0),
       ),
     );
-  }
-  
-  static double _responsive(double value, {String type = 'sp'}) {
-    if (kIsWeb) return value;
-    switch (type) {
-      case 'w':
-        return value.w;
-      case 'h':
-        return value.h;
-      case 'sp':
-      default:
-        return value.sp;
-    }
   }
 }
 

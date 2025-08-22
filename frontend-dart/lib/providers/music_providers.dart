@@ -60,32 +60,26 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<void> fetchPublicPlaylists(String token) async {
-    AppLogger.debug('MusicProvider: Fetching public playlists', 'MusicProvider');
     final result = await executeAsync(
       () => _musicService.getPublicPlaylists(token),
       errorMessage: 'Failed to load public playlists',
     );
     if (result != null) {
       _publicPlaylists = result;
-      AppLogger.debug('MusicProvider: Fetched ${_publicPlaylists.length} public playlists', 'MusicProvider');
       notifyListeners();
     }
   }
 
   Future<void> fetchAllPlaylists(String token) async {
-    AppLogger.debug('MusicProvider: Fetching all playlists and events', 'MusicProvider');
     final result = await executeAsync(
       () async {
-        AppLogger.debug('MusicProvider: Starting playlist and events fetch...', 'MusicProvider');
         
         final allPlaylists = <String, Playlist>{};
         
         try {
           final userPlaylists = await _musicService.getUserPlaylists(token);
-          AppLogger.debug('MusicProvider: Got ${userPlaylists.length} user playlists', 'MusicProvider');
           for (final playlist in userPlaylists) {
             allPlaylists[playlist.id] = playlist;
-            AppLogger.debug('MusicProvider: Added user playlist: ${playlist.name} (${playlist.id})', 'MusicProvider');
           }
         } catch (e) {
           AppLogger.error('Failed to fetch user playlists', e, null, 'MusicProvider');
@@ -93,11 +87,9 @@ class MusicProvider extends BaseProvider {
         
         try {
           final publicPlaylists = await _musicService.getPublicPlaylists(token);
-          AppLogger.debug('MusicProvider: Got ${publicPlaylists.length} public playlists', 'MusicProvider');
           for (final playlist in publicPlaylists) {
             if (!allPlaylists.containsKey(playlist.id)) {
               allPlaylists[playlist.id] = playlist;
-              AppLogger.debug('MusicProvider: Added public playlist: ${playlist.name} (${playlist.id})', 'MusicProvider');
             }
           }
         } catch (e) {
@@ -106,10 +98,8 @@ class MusicProvider extends BaseProvider {
         
         try {
           final userEvents = await _musicService.getSavedEvents(token);
-          AppLogger.debug('MusicProvider: Got ${userEvents.length} user events', 'MusicProvider');
           for (final event in userEvents) {
             allPlaylists[event.id] = event;
-            AppLogger.debug('MusicProvider: Added user event: ${event.name} (${event.id})', 'MusicProvider');
           }
         } catch (e) {
           AppLogger.error('Failed to fetch user events', e, null, 'MusicProvider');
@@ -117,21 +107,16 @@ class MusicProvider extends BaseProvider {
         
         try {
           final publicEvents = await _musicService.getPublicEvents(token);
-          AppLogger.debug('MusicProvider: Got ${publicEvents.length} public events', 'MusicProvider');
           for (final event in publicEvents) {
             if (!allPlaylists.containsKey(event.id)) {
               allPlaylists[event.id] = event;
-              AppLogger.debug('MusicProvider: Added public event: ${event.name} (${event.id})', 'MusicProvider');
             }
           }
         } catch (e) {
           AppLogger.error('Failed to fetch public events', e, null, 'MusicProvider');
         }
-
-        AppLogger.debug('MusicProvider: Total playlists and events combined: ${allPlaylists.length}', 'MusicProvider');
         
         final resultList = allPlaylists.values.toList();
-        AppLogger.debug('MusicProvider: Returning ${resultList.length} playlists and events', 'MusicProvider');
         return resultList;
       },
       errorMessage: 'Failed to load playlists and events',
@@ -140,7 +125,6 @@ class MusicProvider extends BaseProvider {
     if (result != null) {
       _playlists = result;
       _hasConnectionError = false;
-      AppLogger.debug('MusicProvider: Combined ${_playlists.length} total playlists (including regular playlists and events)', 'MusicProvider');
     } else {
       _hasConnectionError = true;
     }
@@ -165,13 +149,11 @@ class MusicProvider extends BaseProvider {
     bool isEvent,
     [String? deviceUuid]
   ) async {
-    AppLogger.debug('Creating playlist: $name (public: $isPublic, event: $isEvent)', 'MusicProvider');
     final result = await executeAsync(
       () async {
         final id = await _musicService.createPlaylist(
           name, description, isPublic, token, licenseType, isEvent, deviceUuid
         );
-        AppLogger.debug('Playlist created with ID: $id', 'MusicProvider');
         await fetchAllPlaylists(token);
         return id;
       },
@@ -367,7 +349,6 @@ class MusicProvider extends BaseProvider {
   }
 
   void updatePlaylistTracks(List<PlaylistTrack> updatedTracks) {
-    AppLogger.debug('Updating playlist tracks: ${updatedTracks.length} tracks (WebSocket update)', 'MusicProvider');
     _playlistTracks = updatedTracks;
     
     notifyListeners();
@@ -375,12 +356,9 @@ class MusicProvider extends BaseProvider {
     Future.delayed(const Duration(milliseconds: 100), () {
       _preloadTrackDetails(_playlistTracks);
     });
-    
-    AppLogger.debug('Completed playlist tracks update and triggered UI refresh', 'MusicProvider');
   }
 
   void updatePlaylistTracksWithPreload(List<PlaylistTrack> updatedTracks) {
-    AppLogger.debug('Updating playlist tracks with comprehensive preload: ${updatedTracks.length} tracks (WebSocket comprehensive update)', 'MusicProvider');
     _playlistTracks = updatedTracks;
     
     notifyListeners();
@@ -388,8 +366,6 @@ class MusicProvider extends BaseProvider {
     _preloadTrackDetails(updatedTracks);
     
     Future.microtask(() => notifyListeners());
-    
-    AppLogger.debug('Completed comprehensive playlist tracks update with preload and multiple notifications', 'MusicProvider');
   }
 
   void _preloadTrackDetails(List<PlaylistTrack> tracks) {
@@ -405,22 +381,18 @@ class MusicProvider extends BaseProvider {
       }
       
       if (trackIdsToPreload.isNotEmpty) {
-        AppLogger.debug('Preloading ${trackIdsToPreload.length} tracks with missing details', 'MusicProvider');
         if (getIt.isRegistered<AuthService>()) {
           final authService = getIt<AuthService>();
           final token = authService.currentToken;
           if (token != null) {
             _trackCacheService.preloadTracks(trackIdsToPreload, token, _apiService).then((_) {
-              AppLogger.debug('Completed preloading tracks, updating tracks with complete details', 'MusicProvider');
               _updateTracksWithCachedDetails();
             }).catchError((e) {
-              AppLogger.debug('Error preloading tracks: $e', 'MusicProvider');
             });
           }
         }
       }
     } catch (e) {
-      AppLogger.debug('Error in preload track details: $e', 'MusicProvider');
     }
   }
 
@@ -438,13 +410,11 @@ class MusicProvider extends BaseProvider {
              cachedTrack.imageUrl != track.imageUrl)) {
           _playlistTracks[i] = playlistTrack.copyWithTrack(cachedTrack);
           updated = true;
-          AppLogger.debug('Updated track ${track.name} with cached details', 'MusicProvider');
         }
       }
     }
     
     if (updated) {
-      AppLogger.debug('Refreshing UI with updated track details', 'MusicProvider');
       notifyListeners();
     }
   }
@@ -477,12 +447,12 @@ class MusicProvider extends BaseProvider {
     }
   }
 
-  Future<void> updatePlaylistDetails(String playlistId, String token, {String? name, String? description}) async {
+  Future<void> updatePlaylistDetails(String playlistId, String token, {String? name, String? description, bool? isEvent}) async {
     final result = await executeAsync(
       () async {
-        final request = UpdatePlaylistRequest(name: name, description: description);
+        final request = UpdatePlaylistRequest(name: name, description: description, isEvent: isEvent);
         await _apiService.updatePlaylist(playlistId, token, request);
-        updatePlaylistInCache(playlistId, name: name, description: description);
+        updatePlaylistInCache(playlistId, name: name, description: description, isEvent: isEvent);
       },
       errorMessage: 'Failed to update playlist details',
     );
@@ -529,7 +499,6 @@ class MusicProvider extends BaseProvider {
   }
 
   Future<void> forceRefreshPlaylists(String token) async {
-    AppLogger.debug('Force refreshing all playlists', 'MusicProvider');
     _playlists = [];
     _userPlaylists = [];
     _publicPlaylists = [];

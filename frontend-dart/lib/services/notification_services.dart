@@ -66,7 +66,6 @@ class NotificationService {
 
   void _queueNotification(String message, String? title, Map<String, dynamic>? data, 
                          Duration duration, Color? backgroundColor, IconData? icon) {
-    AppLogger.debug('Queueing notification until overlay is available: $title - $message', 'NotificationService');
     
     _pendingNotifications.clear();
     _pendingNotifications.add(_PendingNotification(
@@ -114,21 +113,18 @@ class NotificationService {
 
     _hideCurrentNotification();
     _displayNotification(overlayInfo, message, title, data, backgroundColor, icon);
-    _scheduleHiding(duration);
+    _hideTimer = Timer(duration, _hideCurrentNotification);
     
-    AppLogger.debug('Showing notification: $title - $message', 'NotificationService');
   }
 
   OverlayInfo? _getOverlayInfo() {
     final context = navigatorKey.currentContext;
     if (context == null) {
-      AppLogger.debug('Cannot show notification: no context available', 'NotificationService');
       return null;
     }
 
     final overlay = Overlay.maybeOf(context);
     if (overlay == null) {
-      AppLogger.debug('Cannot show notification: no Overlay widget found in context', 'NotificationService');
       return null;
     }
 
@@ -150,10 +146,6 @@ class NotificationService {
     );
 
     overlayInfo.overlay.insert(_currentOverlay!);
-  }
-
-  void _scheduleHiding(Duration duration) {
-    _hideTimer = Timer(duration, _hideCurrentNotification);
   }
 
   Widget _buildNotificationWidget(
@@ -238,7 +230,6 @@ class NotificationService {
     if (_currentOverlay != null) {
       _currentOverlay!.remove();
       _currentOverlay = null;
-      AppLogger.debug('Notification hidden', 'NotificationService');
     }
   }
 

@@ -365,7 +365,7 @@ class AppWidgets {
               Icon(
                 icon ?? Icons.info_outline,
                 color: txtColor,
-                size: MusicAppResponsive.getIconSize(context, medium: 20, small: 18, tiny: 16),
+                size: MusicAppResponsive.getResponsiveValue<double>(context, tiny: 16, small: 18, medium: 20, large: 24, xlarge: 28, xxlarge: 32),
               ),
               SizedBox(width: _responsiveWidth(12)),
               Expanded(
