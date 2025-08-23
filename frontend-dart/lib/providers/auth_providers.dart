@@ -49,11 +49,14 @@ class AuthProvider extends BaseProvider {
 
   Future<void> _initializeAuthState() async {
     try {
+      if (token != null && currentUser == null) {
+        await _authService.refreshCurrentUser();
+      }
       notifyListeners();
       
       if (isLoggedIn && token != null) {
         if (kDebugMode) {
-          developer.log('User authenticated on app startup', name: 'AuthProvider');
+          developer.log('User authenticated on app startup with user: ${currentUser?.username}', name: 'AuthProvider');
         }
       }
     } catch (e) {

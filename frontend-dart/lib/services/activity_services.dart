@@ -15,52 +15,30 @@ class ActivityService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final request = ActivityLogRequest(
+      await _api.logActivity(token, ActivityLogRequest(
         action: action,
         details: details,
         metadata: metadata,
-      );
-      await _api.logActivity(token, request);
+      ));
     } catch (e) {
       AppLogger.error('Failed to log user activity', e, null, 'ActivityService');
     }
   }
 
-  Future<void> logButtonClick(String buttonName, String token, {Map<String, dynamic>? metadata}) async {
-    await logUserActivity(
-      action: 'button_click',
-      token: token,
-      details: buttonName,
-      metadata: metadata,
-    );
-  }
+  Future<void> _logWithToken(String action, String? details, String token, Map<String, dynamic>? metadata) =>
+    logUserActivity(action: action, token: token, details: details, metadata: metadata);
 
-  Future<void> logScreenView(String screenName, String token, {Map<String, dynamic>? metadata}) async {
-    await logUserActivity(
-      action: 'screen_view',
-      token: token,
-      details: screenName,
-      metadata: metadata,
-    );
-  }
+  Future<void> logButtonClick(String buttonName, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('button_click', buttonName, token, metadata);
 
-  Future<void> logPlaylistAction(String action, String playlistId, String token, {Map<String, dynamic>? metadata}) async {
-    await logUserActivity(
-      action: 'playlist_$action',
-      token: token,
-      details: playlistId,
-      metadata: metadata,
-    );
-  }
+  Future<void> logScreenView(String screenName, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('screen_view', screenName, token, metadata);
 
-  Future<void> logTrackAction(String action, String trackId, String token, {Map<String, dynamic>? metadata}) async {
-    await logUserActivity(
-      action: 'track_$action',
-      token: token,
-      details: trackId,
-      metadata: metadata,
-    );
-  }
+  Future<void> logPlaylistAction(String action, String playlistId, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('playlist_$action', playlistId, token, metadata);
+
+  Future<void> logTrackAction(String action, String trackId, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('track_$action', trackId, token, metadata);
 
   Future<void> logActivity({
     required String action,
@@ -68,8 +46,7 @@ class ActivityService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final authProvider = getIt<AuthProvider>();
-      final token = authProvider.token;
+      final token = getIt<AuthProvider>().token;
       if (token != null) {
         await logUserActivity(
           action: action,
@@ -79,17 +56,13 @@ class ActivityService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Failed to log activity: $e');
-      }
+      if (kDebugMode) debugPrint('Failed to log activity: $e');
     }
   }
 
-  Future<void> logPlaylistActionAuto(String action, String playlistId, {Map<String, dynamic>? metadata}) async {
-    await logActivity(action: 'playlist_$action', details: playlistId, metadata: metadata);
-  }
+  Future<void> logPlaylistActionAuto(String action, String playlistId, {Map<String, dynamic>? metadata}) =>
+    logActivity(action: 'playlist_$action', details: playlistId, metadata: metadata);
 
-  Future<void> logTrackActionAuto(String action, String trackId, {Map<String, dynamic>? metadata}) async {
-    await logActivity(action: 'track_$action', details: trackId, metadata: metadata);
-  }
+  Future<void> logTrackActionAuto(String action, String trackId, {Map<String, dynamic>? metadata}) =>
+    logActivity(action: 'track_$action', details: trackId, metadata: metadata);
 }

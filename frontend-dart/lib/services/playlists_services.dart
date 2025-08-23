@@ -15,11 +15,9 @@ class PlaylistVotingService {
   
   bool _isPublicVoting = true;
   String _votingLicenseType = 'open';
-  DateTime? _votingStartTime;
-  DateTime? _votingEndTime;
+  DateTime? _votingStartTime, _votingEndTime;
   PlaylistVotingInfo? _votingInfo;
-  double? _latitude;
-  double? _longitude;
+  double? _latitude, _longitude;
   int? _allowedRadiusMeters;
 
   PlaylistVotingService({required this.playlistId});
@@ -33,38 +31,39 @@ class PlaylistVotingService {
   double? get longitude => _longitude;
   int? get allowedRadiusMeters => _allowedRadiusMeters;
 
-  void setPublicVoting(bool value) => _isPublicVoting = value;
+  void setPublicVoting(bool value) => _isPublicVoting = true;
   void setVotingLicenseType(String value) => _votingLicenseType = value;
   void setVotingStartTime(DateTime? value) => _votingStartTime = value;
   void setVotingEndTime(DateTime? value) => _votingEndTime = value;
 
+  String? _formatTime(DateTime? time) => time != null 
+    ? '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}'
+    : null;
+
+  DateTime? _parseTime(String? timeStr) {
+    if (timeStr == null) return null;
+    final parts = timeStr.split(':');
+    if (parts.length < 2) return null;
+    return DateTime(2000, 1, 1,
+      int.tryParse(parts[0]) ?? 0,
+      int.tryParse(parts[1]) ?? 0,
+      parts.length > 2 ? (int.tryParse(parts[2]) ?? 0) : 0);
+  }
+
   Future<void> applyVotingSettings(String authToken) async {
     try {
-      String? voteStartTimeStr;
-      String? voteEndTimeStr;
-      
-      if (_votingLicenseType == 'location_time') {
-        if (_votingStartTime != null) {
-          voteStartTimeStr = '${_votingStartTime!.hour.toString().padLeft(2, '0')}:${_votingStartTime!.minute.toString().padLeft(2, '0')}:${_votingStartTime!.second.toString().padLeft(2, '0')}';
-        }
-        if (_votingEndTime != null) {
-          voteEndTimeStr = '${_votingEndTime!.hour.toString().padLeft(2, '0')}:${_votingEndTime!.minute.toString().padLeft(2, '0')}:${_votingEndTime!.second.toString().padLeft(2, '0')}';
-        }
-      }
-
+      final isLocationTime = _votingLicenseType == 'location_time';
       final request = PlaylistLicenseRequest(
         licenseType: _votingLicenseType,
         invitedUsers: _votingLicenseType != 'open' ? [] : null,
-        voteStartTime: voteStartTimeStr,
-        voteEndTime: voteEndTimeStr,
-        latitude: _votingLicenseType == 'location_time' ? _latitude : null,
-        longitude: _votingLicenseType == 'location_time' ? _longitude : null,
-        allowedRadiusMeters: _votingLicenseType == 'location_time' ? _allowedRadiusMeters : null,
+        voteStartTime: isLocationTime ? _formatTime(_votingStartTime) : null,
+        voteEndTime: isLocationTime ? _formatTime(_votingEndTime) : null,
+        latitude: isLocationTime ? _latitude : null,
+        longitude: isLocationTime ? _longitude : null,
+        allowedRadiusMeters: isLocationTime ? _allowedRadiusMeters : null,
       );
 
-      final apiService = getIt<ApiService>();
-      await apiService.updatePlaylistLicense(playlistId, authToken, request);
-      
+      await getIt<ApiService>().updatePlaylistLicense(playlistId, authToken, request);
       await loadVotingSettings(authToken);
       
       _votingInfo = PlaylistVotingInfo(
@@ -72,12 +71,11 @@ class PlaylistVotingService {
         restrictions: VotingRestrictions(
           licenseType: _votingLicenseType,
           isInvited: true,
-          isInTimeWindow: _votingLicenseType != 'location_time' || _isInVotingTimeWindow(),
+          isInTimeWindow: !isLocationTime || _isInVotingTimeWindow(),
           isInLocation: true,
         ),
         trackVotes: {},
       );
-      
     } catch (e) {
       AppLogger.error('Failed to update voting settings', e, null, 'PlaylistVotingService');
       rethrow;
@@ -85,48 +83,25 @@ class PlaylistVotingService {
   }
 
   Future<void> loadVotingSettings(String authToken, {bool isOwner = true}) async {
+    _isPublicVoting = true;
+    
     if (!isOwner) {
       _votingLicenseType = 'open';
-      _isPublicVoting = true;
       AppLogger.info('Skipping voting settings for non-owner', 'PlaylistVotingService');
       return;
     }
     
     try {
-      final apiService = getIt<ApiService>();
-      final licenseResponse = await apiService.getPlaylistLicense(playlistId, authToken);
+      final response = await getIt<ApiService>().getPlaylistLicense(playlistId, authToken);
+      _votingLicenseType = response.licenseType;
+      _votingStartTime = _parseTime(response.voteStartTime);
+      _votingEndTime = _parseTime(response.voteEndTime);
+      _latitude = response.latitude;
+      _longitude = response.longitude;
+      _allowedRadiusMeters = response.allowedRadiusMeters;
+      _isPublicVoting = response.licenseType == 'open';
       
-      _votingLicenseType = licenseResponse.licenseType;
-      
-      if (licenseResponse.voteStartTime != null) {
-        final timeStr = licenseResponse.voteStartTime!;
-        final timeParts = timeStr.split(':');
-        if (timeParts.length >= 2) {
-          final hour = int.tryParse(timeParts[0]) ?? 0;
-          final minute = int.tryParse(timeParts[1]) ?? 0;
-          final second = timeParts.length > 2 ? (int.tryParse(timeParts[2]) ?? 0) : 0;
-          _votingStartTime = DateTime(2000, 1, 1, hour, minute, second);
-        }
-      }
-      if (licenseResponse.voteEndTime != null) {
-        final timeStr = licenseResponse.voteEndTime!;
-        final timeParts = timeStr.split(':');
-        if (timeParts.length >= 2) {
-          final hour = int.tryParse(timeParts[0]) ?? 0;
-          final minute = int.tryParse(timeParts[1]) ?? 0;
-          final second = timeParts.length > 2 ? (int.tryParse(timeParts[2]) ?? 0) : 0;
-          _votingEndTime = DateTime(2000, 1, 1, hour, minute, second);
-        }
-      }
-      
-      _latitude = licenseResponse.latitude;
-      _longitude = licenseResponse.longitude;
-      _allowedRadiusMeters = licenseResponse.allowedRadiusMeters;
-      
-      _isPublicVoting = licenseResponse.licenseType == 'open';
-      
-      AppLogger.info('Successfully loaded voting settings: ${licenseResponse.licenseType}', 'PlaylistVotingService');
-      
+      AppLogger.info('Successfully loaded voting settings: ${response.licenseType}', 'PlaylistVotingService');
     } catch (e) {
       AppLogger.error('Failed to load voting settings: $e', null, null, 'PlaylistVotingService');
       rethrow;
@@ -135,9 +110,8 @@ class PlaylistVotingService {
 
   bool _isInVotingTimeWindow() {
     final now = DateTime.now();
-    if (_votingStartTime != null && now.isBefore(_votingStartTime!)) return false;
-    if (_votingEndTime != null && now.isAfter(_votingEndTime!)) return false;
-    return true;
+    return !(_votingStartTime != null && now.isBefore(_votingStartTime!) ||
+             _votingEndTime != null && now.isAfter(_votingEndTime!));
   }
 
   Future<DateTime?> selectVotingDateTime(BuildContext context, bool isStartTime) async {
@@ -149,26 +123,10 @@ class PlaylistVotingService {
     );
 
     if (date != null && context.mounted) {
-      final time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-
+      final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
       if (time != null) {
-        final dateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          time.hour,
-          time.minute,
-        );
-
-        if (isStartTime) {
-          _votingStartTime = dateTime;
-        } else {
-          _votingEndTime = dateTime;
-        }
-        
+        final dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+        if (isStartTime) _votingStartTime = dateTime; else _votingEndTime = dateTime;
         return dateTime;
       }
     }
@@ -188,41 +146,31 @@ class PlaylistTrackService {
 
   Set<String> get fetchingTrackDetails => _fetchingTrackDetails;
 
-  bool needsTrackDetailsFetch(Track? track) {
-    return track?.deezerTrackId != null && 
-           _trackHasMissingDetails(track) &&
-           !_fetchingTrackDetails.contains(track!.deezerTrackId!);
-  }
+  bool _trackHasMissingDetails(Track? track) =>
+    track?.artist.isEmpty == true || track?.album.isEmpty == true;
 
-  bool _trackHasMissingDetails(Track? track) {
-    return track?.artist.isEmpty == true || track?.album.isEmpty == true;
-  }
+  bool needsTrackDetailsFetch(Track? track) =>
+    track?.deezerTrackId != null && 
+    _trackHasMissingDetails(track) &&
+    !_fetchingTrackDetails.contains(track!.deezerTrackId!);
 
-  bool shouldSkipTrackDetailsFetch(String? deezerTrackId, Track? track) {
-    return deezerTrackId == null || 
-           _fetchingTrackDetails.contains(deezerTrackId) || 
-           (track != null && !_trackHasMissingDetails(track));
-  }
+  bool shouldSkipTrackDetailsFetch(String? deezerTrackId, Track? track) =>
+    deezerTrackId == null || 
+    _fetchingTrackDetails.contains(deezerTrackId) || 
+    (track != null && !_trackHasMissingDetails(track));
 
   Future<Track?> fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack, String authToken) async {
     final track = playlistTrack.track;
     final deezerTrackId = track?.deezerTrackId;
     
-    if (shouldSkipTrackDetailsFetch(deezerTrackId, track)) {
-      return null;
-    }
+    if (shouldSkipTrackDetailsFetch(deezerTrackId, track)) return null;
 
     final nonNullDeezerTrackId = deezerTrackId!;
     _fetchingTrackDetails.add(nonNullDeezerTrackId);
     
     try {
-      final trackDetails = await _trackCacheService.getTrackDetails(
-        nonNullDeezerTrackId, 
-        authToken, 
-        _apiService
-      );
-      
-      return trackDetails;
+      return await _trackCacheService.getTrackDetails(
+        nonNullDeezerTrackId, authToken, _apiService);
     } catch (e) {
       AppLogger.error('Failed to fetch track details for $deezerTrackId', e, null, 'PlaylistTrackService');
       return null;
@@ -239,12 +187,9 @@ class PlaylistTrackService {
     
     AppLogger.debug('Starting parallel fetch for ${tracksNeedingDetails.length} tracks', 'PlaylistTrackService');
     
-    final futures = tracksNeedingDetails.map((playlistTrack) {
-      return fetchTrackDetailsIfNeeded(playlistTrack, authToken); 
-    }).toList();
-    
     try {
-      final results = await Future.wait(futures);
+      final results = await Future.wait(
+        tracksNeedingDetails.map((pt) => fetchTrackDetailsIfNeeded(pt, authToken)));
       AppLogger.debug('Completed parallel fetch for ${tracksNeedingDetails.length} tracks', 'PlaylistTrackService');
       return results;
     } catch (e) {
@@ -264,16 +209,12 @@ class PlaylistTrackService {
     
     const batchSize = 5;
     for (int i = 0; i < tracksNeedingDetails.length; i += batchSize) {
-      final end = (i + batchSize < tracksNeedingDetails.length) 
-          ? i + batchSize 
-          : tracksNeedingDetails.length;
+      final end = (i + batchSize).clamp(0, tracksNeedingDetails.length);
       final batch = tracksNeedingDetails.sublist(i, end);
       
       for (final playlistTrack in batch) {
         fetchTrackDetailsIfNeeded(playlistTrack, authToken).then((trackDetails) {
-          if (trackDetails != null) {
-            onTrackLoaded(playlistTrack, trackDetails);
-          }
+          if (trackDetails != null) onTrackLoaded(playlistTrack, trackDetails);
         }).catchError((e) {
           AppLogger.error('Error fetching track ${playlistTrack.trackId}', e, null, 'PlaylistTrackService');
         });
@@ -287,24 +228,15 @@ class PlaylistTrackService {
     AppLogger.debug('Progressive fetch initiated for all tracks', 'PlaylistTrackService');
   }
 
-  void clearFetchingState() {
-    _fetchingTrackDetails.clear();
-  }
+  void clearFetchingState() => _fetchingTrackDetails.clear();
 }
 
 class PlaylistTimers {
-  Timer? _autoRefreshTimer;
-  Timer? _trackCountValidationTimer;
+  Timer? _autoRefreshTimer, _trackCountValidationTimer;
   
-  final VoidCallback? onRefreshNeeded;
-  final VoidCallback? onValidationNeeded;
-  final VoidCallback? onStateUpdate;
+  final VoidCallback? onRefreshNeeded, onValidationNeeded, onStateUpdate;
 
-  PlaylistTimers({
-    this.onRefreshNeeded,
-    this.onValidationNeeded, 
-    this.onStateUpdate,
-  });
+  PlaylistTimers({this.onRefreshNeeded, this.onValidationNeeded, this.onStateUpdate});
 
   void startAutoRefresh() {
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
@@ -327,9 +259,8 @@ class PlaylistTimers {
   }
 
   void startTrackCountValidation() {
-    _trackCountValidationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      onValidationNeeded?.call();
-    });
+    _trackCountValidationTimer = Timer.periodic(
+      const Duration(seconds: 1), (_) => onValidationNeeded?.call());
   }
 
   void stopTrackCountValidation() {

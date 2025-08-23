@@ -1,8 +1,7 @@
 import 'music_models.dart';
 
 class LoginRequest {
-  final String username;
-  final String password;
+  final String username, password;
   const LoginRequest({required this.username, required this.password});
   Map<String, dynamic> toJson() => {'username': username, 'password': password};
 }
@@ -20,29 +19,19 @@ class ForgotPasswordRequest {
 }
 
 class SignupWithOtpRequest {
-  final String username;
-  final String email;
-  final String password;
-  final String otp;
-  
-  const SignupWithOtpRequest({ required this.username, required this.email, required this.password, required this.otp });
-  
-  Map<String, dynamic> toJson() => { 'username': username, 'email': email, 'password': password, 'otp': otp };
+  final String username, email, password, otp;
+  const SignupWithOtpRequest({required this.username, required this.email, required this.password, required this.otp});
+  Map<String, dynamic> toJson() => {'username': username, 'email': email, 'password': password, 'otp': otp};
 }
 
 class ChangePasswordRequest {
-  final String email;
-  final String password;
-  final String otp;
-  
-  const ChangePasswordRequest({ required this.email, required this.otp, required this.password });
-  
-  Map<String, dynamic> toJson() => { 'email': email, 'otp': otp, 'password': password };
+  final String email, password, otp;
+  const ChangePasswordRequest({required this.email, required this.otp, required this.password});
+  Map<String, dynamic> toJson() => {'email': email, 'otp': otp, 'password': password};
 }
 
 class PasswordChangeRequest {
-  final String currentPassword;
-  final String newPassword;
+  final String currentPassword, newPassword;
   const PasswordChangeRequest({required this.currentPassword, required this.newPassword});
   Map<String, dynamic> toJson() => {'current_password': currentPassword, 'new_password': newPassword};
 }
@@ -54,30 +43,20 @@ class EmailOtpRequest {
 }
 
 class SocialLoginRequest {
-  final String? fbAccessToken; 
-  final String? idToken;       
-  final String? socialId;
-  final String? socialName;
-  final String? socialEmail;          
+  final String? fbAccessToken, idToken, socialId, socialName, socialEmail;
   const SocialLoginRequest({this.fbAccessToken, this.idToken, this.socialId, this.socialName, this.socialEmail});
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    if (fbAccessToken != null) json['fbAccessToken'] = fbAccessToken;
-    if (idToken != null) json['idToken'] = idToken;
-    if (socialId != null) json['socialId'] = socialId;
-    if (socialName != null) json['socialName'] = socialName;
-    if (socialEmail != null) json['socialEmail'] = socialEmail;
-    return json;
-  }
+  Map<String, dynamic> toJson() => {
+    if (fbAccessToken != null) 'fbAccessToken': fbAccessToken,
+    if (idToken != null) 'idToken': idToken,
+    if (socialId != null) 'socialId': socialId,
+    if (socialName != null) 'socialName': socialName,
+    if (socialEmail != null) 'socialEmail': socialEmail,
+  };
 }
 
 class SocialLinkRequest {
-  final String? fbAccessToken; 
-  final String? idToken;       
-  final String? socialId;
-  final String? socialName;
-  final String? socialEmail;          
-  const SocialLinkRequest({ this.fbAccessToken, this.idToken, this.socialId, this.socialName, this.socialEmail });
+  final String? fbAccessToken, idToken, socialId, socialName, socialEmail;
+  const SocialLinkRequest({this.fbAccessToken, this.idToken, this.socialId, this.socialName, this.socialEmail});
   Map<String, dynamic> toJson() => {
     if (fbAccessToken != null) 'fbAccessToken': fbAccessToken,
     if (idToken != null) 'idToken': idToken,
@@ -192,42 +171,20 @@ class ProfileResponse {
 }
 
 class PublicInfoUpdateRequest {
-  final String? avatarBase64;
-  final String? mimeType;
-  final String? gender;
-  final String? location;
-  final String? bio;
-  
+  final String? avatarBase64, mimeType, gender, location, bio;
   const PublicInfoUpdateRequest({this.avatarBase64, this.mimeType, this.gender, this.location, this.bio});
-  
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    if (avatarBase64 != null) { json['avatar_base64'] = avatarBase64; }
-    if (mimeType != null) { json['mime_type'] = mimeType; }
-    if (gender != null) { json['gender'] = gender; }
-    if (location != null) { json['location'] = location; }
-    if (bio != null) { json['bio'] = bio; }
-    return json;
-  }
+  Map<String, dynamic> toJson() => {
+    if (avatarBase64 != null) 'avatar_base64': avatarBase64,
+    if (mimeType != null) 'mime_type': mimeType,
+    if (gender != null) 'gender': gender,
+    if (location != null) 'location': location,
+    if (bio != null) 'bio': bio,
+  };
 }
 
 class PrivateInfoUpdateRequest {
-  final String? firstName;
-  final String? lastName;
-  final String? phone;
-  final String? street;
-  final String? country;
-  final String? postalCode;
-  
-  const PrivateInfoUpdateRequest({
-    this.firstName,
-    this.lastName,
-    this.phone,
-    this.street,
-    this.country,
-    this.postalCode,
-  });
-  
+  final String? firstName, lastName, phone, street, country, postalCode;
+  const PrivateInfoUpdateRequest({this.firstName, this.lastName, this.phone, this.street, this.country, this.postalCode});
   Map<String, dynamic> toJson() => {
     if (firstName != null) 'first_name': firstName,
     if (lastName != null) 'last_name': lastName,
@@ -239,12 +196,9 @@ class PrivateInfoUpdateRequest {
 }
 
 class FriendInfoUpdateRequest {
-  final String? dob;
+  final String? dob, friendInfo;
   final List<String>? hobbies;
-  final String? friendInfo;
-  
   const FriendInfoUpdateRequest({this.dob, this.hobbies, this.friendInfo});
-  
   Map<String, dynamic> toJson() => {
     if (dob != null) 'dob': dob,
     if (hobbies != null) 'hobbies': hobbies,
@@ -255,21 +209,12 @@ class FriendInfoUpdateRequest {
 class MusicPreference {
   final int id;
   final String name;
-
-  const MusicPreference({
-    required this.id,
-    required this.name,
-  });
-
+  const MusicPreference({required this.id, required this.name});
   factory MusicPreference.fromJson(Map<String, dynamic> json) => MusicPreference(
     id: json['id'] as int,
     name: json['name'] as String,
   );
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-  };
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
 }
 
 class ProfileByIdResponse {
@@ -559,90 +504,54 @@ class AuthResult {
 
 class PlaylistsResponse {
   final List<Playlist> playlists;
-  
   const PlaylistsResponse({required this.playlists});
-  
   factory PlaylistsResponse.fromJson(Map<String, dynamic> json) {
-    final playlistsData = json['playlists'] as List<dynamic>?;
-    final eventsData = json['events'] as List<dynamic>?;
-    
-    final dataList = playlistsData ?? eventsData ?? [];
-    
+    final dataList = (json['playlists'] ?? json['events'] ?? []) as List<dynamic>;
     return PlaylistsResponse(
-      playlists: dataList
-          .map((p) => Playlist.fromJson(p as Map<String, dynamic>))
-          .toList(),
+      playlists: dataList.map((p) => Playlist.fromJson(p as Map<String, dynamic>)).toList(),
     );
   }
 }
 
 class PlaylistDetailResponse {
   final Playlist playlist;
-  
   const PlaylistDetailResponse({required this.playlist});
-  
   factory PlaylistDetailResponse.fromJson(Map<String, dynamic> json) {
-    dynamic playlistData = json['playlist'];
-    if (playlistData is List && playlistData.isNotEmpty) {
-      playlistData = playlistData[0];
-    }
-    return PlaylistDetailResponse(
-        playlist: Playlist.fromJson(playlistData as Map<String, dynamic>));
+    dynamic data = json['playlist'];
+    if (data is List && data.isNotEmpty) data = data[0];
+    return PlaylistDetailResponse(playlist: Playlist.fromJson(data as Map<String, dynamic>));
   }
 }
 
 class CreatePlaylistResponse {
   final String playlistId;
-  
   const CreatePlaylistResponse({required this.playlistId});
-  
   factory CreatePlaylistResponse.fromJson(Map<String, dynamic> json) {
-    if (json['playlist_id'] == null) {
-      throw Exception('playlist_id is null in response: $json');
-    }
-    return CreatePlaylistResponse(
-      playlistId: json['playlist_id'].toString(),
-    );
+    if (json['playlist_id'] == null) throw Exception('playlist_id is null in response: $json');
+    return CreatePlaylistResponse(playlistId: json['playlist_id'].toString());
   }
 }
 
 class DeezerSearchResponse {
   final List<Track> data;
-  
   const DeezerSearchResponse({required this.data});
-  
-  factory DeezerSearchResponse.fromJson(Map<String, dynamic> json) => 
-      DeezerSearchResponse(
-        data: (json['data'] as List<dynamic>)
-            .map((t) => Track.fromJson(t as Map<String, dynamic>))
-            .toList(),
-      );
+  factory DeezerSearchResponse.fromJson(Map<String, dynamic> json) => DeezerSearchResponse(
+    data: (json['data'] as List<dynamic>).map((t) => Track.fromJson(t as Map<String, dynamic>)).toList(),
+  );
 }
 
 class PlaylistTracksResponse {
   final List<PlaylistTrack> tracks;
-  
   const PlaylistTracksResponse({required this.tracks});
-  
-  factory PlaylistTracksResponse.fromJson(Map<String, dynamic> json) => 
-      PlaylistTracksResponse(
-        tracks: (json['tracks'] as List<dynamic>)
-            .map((t) => PlaylistTrack.fromJson(t as Map<String, dynamic>))
-            .toList(),
-      );
+  factory PlaylistTracksResponse.fromJson(Map<String, dynamic> json) => PlaylistTracksResponse(
+    tracks: (json['tracks'] as List<dynamic>).map((t) => PlaylistTrack.fromJson(t as Map<String, dynamic>)).toList(),
+  );
 }
 
 class Friend {
-  final String id;
-  final String username;
+  final String id, username;
   final String? profilePictureUrl;
-  
-  const Friend({
-    required this.id,
-    required this.username,
-    this.profilePictureUrl,
-  });
-  
+  const Friend({required this.id, required this.username, this.profilePictureUrl});
   factory Friend.fromJson(Map<String, dynamic> json) => Friend(
     id: (json['friend_id'] ?? json['id'])?.toString() ?? '',
     username: json['friend_username'] as String? ?? json['username'] as String? ?? 'Unknown User',
@@ -692,24 +601,15 @@ class Friendship {
 
 class PendingRequestsResponse {
   final List<Map<String, dynamic>> requests;
-  
   const PendingRequestsResponse({required this.requests});
-  
   factory PendingRequestsResponse.fromJson(Map<String, dynamic> json) => 
-      PendingRequestsResponse(
-        requests: (json['requests'] as List<dynamic>).cast<Map<String, dynamic>>(),
-      );
+      PendingRequestsResponse(requests: (json['requests'] as List<dynamic>).cast<Map<String, dynamic>>());
 }
 
 class MessageResponse {
   final String message;
-  
   const MessageResponse({required this.message});
-  
-  factory MessageResponse.fromJson(Map<String, dynamic> json) => 
-      MessageResponse(
-        message: json['message'] as String,
-      );
+  factory MessageResponse.fromJson(Map<String, dynamic> json) => MessageResponse(message: json['message'] as String);
 }
 
 class UserResponse {
@@ -740,48 +640,27 @@ class UserResponse {
 }
 
 class ProfilePublicResponse {
-  final String? avatar;
-  final String? gender;
-  final String? location;
-  final String? bio;
-  
+  final String? avatar, gender, location, bio;
   const ProfilePublicResponse({this.avatar, this.gender, this.location, this.bio});
-  
-  factory ProfilePublicResponse.fromJson(Map<String, dynamic> json) => 
-      ProfilePublicResponse(
-        avatar: json['avatar'] as String?,
-        gender: json['gender'] as String?,
-        location: json['location'] as String?,
-        bio: json['bio'] as String?,
-      );
+  factory ProfilePublicResponse.fromJson(Map<String, dynamic> json) => ProfilePublicResponse(
+    avatar: json['avatar'] as String?,
+    gender: json['gender'] as String?,
+    location: json['location'] as String?,
+    bio: json['bio'] as String?,
+  );
 }
 
 class ProfilePrivateResponse {
-  final String? firstName;
-  final String? lastName;
-  final String? phone;
-  final String? street;
-  final String? country;
-  final String? postalCode;
-  
-  const ProfilePrivateResponse({
-    this.firstName, 
-    this.lastName, 
-    this.phone, 
-    this.street, 
-    this.country, 
-    this.postalCode
-  });
-  
-  factory ProfilePrivateResponse.fromJson(Map<String, dynamic> json) => 
-      ProfilePrivateResponse(
-        firstName: json['first_name'] as String?,
-        lastName: json['last_name'] as String?,
-        phone: json['phone'] as String?,
-        street: json['street'] as String?,
-        country: json['country'] as String?,
-        postalCode: json['postal_code'] as String?,
-      );
+  final String? firstName, lastName, phone, street, country, postalCode;
+  const ProfilePrivateResponse({this.firstName, this.lastName, this.phone, this.street, this.country, this.postalCode});
+  factory ProfilePrivateResponse.fromJson(Map<String, dynamic> json) => ProfilePrivateResponse(
+    firstName: json['first_name'] as String?,
+    lastName: json['last_name'] as String?,
+    phone: json['phone'] as String?,
+    street: json['street'] as String?,
+    country: json['country'] as String?,
+    postalCode: json['postal_code'] as String?,
+  );
 }
 
 class ProfileFriendResponse {

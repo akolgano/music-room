@@ -167,7 +167,6 @@ class PlaylistVotingWidgets {
         const SizedBox(height: 6),
         ...[
           ('open', 'Open Voting', 'Anyone can vote'),
-          ('invite_only', 'Invite Only', 'Only invited users can vote'),
           ('location_time', 'Location & Time Restricted', 'Vote only at specific location and time'),
         ].map((e) => ListTile(
           title: Text(e.$2),
@@ -639,16 +638,6 @@ class _CollapsibleVotingSettingsState extends State<_CollapsibleVotingSettings> 
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  AppWidgets.switchTile(
-                    value: widget.isPublicVoting,
-                    onChanged: widget.onPublicVotingChanged,
-                    title: 'Public Voting',
-                    subtitle: widget.isPublicVoting 
-                      ? 'Anyone can find and vote on this playlist' 
-                      : 'Only invited users can vote',
-                    icon: widget.isPublicVoting ? Icons.public : Icons.lock,
-                  ),
-                  const SizedBox(height: 12),
                   PlaylistVotingWidgets._buildVotingLicenseSettings(
                     context: context,
                     votingLicenseType: widget.votingLicenseType,

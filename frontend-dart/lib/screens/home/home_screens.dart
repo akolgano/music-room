@@ -114,10 +114,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
-                      children: [_buildPlaylistsWithAppBar(), _buildSearchWithAppBar(),
-                        _buildFriendsWithAppBar(),
-                        _buildProfileWithAppBar(),
-                      ],
+                      children: [_buildPlaylistsWithAppBar(), _buildSearchWithAppBar(), _buildFriendsWithAppBar(), _buildProfileWithAppBar()],
                     ),
                   ),
                   const MiniPlayerWidget(),
@@ -138,10 +135,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: [_buildPlaylistsWithAppBar(), _buildSearchWithAppBar(),
-                  _buildFriendsWithAppBar(),
-                  _buildProfileWithAppBar(),
-                ],
+                children: [_buildPlaylistsWithAppBar(), _buildSearchWithAppBar(), _buildFriendsWithAppBar(), _buildProfileWithAppBar()],
               ),
             ),
             Container(
@@ -171,85 +165,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     }
   }
 
-  Widget _buildPlaylistsWithAppBar() {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Music Room'),
-        automaticallyImplyLeading: false,
-        toolbarHeight: isLandscape ? (MusicAppResponsive.isSmallScreen(context) ? 40 : 48) : null,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-          ),
-        ],
-      ),
-      body: _buildCombinedHomeAndPlaylists(),
-    );
-  }
+  Widget _buildPlaylistsWithAppBar() => _buildScaffold(
+    title: 'Music Room',
+    actions: [IconButton(icon: const Icon(Icons.add), onPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor))],
+    body: _buildCombinedHomeAndPlaylists(),
+  );
 
-  Widget _buildSearchWithAppBar() {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: const TrackSearchScreen(isEmbedded: true),
-    );
-  }
+  Widget _buildSearchWithAppBar() => const Scaffold(backgroundColor: AppTheme.background, body: TrackSearchScreen(isEmbedded: true));
 
-  Widget _buildFriendsWithAppBar() {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Friends'),
-        automaticallyImplyLeading: false,
-        toolbarHeight: isLandscape ? (MusicAppResponsive.isSmallScreen(context) ? 40 : 48) : null,
-        actions: [
-          TextButton.icon(
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
-            icon: const Icon(Icons.person_add, color: AppTheme.primary),
-            label: const Text('Add Friend', style: TextStyle(color: AppTheme.primary)),
-          ),
-        ],
-      ),
-      body: _buildFriendsTab(),
-    );
-  }
+  Widget _buildFriendsWithAppBar() => _buildScaffold(
+    title: 'Friends',
+    actions: [TextButton.icon(
+      onPressed: () => Navigator.pushNamed(context, AppRoutes.addFriend),
+      icon: const Icon(Icons.person_add, color: AppTheme.primary),
+      label: const Text('Add Friend', style: TextStyle(color: AppTheme.primary)),
+    )],
+    body: _buildFriendsTab(),
+  );
 
-  Widget _buildProfileWithAppBar() {
-    return Scaffold(
+  Widget _buildProfileWithAppBar() => const Scaffold(backgroundColor: AppTheme.background, body: ProfileScreen(isEmbedded: true));
+
+  Widget _buildScaffold({required String title, required List<Widget> actions, required Widget body}) => Scaffold(
+    backgroundColor: AppTheme.background,
+    appBar: AppBar(
       backgroundColor: AppTheme.background,
-      body: const ProfileScreen(isEmbedded: true),
-    );
-  }
+      title: Text(title),
+      automaticallyImplyLeading: false,
+      toolbarHeight: isLandscape ? (MusicAppResponsive.isSmallScreen(context) ? 40 : 48) : null,
+      actions: actions,
+    ),
+    body: body,
+  );
 
   Widget _buildPlaylistCard(Playlist playlist, bool isOwn) {
-    IconData leadingIcon;
-    Color iconColor;
-    String typeLabel;
-    
-    if (isOwn) {
-      leadingIcon = Icons.library_music;
-      iconColor = AppTheme.primary;
-      typeLabel = playlist.isPublic ? 'Your Public Playlist' : 'Your Private Playlist';
-    } else {
-      leadingIcon = playlist.isPublic ? Icons.public : Icons.people;
-      iconColor = playlist.isPublic ? Colors.blue : Colors.purple;
-      typeLabel = playlist.isPublic ? 'Public Playlist' : 'Shared Playlist';
-    }
+    final leadingIcon = isOwn ? Icons.library_music : (playlist.isPublic ? Icons.public : Icons.people);
+    final iconColor = isOwn ? AppTheme.primary : (playlist.isPublic ? Colors.blue : Colors.purple);
+    final typeLabel = isOwn ? (playlist.isPublic ? 'Your Public Playlist' : 'Your Private Playlist') : (playlist.isPublic ? 'Public Playlist' : 'Shared Playlist');
     
     return Card(
       margin: EdgeInsets.only(bottom: ThemeUtils.getResponsiveMargin(context)),
       color: AppTheme.surface,
       child: ListTile(
         leading: Container(
-          width: 56,
-          height: 48,
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          width: 56, height: 48,
+          decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
           child: Icon(leadingIcon, color: iconColor),
         ),
         title: Row(
@@ -289,15 +248,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
             ),
           ],
         ),
-        trailing: PulsingContainer(
-          child: IconButton(
-            icon: PulsingIcon(
-              icon: Icons.play_arrow,
-              size: 24,
-            ),
-            onPressed: () => _playPlaylist(playlist),
-          ),
-        ),
+        trailing: PulsingContainer(child: IconButton(
+          icon: PulsingIcon(icon: Icons.play_arrow, size: 24),
+          onPressed: () => _playPlaylist(playlist),
+        )),
         onTap: () {
           AppLogger.debug('Navigating to playlist with ID: ${playlist.id}', 'HomeScreen');
           if (playlist.id.isNotEmpty && playlist.id != 'null') {
@@ -311,29 +265,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   }
 
   List<Widget> _buildOrganizedPlaylists(List<Playlist> playlists, String? currentUsername) {
+    AppLogger.debug('Building organized playlists. Total: ${playlists.length}, Current user: $currentUsername', 'HomeScreen');
+    
     final ownPlaylists = playlists.where((p) => p.creator == currentUsername).toList();
     final publicPlaylists = playlists.where((p) => p.creator != currentUsername && p.isPublic).toList();
     final sharedPlaylists = playlists.where((p) => p.creator != currentUsername && !p.isPublic).toList();
     
+    AppLogger.debug('Own playlists: ${ownPlaylists.length} (including private)', 'HomeScreen');
+    for (var p in ownPlaylists) {
+      AppLogger.debug('Own playlist: "${p.name}" (public: ${p.isPublic}, creator: ${p.creator})', 'HomeScreen');
+    }
+    
     final widgets = <Widget>[];
     
     if (ownPlaylists.isNotEmpty) {
-      widgets.add(AppWidgets.sectionTitle('Your Playlists'));
-      widgets.add(const SizedBox(height: 8));
+      widgets.addAll([AppWidgets.sectionTitle('Your Playlists'), const SizedBox(height: 8)]);
       widgets.addAll(ownPlaylists.map((playlist) => _buildPlaylistCard(playlist, true)));
       widgets.add(const SizedBox(height: 16));
     }
     
     if (publicPlaylists.isNotEmpty) {
-      widgets.add(AppWidgets.sectionTitle('Public Playlists'));
-      widgets.add(const SizedBox(height: 8));
+      widgets.addAll([AppWidgets.sectionTitle('Public Playlists'), const SizedBox(height: 8)]);
       widgets.addAll(publicPlaylists.map((playlist) => _buildPlaylistCard(playlist, false)));
       widgets.add(const SizedBox(height: 16));
     }
     
     if (sharedPlaylists.isNotEmpty) {
-      widgets.add(AppWidgets.sectionTitle('Friend Shared Playlists'));
-      widgets.add(const SizedBox(height: 8));
+      widgets.addAll([AppWidgets.sectionTitle('Friend Shared Playlists'), const SizedBox(height: 8)]);
       widgets.addAll(sharedPlaylists.map((playlist) => _buildPlaylistCard(playlist, false)));
     }
     
@@ -423,83 +381,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     );
   }
 
-  Widget _buildQuickActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: PulsingContainer(
-                child: Card(
-                  color: AppTheme.surface,
-                  child: InkWell(
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Icon(Icons.add, color: AppTheme.primary, size: 32),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Create Playlist',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Card(
-                color: AppTheme.surface,
-                child: InkWell(
-                  onTap: () => _tabController.animateTo(1),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Icon(Icons.search, color: AppTheme.primary, size: 32),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Search Music',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+  Widget _buildQuickActions() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text('Quick Actions', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 12),
+      Row(children: [
+        Expanded(child: PulsingContainer(child: _buildActionCard('Create Playlist', Icons.add, () => Navigator.pushNamed(context, AppRoutes.playlistEditor)))),
+        const SizedBox(width: 12),
+        Expanded(child: _buildActionCard('Search Music', Icons.search, () => _tabController.animateTo(1))),
+      ]),
+    ],
+  );
+  
+  Widget _buildActionCard(String label, IconData icon, VoidCallback onTap) => Card(
+    color: AppTheme.surface,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+          Icon(icon, color: AppTheme.primary, size: 32),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+        ]),
+      ),
+    ),
+  );
 
-  Widget _buildEmptyPlaylistsState() {
-    return AppWidgets.emptyState(
-      icon: Icons.playlist_play,
-      title: 'No playlists found',
-      subtitle: 'Create your first playlist to get started!',
-      buttonText: 'Create Playlist',
-      onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
-    );
-  }
+  Widget _buildEmptyPlaylistsState() => AppWidgets.emptyState(
+    icon: Icons.playlist_play,
+    title: 'No playlists found',
+    subtitle: 'Create your first playlist to get started!',
+    buttonText: 'Create Playlist',
+    onButtonPressed: () => Navigator.pushNamed(context, AppRoutes.playlistEditor),
+  );
 
   Widget _buildFriendsTab() {
     return Consumer<FriendProvider>(
@@ -683,11 +600,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       AppLogger.error('Failed to load data', e, null, 'HomeScreen');
       _showError('Failed to load data: ${e.toString()}');
     } finally {
-      if (mounted) {
-        setState(() {
-          _isInitialLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isInitialLoading = false);
     }
   }
 
@@ -702,9 +615,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         await music.fetchAllPlaylists(token);
         _lastPlaylistRefresh = DateTime.now();
         
-        if (mounted) {
-          setState(() {});
-        }
+        if (mounted) setState(() {});
         
         if (music.playlists.isNotEmpty || retryCount == maxRetries - 1) {
           AppLogger.debug('Playlists loaded successfully: ${music.playlists.length} playlists', 'HomeScreen');
@@ -759,24 +670,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         authToken: token,
       );
       
-      if (mounted) {
-        AppWidgets.showSnackBar(context, 'Playing ${playlist.name}', backgroundColor: Colors.green);
-      }
+      if (mounted) AppWidgets.showSnackBar(context, 'Playing ${playlist.name}', backgroundColor: Colors.green);
     } catch (e) {
       AppLogger.error('Failed to play playlist', e, null, 'HomeScreen');
-      if (mounted) {
-        _showError('Failed to play playlist: ${e.toString()}');
-      }
+      if (mounted) _showError('Failed to play playlist: ${e.toString()}');
     }
   }
 
-  void _showInfo(String message) {
-    AppWidgets.showSnackBar(context, message);
-  }
-
-  void _showError(String message) {
-    AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
-  }
+  void _showInfo(String message) => AppWidgets.showSnackBar(context, message);
+  void _showError(String message) => AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
 
   @override
   void dispose() {
@@ -788,9 +690,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      _refreshPlaylistsIfNeeded();
-    }
+    if (state == AppLifecycleState.resumed) _refreshPlaylistsIfNeeded();
   }
 
   void _refreshPlaylistsIfNeeded() {

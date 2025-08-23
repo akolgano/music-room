@@ -145,7 +145,6 @@ class FormWidgets {
         return null;
       },
       onFieldSubmitted: onFieldSubmitted,
-      onChanged: onChanged,
     );
   }
   
@@ -249,7 +248,7 @@ class FormWidgets {
                   primary: AppTheme.primary,
                   onPrimary: Colors.white,
                   surface: AppTheme.surface,
-                  onSurface: AppTheme.textPrimary,
+                  onSurface: AppTheme.onSurface,
                 ),
               ),
               child: child!,
@@ -291,7 +290,7 @@ class FormWidgets {
                   primary: AppTheme.primary,
                   onPrimary: Colors.white,
                   surface: AppTheme.surface,
-                  onSurface: AppTheme.textPrimary,
+                  onSurface: AppTheme.onSurface,
                 ),
               ),
               child: child!,
@@ -386,7 +385,7 @@ class FormWidgets {
         if (labelBuilder != null)
           Center(
             child: Text(
-              labelBuilder(value),
+              labelBuilder(value) ?? value.toStringAsFixed(0),
               style: ThemeUtils.getBodyStyle(context).copyWith(
                 fontWeight: FontWeight.bold,
               ),
