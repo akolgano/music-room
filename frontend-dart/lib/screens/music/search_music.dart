@@ -6,7 +6,6 @@ import 'package:hive/hive.dart';
 import '../../providers/music_providers.dart';
 import '../../services/player_services.dart';
 import '../../services/music_services.dart';
-import '../../services/logging_services.dart';
 import '../../core/theme_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
@@ -547,8 +546,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Future<void> _playTrack(Track track) async {
-    final isPlaying = _playerService.currentTrack?.id == track.id;
-    
     await runAsyncAction(
       () async {
         if (_playerService.currentTrack?.id == track.id) {

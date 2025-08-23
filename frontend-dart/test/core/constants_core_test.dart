@@ -126,15 +126,15 @@ void main() {
     
     group('Required field validator for playlist names', () {
       test('should accept valid playlist names', () {
-        expect(AppValidators.required('My Playlist', 'playlist name'), null);
-        expect(AppValidators.required('Rock Songs', 'playlist name'), null);
-        expect(AppValidators.required('  Playlist with spaces  ', 'playlist name'), null);
+        expect(AppValidators.required('My Playlist'), null);
+        expect(AppValidators.required('Rock Songs'), null);
+        expect(AppValidators.required('  Playlist with spaces  '), null);
       });
       
       test('should reject empty playlist names', () {
-        expect(AppValidators.required('', 'playlist name'), isA<String>());
-        expect(AppValidators.required(null, 'playlist name'), isA<String>());
-        expect(AppValidators.required('   ', 'playlist name'), isA<String>());
+        expect(AppValidators.required(''), isA<String>());
+        expect(AppValidators.required(null), isA<String>());
+        expect(AppValidators.required('   '), isA<String>());
       });
     });
   });

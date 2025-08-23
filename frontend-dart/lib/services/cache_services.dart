@@ -31,7 +31,7 @@ class TrackCacheService {
   final Map<String, int> _retryCount = {};
   final Map<String, DateTime> _lastRetryTime = {};
   
-  TrackRetryConfig _retryConfig = TrackRetryConfig.standard;
+  final TrackRetryConfig _retryConfig = TrackRetryConfig.standard;
 
   Future<Track?> getTrackDetails(String deezerTrackId, String token, ApiService apiService) async {
     return _getCachedTrack(deezerTrackId) ?? 

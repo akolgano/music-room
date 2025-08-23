@@ -54,16 +54,27 @@ class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerServic
     position: index,
   ));
 
+  @override
   Track? get currentTrack => _currentTrack;
+  @override
   bool get isPlaying => _isPlaying;
+  @override
   Duration get position => _position;
+  @override
   Duration get duration => _duration;
+  @override
   bool get hasNextTrack => _hasNextTrack;
+  @override
   bool get hasPreviousTrack => _hasPreviousTrack;
+  @override
   bool get hasPlaylist => _hasPlaylist;
+  @override
   double get playbackSpeed => _playbackSpeed;
+  @override
   bool get isUsingFullAudio => _isUsingFullAudio;
+  @override
   int get currentIndex => _currentIndex;
+  @override
   List<PlaylistTrack> get playlist => _playlist;
 
   void setCurrentTrack(Track? track) {
@@ -101,6 +112,7 @@ class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerServic
     notifyListeners();
   }
 
+  @override
   Future<void> setPlaybackSpeed(double speed) async {
     _playbackSpeed = speed;
     notifyListeners();
@@ -111,17 +123,21 @@ class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerServic
     notifyListeners();
   }
 
+  @override
   Future<void> togglePlay() async {
     _isPlaying = !_isPlaying;
     notifyListeners();
   }
 
+  @override
   Future<void> playNext() async {
   }
 
+  @override
   Future<void> playPrevious() async {
   }
 
+  @override
   Future<void> stop() async {
     _isPlaying = false;
     _currentTrack = null;
@@ -129,6 +145,7 @@ class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerServic
     notifyListeners();
   }
 
+  @override
   Future<void> seek(Duration position) async {
     _position = position;
     notifyListeners();

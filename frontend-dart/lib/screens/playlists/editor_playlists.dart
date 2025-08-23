@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import '../../providers/music_providers.dart';
@@ -689,12 +689,14 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             return;
           }
           
-          print('========================================');
-          print('DEBUG: PLAYLIST EDITOR - LOADING DATA');
-          print('Playlist ID: ${widget.playlistId}');
-          print('Playlist Name: ${_playlist!.name}');
-          print('isEvent from API: ${_playlist!.isEvent}');
-          print('========================================');
+          if (kDebugMode) {
+            debugPrint('========================================');
+            debugPrint('DEBUG: PLAYLIST EDITOR - LOADING DATA');
+            debugPrint('Playlist ID: ${widget.playlistId}');
+            debugPrint('Playlist Name: ${_playlist!.name}');
+            debugPrint('isEvent from API: ${_playlist!.isEvent}');
+            debugPrint('========================================');
+          }
           
           setState(() {
             _nameController.text = _playlist!.name;
@@ -774,13 +776,15 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
       final hasVisibilityChanged = _playlist != null && _playlist!.isPublic != _isPublic;
       final hasLicenseTypeChanged = _playlist != null && _playlist!.licenseType != _licenseType;
       
-      print('========================================');
-      print('DEBUG: SAVING PLAYLIST CHANGES');
-      print('Playlist ID: ${widget.playlistId}');
-      print('Current isEvent: ${_playlist!.isEvent}');
-      print('New isEvent: $_isEvent');
-      print('hasEventChanged: $hasEventChanged');
-      print('========================================');
+      if (kDebugMode) {
+        debugPrint('========================================');
+        debugPrint('DEBUG: SAVING PLAYLIST CHANGES');
+        debugPrint('Playlist ID: ${widget.playlistId}');
+        debugPrint('Current isEvent: ${_playlist!.isEvent}');
+        debugPrint('New isEvent: $_isEvent');
+        debugPrint('hasEventChanged: $hasEventChanged');
+        debugPrint('========================================');
+      }
       
       if (hasVisibilityChanged) {
         final visibilityRequest = VisibilityRequest(public: _isPublic);

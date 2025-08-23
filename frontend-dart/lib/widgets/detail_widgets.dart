@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_providers.dart';
 import '../../providers/voting_providers.dart';
+import '../../providers/auth_providers.dart';
 import '../models/music_models.dart';
 import '../core/theme_core.dart';
 import '../core/responsive_core.dart';
 import '../services/cache_services.dart';
 import '../core/locator_core.dart';
+import '../widgets/app_widgets.dart';
 
 class PlaylistDetailWidgets {
   static Widget buildThemedPlaylistHeader(BuildContext context, Playlist playlist) {
@@ -190,7 +192,9 @@ class PlaylistDetailWidgets {
     VoidCallback? onMoveDown,
     bool canReorder = false,
     String? playlistId,
+    String? playlistOwnerId,
     bool isEvent = false,
+    VoidCallback? onVoteSuccess,
     Key? key,
   }) {
     final track = playlistTrack.track;
@@ -198,16 +202,22 @@ class PlaylistDetailWidgets {
 
     return Container(
       key: key,
-      margin: EdgeInsets.symmetric(
-        horizontal: 0,
-        vertical: MusicAppResponsive.getSpacing(context, tiny: 1.0, small: 1.5, medium: 2.0)
+      margin: EdgeInsets.only(
+        bottom: MusicAppResponsive.getSpacing(context, tiny: 1.0, small: 1.5, medium: 2.0)
       ),
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
+        border: Border(
+          top: BorderSide(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
+          bottom: BorderSide(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
+        ),
       ),
       child: Padding(
-        padding: EdgeInsets.all(MusicAppResponsive.getSpacing(context, tiny: 8.0, small: 10.0, medium: 12.0)),
+        padding: EdgeInsets.only(
+          top: MusicAppResponsive.getSpacing(context, tiny: 8.0, small: 10.0, medium: 12.0),
+          bottom: MusicAppResponsive.getSpacing(context, tiny: 8.0, small: 10.0, medium: 12.0),
+          right: MusicAppResponsive.getSpacing(context, tiny: 8.0, small: 10.0, medium: 12.0),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -244,7 +254,11 @@ class PlaylistDetailWidgets {
             ),
             if (playlistId != null && isEvent) ...[
               SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
-              buildCompactVotingSection(context, index, playlistTrack),
+              buildCompactVotingSection(context, index, playlistTrack, 
+                playlistId: playlistId, 
+                playlistOwnerId: playlistOwnerId,
+                onVoteSuccess: onVoteSuccess,
+              ),
             ],
             SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
             Flexible(
@@ -264,7 +278,11 @@ class PlaylistDetailWidgets {
     );
   }
 
-  static Widget buildCompactVotingSection(BuildContext context, int index, PlaylistTrack playlistTrack) {
+  static Widget buildCompactVotingSection(BuildContext context, int index, PlaylistTrack playlistTrack, {
+    String? playlistId, 
+    String? playlistOwnerId,
+    VoidCallback? onVoteSuccess,
+  }) {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
         final currentPoints = playlistTrack.points;
@@ -272,7 +290,33 @@ class PlaylistDetailWidgets {
         final canVote = votingProvider.canVote && !hasUserVoted;
         
         return GestureDetector(
-          onTap: canVote ? () {
+          onTap: canVote ? () async {
+            if (playlistId == null) return;
+            
+            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+            if (!authProvider.isLoggedIn || authProvider.token == null) {
+              AppWidgets.showSnackBar(context, 'Please login to vote', backgroundColor: Colors.orange);
+              return;
+            }
+            
+            final success = await votingProvider.voteForTrackByIndex(
+              playlistId: playlistId,
+              trackIndex: index,
+              token: authProvider.token!,
+              playlistOwnerId: playlistOwnerId,
+              currentUserId: authProvider.userId,
+              currentUsername: authProvider.username,
+            );
+            
+            if (context.mounted) {
+              if (success) {
+                AppWidgets.showSnackBar(context, 'Vote submitted successfully!', backgroundColor: Colors.green);
+                onVoteSuccess?.call();
+              } else if (votingProvider.hasError) {
+                // Show the actual backend error message
+                AppWidgets.showSnackBar(context, votingProvider.errorMessage ?? 'Failed to vote', backgroundColor: Colors.red);
+              }
+            }
           } : null,
           child: Container(
             width: 32,

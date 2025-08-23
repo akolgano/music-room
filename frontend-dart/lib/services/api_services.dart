@@ -2,12 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:get_it/get_it.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
-import '../core/navigation_core.dart';
 import 'api_rate_monitor_service.dart';
-import 'notification_services.dart';
 
 class ApiService {
   final Dio _dio;
