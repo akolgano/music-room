@@ -650,26 +650,16 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
     final List<String> items = [];
     final List<IconData> icons = [];
     
-    if (regularPlaylists.isNotEmpty) {
-      items.add('📚 PLAYLISTS');
-      icons.add(Icons.playlist_play);
-      for (final playlist in regularPlaylists) {
-        items.add('  ${playlist.name}');
-        icons.add(Icons.library_music);
-      }
+    for (final playlist in regularPlaylists) {
+      items.add(playlist.name);
+      icons.add(Icons.library_music);
     }
     
-    if (eventPlaylists.isNotEmpty) {
-      items.add('🎉 EVENTS');
-      icons.add(Icons.event);
-      for (final event in eventPlaylists) {
-        items.add('  ${event.name}');
-        icons.add(Icons.event_available);
-      }
+    for (final event in eventPlaylists) {
+      items.add(event.name);
+      icons.add(Icons.event_available);
     }
     
-    items.addAll(['Create New Playlist', 'Create New Event']);
-    icons.addAll([Icons.add, Icons.event_note]);
     
     final selectedIndex = await _showSelectionDialog(
       title: 'Add Track To',
@@ -684,34 +674,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
 
   Future<void> _handlePlaylistSelection(int selectedIndex, Track track, 
       List<Playlist> regularPlaylists, List<Playlist> eventPlaylists) async {
-    int currentIndex = 0;
-    
-    if (regularPlaylists.isNotEmpty) {
-      currentIndex++;
-      
-      if (selectedIndex <= currentIndex + regularPlaylists.length - 1) {
-        final playlistIndex = selectedIndex - currentIndex;
-        await _addTrackToPlaylist(regularPlaylists[playlistIndex].id, track);
-        return;
-      }
-      currentIndex += regularPlaylists.length;
-    }
-    
-    if (eventPlaylists.isNotEmpty) {
-      currentIndex++;
-      
-      if (selectedIndex <= currentIndex + eventPlaylists.length - 1) {
-        final eventIndex = selectedIndex - currentIndex;
-        await _addTrackToPlaylist(eventPlaylists[eventIndex].id, track);
-        return;
-      }
-      currentIndex += eventPlaylists.length;
-    }
-    
-    if (selectedIndex == currentIndex) {
-      await _createNewPlaylistAndAddTrack(track);
-    } else if (selectedIndex == currentIndex + 1) {
-      await _createNewEventAndAddTrack(track);
+    if (selectedIndex < regularPlaylists.length) {
+      await _addTrackToPlaylist(regularPlaylists[selectedIndex].id, track);
+    } else {
+      final eventIndex = selectedIndex - regularPlaylists.length;
+      await _addTrackToPlaylist(eventPlaylists[eventIndex].id, track);
     }
   }
 
