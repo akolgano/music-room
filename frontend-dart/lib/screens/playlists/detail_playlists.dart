@@ -350,7 +350,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       onMoveDown: _canEditPlaylist && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
       canReorder: _canEditPlaylist,
       playlistId: widget.playlistId,
+      playlistOwnerId: _playlist?.creator,
       isEvent: _playlist?.isEvent ?? false,
+      onVoteSuccess: _isVotingMode ? () {
+        // Toggle out of voting mode after successful vote
+        setState(() => _isVotingMode = false);
+      } : null,
       key: key,
     );
   }
@@ -542,7 +547,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           await _refreshTracksFromProvider();
           
           if (_votingProvider != null) {
+            // Reset voting state for the new/reloaded playlist
+            _votingProvider!.clearVotingData();
             _votingProvider!.setVotingPermission(true);
+            _votingProvider!.setHasUserVotedForPlaylist(false);
             _votingProvider!.initializeTrackPoints(_tracks);
           }
           

@@ -259,9 +259,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       }
     } catch (e) {
       AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
-      AppWidgets.showSnackBar(context, 'Error: ${e.toString()}', backgroundColor: AppTheme.error);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, 'Error: ${e.toString()}', backgroundColor: AppTheme.error);
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -290,9 +294,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       }
     } catch (e) {
       AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
-      AppWidgets.showSnackBar(context, 'Error: ${e.toString()}', backgroundColor: AppTheme.error);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, 'Error: ${e.toString()}', backgroundColor: AppTheme.error);
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../core/constants_core.dart';
 import '../core/theme_core.dart';
-import '../core/responsive_core.dart';
 import 'core_widgets.dart';
 
 double _responsive(double value, {String type = 'sp'}) {
@@ -31,10 +30,9 @@ class FormWidgets {
     Function(String)? onFieldSubmitted,
     bool showVisibilityToggle = true,
   }) {
+    bool obscureText = true;
     return StatefulBuilder(
       builder: (context, setState) {
-        bool obscureText = true;
-        
         return AppWidgets.textField(
           context: context,
           controller: controller,

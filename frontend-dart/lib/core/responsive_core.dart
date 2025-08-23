@@ -186,4 +186,26 @@ class MusicAppResponsive {
       tiny: tiny, small: small, medium: medium,
       large: large, xlarge: xlarge, xxlarge: xxlarge);
 
+  static double getIconSize(BuildContext context, {
+    double tiny = 16.0,
+    double small = 20.0,
+    double medium = 24.0,
+    double large = 28.0,
+    double xlarge = 32.0,
+    double xxlarge = 36.0,
+  }) => getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
+
+  static int getGridColumns(BuildContext context, {
+    int tiny = 2,
+    int small = 2,
+    int medium = 3,
+    int large = 4,
+    int xlarge = 5,
+    int xxlarge = 6,
+  }) => getResponsiveValue(context,
+      tiny: tiny, small: small, medium: medium,
+      large: large, xlarge: xlarge, xxlarge: xxlarge);
+
 }

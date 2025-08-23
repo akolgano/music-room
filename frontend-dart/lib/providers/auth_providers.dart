@@ -5,6 +5,7 @@ import '../core/locator_core.dart';
 import '../services/auth_services.dart';
 import '../services/websocket_services.dart';
 import '../services/logging_services.dart';
+import '../services/player_services.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -81,6 +82,19 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<bool> logout() async {
+    // Stop music player before logout
+    try {
+      final playerService = getIt<MusicPlayerService>();
+      await playerService.stop();
+      if (kDebugMode) {
+        developer.log('Music player stopped before logout', name: 'AuthProvider');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        developer.log('Failed to stop music player before logout: $e', name: 'AuthProvider');
+      }
+    }
+
     try {
       await _webSocketService.disconnect();
       if (kDebugMode) {

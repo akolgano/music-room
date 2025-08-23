@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../core/navigation_core.dart';
 
 class _PendingNotification {
   final String message;

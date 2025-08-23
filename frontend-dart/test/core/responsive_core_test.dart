@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/responsive_core.dart';
-import 'package:music_room/core/theme_core.dart';
 
 void main() {
   group('MusicAppResponsive Tests', () {

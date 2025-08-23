@@ -39,12 +39,17 @@ class AppRoutes {
 class FormatUtils {
   static String formatDuration(Duration duration) {
     final h = duration.inHours, m = duration.inMinutes.remainder(60), s = duration.inSeconds.remainder(60);
-    final pad = (int n) => n.toString().padLeft(2, '0');
+    String pad(int n) => n.toString().padLeft(2, '0');
     return h > 0 ? '${pad(h)}:${pad(m)}:${pad(s)}' : '${pad(m)}:${pad(s)}';
   }
 }
 
 class AppValidators {
+  static String? required(String? value) {
+    if (value == null || value.trim().isEmpty) return 'This field is required';
+    return null;
+  }
+
   static String? email(String? value) {
     if (value == null || value.isEmpty) return 'Please enter an email address';
     if (value != value.trim()) return 'Email cannot have leading or trailing spaces';

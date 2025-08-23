@@ -400,7 +400,7 @@ void main() {
           child: PlaylistDetailWidgets.buildThemedPlaylistActions(
             tester.element(find.byType(Scaffold)),
             onPlayAll: () => editPressed = true,
-            onShuffle: () => sharePressed = true,
+            onPlayRandom: () => sharePressed = true,
           ),
         ));
 
@@ -419,7 +419,7 @@ void main() {
           child: PlaylistDetailWidgets.buildThemedPlaylistActions(
             tester.element(find.byType(Scaffold)),
             onPlayAll: () {},
-            onShuffle: () {},
+            onPlayRandom: () {},
           ),
         ));
 

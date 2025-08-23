@@ -8,7 +8,6 @@ import '../services/cache_services.dart';
 import '../services/websocket_services.dart';
 import '../core/locator_core.dart';
 import '../core/navigation_core.dart';
-import '../core/logging_core.dart';
 
 class PlaylistVotingService {
   final String playlistId;
@@ -126,7 +125,11 @@ class PlaylistVotingService {
       final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
       if (time != null) {
         final dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-        if (isStartTime) _votingStartTime = dateTime; else _votingEndTime = dateTime;
+        if (isStartTime) {
+          _votingStartTime = dateTime;
+        } else {
+          _votingEndTime = dateTime;
+        }
         return dateTime;
       }
     }
