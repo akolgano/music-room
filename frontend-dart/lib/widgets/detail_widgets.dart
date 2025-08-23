@@ -199,12 +199,11 @@ class PlaylistDetailWidgets {
     return Container(
       key: key,
       margin: EdgeInsets.symmetric(
-        horizontal: MusicAppResponsive.getSpacing(context, tiny: 8.0, small: 12.0, medium: 16.0),
+        horizontal: 0,
         vertical: MusicAppResponsive.getSpacing(context, tiny: 1.0, small: 1.5, medium: 2.0)
       ),
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
@@ -244,15 +243,11 @@ class PlaylistDetailWidgets {
               ),
             ),
             if (playlistId != null && isEvent) ...[
-              SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 7.0, medium: 8.0)),
-              SizedBox(
-                width: 60,
-                child: buildCompactVotingSection(context, index, playlistTrack),
-              ),
+              SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
+              buildCompactVotingSection(context, index, playlistTrack),
             ],
-            SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 6.0, small: 7.0, medium: 8.0)),
-            SizedBox(
-              width: canReorder ? 140 : 90, 
+            SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
+            Flexible(
               child: buildActionButtons(
                 context, 
                 onPlay, 
@@ -276,34 +271,37 @@ class PlaylistDetailWidgets {
         final hasUserVoted = votingProvider.hasUserVotedForPlaylist;
         final canVote = votingProvider.canVote && !hasUserVoted;
         
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          decoration: BoxDecoration(
-            color: getPointsColor(currentPoints).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: getPointsColor(currentPoints).withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: canVote ? () {
-                } : null,
-                child: Icon(
-                  hasUserVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
-                  color: hasUserVoted 
-                    ? Colors.green 
-                    : (canVote ? getPointsColor(currentPoints) : Colors.grey),
-                  size: 12,
-                ),
+        return GestureDetector(
+          onTap: canVote ? () {
+          } : null,
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: getPointsColor(currentPoints).withValues(alpha: 0.1), 
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: getPointsColor(currentPoints).withValues(alpha: 0.3)),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    hasUserVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    color: hasUserVoted 
+                      ? Colors.green 
+                      : (canVote ? getPointsColor(currentPoints) : Colors.grey),
+                    size: 14,
+                  ),
+                  Text(
+                    '$currentPoints',
+                    style: TextStyle(color: getPointsColor(currentPoints), fontSize: 8, fontWeight: FontWeight.w600, height: 1),
+                    maxLines: 1,
+                  ),
+                ],
               ),
-              const SizedBox(height: 2),
-              Text(
-                '+$currentPoints',
-                style: TextStyle(color: getPointsColor(currentPoints), fontSize: 9, fontWeight: FontWeight.w600),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -319,59 +317,61 @@ class PlaylistDetailWidgets {
     VoidCallback? onMoveDown,
     bool canReorder = false,
   }) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      spacing: 2,
+      alignment: WrapAlignment.center,
       children: [
         if (canReorder && onMoveUp != null) ...[
           GestureDetector(
             onTap: onMoveUp,
             child: Container(
-              padding: const EdgeInsets.all(6),
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: AppTheme.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.keyboard_arrow_up, color: AppTheme.primary, size: 20),
+              child: const Center(child: Icon(Icons.keyboard_arrow_up, color: AppTheme.primary, size: 20)),
             ),
           ),
-          const SizedBox(width: 2),
         ],
         if (canReorder && onMoveDown != null) ...[
           GestureDetector(
             onTap: onMoveDown,
             child: Container(
-              padding: const EdgeInsets.all(6),
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: AppTheme.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.keyboard_arrow_down, color: AppTheme.primary, size: 20),
+              child: const Center(child: Icon(Icons.keyboard_arrow_down, color: AppTheme.primary, size: 20)),
             ),
           ),
-          const SizedBox(width: 2),
         ],
         GestureDetector(
           onTap: onPlay,
           child: Container(
-            padding: const EdgeInsets.all(6),
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: AppTheme.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(Icons.play_arrow, color: AppTheme.primary, size: 22),
+            child: const Center(child: Icon(Icons.play_arrow, color: AppTheme.primary, size: 20)),
           ),
         ),
         if (isOwner && onRemove != null) ...[
-          const SizedBox(width: 4),
           GestureDetector(
             onTap: onRemove,
             child: Container(
-              padding: const EdgeInsets.all(6),
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 20),
+              child: const Center(child: Icon(Icons.remove_circle_outline, color: Colors.red, size: 20)),
             ),
           ),
         ],
@@ -436,7 +436,6 @@ class PlaylistDetailWidgets {
             size: 14,
             color: chipColor,
           ),
-          const SizedBox(width: 4),
           Text(
             isPublic ? 'Public' : 'Private',
             style: TextStyle(color: chipColor, fontSize: 12, fontWeight: FontWeight.w600),
@@ -532,10 +531,10 @@ class PlaylistDetailWidgets {
     
     return Container(
       key: key,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: ListTile(
         leading: Container(

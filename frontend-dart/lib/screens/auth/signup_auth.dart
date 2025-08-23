@@ -63,31 +63,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     );
   }
 
-  String _getStepTitle() {
-    switch (_currentStep) {
-      case 0: return 'Enter Email';
-      case 1: return 'Create Account';
-      case 2: return 'Verify Email';
-      default: return 'Create Account';
-    }
-  }
+  String _getStepTitle() => ['Enter Email', 'Create Account', 'Verify Email'][_currentStep.clamp(0, 2)];
 
-  IconData _getStepIcon() {
-    switch (_currentStep) {
-      case 0: return Icons.email;
-      case 1: return Icons.person_add;
-      case 2: return Icons.verified_user;
-      default: return Icons.person_add;
-    }
-  }
+  IconData _getStepIcon() => [Icons.email, Icons.person_add, Icons.verified_user][_currentStep.clamp(0, 2)];
 
   List<Widget> _buildEmailStep() {
     return [
-      const Text(
-        'Enter your email address to get started',
-        style: TextStyle(color: Colors.white70),
-        textAlign: TextAlign.center,
-      ),
+      const Text('Enter your email address to get started', style: TextStyle(color: Colors.white70), textAlign: TextAlign.center),
       const SizedBox(height: 16),
       AppWidgets.textField(
         context: context,
@@ -110,11 +92,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   List<Widget> _buildCredentialsStep() {
     return [
-      Text(
-        'Create your account for ${_emailController.text}',
-        style: const TextStyle(color: Colors.white70),
-        textAlign: TextAlign.center,
-      ),
+      Text('Create your account for ${_emailController.text}', style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
       const SizedBox(height: 16),
       AppWidgets.textField(
         context: context,
@@ -141,24 +119,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         labelText: 'Confirm Password',
         prefixIcon: Icons.lock,
         obscureText: true,
-        validator: (value) {
-          if (value?.isEmpty ?? true) return 'Please confirm your password';
-          if (value != _passwordController.text) return 'Passwords do not match';
-          return null;
-        },
+        validator: (value) => (value?.isEmpty ?? true) ? 'Please confirm your password' : value != _passwordController.text ? 'Passwords do not match' : null,
         onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
       ),
       const SizedBox(height: 24),
       Row(
         children: [
-          Expanded(
-            child: TextButton(
-              onPressed: () => setState(() {
-                _currentStep = 0;
-              }),
-              child: const Text('Back', style: TextStyle(color: Colors.grey)),
-            ),
-          ),
+          Expanded(child: TextButton(onPressed: () => setState(() => _currentStep = 0), child: const Text('Back', style: TextStyle(color: Colors.grey)))),
           const SizedBox(width: 16),
           Expanded(
             flex: 2,
@@ -188,11 +155,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         controller: _otpController,
         labelText: 'Verification Code',
         prefixIcon: Icons.lock,
-        validator: (value) {
-          if (value?.isEmpty ?? true) return 'Please enter verification code';
-          if (!RegExp(r'^\d{6}$').hasMatch(value!)) return 'Code must be 6 digits';
-          return null;
-        },
+        validator: (value) => (value?.isEmpty ?? true) ? 'Please enter verification code' : !RegExp(r'^\d{6}$').hasMatch(value!) ? 'Code must be 6 digits' : null,
         onFieldSubmitted: kIsWeb ? (_) => _signup() : null,
       ),
       const SizedBox(height: 16),
@@ -213,14 +176,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
           ),
           const Spacer(),
           TextButton(
-            onPressed: () => setState(() {
-              _currentStep = 1;
-              _otpController.clear();
-              _countdownTimer?.cancel();
-              _countdownTimer = null;
-              _canResendOtp = true;
-              _resendCountdown = 0;
-            }),
+            onPressed: () => _resetToStep(1),
             child: const Text('Change Details', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -230,14 +186,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         children: [
           Expanded(
             child: TextButton(
-              onPressed: () => setState(() {
-                _currentStep = 1;
-                _otpController.clear();
-                _countdownTimer?.cancel();
-                _countdownTimer = null;
-                _canResendOtp = true;
-                _resendCountdown = 0;
-              }),
+              onPressed: () => _resetToStep(1),
               child: const Text('Back', style: TextStyle(color: Colors.grey)),
             ),
           ),
@@ -267,18 +216,22 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       
       final isEmailAvailable = await authProvider.checkEmailAvailability(_emailController.text);
       if (!isEmailAvailable) {
-        AppWidgets.showSnackBar(context, 'This email is already registered. Please use a different email or try logging in.', backgroundColor: AppTheme.error);
-        setState(() => _isLoading = false);
+        if (mounted) {
+          AppWidgets.showSnackBar(context, 'This email is already registered. Please use a different email or try logging in.', backgroundColor: AppTheme.error);
+          setState(() => _isLoading = false);
+        }
         return;
       }
       
-      setState(() {
-        _currentStep = 1;
-      });
-      _showSuccess('Email is available! Please create your account.');
+      if (mounted) {
+        setState(() => _currentStep = 1);
+        _showSuccess('Email is available! Please create your account.');
+      }
     } catch (e) {
       AppLogger.error('Error checking email', e, null, 'SignupWithOtpScreen');
-      AppWidgets.showSnackBar(context, 'Error checking email: ${e.toString()}', backgroundColor: AppTheme.error);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, 'Error checking email: ${e.toString()}', backgroundColor: AppTheme.error);
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -294,15 +247,15 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
       
       final success = await authProvider.sendSignupEmailOtp(_emailController.text);
       if (success) {
-        setState(() {
-          _currentStep = 2;
-          _canResendOtp = false;
-          _resendCountdown = 60;
-        });
-        _startResendCountdown();
-        _showSuccess('Verification code sent to ${_emailController.text}');
+        if (mounted) {
+          setState(() { _currentStep = 2; _canResendOtp = false; _resendCountdown = 60; });
+          _startResendCountdown();
+          _showSuccess('Verification code sent to ${_emailController.text}');
+        }
       } else {
-        AppWidgets.showSnackBar(context, 'Failed to send verification code', backgroundColor: AppTheme.error);
+        if (mounted) {
+          AppWidgets.showSnackBar(context, 'Failed to send verification code', backgroundColor: AppTheme.error);
+        }
       }
     } catch (e) {
       AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
@@ -331,7 +284,9 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
           Navigator.pushReplacementNamed(context, '/');
         }
       } else {
-        AppWidgets.showSnackBar(context, authProvider.errorMessage ?? 'Signup failed. Please check your verification code.', backgroundColor: AppTheme.error);
+        if (mounted) {
+          AppWidgets.showSnackBar(context, authProvider.errorMessage ?? 'Signup failed. Please check your verification code.', backgroundColor: AppTheme.error);
+        }
       }
     } catch (e) {
       AppLogger.error('Error sending OTP', e, null, 'SignupWithOtpScreen');
@@ -363,15 +318,20 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
         return;
       }
       
-      setState(() {
-        _resendCountdown--;
-      });
+      setState(() => _resendCountdown--);
     });
   }
 
-  void _showSuccess(String message) {
-    AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
-  }
+  void _showSuccess(String message) => AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
+  
+  void _resetToStep(int step) => setState(() {
+    _currentStep = step;
+    _otpController.clear();
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    _canResendOtp = true;
+    _resendCountdown = 0;
+  });
 
   @override
   void dispose() {

@@ -389,7 +389,10 @@ class PlaylistVotingWidgets {
     return Card(
       margin: const EdgeInsets.only(bottom: 4),
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.symmetric(
+          horizontal: MusicAppResponsive.isSmallScreen(context) ? 4 : 8,
+          vertical: 6,
+        ),
         child: Row(
           children: [
             ClipRRect(
@@ -453,19 +456,18 @@ class PlaylistVotingWidgets {
                           : Colors.grey.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: Column(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (canVote) ...[
-                        Text(
-                          'VOTE',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                          ),
+                      if (canVote) Text(
+                        'VOTE',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
                         ),
-                        const SizedBox(height: 2),
-                      ],
+                      ),
+                      if (canVote) const SizedBox(width: 4),
                       TrackVotingControls(
                         playlistId: playlistId,
                         trackId: track.id,
@@ -534,10 +536,8 @@ class TrackVotingControls extends StatelessWidget {
       padding: isCompact ? const EdgeInsets.all(4) : null,
       constraints: isCompact ? const BoxConstraints(minWidth: 30, minHeight: 30) : null,
     );
-    final text = isEvent ? Text('${stats.totalVotes}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700], fontWeight: FontWeight.bold)) : null;
-    return isCompact 
-      ? Row(mainAxisSize: MainAxisSize.min, children: [button, if (text != null) text])
-      : Column(children: [button, if (text != null) text]);
+    final text = Text('${stats.totalVotes}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700], fontWeight: FontWeight.bold));
+    return Row(mainAxisSize: MainAxisSize.min, children: [button, const SizedBox(width: 2), text]);
   }
 
   Future<void> _handleVote(BuildContext context) async {

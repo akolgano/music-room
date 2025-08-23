@@ -160,7 +160,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         return SingleChildScrollView(
           padding: EdgeInsets.symmetric(
             vertical: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0),
-            horizontal: MusicAppResponsive.getSpacing(context, tiny: 1.0, small: 1.5, medium: 2.0)
+            horizontal: 0
           ),
           child: Column(
             children: [
@@ -213,11 +213,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         final currentSort = musicProvider.currentSortOption;
         
         return Card(
+          margin: EdgeInsets.zero,
           color: Theme.of(context).colorScheme.surface,
           elevation: 4,
           shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+            padding: EdgeInsets.symmetric(
+              vertical: 6, 
+              horizontal: 0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -307,7 +312,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
-    final canReorder = currentSort.field == TrackSortField.position && _canEditPlaylist;
     
     return ListView.builder(
       shrinkWrap: true, 
@@ -398,7 +402,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   Widget _buildStyledIndicator(Widget child) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      padding: EdgeInsets.symmetric(
+        horizontal: MusicAppResponsive.isSmallScreen(context) ? 2 : 4, 
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: AppTheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),

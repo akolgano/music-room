@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../providers/beacon_providers.dart';
 import '../../services/beacon_services.dart';

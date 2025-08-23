@@ -150,13 +150,6 @@ class Playlist {
       isEvent: json['event'] ?? false,
     );
     
-    print('========================================');
-    print('DEBUG: PARSING PLAYLIST FROM JSON');
-    print('Playlist ID: ${playlist.id}');
-    print('Playlist Name: ${playlist.name}');
-    print('Raw event field from JSON: ${json['event']}');
-    print('Parsed isEvent: ${playlist.isEvent}');
-    print('========================================');
     
     return playlist;
   }

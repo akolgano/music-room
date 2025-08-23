@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'core/theme_core.dart';
 import 'core/social_core.dart';
-import 'core/signin_core.dart';
 import 'core/constants_core.dart';
 import 'core/locator_core.dart';
 import 'core/builder_core.dart';
