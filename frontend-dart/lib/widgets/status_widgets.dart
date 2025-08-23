@@ -9,21 +9,19 @@ class ConnectionStatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Consumer<ConnectivityProvider>(
     builder: (context, connectivity, _) => Column(children: [
-      if (connectivity.isDisconnected)
-        Container(
-          width: double.infinity,
-          color: Colors.red.shade700,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          child: Row(children: [
-            const Icon(Icons.wifi_off, color: Colors.white, size: 16),
-            const SizedBox(width: 8),
-            const Expanded(child: Text('No connection to server', style: TextStyle(color: Colors.white, fontSize: 14))),
-            TextButton(
-              onPressed: () => connectivity.checkConnection(),
-              child: const Text('Retry', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ]),
-        ),
+      if (connectivity.isDisconnected) Container(
+        width: double.infinity, color: Colors.red.shade700,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Row(children: [
+          const Icon(Icons.wifi_off, color: Colors.white, size: 16),
+          const SizedBox(width: 8),
+          const Expanded(child: Text('No connection to server', style: TextStyle(color: Colors.white, fontSize: 14))),
+          TextButton(
+            onPressed: () => connectivity.checkConnection(),
+            child: const Text('Retry', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ]),
+      ),
       Expanded(child: child),
     ]),
   );
@@ -42,7 +40,6 @@ class ConnectionStatusIndicator extends StatelessWidget {
         ConnectionStatus.checking => (Colors.orange, Icons.wifi_find),
       };
       if (compact) return Icon(icon, color: color, size: 20);
-
       return GestureDetector(
         onTap: () => showDialog(
           context: context,
@@ -55,16 +52,14 @@ class ConnectionStatusIndicator extends StatelessWidget {
                 Expanded(child: Text(connectivity.detailedStatusText, style: Theme.of(context).textTheme.bodyMedium)),
               ]),
               const SizedBox(height: 16),
-              if (connectivity.isDisconnected)
-                const Text('Some features may not work while offline. Changes will be saved locally when possible.', 
-                  style: TextStyle(color: Colors.orange)),
+              if (connectivity.isDisconnected) const Text('Some features may not work while offline. Changes will be saved locally when possible.', 
+                style: TextStyle(color: Colors.orange)),
             ]),
             actions: [
-              if (connectivity.isDisconnected)
-                TextButton(
-                  onPressed: () { connectivity.checkConnection(); Navigator.of(context).pop(); },
-                  child: const Text('Retry Connection'),
-                ),
+              if (connectivity.isDisconnected) TextButton(
+                onPressed: () { connectivity.checkConnection(); Navigator.of(context).pop(); },
+                child: const Text('Retry Connection'),
+              ),
               TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
             ],
           ),
@@ -78,10 +73,8 @@ class ConnectionStatusIndicator extends StatelessWidget {
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(icon, color: color, size: 16),
-            if (showText) ...[
-              const SizedBox(width: 6),
-              Text(connectivity.connectionStatusText, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500)),
-            ],
+            if (showText) ...[const SizedBox(width: 6), Text(connectivity.connectionStatusText, 
+              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500))],
           ]),
         ),
       );
