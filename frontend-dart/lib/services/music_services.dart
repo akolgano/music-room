@@ -13,40 +13,19 @@ class TrackSortingService {
   }
 
   static List<Track> sortTrackList(List<Track> tracks, TrackSortOption sortOption) {
-    final playlistTracks = tracks.asMap().entries.map((entry) => 
-      PlaylistTrack(
-        trackId: entry.value.id,
-        name: entry.value.name,
-        position: entry.key,
-        points: 0,
-        track: entry.value,
-      )
-    ).toList();
-    
-    final sortedPlaylistTracks = sortTracks(playlistTracks, sortOption);
-    return sortedPlaylistTracks.map((pt) => pt.track!).toList();
+    final playlistTracks = tracks.asMap().entries.map((entry) => PlaylistTrack(
+      trackId: entry.value.id, name: entry.value.name, position: entry.key, points: 0, track: entry.value,
+    )).toList();
+    return sortTracks(playlistTracks, sortOption).map((pt) => pt.track!).toList();
   }
 
   static int _getComparison(PlaylistTrack a, PlaylistTrack b, TrackSortField field) {
     switch (field) {
-      case TrackSortField.position:
-        return a.position.compareTo(b.position);
-      case TrackSortField.name:
-        final aName = a.track?.name ?? a.name;
-        final bName = b.track?.name ?? b.name;
-        return compareAsciiLowerCase(aName, bName);
-      case TrackSortField.artist:
-        final aArtist = a.track?.artist ?? '';
-        final bArtist = b.track?.artist ?? '';
-        return compareAsciiLowerCase(aArtist, bArtist);
-      case TrackSortField.album:
-        final aAlbum = a.track?.album ?? '';
-        final bAlbum = b.track?.album ?? '';
-        return compareAsciiLowerCase(aAlbum, bAlbum);
-      case TrackSortField.dateAdded:
-        return a.position.compareTo(b.position);
-      case TrackSortField.points:
-        return a.points.compareTo(b.points);
+      case TrackSortField.position: case TrackSortField.dateAdded: return a.position.compareTo(b.position);
+      case TrackSortField.name: return compareAsciiLowerCase(a.track?.name ?? a.name, b.track?.name ?? b.name);
+      case TrackSortField.artist: return compareAsciiLowerCase(a.track?.artist ?? '', b.track?.artist ?? '');
+      case TrackSortField.album: return compareAsciiLowerCase(a.track?.album ?? '', b.track?.album ?? '');
+      case TrackSortField.points: return a.points.compareTo(b.points);
     }
   }
 
@@ -67,20 +46,11 @@ class MusicService {
 
   MusicService(this._api);
 
-  Future<List<Playlist>> getUserPlaylists(String token) async {
-    final response = await _api.getSavedPlaylists(token); 
-    return response.playlists;
-  }
+  Future<List<Playlist>> getUserPlaylists(String token) async => (await _api.getSavedPlaylists(token)).playlists;
 
-  Future<List<Playlist>> getPublicPlaylists(String token) async {
-    final response = await _api.getPublicPlaylists(token); 
-    return response.playlists;
-  }
+  Future<List<Playlist>> getPublicPlaylists(String token) async => (await _api.getPublicPlaylists(token)).playlists;
 
-  Future<Playlist> getPlaylistDetails(String id, String token) async {
-    final response = await _api.getPlaylist(id, token); 
-    return response.playlist;
-  }
+  Future<Playlist> getPlaylistDetails(String id, String token) async => (await _api.getPlaylist(id, token)).playlist;
 
   Future<String> createPlaylist(String name, String description, bool isPublic, String token, String licenseType, bool isEvent, [String? deviceUuid]) async {
     final request = CreatePlaylistRequest(name: name, description: description, public: isPublic, licenseType: licenseType, event: isEvent, deviceUuid: deviceUuid);
@@ -88,24 +58,13 @@ class MusicService {
     return response.playlistId;
   }
 
-  Future<List<Track>> searchDeezerTracks(String query) async {
-    final response = await _api.searchDeezerTracks(query);
-    return response.data;
-  }
+  Future<List<Track>> searchDeezerTracks(String query) async => (await _api.searchDeezerTracks(query)).data;
 
-  Future<List<Track>> searchTracks(String query, String token) async {
-    final response = await _api.searchTracks(query, token);
-    return response.data;
-  }
+  Future<List<Track>> searchTracks(String query, String token) async => (await _api.searchTracks(query, token)).data;
 
-  Future<Track?> getDeezerTrack(String trackId, String token) async {
-    return await _api.getDeezerTrack(trackId, token);
-  }
+  Future<Track?> getDeezerTrack(String trackId, String token) async => await _api.getDeezerTrack(trackId, token);
 
-  Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async {
-    final response = await _api.getPlaylistTracks(playlistId, token); 
-    return response.tracks;
-  }
+  Future<List<PlaylistTrack>> getPlaylistTracksWithDetails(String playlistId, String token) async => (await _api.getPlaylistTracks(playlistId, token)).tracks;
 
   Future<void> addTrackToPlaylist(String playlistId, String trackId, String token) async {
     final request = AddTrackRequest(trackId: trackId);
@@ -132,12 +91,7 @@ class MusicService {
   }
 
   Future<List<Track>> getRandomTracks({int count = 10}) async {
-    final randomQueries = [
-      'pop', 'rock', 'jazz', 'electronic', 'hip hop', 'classical', 'indie', 'dance', 'blues', 'reggae',
-      'folk', 'country', 'metal', 'punk', 'soul', 'funk', 'disco', 'house', 'techno', 'ambient',
-      'a', 'e', 'i', 'o', 'u', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of',
-      'love', 'life', 'time', 'night', 'day', 'home', 'heart', 'world', 'dream', 'fire', 'water'
-    ];
+    final randomQueries = ['pop', 'rock', 'jazz', 'electronic', 'hip hop', 'classical', 'indie', 'dance', 'blues', 'reggae', 'folk', 'country', 'metal', 'punk', 'soul', 'funk', 'disco', 'house', 'techno', 'ambient', 'a', 'e', 'i', 'o', 'u', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'love', 'life', 'time', 'night', 'day', 'home', 'heart', 'world', 'dream', 'fire', 'water'];
     
     final random = DateTime.now().millisecondsSinceEpoch;
     final query = randomQueries[random % randomQueries.length];
@@ -159,19 +113,11 @@ class MusicService {
     }
   }
 
-  Future<void> deletePlaylist(String playlistId, String token) async {
-    await _api.deletePlaylist(playlistId, token); 
-  }
+  Future<void> deletePlaylist(String playlistId, String token) async => await _api.deletePlaylist(playlistId, token);
 
-  Future<List<Playlist>> getSavedEvents(String token) async {
-    final response = await _api.getSavedEvents(token); 
-    return response.playlists;
-  }
+  Future<List<Playlist>> getSavedEvents(String token) async => (await _api.getSavedEvents(token)).playlists;
 
-  Future<List<Playlist>> getPublicEvents(String token) async {
-    final response = await _api.getPublicEvents(token); 
-    return response.playlists;
-  }
+  Future<List<Playlist>> getPublicEvents(String token) async => (await _api.getPublicEvents(token)).playlists;
 
   Future<List<Track>> getRandomTracksFromAPI({int count = 10}) async {
     try {

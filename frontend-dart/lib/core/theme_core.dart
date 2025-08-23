@@ -5,79 +5,35 @@ import 'responsive_core.dart' show MusicAppResponsive;
 
 class ThemeUtils {
 
-  static double getResponsivePadding(BuildContext context) {
-    return MusicAppResponsive.getSpacing(context,
-      tiny: 2.0, small: 4.0, medium: 6.0, 
-      large: 8.0, xlarge: 12.0, xxlarge: 16.0
-    );
-  }
+  static double getResponsivePadding(BuildContext context) => MusicAppResponsive.getSpacing(context,
+    tiny: 2.0, small: 4.0, medium: 6.0, large: 8.0, xlarge: 12.0, xxlarge: 16.0);
 
-  static double getResponsiveMargin(BuildContext context) {
-    return MusicAppResponsive.getSpacing(context,
-      tiny: 1.0, small: 2.0, medium: 4.0,
-      large: 6.0, xlarge: 8.0, xxlarge: 12.0
-    );
-  }
+  static double getResponsiveMargin(BuildContext context) => MusicAppResponsive.getSpacing(context,
+    tiny: 1.0, small: 2.0, medium: 4.0, large: 6.0, xlarge: 8.0, xxlarge: 12.0);
 
-  static double getResponsiveBorderRadius(BuildContext context) {
-    return MusicAppResponsive.getBorderRadius(context,
-      tiny: 3.0, small: 4.0, medium: 6.0,
-      large: 8.0, xlarge: 12.0, xxlarge: 16.0
-    );
-  }
+  static double getResponsiveBorderRadius(BuildContext context) => MusicAppResponsive.getBorderRadius(context,
+    tiny: 3.0, small: 4.0, medium: 6.0, large: 8.0, xlarge: 12.0, xxlarge: 16.0);
 
-  static double getResponsiveIconSize(BuildContext context) {
-    return MusicAppResponsive.getResponsiveValue<double>(context,
-      tiny: 14.0, small: 18.0, medium: 20.0,
-      large: 24.0, xlarge: 28.0, xxlarge: 32.0
-    );
-  }
+  static double getResponsiveIconSize(BuildContext context) => MusicAppResponsive.getResponsiveValue<double>(context,
+    tiny: 14.0, small: 18.0, medium: 20.0, large: 24.0, xlarge: 28.0, xxlarge: 32.0);
 
-  static TextStyle getHeadingStyle(BuildContext context) {
-    final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 14.0, small: 18.0, medium: 20.0,
-      large: 22.0, xlarge: 24.0, xxlarge: 26.0
-    );
-    return TextStyle(
-      color: Theme.of(context).colorScheme.onSurface, 
-      fontSize: fontSize, 
-      fontWeight: FontWeight.bold
-    );
-  }
+  static TextStyle getHeadingStyle(BuildContext context) => TextStyle(
+    color: Theme.of(context).colorScheme.onSurface,
+    fontSize: MusicAppResponsive.getFontSize(context, tiny: 14.0, small: 18.0, medium: 20.0, large: 22.0, xlarge: 24.0, xxlarge: 26.0),
+    fontWeight: FontWeight.bold);
 
-  static TextStyle getSubheadingStyle(BuildContext context) {
-    final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 12.0, small: 15.0, medium: 16.0,
-      large: 18.0, xlarge: 19.0, xxlarge: 20.0
-    );
-    return TextStyle(
-      color: Theme.of(context).colorScheme.onSurface, 
-      fontSize: fontSize, 
-      fontWeight: FontWeight.w600,
-    );
-  }
+  static TextStyle getSubheadingStyle(BuildContext context) => TextStyle(
+    color: Theme.of(context).colorScheme.onSurface,
+    fontSize: MusicAppResponsive.getFontSize(context, tiny: 12.0, small: 15.0, medium: 16.0, large: 18.0, xlarge: 19.0, xxlarge: 20.0),
+    fontWeight: FontWeight.w600);
 
-  static TextStyle getBodyStyle(BuildContext context) {
-    final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 10.0, small: 13.0, medium: 14.0,
-      large: 16.0, xlarge: 17.0, xxlarge: 18.0
-    );
-    return TextStyle(
-      color: Theme.of(context).colorScheme.onSurface,
-      fontSize: fontSize,
-    );
-  }
+  static TextStyle getBodyStyle(BuildContext context) => TextStyle(
+    color: Theme.of(context).colorScheme.onSurface,
+    fontSize: MusicAppResponsive.getFontSize(context, tiny: 10.0, small: 13.0, medium: 14.0, large: 16.0, xlarge: 17.0, xxlarge: 18.0));
 
-  static TextStyle getCaptionStyle(BuildContext context) {
-    final fontSize = MusicAppResponsive.getFontSize(context,
-      tiny: 8.0, small: 11.0, medium: 12.0,
-      large: 14.0, xlarge: 15.0, xxlarge: 16.0
-    );
-    return TextStyle(
-      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-      fontSize: fontSize,
-    );
-  }
+  static TextStyle getCaptionStyle(BuildContext context) => TextStyle(
+    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+    fontSize: MusicAppResponsive.getFontSize(context, tiny: 8.0, small: 11.0, medium: 12.0, large: 14.0, xlarge: 15.0, xxlarge: 16.0));
 
   static ButtonStyle getPrimaryButtonStyle(BuildContext context) {
     final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
@@ -149,22 +105,10 @@ class ThemeUtils {
         borderRadius: BorderRadius.circular(8), 
         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8), 
-        borderSide: BorderSide(color: AppTheme.primary, width: 2)
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
-      ),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppTheme.primary, width: 2)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2)),
+      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2)),
+      disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1)),
       labelStyle: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
       hintStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
     );
@@ -188,32 +132,17 @@ class AppTheme {
   static const success = Color(0xFF00C851);
 
   static LinearGradient get backgroundGradient => const LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [background, backgroundDark],
-  );
+    begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [background, backgroundDark]);
 
   static LinearGradient get surfaceGradient => const LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [surface, surfaceDark],
-  );
+    begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [surface, surfaceDark]);
 
   static LinearGradient get primaryGradient => const LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [primary, primaryDark],
-  );
+    begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [primary, primaryDark]);
 
   static LinearGradient get cardGradient => LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      surface,
-      surfaceDark,
-      surface.withValues(alpha: 0.8),
-    ],
-  );
+    begin: Alignment.topLeft, end: Alignment.bottomRight,
+    colors: [surface, surfaceDark, surface.withValues(alpha: 0.8)]);
 
   static ThemeData _buildTheme() {
     return ThemeData(
@@ -230,11 +159,8 @@ class AppTheme {
         onSurface: Colors.white,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: background, 
-        foregroundColor: Colors.white, 
-        elevation: 0,
-        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
-      ),
+        backgroundColor: background, foregroundColor: Colors.white, elevation: 0,
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600)),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
@@ -247,55 +173,30 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: primary)),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white, 
-          side: BorderSide(color: primary),
+          foregroundColor: Colors.white, side: BorderSide(color: primary),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-      ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8))),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceVariant,
         contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6), 
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: BorderSide(color: primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: error, width: 2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: error, width: 2),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: primary, width: 2)),
+        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: error, width: 2)),
+        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: error, width: 2)),
+        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1)),
         labelStyle: const TextStyle(color: Colors.white70, fontSize: 14),
         hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
       ),
-      cardTheme: CardThemeData(color: surface,
-        elevation: 2,
-        shadowColor: primary.withValues(alpha: 0.1),
+      cardTheme: CardThemeData(
+        color: surface, elevation: 2, shadowColor: primary.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-      ),
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2)),
       iconTheme: IconThemeData(color: primary),
       primaryIconTheme: const IconThemeData(color: Colors.white),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: primary,
-        foregroundColor: Colors.black,
-        elevation: 6,
-      ),
+        backgroundColor: primary, foregroundColor: Colors.black, elevation: 6),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: surface,
         selectedItemColor: primary,
@@ -385,25 +286,17 @@ class AppTheme {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              if (titleIcon != null) ...[
-                Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), 
-                SizedBox(width: kIsWeb ? 4 : 4.w)
+            children: [if (titleIcon != null) ...[
+                Icon(titleIcon, color: primary, size: kIsWeb ? 20 : 20.sp), SizedBox(width: kIsWeb ? 4 : 4.w)
               ],
               Flexible(
-                child: Text(title, 
+                child: Text(title,
                   style: TextStyle(
-                    fontSize: context != null 
-                      ? MusicAppResponsive.getFontSize(context, 
-                          tiny: 14.0, small: 16.0, medium: 18.0, 
-                          large: 20.0, xlarge: 22.0, xxlarge: 24.0
-                        )
-                      : (kIsWeb ? 18 : 18.sp), 
-                    fontWeight: FontWeight.bold, 
-                    color: Colors.white
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ), 
+                    fontSize: context != null ? MusicAppResponsive.getFontSize(context,
+                      tiny: 14.0, small: 16.0, medium: 18.0, large: 20.0, xlarge: 22.0, xxlarge: 24.0)
+                      : (kIsWeb ? 18 : 18.sp),
+                    fontWeight: FontWeight.bold, color: Colors.white),
+                  overflow: TextOverflow.ellipsis), 
               ),
             ],
           ),
