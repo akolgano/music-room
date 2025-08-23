@@ -425,15 +425,95 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) {
-    AppLogger.debug('Handling playlist update - WebSocket received', 'PlaylistDetailScreen');
+    AppLogger.debug('Handling playlist update - WebSocket received with ${updatedTracks.length} tracks', 'PlaylistDetailScreen');
     
-    _updateTrackIdMapping(updatedTracks);
+    if (!mounted) return;
     
-    if (mounted) {
-      _loadData();
+    final existingTrackDetails = <String, Track>{};
+    for (final track in _tracks) {
+      if (track.track != null) {
+        existingTrackDetails[track.trackId] = track.track!;
+      }
     }
     
-    AppLogger.debug('Triggered data reload via WebSocket update', 'PlaylistDetailScreen');
+    final existingTrackIds = _tracks.map((t) => t.trackId).toSet();
+    final updatedTrackIds = updatedTracks.map((t) => t.trackId).toSet();
+    final isPositionChange = existingTrackIds.length == updatedTrackIds.length && 
+                             existingTrackIds.containsAll(updatedTrackIds);
+    
+    if (isPositionChange) {
+      AppLogger.debug('Position change detected - preserving and fetching track details', 'PlaylistDetailScreen');
+      
+      final tracksWithDetails = updatedTracks.map((updatedTrack) {
+        final existingDetail = existingTrackDetails[updatedTrack.trackId];
+        if (existingDetail != null) {
+          return PlaylistTrack(
+            trackId: updatedTrack.trackId,
+            name: updatedTrack.name,
+            position: updatedTrack.position,
+            points: updatedTrack.points,
+            track: existingDetail,
+          );
+        } else {
+          Track? minimalTrack;
+          if (updatedTrack.track == null && updatedTrack.trackId.contains('deezer_')) {
+            minimalTrack = Track(
+              id: updatedTrack.trackId,
+              name: updatedTrack.name,
+              artist: '',
+              album: '',
+              url: '',
+              deezerTrackId: updatedTrack.trackId.replaceFirst('deezer_', ''),
+            );
+          }
+          return PlaylistTrack(
+            trackId: updatedTrack.trackId,
+            name: updatedTrack.name,
+            position: updatedTrack.position,
+            points: updatedTrack.points,
+            track: updatedTrack.track ?? minimalTrack,
+          );
+        }
+      }).toList();
+      
+      setState(() {
+        _tracks = tracksWithDetails;
+        _updateTrackIdMapping(_tracks);
+      });
+      
+      final musicProvider = _getMountedProvider<MusicProvider>();
+      if (musicProvider != null) {
+        musicProvider.setPlaylistTracks(tracksWithDetails);
+      }
+      
+      final playerService = _getMountedProvider<MusicPlayerService>();
+      if (playerService != null && playerService.playlistId == widget.playlistId) {
+        playerService.updatePlaylist(tracksWithDetails);
+      }
+      
+      _initializeVotingIfNeeded();
+      
+      final tracksNeedingDetails = tracksWithDetails.where((pt) => 
+        pt.track == null || pt.track!.imageUrl == null || pt.track!.previewUrl == null
+      ).toList();
+      
+      if (tracksNeedingDetails.isNotEmpty) {
+        AppLogger.debug('Fetching details for ${tracksNeedingDetails.length} tracks after position change', 'PlaylistDetailScreen');
+        _trackService.batchFetchTrackDetailsProgressive(
+          tracksNeedingDetails,
+          auth.token!,
+          onTrackLoaded: (playlistTrack, trackDetails) {
+            if (mounted && trackDetails != null) {
+              _updateTrackDetails(playlistTrack.trackId, trackDetails);
+            }
+          },
+        );
+      }
+      
+    } else {
+      AppLogger.debug('Track add/delete detected - full reload needed', 'PlaylistDetailScreen');
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -493,6 +573,33 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final trackDetails = await _trackService.fetchTrackDetailsIfNeeded(playlistTrack, auth.token!);
     if (trackDetails != null && mounted) {
       _updateTrackDetails(playlistTrack.trackId, trackDetails);
+    }
+  }
+
+  Future<Track?> _fetchTrackDetailsForPlay(PlaylistTrack playlistTrack) async {
+    try {
+      String trackIdToFetch;
+      
+      if (playlistTrack.track?.deezerTrackId != null) {
+        trackIdToFetch = playlistTrack.track!.deezerTrackId!;
+      } else if (playlistTrack.trackId.startsWith('deezer_')) {
+        trackIdToFetch = playlistTrack.trackId.replaceFirst('deezer_', '');
+      } else {
+        trackIdToFetch = playlistTrack.trackId;
+      }
+      
+      AppLogger.debug('Fetching track details for play: $trackIdToFetch', 'PlaylistDetailScreen');
+      
+      final trackDetails = await _trackCacheService.getTrackDetails(
+        trackIdToFetch,
+        auth.token!,
+        getIt<ApiService>(),
+      );
+      
+      return trackDetails;
+    } catch (e) {
+      AppLogger.error('Failed to fetch track details for play', e, null, 'PlaylistDetailScreen');
+      return null;
     }
   }
 
@@ -617,6 +724,27 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     if (index < 0 || index >= sortedTracks.length) return;
     
     try {
+      final playlistTrack = sortedTracks[index];
+      final track = playlistTrack.track;
+      
+      if (track == null || track.previewUrl == null || track.deezerTrackId == null) {
+        AppLogger.debug('Track missing details, fetching before play...', 'PlaylistDetailScreen');
+        
+        final trackDetails = await _fetchTrackDetailsForPlay(playlistTrack);
+        if (trackDetails != null) {
+          final updatedTrack = PlaylistTrack(
+            trackId: playlistTrack.trackId,
+            name: playlistTrack.name,
+            position: playlistTrack.position,
+            points: playlistTrack.points,
+            track: trackDetails,
+          );
+          
+          sortedTracks[index] = updatedTrack;
+          _updateTrackDetails(playlistTrack.trackId, trackDetails);
+        }
+      }
+      
       final playerService = getProvider<MusicPlayerService>();
       
       await playerService.setPlaylistAndPlay(
@@ -626,9 +754,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         authToken: auth.token,
       );
       
-      final track = sortedTracks[index].track;
-      if (track != null) {
-        AppLogger.debug('Playing track: ${track.name}', 'PlaylistDetailScreen');
+      final playingTrack = sortedTracks[index].track;
+      if (playingTrack != null) {
+        AppLogger.debug('Playing track: ${playingTrack.name}', 'PlaylistDetailScreen');
       }
     } catch (e) {
       AppLogger.error('Failed to play track at index $index', e, null, 'PlaylistDetailScreen');

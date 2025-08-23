@@ -38,88 +38,44 @@ class AppRoutes {
 
 class FormatUtils {
   static String formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-    
-    if (hours > 0) {
-      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    } else {
-      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
+    final h = duration.inHours, m = duration.inMinutes.remainder(60), s = duration.inSeconds.remainder(60);
+    final pad = (int n) => n.toString().padLeft(2, '0');
+    return h > 0 ? '${pad(h)}:${pad(m)}:${pad(s)}' : '${pad(m)}:${pad(s)}';
   }
 }
 
 class AppValidators {
   static String? email(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter an email address';
-    }
-    
-    if (value != value.trim()) {
-      return 'Email cannot have leading or trailing spaces';
-    }
-    
-    final emailRegex = RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Enter a valid email address';
-    }
-    
+    if (value == null || value.isEmpty) return 'Please enter an email address';
+    if (value != value.trim()) return 'Email cannot have leading or trailing spaces';
+    if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value)) return 'Enter a valid email address';
     return null;
   }
   
   static String? password(String? value, [int minLength = 8]) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a password';
-    }
-    
-    if (value.length < minLength) {
-      return 'Password must be at least $minLength characters';
-    }
-    
-    if (value.contains(' ')) {
-      return 'The password must not contain spaces';
-    }
-    
+    if (value == null || value.isEmpty) return 'Please enter a password';
+    if (value.length < minLength) return 'Password must be at least $minLength characters';
+    if (value.contains(' ')) return 'The password must not contain spaces';
     return null;
   }
   
   static String? username(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a username';
-    }
-    
-    if (value != value.trim()) {
-      return 'Username cannot have leading or trailing spaces';
-    }
-    
-    if (value.isEmpty) {
-      return 'Username must be at least 1 character';
-    }
-    if (value.length > 20) {
-      return 'Username must be less than 20 characters';
-    }
-    
-    if (!RegExp(r'^\w+$').hasMatch(value)) {
-      return 'Username can only contain letters, numbers, and underscores';
-    }
-    
+    if (value == null || value.isEmpty) return 'Please enter a username';
+    if (value != value.trim()) return 'Username cannot have leading or trailing spaces';
+    if (value.length > 20) return 'Username must be less than 20 characters';
+    if (!RegExp(r'^\w+$').hasMatch(value)) return 'Username can only contain letters, numbers, and underscores';
     return null;
   }
 
   static String? phoneNumber(String? value, [bool required = false]) {
-    if (!required && (value?.isEmpty ?? true)) { return null; }
-    if (value == null || value.trim().isEmpty) { return required ? 'Please enter a phone number' : null; }
+    if (!required && (value?.isEmpty ?? true)) return null;
+    if (value == null || value.trim().isEmpty) return required ? 'Please enter a phone number' : null;
     try {
-      final phoneNumber = PhoneNumber.parse(value.trim());
-      if (phoneNumber.isValid()) { return null; }
-      else { return 'Please enter a valid phone number'; }
+      return PhoneNumber.parse(value.trim()).isValid() ? null : 'Please enter a valid phone number';
     } catch (e) {
       return 'Please enter a valid phone number';
     }
   }
   
-  static String? bio(String? value) =>
-      ValidationBuilder().maxLength(500, 'Bio must be less than 500 characters').build()(value);
-  
+  static String? bio(String? value) => ValidationBuilder().maxLength(500, 'Bio must be less than 500 characters').build()(value);
 }

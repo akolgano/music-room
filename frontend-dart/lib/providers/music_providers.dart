@@ -265,6 +265,11 @@ class MusicProvider extends BaseProvider {
     }
   }
 
+  void setPlaylistTracks(List<PlaylistTrack> tracks) {
+    _playlistTracks = tracks;
+    notifyListeners();
+  }
+
   bool isTrackInPlaylist(String trackId) {
     return _playlistTracks.any((pt) => pt.trackId == trackId || pt.track?.id == trackId);
   }
