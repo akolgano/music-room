@@ -1,7 +1,6 @@
 import '../core/provider_core.dart';
 import '../core/locator_core.dart';
 import '../core/navigation_core.dart';
-import '../core/logging_core.dart';
 import '../services/music_services.dart';
 import '../services/cache_services.dart';
 import '../services/api_services.dart';
@@ -449,6 +448,7 @@ class MusicProvider extends BaseProvider {
         }
       }
     } catch (e) {
+      // Silently ignore errors to prevent app crash
     }
   }
 

@@ -27,11 +27,20 @@ class StateWidgets {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(color: colorScheme.primary),
             if (message != null) ...[
               SizedBox(height: 12.0.h), 
-              Text(message, style: _secondaryStyle(context))
+              Flexible(
+                child: Text(
+                  message, 
+                  style: _secondaryStyle(context),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ],
           ],
         ),

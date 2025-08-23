@@ -8,8 +8,6 @@ import '../../services/player_services.dart';
 import '../../services/music_services.dart';
 import '../../services/logging_services.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
-import '../../core/logging_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/sort_widgets.dart';
@@ -35,7 +33,7 @@ class TrackSearchScreen extends StatefulWidget {
   State<TrackSearchScreen> createState() => _TrackSearchScreenState();
 }
 
-class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserActionLoggingMixin {
+class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   final _searchController = TextEditingController();
   Set<String> _selectedTracks = {};
   bool _isMultiSelectMode = false;
@@ -386,11 +384,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
     if (!mounted || _searchController.text.trim().length < _minSearchLength) return;
     
     final query = _searchController.text.trim();
-    logSearch(query, metadata: {
-      'is_auto_search': isAutoSearch,
-      'query_length': query.length,
-      'playlist_id': widget.playlistId,
-    });
     
     await runAsyncAction(
       () async {
@@ -524,18 +517,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
   }
 
   Future<void> _handleAddTrack(Track track) async {
-    logUserAction(
-      actionType: UserActionType.addToPlaylist,
-      description: 'Added track to playlist: ${track.name}',
-      metadata: {
-        'track_id': track.id,
-        'playlist_id': widget.playlistId,
-        'track_name': track.name,
-        'artist': track.artist,
-        'is_adding_to_specific_playlist': _isAddingToPlaylist,
-      }
-    );
-    
     if (_isAddingToPlaylist) {
       await _addTrackObjectToPlaylist(widget.playlistId!, track);
     } else {
@@ -567,16 +548,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
 
   Future<void> _playTrack(Track track) async {
     final isPlaying = _playerService.currentTrack?.id == track.id;
-    logUserAction(
-      actionType: isPlaying ? UserActionType.pauseMusic : UserActionType.playMusic,
-      description: isPlaying ? 'Paused track: ${track.name}' : 'Playing track: ${track.name}',
-      metadata: {
-        'track_id': track.id,
-        'track_name': track.name,
-        'artist': track.artist,
-        'is_toggle': _playerService.currentTrack?.id == track.id,
-      }
-    );
     
     await runAsyncAction(
       () async {
@@ -682,71 +653,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
     }
   }
 
-  Future<void> _createNewEventAndAddTrack(Track track) async {
-    final eventName = await AppWidgets.showTextInputDialog(
-      context, 
-      title: 'Create New Event',
-      hintText: 'Enter event name',
-      validator: (value) => (value == null || value.trim().isEmpty) ? 'Please enter event name' : null,
-    );
-    
-    if (eventName != null && eventName.trim().isNotEmpty) {
-      await runAsyncAction(
-        () async {
-          final musicProvider = getProvider<MusicProvider>();
-          
-          final newEventId = await musicProvider.createPlaylist(
-            eventName.trim(),
-            '',
-            false,
-            auth.token!,
-            'open',
-            true,
-          );
-          
-          await _addTrackToPlaylist(newEventId!, track);
-        },
-        successMessage: 'Track added to new event "$eventName"',
-        errorMessage: 'Failed to create event and add track',
-      );
-    }
-  }
 
-  Future<void> _createNewPlaylistAndAddTrack(Track track) async {
-    final playlistName = await AppWidgets.showTextInputDialog(
-      context, 
-      title: 'Create New Playlist',
-      hintText: 'Enter playlist name',
-      validator: (value) => (value == null || value.trim().isEmpty) ? 'Please enter playlist name' : null,
-    );
-    if (playlistName?.isNotEmpty == true) {
-      await runAsyncAction(
-        () async {
-          _setLoadingState(LoadingState.addingTracks);
-          final playlistId = await getProvider<MusicProvider>().createPlaylist(
-            playlistName!, 
-            'Created while adding "${track.name}"', 
-            true, 
-            auth.token!,
-            'open',
-            false,
-          );
-        if (playlistId?.isNotEmpty == true) {
-          final result = await getProvider<MusicProvider>().addTrackToPlaylist(playlistId!, track.id, auth.token!);
-          if (result.success) {
-            _showMessage('Created playlist "$playlistName" and added "${track.name}"!', isError: false);
-            await _loadUserPlaylists();
-          } else {
-            throw Exception(result.message);
-          }
-        }
-        _setLoadingState(LoadingState.idle);
-      },
-      successMessage: 'Playlist created and track added!',
-      errorMessage: 'Failed to create playlist',
-      );
-    }
-  }
 
   void _showMessage(String message, {bool isError = true}) {
     if (isError) {

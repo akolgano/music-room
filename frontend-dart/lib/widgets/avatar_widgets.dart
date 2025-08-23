@@ -36,19 +36,11 @@ class ProfileAvatarWidget extends StatelessWidget {
             height: 140,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: profileProvider.avatarUrl?.isNotEmpty == true
-                  ? null
-                  : LinearGradient(begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7)],
-                    ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              gradient: profileProvider.avatarUrl?.isNotEmpty == true ? null : LinearGradient(
+                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7)],
+              ),
+              boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
             ),
             child: profileProvider.avatarUrl?.isNotEmpty == true
                 ? ClipOval(
@@ -85,14 +77,7 @@ class ProfileAvatarWidget extends StatelessWidget {
                   border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: profileProvider.isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Icon(Icons.camera_alt, color: Colors.black, size: 20),
               ),
             ),
@@ -103,68 +88,26 @@ class ProfileAvatarWidget extends StatelessWidget {
   }
 
   String _generateInitials() {
-    final name = profileProvider.name ?? profileProvider.username ?? 'User';
+    final name = (profileProvider.name ?? profileProvider.username ?? 'User').trim();
     if (name.isEmpty) return 'U';
-    
-    final words = name.trim().split(' ').where((word) => word.isNotEmpty).toList();
-    if (words.isEmpty) return 'U';
-    
-    if (words.length == 1) {
-      return words[0].substring(0, 1).toUpperCase();
-    } else {
-      return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
-    }
+    final words = name.split(' ').where((w) => w.isNotEmpty).toList();
+    return words.isEmpty ? 'U' : (words.length == 1 ? words[0][0] : '${words[0][0]}${words[1][0]}').toUpperCase();
   }
 
-  Widget _buildInitialsAvatar() {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primary,
-            AppTheme.primary.withValues(alpha: 0.7),
-            Colors.purple.withValues(alpha: 0.8),
-          ],
-        ),
-      ),
-      child: Center(
-        child: Text(
-          _generateInitials(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _buildInitialsAvatar() => _buildAvatarWithInitials(100, 32);
 
   Future<void> _editAvatar(BuildContext context, String sourceType) async {
     try {
 
-      if (sourceType == 'remove') {
-        await profileProvider.deleteAvatar(auth.token);
-        onSuccess();
-        return;
-      }
+      if (sourceType == 'remove') return (await profileProvider.deleteAvatar(auth.token)) ? onSuccess() : null;
 
-      Uint8List imageBytes = Uint8List(0);
-      String mimeType = 'image/jpeg';
+      var imageBytes = Uint8List(0), mimeType = 'image/jpeg';
 
       if (sourceType == 'random_cat') {
-        if (kDebugMode) {
-          debugPrint('[ProfileAvatarWidget] Fetching random cat picture');
-        }
+        if (kDebugMode) debugPrint('[ProfileAvatarWidget] Fetching random cat picture');
         
         try {
-          http.Response? response;
-          String? imageUrl;
+          http.Response? response; String? imageUrl;
           
           final catApis = [
             {'url': 'https://api.thecatapi.com/v1/images/search', 'type': 'json'},
@@ -174,9 +117,7 @@ class ProfileAvatarWidget extends StatelessWidget {
           
           for (final api in catApis) {
             try {
-              if (kDebugMode) {
-                debugPrint('[ProfileAvatarWidget] Trying cat API: ${api['url']}');
-              }
+              if (kDebugMode) debugPrint('[ProfileAvatarWidget] Trying cat API: ${api['url']}');
               
               response = await http.get(
                 Uri.parse(api['url']!),
@@ -197,9 +138,7 @@ class ProfileAvatarWidget extends StatelessWidget {
                       if (imageResponse.statusCode == 200 && imageResponse.bodyBytes.isNotEmpty) {
                         imageBytes = imageResponse.bodyBytes;
                         mimeType = 'image/jpeg';
-                        if (kDebugMode) {
-                          debugPrint('[ProfileAvatarWidget] Successfully fetched cat picture from JSON API: ${imageBytes.length} bytes');
-                        }
+                        if (kDebugMode) debugPrint('[ProfileAvatarWidget] Successfully fetched cat picture from JSON API: ${imageBytes.length} bytes');
                         break;
                       }
                     }
@@ -208,17 +147,13 @@ class ProfileAvatarWidget extends StatelessWidget {
                   if (response.bodyBytes.isNotEmpty) {
                     imageBytes = response.bodyBytes;
                     mimeType = 'image/jpeg';
-                    if (kDebugMode) {
-                      debugPrint('[ProfileAvatarWidget] Successfully fetched cat picture from direct API: ${imageBytes.length} bytes');
-                    }
+                    if (kDebugMode) debugPrint('[ProfileAvatarWidget] Successfully fetched cat picture from direct API: ${imageBytes.length} bytes');
                     break;
                   }
                 }
               }
             } catch (e) {
-              if (kDebugMode) {
-                debugPrint('[ProfileAvatarWidget] Failed with API ${api['url']}: $e');
-              }
+              if (kDebugMode) debugPrint('[ProfileAvatarWidget] Failed with API ${api['url']}: $e');
               continue;
             }
           }
@@ -227,9 +162,7 @@ class ProfileAvatarWidget extends StatelessWidget {
             throw Exception('All cat picture APIs failed to return valid images');
           }
         } catch (e) {
-          if (kDebugMode) {
-            debugPrint('[ProfileAvatarWidget] Error fetching cat picture: $e');
-          }
+          if (kDebugMode) debugPrint('[ProfileAvatarWidget] Error fetching cat picture: $e');
           onError('Failed to fetch cat picture. Please check your internet connection and try again.');
           return;
         }
@@ -252,54 +185,24 @@ class ProfileAvatarWidget extends StatelessWidget {
         mimeType = image.mimeType ?? 'image/jpeg';
       }
 
-      if (imageBytes.length > 5 * 1024 * 1024) {
-        onError('Image too large. Please choose an image smaller than 5MB.');
-        return;
-      }
+      if (imageBytes.length > 5 * 1024 * 1024) return onError('Image too large. Please choose an image smaller than 5MB.');
 
-      final String base64Image = base64Encode(imageBytes);
+      final base64Image = base64Encode(imageBytes);
+      if (kDebugMode) debugPrint('[ProfileAvatarWidget] Uploading: ${imageBytes.length} bytes, type=$mimeType, base64: ${base64Image.length}, token: ${auth.token != null ? 'PRESENT' : 'NULL'}');
 
-      if (kDebugMode) {
-        debugPrint('[ProfileAvatarWidget] Uploading avatar: size=${imageBytes.length} bytes, type=$mimeType');
-        debugPrint('[ProfileAvatarWidget] Base64 image length: ${base64Image.length}');
-        debugPrint('[ProfileAvatarWidget] Auth token: ${auth.token != null ? '[PRESENT]' : '[NULL]'}');
-      }
-
-      final success = await profileProvider.updateProfile(
-        auth.token,
-        avatarBase64: base64Image,
-        mimeType: mimeType,
-      );
-      
-      if (kDebugMode) {
-        debugPrint('[ProfileAvatarWidget] Avatar upload result: $success');
-      }
-
-      if (success) {
-        onSuccess();
-      } else {
-        onError('Failed to update avatar - check network connection and try again');
-      }
+      final success = await profileProvider.updateProfile(auth.token, avatarBase64: base64Image, mimeType: mimeType);
+      if (kDebugMode) debugPrint('[ProfileAvatarWidget] Avatar upload result: $success');
+      success ? onSuccess() : onError('Failed to update avatar - check network connection and try again');
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[ProfileAvatarWidget] Avatar upload error: $e');
-      }
-      String errorMessage = 'Error updating avatar: ';
-      if (e.toString().contains('DioException')) {
-        if (e.toString().contains('401')) {
-          errorMessage = 'Authentication failed - please login again';
-        } else if (e.toString().contains('413')) {
-          errorMessage = 'Image too large - please choose a smaller image';
-        } else if (e.toString().contains('400')) {
-          errorMessage = 'Invalid image format - please try a different image';
-        } else if (e.toString().contains('500')) {
-          errorMessage = 'Server error - please try again later';
-        } else {
-          errorMessage = 'Network error - check your connection';
-        }
-      } else {
-        errorMessage += e.toString();
-      }
+      if (kDebugMode) debugPrint('[ProfileAvatarWidget] Avatar upload error: $e');
+      final err = e.toString();
+      final errorMessage = err.contains('DioException') 
+        ? err.contains('401') ? 'Authentication failed - please login again'
+        : err.contains('413') ? 'Image too large - please choose a smaller image'
+        : err.contains('400') ? 'Invalid image format - please try a different image'
+        : err.contains('500') ? 'Server error - please try again later'
+        : 'Network error - check your connection'
+        : 'Error updating avatar: $err';
       onError(errorMessage);
     }
   }
@@ -377,35 +280,18 @@ class ProfileAvatarWidget extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _buildActionButton(
-                            icon: Icons.photo_library,
-                            label: kIsWeb ? 'Choose File' : 'Gallery',
-                            color: AppTheme.primary,
-                            onTap: () {
-                              Navigator.pop(context);
-                              _editAvatar(context, 'gallery');
-                            },
-                          ),
-                          const SizedBox(width: 16),
-                          _buildActionButton(
-                            icon: Icons.pets,
-                            label: 'Random Cat',
-                            color: AppTheme.primary,
-                            onTap: () {
-                              Navigator.pop(context);
-                              _editAvatar(context, 'random_cat');
-                            },
-                          ),
-                          const SizedBox(width: 16),
-                          _buildActionButton(
-                            icon: Icons.delete,
-                            label: 'Remove',
-                            color: Colors.red,
-                            onTap: () {
-                              Navigator.pop(context);
-                              _editAvatar(context, 'remove');
-                            },
-                          ),
+                          ...[Icons.photo_library, Icons.pets, Icons.delete].asMap().entries.map((e) => [
+                            if (e.key > 0) const SizedBox(width: 16),
+                            _buildActionButton(
+                              icon: e.value,
+                              label: e.key == 0 ? (kIsWeb ? 'Choose File' : 'Gallery') : e.key == 1 ? 'Random Cat' : 'Remove',
+                              color: e.key == 2 ? Colors.red : AppTheme.primary,
+                              onTap: () {
+                                Navigator.pop(context);
+                                _editAvatar(context, e.key == 0 ? 'gallery' : e.key == 1 ? 'random_cat' : 'remove');
+                              },
+                            ),
+                          ]).expand((w) => w).toList(),
                         ],
                       ),
                     ),
@@ -419,66 +305,32 @@ class ProfileAvatarWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEnlargedInitialsAvatar() {
-    return Container(
-      width: 280,
-      height: 280,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primary,
-            AppTheme.primary.withValues(alpha: 0.7),
-            Colors.purple.withValues(alpha: 0.8),
-          ],
-        ),
+  Widget _buildEnlargedInitialsAvatar() => _buildAvatarWithInitials(280, 80);
+  
+  Widget _buildAvatarWithInitials(double size, double fontSize) => Container(
+    width: size, height: size,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft, end: Alignment.bottomRight,
+        colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7), Colors.purple.withValues(alpha: 0.8)],
       ),
-      child: Center(
-        child: Text(
-          _generateInitials(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 80,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
+    ),
+    child: Center(child: Text(_generateInitials(), style: TextStyle(color: Colors.white, fontSize: fontSize, fontWeight: FontWeight.bold))),
+  );
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
+  Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) => 
+    GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.2), shape: BoxShape.circle),
+          child: Icon(icon, color: color, size: 24),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+      ]),
     );
-  }
 
 }

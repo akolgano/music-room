@@ -23,10 +23,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-      profileProvider.clearMessages(); 
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => Provider.of<ProfileProvider>(context, listen: false).clearMessages());
   }
 
   @override
@@ -49,25 +46,14 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                     builder: (context, profileProvider, child) {
                       return Column(
                         children: [
-                          const Text(
-                            'Change Password',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)
-                          ),
+                          const Text('Change Password', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                           const SizedBox(height: 24),
                           if (profileProvider.hasError) ...[
-                            AppWidgets.errorBanner(
-                              message: profileProvider.errorMessage ?? 'An error occurred',
-                              onDismiss: () => profileProvider.clearMessages(), 
-                            ),
+                            AppWidgets.errorBanner(message: profileProvider.errorMessage ?? 'An error occurred', onDismiss: () => profileProvider.clearMessages()),
                             const SizedBox(height: 16),
                           ],
                           if (profileProvider.hasSuccess) ...[
-                            AppWidgets.infoBanner(
-                              title: 'Success',
-                              message: profileProvider.successMessage ?? 'Success',
-                              icon: Icons.check_circle,
-                              color: Colors.green,
-                            ),
+                            AppWidgets.infoBanner(title: 'Success', message: profileProvider.successMessage ?? 'Success', icon: Icons.check_circle, color: Colors.green),
                             const SizedBox(height: 16),
                           ],
                           AppWidgets.textField(
@@ -93,20 +79,13 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                             controller: _confirmPasswordController,
                             labelText: 'Confirm New Password',
                             obscureText: true,
-                            validator: (v) => v?.isEmpty ?? true ? 'Please confirm new password' : 
-                                      v != _newPasswordController.text ? 'Passwords do not match' : null,
+                            validator: (v) => v?.isEmpty ?? true ? 'Please confirm new password' : v != _newPasswordController.text ? 'Passwords do not match' : null,
                             onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
                           ), 
                           const SizedBox(height: 24),
-                          profileProvider.isLoading
-                            ? const CircularProgressIndicator(color: AppTheme.primary)
-                            : AppWidgets.primaryButton(context: context, text: 'Submit', onPressed: _submit),
+                          profileProvider.isLoading ? const CircularProgressIndicator(color: AppTheme.primary) : AppWidgets.primaryButton(context: context, text: 'Submit', onPressed: _submit),
                           const SizedBox(height: 24),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: TextButton.styleFrom(foregroundColor: Colors.white),
-                            child: const Text('Cancel'),
-                          ),
+                          TextButton(onPressed: () => Navigator.pop(context), style: TextButton.styleFrom(foregroundColor: Colors.white), child: const Text('Cancel')),
                         ],
                       );
                     },
@@ -122,22 +101,12 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    
     if (authProvider.token == null) return;
-
-    bool success = await profileProvider.userPasswordChange(
-      authProvider.token, 
-      _currentPasswordController.text, 
-      _newPasswordController.text
-    );
-    
+    bool success = await profileProvider.userPasswordChange(authProvider.token, _currentPasswordController.text, _newPasswordController.text);
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password changed successfully'), backgroundColor: Colors.green),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password changed successfully'), backgroundColor: Colors.green));
       Navigator.pop(context);
     }
   }
