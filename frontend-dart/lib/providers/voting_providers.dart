@@ -12,15 +12,8 @@ class VotingService {
   
   VotingService(this._api);
 
-  Future<VoteResponse> voteForTrack({ 
-    required String playlistId, 
-    required int trackIndex, 
-    required String token 
-  }) async {
-    final request = VoteRequest(rangeStart: trackIndex);
-    final response = await _api.voteForTrack(playlistId, token, request);
-    return response;
-  }
+  Future<VoteResponse> voteForTrack({required String playlistId, required int trackIndex, required String token}) async => 
+    await _api.voteForTrack(playlistId, token, VoteRequest(rangeStart: trackIndex));
 }
 
 class VotingProvider extends BaseProvider {
@@ -34,19 +27,13 @@ class VotingProvider extends BaseProvider {
   final Map<int, int> _trackPoints = {};
   Map<int, int> get trackPoints => Map.unmodifiable(_trackPoints);
 
-  VoteStats? getTrackVotesByIndex(int index) {
-    final trackKey = 'track_$index';
-    return _trackVotes[trackKey];
-  }
+  VoteStats? getTrackVotesByIndex(int index) => _trackVotes['track_$index'];
 
   void updateTrackPoints(int index, int points) {
     AppLogger.debug('Updating track $index points to $points', 'VotingProvider');
     _trackPoints[index] = points;
-    final trackKey = 'track_$index';
-    _trackVotes[trackKey] = VoteStats(
-      totalVotes: points,
-      upvotes: points,
-      downvotes: 0,
+    _trackVotes['track_$index'] = VoteStats(
+      totalVotes: points, upvotes: points, downvotes: 0,
       userHasVoted: _hasUserVotedForPlaylist,
       userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
       voteScore: points.toDouble(),
@@ -61,11 +48,8 @@ class VotingProvider extends BaseProvider {
     for (int i = 0; i < tracks.length; i++) {
       final points = tracks[i].points;
       _trackPoints[i] = points;
-      final trackKey = 'track_$i';
-      _trackVotes[trackKey] = VoteStats(
-        totalVotes: points,
-        upvotes: points,
-        downvotes: 0,
+      _trackVotes['track_$i'] = VoteStats(
+        totalVotes: points, upvotes: points, downvotes: 0,
         userHasVoted: _hasUserVotedForPlaylist,
         userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
         voteScore: points.toDouble(),
@@ -85,18 +69,10 @@ class VotingProvider extends BaseProvider {
     AppLogger.debug('Updating voting eligibility for playlist license: ${playlist.licenseType}', 'VotingProvider');
     
     switch (playlist.licenseType) {
-      case 'open':
-        setVotingPermission(true);
-        break;
-      case 'invite_only':
-        AppLogger.debug('Invite-only playlist detected - voting eligibility depends on backend invitation status', 'VotingProvider');
-        break;
-      case 'location_time':
-        AppLogger.debug('Location/time restricted playlist detected - voting eligibility depends on backend validation', 'VotingProvider');
-        break;
-      default:
-        AppLogger.warning('Unknown license type: ${playlist.licenseType}', 'VotingProvider');
-        setVotingPermission(false);
+      case 'open': setVotingPermission(true); break;
+      case 'invite_only': AppLogger.debug('Invite-only playlist detected - voting eligibility depends on backend invitation status', 'VotingProvider'); break;
+      case 'location_time': AppLogger.debug('Location/time restricted playlist detected - voting eligibility depends on backend validation', 'VotingProvider'); break;
+      default: AppLogger.warning('Unknown license type: ${playlist.licenseType}', 'VotingProvider'); setVotingPermission(false);
     }
   }
 
@@ -170,8 +146,7 @@ class VotingProvider extends BaseProvider {
         }
       }
       
-      bool isNotInvitedError = errorString.contains('not invited') || 
-                               (responseDetail != null && responseDetail.contains('not invited'));
+      bool isNotInvitedError = errorString.contains('not invited') || (responseDetail != null && responseDetail.contains('not invited'));
       
       AppLogger.debug('[VoteForTrackByIndex] Error analysis: errorString="$errorString", responseDetail="$responseDetail", isNotInvitedError=$isNotInvitedError', 'VotingProvider');
       
@@ -180,27 +155,17 @@ class VotingProvider extends BaseProvider {
         AppLogger.debug('[VoteForTrackByIndex] Not invited error detected - checking if user is playlist owner', 'VotingProvider');
         AppLogger.debug('[VoteForTrackByIndex] Owner check: playlistOwnerId="$playlistOwnerId", currentUsername="$currentUsername", equal=${playlistOwnerId == currentUsername}', 'VotingProvider');
         
-        if (playlistOwnerId != null && playlistOwnerId.isNotEmpty && 
-            currentUsername != null && currentUsername.isNotEmpty && 
-            currentUserId != null && currentUserId.isNotEmpty &&
-            playlistOwnerId == currentUsername) {
+        if (playlistOwnerId != null && playlistOwnerId.isNotEmpty && currentUsername != null && currentUsername.isNotEmpty && 
+            currentUserId != null && currentUserId.isNotEmpty && playlistOwnerId == currentUsername) {
           
           AppLogger.info('[VoteForTrackByIndex] Playlist owner not invited to own playlist - auto-inviting and retrying vote', 'VotingProvider');
           
           try {
             final apiService = getIt<ApiService>();
-            await apiService.inviteUserToPlaylist(
-              playlistId,
-              token,
-              InviteUserRequest(userId: currentUserId)
-            );
+            await apiService.inviteUserToPlaylist(playlistId, token, InviteUserRequest(userId: currentUserId));
             AppLogger.info('[VoteForTrackByIndex] Successfully auto-invited playlist owner', 'VotingProvider');
             
-            final retryResponse = await _votingService.voteForTrack(
-              playlistId: playlistId,
-              trackIndex: trackIndex,
-              token: token
-            );
+            final retryResponse = await _votingService.voteForTrack(playlistId: playlistId, trackIndex: trackIndex, token: token);
             
             _hasUserVotedForPlaylist = true;
             
@@ -235,24 +200,19 @@ class VotingProvider extends BaseProvider {
         AppLogger.warning('Backend confirmed user already voted', 'VotingProvider');
         setError('You have already voted for this playlist');
       } else if (errorString.contains('not allowed at this time') || errorString.contains('time window')) {
-        setError('Voting is not allowed at this time');
-        _canVote = false;
+        setError('Voting is not allowed at this time'); _canVote = false;
         AppLogger.warning('Voting outside allowed time window', 'VotingProvider');
       } else if (errorString.contains('not within') || errorString.contains('voting area')) {
-        setError('You are not within the allowed voting area');
-        _canVote = false;
+        setError('You are not within the allowed voting area'); _canVote = false;
         AppLogger.warning('User outside allowed voting area', 'VotingProvider');
       } else if (errorString.contains('location is missing')) {
-        setError('Location is required for voting');
-        _canVote = false;
+        setError('Location is required for voting'); _canVote = false;
         AppLogger.warning('User location missing for location-based voting', 'VotingProvider');
       } else if (errorString.contains('time window not configured') || errorString.contains('location settings not configured')) {
-        setError('Playlist voting settings not configured properly');
-        _canVote = false;
+        setError('Playlist voting settings not configured properly'); _canVote = false;
         AppLogger.error('Playlist license settings incomplete', 'VotingProvider');
       } else if (errorString.contains('not allowed') || errorString.contains('permission')) {
-        setError('Voting not permitted');
-        _canVote = false;
+        setError('Voting not permitted'); _canVote = false;
         AppLogger.warning('Backend rejected vote due to permissions/license', 'VotingProvider');
       } else if (errorString.contains('invalid track')) {
         setError('Invalid track selection');
@@ -279,9 +239,7 @@ class VotingProvider extends BaseProvider {
             final points = track['points'] as int? ?? 0;
             _trackPoints[j] = points;
             _trackVotes[trackKey] = VoteStats(
-              totalVotes: points,
-              upvotes: points,
-              downvotes: 0,
+              totalVotes: points, upvotes: points, downvotes: 0,
               userHasVoted: _hasUserVotedForPlaylist,
               userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
               voteScore: points.toDouble(),
@@ -289,9 +247,7 @@ class VotingProvider extends BaseProvider {
             AppLogger.debug('Updated track $j: $points points, voted: $_hasUserVotedForPlaylist', 'VotingProvider');
           } else {
             _trackVotes[trackKey] = VoteStats(
-              totalVotes: 0,
-              upvotes: 0,
-              downvotes: 0,
+              totalVotes: 0, upvotes: 0, downvotes: 0,
               userHasVoted: _hasUserVotedForPlaylist,
               userVoteValue: _hasUserVotedForPlaylist ? 1 : null,
               voteScore: 0.0,

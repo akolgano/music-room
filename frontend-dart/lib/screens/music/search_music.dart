@@ -593,9 +593,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> with UserAct
         }
         if (previewUrl?.isNotEmpty == true) {
           await _playerService.playTrack(track, previewUrl!);
-          _showMessage('Playing preview of "${track.name}"', isError: false);
-        } else {
-          _showMessage('No preview available for this track');
         }
       },
       errorMessage: 'Failed to play preview',
