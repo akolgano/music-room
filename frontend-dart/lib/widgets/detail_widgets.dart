@@ -127,6 +127,7 @@ class PlaylistDetailWidgets {
     required VoidCallback onPlayAll,
     required VoidCallback onPlayRandom,
     VoidCallback? onAddRandomTrack,
+    bool hasTracks = true,
   }) {
     return Card(
       color: Theme.of(context).colorScheme.surface,
@@ -140,7 +141,7 @@ class PlaylistDetailWidgets {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: onPlayAll,
+                    onPressed: hasTracks ? onPlayAll : null,
                     icon: const Icon(Icons.play_arrow),
                     label: const Text('Play All'),
                     style: ThemeUtils.getPrimaryButtonStyle(context),
@@ -149,7 +150,7 @@ class PlaylistDetailWidgets {
                 SizedBox(width: MusicAppResponsive.getSpacing(context)),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: onPlayRandom,
+                    onPressed: hasTracks ? onPlayRandom : null,
                     icon: const Icon(Icons.casino),
                     label: const Text('Random'),
                     style: ThemeUtils.getSecondaryButtonStyle(context),
