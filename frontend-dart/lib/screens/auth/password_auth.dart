@@ -7,19 +7,27 @@ import '../../widgets/app_widgets.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
-
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  var _isLoading = false;
+  var _isLoading = false, _isGetEmail = true, _isGetOtp = false;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _otpController = TextEditingController();
-  var _isGetEmail = true;
-  var _isGetOtp = false;
+
+  Widget _buildButton(String text, VoidCallback onPressed, Color color) => ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: color,
+      foregroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+    ),
+    child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -39,44 +47,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (!isLandscape) ...[
-                      const SizedBox(height: 20),
-                      const Icon(Icons.music_note, size: 80, color: AppTheme.primary),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Music Room',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                    ],
-                    if (isLandscape) ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.music_note,
-                            size: 60,
-                            color: AppTheme.primary,
-                          ),
-                          SizedBox(width: 20),
-                          Text(
-                            'Music Room',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                    isLandscape ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.music_note, size: 60, color: AppTheme.primary),
+                        SizedBox(width: 20),
+                        Text('Music Room', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2)),
+                      ],
+                    ) : Column(children: const [
+                      SizedBox(height: 20),
+                      Icon(Icons.music_note, size: 80, color: AppTheme.primary),
+                      SizedBox(height: 20),
+                      Text('Music Room', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2)),
+                      SizedBox(height: 40),
+                    ]),
+                    if (isLandscape) const SizedBox(height: 20),
                     Card(
                       color: AppTheme.surface,
                       elevation: 8,
@@ -93,11 +78,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             children: [
                               Text(
                                 _isGetEmail ? 'Forgot Password' : 'Reset Password',
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 24),
@@ -109,15 +90,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   labelText: 'Email',
                                   prefixIcon: Icons.email,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter an email';
-                                    }
-                                    if (value.trim() != value) {
-                                      return 'Email cannot have leading or trailing spaces';
-                                    }
-                                    if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value)) {
-                                      return 'Enter a valid email address';
-                                    }
+                                    if (value == null || value.isEmpty) return 'Please enter an email';
+                                    if (value.trim() != value) return 'Email cannot have leading or trailing spaces';
+                                    if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value)) return 'Enter a valid email address';
                                     return null;
                                   },
                                 ),
@@ -129,15 +104,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   labelText: 'OTP Code',
                                   prefixIcon: Icons.lock,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter OTP';
-                                    }
-                                    if (value.trim() != value) {
-                                      return 'OTP cannot have leading or trailing spaces';
-                                    }
-                                    if (!RegExp(r'^\d{6}$').hasMatch(value)) {
-                                      return 'OTP must be exactly 6 digits';
-                                    }
+                                    if (value == null || value.isEmpty) return 'Please enter OTP';
+                                    if (value.trim() != value) return 'OTP cannot have leading or trailing spaces';
+                                    if (!RegExp(r'^\d{6}$').hasMatch(value)) return 'OTP must be exactly 6 digits';
                                     return null;
                                   },
                                 ),
@@ -157,54 +126,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ],
 
                               const SizedBox(height: 24),
-
-                              if (_isLoading)
-                                const Center(
-                                  child: CircularProgressIndicator(color: AppTheme.primary),
-                                )
-                              else
-                                ElevatedButton(
-                                  onPressed: _submit,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primary,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(32),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    _isGetEmail ? 'Send OTP' : 'Reset Password',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.5,
-                                    ),
-                                  ),
-                                ),
-
-                              const SizedBox(height: 24),
-
-                              if (!_isLoading)
-                                ElevatedButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.surface,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(32),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Back',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.5,
-                                    ),
-                                  ),
-                                ),
+                              _isLoading
+                                ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+                                : Column(children: [
+                                    _buildButton(_isGetEmail ? 'Send OTP' : 'Reset Password', _submit, AppTheme.primary),
+                                    const SizedBox(height: 24),
+                                    _buildButton('Back', () => Navigator.pop(context), AppTheme.surface),
+                                  ]),
                             ],
                           ),
                         ),
@@ -221,38 +149,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _submit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
     try {
       if (_isGetEmail) {
-        final success = await Provider.of<AuthProvider>(context, listen: false).sendPasswordResetEmail(
-          _emailController.text,
-        );
-
+        final success = await Provider.of<AuthProvider>(context, listen: false).sendPasswordResetEmail(_emailController.text);
         if (success && mounted) {
           AppWidgets.showSnackBar(context, "OTP sent to your email! Please enter the OTP code and your new password within 5 minutes.", backgroundColor: AppTheme.onSurface);
-          setState(() {
-            _isGetOtp = true;
-            _isGetEmail = false;
-          });
+          setState(() { _isGetOtp = true; _isGetEmail = false; });
         }
       } else if (_isGetOtp) {
         await Provider.of<AuthProvider>(context, listen: false).resetPasswordWithOtp(
-          _emailController.text,
-          _otpController.text,
-          _passwordController.text,
-        );
-
-        setState(() {
-          _isGetOtp = false;
-        });
-
+          _emailController.text, _otpController.text, _passwordController.text);
+        setState(() => _isGetOtp = false);
         if (mounted) {
           AppWidgets.showSnackBar(context, "Password changed successfully!", backgroundColor: AppTheme.onSurface);
           Navigator.pop(context);
@@ -260,14 +169,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       }
     } catch (error) {
       AppLogger.error('Error during password reset', error, null, 'ForgotPasswordScreen');
-      if (mounted) {
-        AppWidgets.showSnackBar(context, error.toString(), backgroundColor: AppTheme.error);
-      }
+      if (mounted) AppWidgets.showSnackBar(context, error.toString(), backgroundColor: AppTheme.error);
     }
-
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
   @override

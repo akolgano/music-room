@@ -7,7 +7,6 @@ import '../base_screens.dart';
 
 class SocialNetworkLinkScreen extends StatefulWidget {
   const SocialNetworkLinkScreen({super.key});
-
   @override 
   State<SocialNetworkLinkScreen> createState() => _SocialNetworkLinkScreenState();
 }
@@ -15,16 +14,27 @@ class SocialNetworkLinkScreen extends StatefulWidget {
 class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> {
   @override
   String get screenTitle => 'Link Social Network';
-
   @override
   bool get showMiniPlayer => false;
-
   @override                                                                 
   void initState() {     
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await SocialLoginUtils.initialize();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => SocialLoginUtils.initialize());
+  }
+
+  Future<void> _linkSocial(String provider, ProfileProvider profileProvider) async {
+    if (auth.token == null) return showError('Not authenticated');
+    try {
+      final success = provider == 'Google' 
+        ? await profileProvider.googleLink(auth.token)
+        : await profileProvider.facebookLink(auth.token);
+      if (success) {
+        await profileProvider.loadProfile(auth.token);
+        showSuccess('$provider account linked successfully!');
+      }
+    } catch (e) {
+      showError('Failed to link $provider account');
+    }
   }
 
   @override
@@ -42,70 +52,29 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
               builder: (context, profileProvider) {
                 return Column(
                   children: [
-                    if (profileProvider.socialType != null) ...[
-                      AppWidgets.infoBanner(
-                        title: 'Connected',
-                        message: 'Your account is linked to ${profileProvider.socialType!}',
-                        icon: Icons.check_circle,
-                        color: Colors.green,
-                      ),
-                      const SizedBox(height: 16),
-                    ] else ...[
-                      AppWidgets.infoBanner(
-                        title: 'Link Social Account',
-                        message: 'Connect your social media account for easier sign-in',
-                        icon: Icons.info,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SocialLoginButton(
-                            provider: 'Google', 
-                            onPressed: profileProvider.isLoading ? null : () async {
-                              if (auth.token == null) {
-                                showError('Not authenticated');
-                                return;
-                              }
-                              try {
-                                final success = await profileProvider.googleLink(auth.token);
-                                if (success) {
-                                  await profileProvider.loadProfile(auth.token);
-                                  showSuccess('Google account linked successfully!');
-                                }
-                              } catch (e) {
-                                showError('Failed to link Google account');
-                              }
-                            }, 
-                            isLoading: profileProvider.isLoading,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: SocialLoginButton(
-                            provider: 'Facebook', 
-                            onPressed: profileProvider.isLoading ? null : () async {
-                              if (auth.token == null) {
-                                showError('Not authenticated');
-                                return;
-                              }
-                              try {
-                                final success = await profileProvider.facebookLink(auth.token);
-                                if (success) {
-                                  await profileProvider.loadProfile(auth.token);
-                                  showSuccess('Facebook account linked successfully!');
-                                }
-                              } catch (e) {
-                                showError('Failed to link Facebook account');
-                              }
-                            },
-                            isLoading: profileProvider.isLoading,
-                          ),
-                        ),
-                      ],
+                    AppWidgets.infoBanner(
+                      title: profileProvider.socialType != null ? 'Connected' : 'Link Social Account',
+                      message: profileProvider.socialType != null 
+                        ? 'Your account is linked to ${profileProvider.socialType!}'
+                        : 'Connect your social media account for easier sign-in',
+                      icon: profileProvider.socialType != null ? Icons.check_circle : Icons.info,
+                      color: profileProvider.socialType != null ? Colors.green : null,
                     ),
-                    if (profileProvider.isLoading) ...[const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: ['Google', 'Facebook'].map((provider) => Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: provider == 'Facebook' ? 8 : 0, right: provider == 'Google' ? 8 : 0),
+                          child: SocialLoginButton(
+                            provider: provider,
+                            onPressed: profileProvider.isLoading ? null : () => _linkSocial(provider, profileProvider),
+                            isLoading: profileProvider.isLoading,
+                          ),
+                        ),
+                      )).toList(),
+                    ),
+                    if (profileProvider.isLoading) ...[
+                      const SizedBox(height: 24),
                       const CircularProgressIndicator(color: AppTheme.primary),
                     ],
                     const SizedBox(height: 24),

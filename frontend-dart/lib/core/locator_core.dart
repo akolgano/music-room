@@ -132,6 +132,9 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<VotingProvider>(() => 
       VotingProvider());
+  
+  getIt.registerLazySingleton<FriendProvider>(() => 
+      FriendProvider());
 
   getIt.registerLazySingleton<ConnectivityProvider>(() => 
       ConnectivityProvider());

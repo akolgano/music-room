@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../providers/friend_providers.dart';
+import '../../providers/music_providers.dart';
 import '../../models/api_models.dart';
 import '../base_screens.dart';
 
@@ -304,8 +305,11 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> with TickerP
         final friendProvider = getProvider<FriendProvider>();
         await friendProvider.removeFriend(auth.token!, friendId);
         await _loadFriendsData();
+        
+        final musicProvider = getProvider<MusicProvider>();
+        await musicProvider.fetchAllPlaylists(auth.token!);
       },
-      successMessage: 'Friend removed',
+      successMessage: 'Friend removed and playlists updated',
       errorMessage: 'Failed to remove friend',
     );
   }

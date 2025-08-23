@@ -186,6 +186,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 onPlayAll: _playPlaylist, 
                 onPlayRandom: _playRandomTrack,
                 onAddRandomTrack: _canEditPlaylist ? _addRandomTrack : null,
+                hasTracks: _tracks.isNotEmpty,
               ),
               SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
               _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
@@ -752,15 +753,19 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   void _showSortOptions() {
-    TrackSortBottomSheet.show(
-      context, 
-      currentSort: getProvider<MusicProvider>().currentSortOption,
-      onSortChanged: (sortOption) {
-        final musicProvider = getProvider<MusicProvider>();
-        musicProvider.setSortOption(sortOption);
-        if (mounted) {
-        }
-      },
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => TrackSortBottomSheet(
+        currentSort: getProvider<MusicProvider>().currentSortOption,
+        onSortChanged: (sortOption) {
+          final musicProvider = getProvider<MusicProvider>();
+          musicProvider.setSortOption(sortOption);
+          if (mounted) {
+          }
+        },
+      ),
     );
   }
 

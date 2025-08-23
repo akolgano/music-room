@@ -10,21 +10,14 @@ import '../providers/voting_providers.dart';
 import '../providers/auth_providers.dart';
 
 class PlaylistVotingWidgets {
-  static Widget _buildMusicNotePlaceholder() {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: const Icon(
-        Icons.music_note,
-        color: AppTheme.primary,
-        size: 24,
-      ),
-    );
-  }
+  static Widget _buildMusicNotePlaceholder() => Container(
+    width: 48, height: 48,
+    decoration: BoxDecoration(
+      color: AppTheme.primary.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: const Icon(Icons.music_note, color: AppTheme.primary, size: 24),
+  );
 
   static List<Widget> buildVotingModeHeader({
     required BuildContext context,
@@ -142,18 +135,16 @@ class PlaylistVotingWidgets {
     required ValueChanged<String> onLicenseTypeChanged,
     required Future<void> Function() onApplyVotingSettings,
     required Future<void> Function(bool) onSelectVotingDateTime,
-  }) {
-    return _CollapsibleVotingSettings(
-      isPublicVoting: isPublicVoting,
-      votingLicenseType: votingLicenseType,
-      votingStartTime: votingStartTime,
-      votingEndTime: votingEndTime,
-      onPublicVotingChanged: onPublicVotingChanged,
-      onLicenseTypeChanged: onLicenseTypeChanged,
-      onApplyVotingSettings: onApplyVotingSettings,
-      onSelectVotingDateTime: onSelectVotingDateTime,
-    );
-  }
+  }) => _CollapsibleVotingSettings(
+    isPublicVoting: isPublicVoting,
+    votingLicenseType: votingLicenseType,
+    votingStartTime: votingStartTime,
+    votingEndTime: votingEndTime,
+    onPublicVotingChanged: onPublicVotingChanged,
+    onLicenseTypeChanged: onLicenseTypeChanged,
+    onApplyVotingSettings: onApplyVotingSettings,
+    onSelectVotingDateTime: onSelectVotingDateTime,
+  );
 
   static Widget _buildVotingLicenseSettings({
     required BuildContext context,
@@ -174,36 +165,20 @@ class PlaylistVotingWidgets {
           ),
         ),
         const SizedBox(height: 6),
-        ListTile(
-          title: const Text('Open Voting'),
-          subtitle: const Text('Anyone can vote'),
+        ...[
+          ('open', 'Open Voting', 'Anyone can vote'),
+          ('invite_only', 'Invite Only', 'Only invited users can vote'),
+          ('location_time', 'Location & Time Restricted', 'Vote only at specific location and time'),
+        ].map((e) => ListTile(
+          title: Text(e.$2),
+          subtitle: Text(e.$3),
           leading: Radio<String>(
-            value: 'open',
+            value: e.$1,
             groupValue: votingLicenseType,
-            onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
+            onChanged: (v) => v != null ? onLicenseTypeChanged(v) : null,
           ),
-          onTap: () => onLicenseTypeChanged('open'),
-        ),
-        ListTile(
-          title: const Text('Invite Only'),
-          subtitle: const Text('Only invited users can vote'),
-          leading: Radio<String>(
-            value: 'invite_only',
-            groupValue: votingLicenseType,
-            onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
-          ),
-          onTap: () => onLicenseTypeChanged('invite_only'),
-        ),
-        ListTile(
-          title: const Text('Location & Time Restricted'),
-          subtitle: const Text('Vote only at specific location and time'),
-          leading: Radio<String>(
-            value: 'location_time',
-            groupValue: votingLicenseType,
-            onChanged: (value) => value != null ? onLicenseTypeChanged(value) : null,
-          ),
-          onTap: () => onLicenseTypeChanged('location_time'),
-        ),
+          onTap: () => onLicenseTypeChanged(e.$1),
+        )),
         if (votingLicenseType == 'location_time') _buildVotingTimeSettings(
           context: context,
           votingStartTime: votingStartTime,
@@ -368,33 +343,15 @@ class PlaylistVotingWidgets {
     );
   }
 
-  static Widget _buildEmptyVotingState(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Icon(
-            Icons.music_note,
-            size: 48,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'No tracks to vote on',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Add tracks to start collaborative voting!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  static Widget _buildEmptyVotingState(BuildContext context) => Center(
+    child: Column(children: [
+      Icon(Icons.music_note, size: 48, color: Colors.grey[400]),
+      const SizedBox(height: 12),
+      Text('No tracks to vote on', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.grey[600])),
+      const SizedBox(height: 6),
+      Text('Add tracks to start collaborative voting!', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[500])),
+    ]),
+  );
 
   static Widget _buildVotingTracksList({
     required BuildContext context,
@@ -403,22 +360,20 @@ class PlaylistVotingWidgets {
     required VoidCallback onLoadData,
     String? playlistOwnerId,
     bool isEvent = false,
-  }) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: tracks.length,
-      itemBuilder: (context, index) => _buildVotingTrackItem(
-        context: context,
-        playlistTrack: tracks[index],
-        index: index,
-        playlistId: playlistId,
-        onLoadData: onLoadData,
-        playlistOwnerId: playlistOwnerId,
-        isEvent: isEvent,
-      ),
-    );
-  }
+  }) => ListView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: tracks.length,
+    itemBuilder: (context, index) => _buildVotingTrackItem(
+      context: context,
+      playlistTrack: tracks[index],
+      index: index,
+      playlistId: playlistId,
+      onLoadData: onLoadData,
+      playlistOwnerId: playlistOwnerId,
+      isEvent: isEvent,
+    ),
+  );
 
   static Widget _buildVotingTrackItem({
     required BuildContext context,
@@ -543,29 +498,22 @@ class PlaylistVotingWidgets {
     required BuildContext context,
     required VoidCallback onSuggestTrackForVoting,
     required PlaylistVotingInfo? votingInfo,
-  }) {
-    final canSuggest = votingInfo?.canVote ?? true;
-    
-    return AppWidgets.primaryButton(
-      context: context,
-      text: 'Suggest Track for Voting',
-      icon: Icons.add,
-      onPressed: canSuggest ? onSuggestTrackForVoting : null,
-      isLoading: false,
-    );
-  }
+  }) => AppWidgets.primaryButton(
+    context: context,
+    text: 'Suggest Track for Voting',
+    icon: Icons.add,
+    onPressed: (votingInfo?.canVote ?? true) ? onSuggestTrackForVoting : null,
+    isLoading: false,
+  );
 }
 
 class TrackVotingControls extends StatelessWidget {
-  final String playlistId;
-  final String trackId;
+  final String playlistId, trackId;
   final int trackIndex;
-  final bool isCompact;
+  final bool isCompact, isEvent;
   final VoteStats stats;
   final VoidCallback? onVoteSubmitted;
   final String? playlistOwnerId;
-  final bool isEvent;
-
   const TrackVotingControls({
     super.key,
     required this.playlistId,
@@ -580,51 +528,17 @@ class TrackVotingControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isCompact) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(
-              Icons.thumb_up,
-              color: stats.userHasVoted ? Colors.grey : AppTheme.primary,
-              size: 18,
-            ),
-            onPressed: stats.userHasVoted ? null : () => _handleVote(context),
-            padding: const EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-          ),
-          if (isEvent)
-            Text(
-              '${stats.totalVotes}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[700],
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-        ],
-      );
-    }
-
-    return Column(
-      children: [
-        IconButton(
-          icon: Icon(
-            Icons.thumb_up,
-            color: stats.userHasVoted ? Colors.grey : AppTheme.primary,
-          ),
-          onPressed: stats.userHasVoted ? null : () => _handleVote(context),
-        ),
-        if (isEvent)
-          Text(
-            '${stats.totalVotes}',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[700],
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-      ],
+    final icon = Icon(Icons.thumb_up, color: stats.userHasVoted ? Colors.grey : AppTheme.primary, size: isCompact ? 18 : null);
+    final button = IconButton(
+      icon: icon,
+      onPressed: stats.userHasVoted ? null : () => _handleVote(context),
+      padding: isCompact ? const EdgeInsets.all(4) : null,
+      constraints: isCompact ? const BoxConstraints(minWidth: 30, minHeight: 30) : null,
     );
+    final text = isEvent ? Text('${stats.totalVotes}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700], fontWeight: FontWeight.bold)) : null;
+    return isCompact 
+      ? Row(mainAxisSize: MainAxisSize.min, children: [button, if (text != null) text])
+      : Column(children: [button, if (text != null) text]);
   }
 
   Future<void> _handleVote(BuildContext context) async {
@@ -670,13 +584,11 @@ class TrackVotingControls extends StatelessWidget {
 class _CollapsibleVotingSettings extends StatefulWidget {
   final bool isPublicVoting;
   final String votingLicenseType;
-  final DateTime? votingStartTime;
-  final DateTime? votingEndTime;
+  final DateTime? votingStartTime, votingEndTime;
   final ValueChanged<bool> onPublicVotingChanged;
   final ValueChanged<String> onLicenseTypeChanged;
   final Future<void> Function() onApplyVotingSettings;
   final Future<void> Function(bool) onSelectVotingDateTime;
-
   const _CollapsibleVotingSettings({
     required this.isPublicVoting,
     required this.votingLicenseType,
@@ -718,10 +630,7 @@ class _CollapsibleVotingSettingsState extends State<_CollapsibleVotingSettings> 
                 color: Colors.grey[600],
               ),
             ),
-            trailing: Icon(
-              _isExpanded ? Icons.expand_less : Icons.expand_more,
-              color: AppTheme.primary,
-            ),
+            trailing: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more, color: AppTheme.primary),
             onTap: () => setState(() => _isExpanded = !_isExpanded),
           ),
           if (_isExpanded) ...[

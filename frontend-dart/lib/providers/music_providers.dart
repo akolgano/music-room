@@ -1,6 +1,7 @@
 import '../core/provider_core.dart';
 import '../core/locator_core.dart';
 import '../core/navigation_core.dart';
+import '../core/logging_core.dart';
 import '../services/music_services.dart';
 import '../services/cache_services.dart';
 import '../services/api_services.dart';
@@ -8,6 +9,8 @@ import '../services/auth_services.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import '../models/sort_models.dart';
+import 'friend_providers.dart';
+import 'auth_providers.dart';
 
 class MusicProvider extends BaseProvider {
   final MusicService _musicService = getIt<MusicService>();
@@ -76,10 +79,44 @@ class MusicProvider extends BaseProvider {
         
         final allPlaylists = <String, Playlist>{};
         
+        Set<String> friendIds = {};
+        try {
+          if (getIt.isRegistered<FriendProvider>()) {
+            final friendProvider = getIt<FriendProvider>();
+            await friendProvider.fetchFriends(token);
+            friendIds = friendProvider.friends.map((f) => f.id).toSet();
+          }
+        } catch (e) {
+          AppLogger.debug('Could not fetch friends for filtering: $e', 'MusicProvider');
+        }
+
+        String? currentUserId;
+        try {
+          if (getIt.isRegistered<AuthProvider>()) {
+            final authProvider = getIt<AuthProvider>();
+            currentUserId = authProvider.currentUser?.id;
+          }
+        } catch (e) {
+          AppLogger.debug('Could not get current user ID: $e', 'MusicProvider');
+        }
+        
         try {
           final userPlaylists = await _musicService.getUserPlaylists(token);
           for (final playlist in userPlaylists) {
-            allPlaylists[playlist.id] = playlist;
+            // Keep playlist if:
+            // 1. It's created by the current user, OR
+            // 2. It's public, OR  
+            // 3. It's private but created by a current friend
+            final isOwnPlaylist = playlist.creator == currentUserId;
+            final isFromFriend = friendIds.contains(playlist.creator);
+            
+            final shouldKeep = isOwnPlaylist || playlist.isPublic || isFromFriend;
+            
+            if (shouldKeep) {
+              allPlaylists[playlist.id] = playlist;
+            } else {
+              AppLogger.debug('Filtering out private playlist "${playlist.name}" from ex-friend/non-friend ${playlist.creator}', 'MusicProvider');
+            }
           }
         } catch (e) {
           AppLogger.error('Failed to fetch user playlists', e, null, 'MusicProvider');
@@ -89,7 +126,16 @@ class MusicProvider extends BaseProvider {
           final publicPlaylists = await _musicService.getPublicPlaylists(token);
           for (final playlist in publicPlaylists) {
             if (!allPlaylists.containsKey(playlist.id)) {
-              allPlaylists[playlist.id] = playlist;
+              final isOwnPlaylist = playlist.creator == currentUserId;
+              final isFromFriend = friendIds.contains(playlist.creator);
+              
+              final shouldKeep = isOwnPlaylist || playlist.isPublic || isFromFriend;
+              
+              if (shouldKeep) {
+                allPlaylists[playlist.id] = playlist;
+              } else {
+                AppLogger.debug('Filtering out private playlist "${playlist.name}" from ex-friend/non-friend ${playlist.creator}', 'MusicProvider');
+              }
             }
           }
         } catch (e) {
@@ -99,7 +145,16 @@ class MusicProvider extends BaseProvider {
         try {
           final userEvents = await _musicService.getSavedEvents(token);
           for (final event in userEvents) {
-            allPlaylists[event.id] = event;
+            final isOwnEvent = event.creator == currentUserId;
+            final isFromFriend = friendIds.contains(event.creator);
+            
+            final shouldKeep = isOwnEvent || event.isPublic || isFromFriend;
+            
+            if (shouldKeep) {
+              allPlaylists[event.id] = event;
+            } else {
+              AppLogger.debug('Filtering out private event "${event.name}" from ex-friend/non-friend ${event.creator}', 'MusicProvider');
+            }
           }
         } catch (e) {
           AppLogger.error('Failed to fetch user events', e, null, 'MusicProvider');
@@ -109,7 +164,16 @@ class MusicProvider extends BaseProvider {
           final publicEvents = await _musicService.getPublicEvents(token);
           for (final event in publicEvents) {
             if (!allPlaylists.containsKey(event.id)) {
-              allPlaylists[event.id] = event;
+              final isOwnEvent = event.creator == currentUserId;
+              final isFromFriend = friendIds.contains(event.creator);
+              
+              final shouldKeep = isOwnEvent || event.isPublic || isFromFriend;
+              
+              if (shouldKeep) {
+                allPlaylists[event.id] = event;
+              } else {
+                AppLogger.debug('Filtering out private event "${event.name}" from ex-friend/non-friend ${event.creator}', 'MusicProvider');
+              }
             }
           }
         } catch (e) {

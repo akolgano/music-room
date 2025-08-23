@@ -537,7 +537,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         _playlist = await musicProvider.getPlaylistDetails(widget.playlistId!, auth.token!);
         
         if (_playlist != null) {
-          // Check if user is the owner
           if (_playlist!.creator != auth.username) {
             showError('You do not have permission to edit this playlist');
             navigateTo(AppRoutes.playlistDetail, arguments: widget.playlistId);
@@ -608,7 +607,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   Future<void> _saveChanges() async {
     if (!_isEditMode) return;
     
-    // Verify user is still the owner
     if (_playlist != null && _playlist!.creator != auth.username) {
       showError('You do not have permission to edit this playlist');
       navigateTo(AppRoutes.playlistDetail, arguments: widget.playlistId);

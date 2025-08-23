@@ -345,7 +345,18 @@ class ProfileProvider extends BaseProvider {
             if (friendInfo != null) _friendInfo = friendInfo;
             if (musicPreferencesIds != null) {
               _musicPreferenceIds = musicPreferencesIds;
-              _updateMusicPreferenceNames(availableMusicPreferences);
+              if (availableMusicPreferences != null) {
+                _musicPreferences = musicPreferencesIds
+                    .map((id) {
+                      final preference = availableMusicPreferences.firstWhere(
+                        (pref) => pref['id'] == id,
+                        orElse: () => <String, dynamic>{},
+                      );
+                      return preference['name']?.toString() ?? 'Unknown';
+                    })
+                    .where((name) => name != 'Unknown')
+                    .toList();
+              }
             }
           } else {
             if (kDebugMode) {
@@ -388,7 +399,18 @@ class ProfileProvider extends BaseProvider {
               if (friendInfo != null) _friendInfo = friendInfo;
               if (musicPreferencesIds != null) {
                 _musicPreferenceIds = musicPreferencesIds;
-                _updateMusicPreferenceNames(availableMusicPreferences);
+                if (availableMusicPreferences != null) {
+                  _musicPreferences = musicPreferencesIds
+                      .map((id) {
+                        final preference = availableMusicPreferences.firstWhere(
+                          (pref) => pref['id'] == id,
+                          orElse: () => <String, dynamic>{},
+                        );
+                        return preference['name']?.toString() ?? 'Unknown';
+                      })
+                      .where((name) => name != 'Unknown')
+                      .toList();
+                }
               }
             } finally {
               if (await tempFile.exists()) {
@@ -442,28 +464,24 @@ class ProfileProvider extends BaseProvider {
           if (friendInfo != null) _friendInfo = friendInfo;
           if (musicPreferencesIds != null) {
             _musicPreferenceIds = musicPreferencesIds;
-            _updateMusicPreferenceNames(availableMusicPreferences);
+            if (availableMusicPreferences != null) {
+              _musicPreferences = musicPreferencesIds
+                  .map((id) {
+                    final preference = availableMusicPreferences.firstWhere(
+                      (pref) => pref['id'] == id,
+                      orElse: () => <String, dynamic>{},
+                    );
+                    return preference['name']?.toString() ?? 'Unknown';
+                  })
+                  .where((name) => name != 'Unknown')
+                  .toList();
+            }
           }
         }
       },
       successMessage: 'Profile updated successfully',
       errorMessage: 'Failed to update profile',
     );
-  }
-
-  void _updateMusicPreferenceNames(List<Map<String, dynamic>>? availablePreferences) {
-    if (availablePreferences == null || _musicPreferenceIds == null) return;
-    
-    _musicPreferences = _musicPreferenceIds!
-        .map((id) {
-          final preference = availablePreferences.firstWhere(
-            (pref) => pref['id'] == id,
-            orElse: () => <String, dynamic>{},
-          );
-          return preference['name']?.toString() ?? 'Unknown';
-        })
-        .where((name) => name != 'Unknown')
-        .toList();
   }
 
   Future<bool> updateVisibility(String? token, {
