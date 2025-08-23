@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:async';
+import 'package:geolocator/geolocator.dart';
 import '../../providers/music_providers.dart';
+import '../../providers/profile_providers.dart';
 import '../../core/locator_core.dart';
 import '../../services/api_services.dart';
 import '../../services/websocket_services.dart';
@@ -11,6 +13,7 @@ import '../../core/theme_core.dart';
 import '../../core/constants_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/location_widgets.dart';
 import '../base_screens.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
@@ -25,10 +28,15 @@ class PlaylistEditorScreen extends StatefulWidget {
 class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _locationController = TextEditingController();
   bool _isPublic = true;
   bool _isEvent = false;
   bool _isLoading = false;
   String _licenseType = 'open';
+  TimeOfDay? _voteStartTime;
+  TimeOfDay? _voteEndTime;
+  double? _latitude;
+  double? _longitude;
   
   Playlist? _playlist;
   List<Track> _playlistTracks = [];
@@ -159,9 +167,9 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             icon: _isEvent ? Icons.event : Icons.playlist_play,
           ),
           const SizedBox(height: 16),
-          if (!_isPublic && _isEvent && _isOwner) _buildEditPermissionSettings(),
-          if (!_isPublic && _isEvent && _isOwner) const SizedBox(height: 24),
-          if (_isPublic) const SizedBox(height: 8),
+          if (_isEvent && _isOwner) _buildEventVotingSettings(),
+          if (_isEvent && _isOwner) const SizedBox(height: 24),
+          if (!_isEvent && _isPublic) const SizedBox(height: 8),
           AppWidgets.primaryButton(
             context: context,
             text: _isEditMode ? 'Save Changes' : 'Create Playlist',
@@ -174,15 +182,17 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     );
   }
 
-  Widget _buildEditPermissionSettings() {
+  Widget _buildEventVotingSettings() {
     return AppTheme.buildFormCard(
-      title: 'Edit Permissions',
-      titleIcon: Icons.edit,
+      title: 'Voting Permissions',
+      titleIcon: Icons.how_to_vote,
       child: Column(
         children: [
           ListTile(
-            title: const Text('Open Editing'),
-            subtitle: const Text('Anyone with access can edit'),
+            title: const Text('Open Voting'),
+            subtitle: Text(_isPublic 
+              ? 'Anyone can vote on this event'
+              : 'All invited users can vote on this event'),
             leading: Radio<String>(
               value: 'open',
               groupValue: _licenseType,
@@ -191,17 +201,153 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             onTap: () => setState(() => _licenseType = 'open'),
           ),
           ListTile(
-            title: const Text('Invite Only'),
-            subtitle: const Text('Only invited collaborators can edit'),
+            title: const Text('Location & Time Restricted'),
+            subtitle: Text(_isPublic
+              ? 'Vote only at specific location and time'
+              : 'Invited users can vote only at specific location and time'),
             leading: Radio<String>(
-              value: 'invite_only',
+              value: 'location_time',
               groupValue: _licenseType,
               onChanged: (value) => setState(() => _licenseType = value!),
             ),
-            onTap: () => setState(() => _licenseType = 'invite_only'),
+            onTap: () => setState(() => _licenseType = 'location_time'),
           ),
+          if (_licenseType == 'location_time') ...[
+            const SizedBox(height: 16),
+            _buildLocationTimeFields(),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildLocationTimeFields() {
+    return Column(
+      children: [
+        const Divider(height: 1),
+        const SizedBox(height: 16),
+        const Text(
+          'Location Settings (Optional)',
+          style: TextStyle(
+            color: AppTheme.primary,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Leave blank to allow voting from anywhere. If filled, all fields are required.',
+          style: TextStyle(color: Colors.white70, fontSize: 12),
+        ),
+        const SizedBox(height: 16),
+        LocationAutocompleteField(
+          initialValue: _locationController.text,
+          labelText: 'Event Location',
+          hintText: 'Enter location or use profile location',
+          onLocationSelected: (location) {
+            setState(() {
+              _locationController.text = location;
+            });
+          },
+          showAutoDetectButton: true,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _useProfileLocation,
+                icon: const Icon(Icons.person_pin, size: 18),
+                label: const Text('Use Profile Location'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.surface,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _getCurrentLocation,
+                icon: const Icon(Icons.my_location, size: 18),
+                label: const Text('Current Location'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.surface,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Time Window (Optional)',
+          style: TextStyle(
+            color: AppTheme.primary,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTimeSelector(
+                'Start Time',
+                _voteStartTime,
+                (time) => setState(() => _voteStartTime = time),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildTimeSelector(
+                'End Time',
+                _voteEndTime,
+                (time) => setState(() => _voteEndTime = time),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeSelector(
+    String label,
+    TimeOfDay? selectedTime,
+    Function(TimeOfDay) onTimeSelected,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () => _selectTime(onTimeSelected),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.access_time, color: Colors.white70, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  selectedTime?.format(context) ?? 'Not Set',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -652,8 +798,38 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         );
       }
       
-      if (hasLicenseTypeChanged) {
-        final licenseRequest = PlaylistLicenseRequest(licenseType: _licenseType);
+      if (hasLicenseTypeChanged || (_isEvent && _licenseType == 'location_time')) {
+        String? voteStartTimeStr;
+        String? voteEndTimeStr;
+        
+        if (_licenseType == 'location_time' && (_locationController.text.isNotEmpty || _voteStartTime != null || _voteEndTime != null)) {
+          if (_locationController.text.isNotEmpty && (_voteStartTime == null || _voteEndTime == null)) {
+            showError('When setting location, both start and end times are required');
+            return;
+          }
+          if ((_voteStartTime != null || _voteEndTime != null) && _locationController.text.isEmpty) {
+            showError('When setting time window, location is required');
+            return;
+          }
+          
+          if (_voteStartTime != null) {
+            voteStartTimeStr = '${_voteStartTime!.hour.toString().padLeft(2, '0')}:'
+                '${_voteStartTime!.minute.toString().padLeft(2, '0')}:00';
+          }
+          if (_voteEndTime != null) {
+            voteEndTimeStr = '${_voteEndTime!.hour.toString().padLeft(2, '0')}:'
+                '${_voteEndTime!.minute.toString().padLeft(2, '0')}:00';
+          }
+        }
+        
+        final licenseRequest = PlaylistLicenseRequest(
+          licenseType: _licenseType,
+          voteStartTime: voteStartTimeStr,
+          voteEndTime: voteEndTimeStr,
+          latitude: _latitude,
+          longitude: _longitude,
+          allowedRadiusMeters: _licenseType == 'location_time' ? 100 : null,
+        );
         await apiService.updatePlaylistLicense(widget.playlistId!, auth.token!, licenseRequest);
       }
       
@@ -878,10 +1054,95 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     );
   }
 
+  Future<void> _selectTime(Function(TimeOfDay) onTimeSelected) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppTheme.primary,
+              surface: AppTheme.surface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      onTimeSelected(picked);
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          showError('Location permissions are denied');
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        showError('Location permissions are permanently denied. Please enable location access in settings.');
+        return;
+      }
+
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        showError('Location services are disabled. Please enable location services.');
+        return;
+      }
+
+      showInfo('Getting your current location...');
+      
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+      
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        _locationController.text = 'Current Location (${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)})';
+      });
+      
+      showSuccess('Location set to current position');
+    } catch (e) {
+      showError('Failed to get current location: ${e.toString()}');
+    }
+  }
+
+  Future<void> _useProfileLocation() async {
+    try {
+      final profileProvider = getProvider<ProfileProvider>();
+      final profileLocation = profileProvider.location;
+      
+      if (profileLocation == null || profileLocation.isEmpty) {
+        showError('No location set in your profile');
+        return;
+      }
+      
+      setState(() {
+        _locationController.text = profileLocation;
+      });
+      
+      showSuccess('Using profile location: $profileLocation');
+    } catch (e) {
+      showError('Failed to get profile location');
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _locationController.dispose();
     _wsSubscription?.cancel();
     super.dispose();
   }

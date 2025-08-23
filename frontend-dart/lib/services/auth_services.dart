@@ -59,7 +59,12 @@ class AuthService {
     try {
       _currentToken = _storage.get<String>('auth_token');
       final userData = _storage.getMap('current_user');
-      if (userData != null) { _currentUser = User.fromJson(userData); }
+      if (userData != null) { 
+        _currentUser = User.fromJson(userData); 
+      } else if (_currentToken != null) {
+        AppLogger.debug('Token found but no user data, fetching user info...', 'AuthService');
+        await refreshCurrentUser();
+      }
     } catch (e) {
       if (kDebugMode) {
         AppLogger.error('Error loading stored auth: ${e.toString()}', null, null, 'AuthService');
@@ -78,6 +83,23 @@ class AuthService {
   Future<void> logout() async {
     await _performServerLogout();
     await _clearAuth();
+  }
+
+  Future<void> refreshCurrentUser() async {
+    if (_currentToken == null) return;
+    
+    try {
+      final userResponse = await _api.getUser(_currentToken!);
+      _currentUser = User(
+        id: userResponse.id,
+        username: userResponse.username,
+        email: userResponse.email
+      );
+      await _storage.set('current_user', _currentUser!.toJson());
+      AppLogger.debug('Refreshed current user: ${_currentUser?.username}', 'AuthService');
+    } catch (e) {
+      AppLogger.error('Failed to refresh current user', e, null, 'AuthService');
+    }
   }
 
   Future<void> _performServerLogout() async {

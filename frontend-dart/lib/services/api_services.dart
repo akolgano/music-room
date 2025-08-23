@@ -49,9 +49,7 @@ class ApiService {
     bool debug = false,
   }) async {
     
-    final getIt = GetIt.instance;
-    final context = getIt<NotificationService>().navigatorKey.currentContext;
-    _rateMonitor.recordApiCall(context);
+    _rateMonitor.recordApiCall();
     
     final options = token != null ? Options(headers: {'Authorization': 'Token $token'}) : null;
     dynamic processedData;
