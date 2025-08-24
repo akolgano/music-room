@@ -212,7 +212,18 @@ def get_playlist_info(request, playlist_id):
 
         playlist_data = []
         tracks = playlist.tracks.all()
-        track_list = [{'name': pt.track.name, 'artist': pt.track.artist} for pt in tracks]
+        track_list = [{
+            'track_id': pt.track.id,
+            'playlist_track_id': pt.id,
+            'deezer_track_id': pt.track.deezer_track_id,
+            'name': pt.track.name,
+            'artist': pt.track.artist,
+            'position': pt.position,
+            'points': pt.points,
+            'url': pt.track.url,
+            'picture_small': pt.track.picture_small,
+            'picture_medium': pt.track.picture_medium,
+        } for pt in tracks]
 
         shared_users = [{'id': user.id, 'username': user.username} for user in playlist.users_saved.all()]
         
@@ -280,7 +291,9 @@ def add_track(request, playlist_id):
                     'name': track_data['title'],
                     'artist': track_data['artist']['name'],
                     'album': track_data['album']['title'],
-                    'url': track_data['link']
+                    'url': track_data['link'],
+                    'picture_small': track_data['artist'].get('picture_small'),
+                    'picture_medium': track_data['artist'].get('picture_medium'),
                 }
             )
         if PlaylistTrack.objects.filter(playlist=playlist, track=track).exists():
