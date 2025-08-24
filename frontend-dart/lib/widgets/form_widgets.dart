@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../core/constants_core.dart';
@@ -46,7 +45,7 @@ class FormWidgets {
               ? IconButton(
                   icon: Icon(
                     obscureText ? Icons.visibility : Icons.visibility_off,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   onPressed: () => setState(() => obscureText = !obscureText),
                 )
@@ -166,7 +165,7 @@ class FormWidgets {
           ? IconButton(
               icon: Icon(
                 Icons.clear,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               onPressed: () {
                 controller.clear();
@@ -317,7 +316,7 @@ class FormWidgets {
     String? Function(T?)? validator,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       items: items,
       onChanged: onChanged,
       validator: validator,
@@ -371,7 +370,7 @@ class FormWidgets {
                 label: labelBuilder?.call(value) ?? value.toStringAsFixed(0),
                 onChanged: onChanged,
                 activeColor: AppTheme.primary,
-                inactiveColor: AppTheme.primary.withOpacity(0.3),
+                inactiveColor: AppTheme.primary.withValues(alpha: 0.3),
               ),
             ),
             Text(
@@ -406,7 +405,7 @@ class FormWidgets {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
       child: ListTile(
@@ -424,7 +423,7 @@ class FormWidgets {
         trailing: Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppTheme.primary,
+          activeThumbColor: AppTheme.primary,
         ),
       ),
     );
@@ -443,7 +442,7 @@ class FormWidgets {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
       child: CheckboxListTile(
@@ -483,25 +482,29 @@ class FormWidgets {
           ),
         ),
         SizedBox(height: _responsive(8.0, type: 'h')),
-        ...options.map((option) => RadioListTile<T>(
-              title: Text(
-                option.label,
-                style: ThemeUtils.getBodyStyle(context),
-              ),
-              subtitle: option.subtitle != null
-                  ? Text(
-                      option.subtitle!,
-                      style: ThemeUtils.getCaptionStyle(context),
-                    )
-                  : null,
-              value: option.value,
-              groupValue: groupValue,
-              onChanged: onChanged,
-              activeColor: AppTheme.primary,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: _responsive(4.0, type: 'w'),
-              ),
-            )),
+        RadioGroup<T>(
+          groupValue: groupValue,
+          onChanged: onChanged,
+          child: Column(
+            children: options.map((option) => RadioListTile<T>(
+                  title: Text(
+                    option.label,
+                    style: ThemeUtils.getBodyStyle(context),
+                  ),
+                  subtitle: option.subtitle != null
+                      ? Text(
+                          option.subtitle!,
+                          style: ThemeUtils.getCaptionStyle(context),
+                        )
+                      : null,
+                  value: option.value,
+                  activeColor: AppTheme.primary,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: _responsive(4.0, type: 'w'),
+                  ),
+                )).toList(),
+          ),
+        ),
       ],
     );
   }
@@ -633,7 +636,7 @@ class FormDecorationPresets {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
         ),
       ),
       focusedBorder: OutlineInputBorder(
@@ -677,7 +680,7 @@ class FormDecorationPresets {
       ),
       enabledBorder: UnderlineInputBorder(
         borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
         ),
       ),
       focusedBorder: UnderlineInputBorder(

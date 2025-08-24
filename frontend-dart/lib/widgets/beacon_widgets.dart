@@ -171,19 +171,23 @@ class _BeaconConnectionDialogState extends State<BeaconConnectionDialog> {
       title: Text(widget.title, style: const TextStyle(color: Colors.white)),
       content: Consumer<BeaconProvider>(
         builder: (context, beaconProvider, child) {
-          if (_isConnecting) return const Column(mainAxisSize: MainAxisSize.min, children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Connecting to beacon...', style: TextStyle(color: Colors.white)),
-          ]);
+          if (_isConnecting) {
+            return const Column(mainAxisSize: MainAxisSize.min, children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Connecting to beacon...', style: TextStyle(color: Colors.white)),
+            ]);
+          }
 
           final nearbyBeacons = beaconProvider.nearbyBeacons;
-          if (nearbyBeacons.isEmpty) return const Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.bluetooth_disabled, color: Colors.grey, size: 48),
-            SizedBox(height: 16),
-            Text('No beacons found nearby.\nMake sure Bluetooth is enabled and beacons are in range.',
-              textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
-          ]);
+          if (nearbyBeacons.isEmpty) {
+            return const Column(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.bluetooth_disabled, color: Colors.grey, size: 48),
+              SizedBox(height: 16),
+              Text('No beacons found nearby.\nMake sure Bluetooth is enabled and beacons are in range.',
+                textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            ]);
+          }
 
           return Column(mainAxisSize: MainAxisSize.min, children: [
             const Text('Select a beacon to connect:', style: TextStyle(color: Colors.white)),

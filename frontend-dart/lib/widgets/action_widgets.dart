@@ -260,7 +260,7 @@ class _SpeedDialActionButtonState extends State<SpeedDialActionButton>
                         borderRadius: BorderRadius.circular(4.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4.0,
                             offset: const Offset(0, 2),
                           ),
@@ -349,7 +349,7 @@ class ActionMenuWidget extends StatelessWidget {
                   size: 20.0,
                   color: item.enabled
                       ? (item.isDestructive ? Colors.red : null)
-                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                 ),
                 const SizedBox(width: 12.0),
               ],
@@ -359,7 +359,7 @@ class ActionMenuWidget extends StatelessWidget {
                   style: TextStyle(
                     color: item.enabled
                         ? (item.isDestructive ? Colors.red : null)
-                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
                 ),
               ),

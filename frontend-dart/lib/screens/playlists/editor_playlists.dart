@@ -186,37 +186,37 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     return AppTheme.buildFormCard(
       title: 'Voting Permissions',
       titleIcon: Icons.how_to_vote,
-      child: Column(
-        children: [
-          ListTile(
-            title: const Text('Open Voting'),
-            subtitle: Text(_isPublic 
-              ? 'Anyone can vote on this event'
-              : 'All invited users can vote on this event'),
-            leading: Radio<String>(
-              value: 'open',
-              groupValue: _licenseType,
-              onChanged: (value) => setState(() => _licenseType = value!),
+      child: RadioGroup<String>(
+        groupValue: _licenseType,
+        onChanged: (value) => setState(() => _licenseType = value!),
+        child: Column(
+          children: [
+            ListTile(
+              title: const Text('Open Voting'),
+              subtitle: Text(_isPublic 
+                ? 'Anyone can vote on this event'
+                : 'All invited users can vote on this event'),
+              leading: Radio<String>(
+                value: 'open',
+              ),
+              onTap: () => setState(() => _licenseType = 'open'),
             ),
-            onTap: () => setState(() => _licenseType = 'open'),
-          ),
-          ListTile(
-            title: const Text('Location & Time Restricted'),
-            subtitle: Text(_isPublic
-              ? 'Vote only at specific location and time'
-              : 'Invited users can vote only at specific location and time'),
-            leading: Radio<String>(
-              value: 'location_time',
-              groupValue: _licenseType,
-              onChanged: (value) => setState(() => _licenseType = value!),
+            ListTile(
+              title: const Text('Location & Time Restricted'),
+              subtitle: Text(_isPublic
+                ? 'Vote only at specific location and time'
+                : 'Invited users can vote only at specific location and time'),
+              leading: Radio<String>(
+                value: 'location_time',
+              ),
+              onTap: () => setState(() => _licenseType = 'location_time'),
             ),
-            onTap: () => setState(() => _licenseType = 'location_time'),
-          ),
-          if (_licenseType == 'location_time') ...[
-            const SizedBox(height: 16),
-            _buildLocationTimeFields(),
+            if (_licenseType == 'location_time') ...[
+              const SizedBox(height: 16),
+              _buildLocationTimeFields(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
