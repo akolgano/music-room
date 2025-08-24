@@ -41,23 +41,16 @@ class SocialLoginButton extends StatelessWidget {
 
   const SocialLoginButton({super.key, required this.provider, this.onPressed, this.isLoading = false});
 
+  static final _providerConfig = {
+    'google': (Icons.g_mobiledata, Colors.red),
+    'facebook': (Icons.facebook, const Color(0xFF1877F2)),
+  };
+
   @override
   Widget build(BuildContext context) {
-    late IconData icon;
-    late Color color;
-    
-    switch (provider.toLowerCase()) {
-      case 'google':
-        icon = Icons.g_mobiledata;
-        color = Colors.red;
-        break;
-      case 'facebook':
-        icon = Icons.facebook;
-        color = const Color(0xFF1877F2);
-        break;
-      default:
-        throw ArgumentError('Unsupported social login provider: $provider');
-    }
+    final config = _providerConfig[provider.toLowerCase()];
+    if (config == null) throw ArgumentError('Unsupported social login provider: $provider');
+    final (icon, color) = config;
 
     return SizedBox(
       width: double.infinity,
@@ -94,55 +87,6 @@ class SocialLoginButton extends StatelessWidget {
             ),
       ),
     );
-  }
-}
-
-class SocialSharingUtils {
-
-  static Future<void> shareToSocial({
-    required String platform,
-    required String content,
-    String? url,
-    String? imageUrl,
-  }) async {
-    AppLogger.debug('Sharing to $platform: $content', 'SocialSharingUtils');
-    
-    switch (platform.toLowerCase()) {
-      case 'facebook':
-        await _shareToFacebook(content, url, imageUrl);
-        break;
-      case 'twitter':
-        await _shareToTwitter(content, url);
-        break;
-      case 'instagram':
-        await _shareToInstagram(imageUrl ?? '');
-        break;
-      case 'whatsapp':
-        await _shareToWhatsApp(content, url);
-        break;
-      default:
-        throw ArgumentError('Unsupported platform: $platform');
-    }
-  }
-  
-  static Future<void> _shareToFacebook(String content, String? url, String? imageUrl) async {
-
-    AppLogger.debug('Facebook share: $content', 'SocialSharingUtils');
-  }
-  
-  static Future<void> _shareToTwitter(String content, String? url) async {
-
-    AppLogger.debug('Twitter share: $content', 'SocialSharingUtils');
-  }
-  
-  static Future<void> _shareToInstagram(String imageUrl) async {
-
-    AppLogger.debug('Instagram share: $imageUrl', 'SocialSharingUtils');
-  }
-  
-  static Future<void> _shareToWhatsApp(String content, String? url) async {
-
-    AppLogger.debug('WhatsApp share: $content', 'SocialSharingUtils');
   }
 }
 
@@ -183,12 +127,7 @@ class SocialProfileWidget extends StatelessWidget {
               backgroundImage: avatarUrl != null
                   ? NetworkImage(avatarUrl!)
                   : null,
-              child: avatarUrl == null
-                  ? Text(
-                      username.isNotEmpty ? username[0].toUpperCase() : '?',
-                      style: const TextStyle(fontSize: 32),
-                    )
-                  : null,
+              child: avatarUrl == null ? Text(username.isEmpty ? '?' : username[0].toUpperCase(), style: const TextStyle(fontSize: 32)) : null,
             ),
             const SizedBox(height: 12),
             Text(
@@ -249,63 +188,6 @@ class SocialProfileWidget extends StatelessWidget {
   }
 }
 
-class SocialShareButton extends StatelessWidget {
-  final String platform;
-  final String content;
-  final String? url;
-  final VoidCallback? onShare;
-  
-  const SocialShareButton({
-    super.key,
-    required this.platform,
-    required this.content,
-    this.url,
-    this.onShare,
-  });
-  
-  @override
-  Widget build(BuildContext context) {
-    IconData icon;
-    Color color;
-    
-    switch (platform.toLowerCase()) {
-      case 'facebook':
-        icon = Icons.facebook;
-        color = const Color(0xFF1877F2);
-        break;
-      case 'twitter':
-        icon = Icons.share;
-        color = const Color(0xFF1DA1F2);
-        break;
-      case 'whatsapp':
-        icon = Icons.phone;
-        color = const Color(0xFF25D366);
-        break;
-      case 'instagram':
-        icon = Icons.camera_alt;
-        color = const Color(0xFFE4405F);
-        break;
-      default:
-        icon = Icons.share;
-        color = AppTheme.primary;
-    }
-    
-    return IconButton(
-      icon: Icon(icon),
-      color: color,
-      onPressed: () async {
-        await SocialSharingUtils.shareToSocial(
-          platform: platform,
-          content: content,
-          url: url,
-        );
-        onShare?.call();
-      },
-      tooltip: 'Share on $platform',
-    );
-  }
-}
-
 class SocialActivityItem extends StatelessWidget {
   final String username;
   final String? avatarUrl;
@@ -340,9 +222,7 @@ class SocialActivityItem extends StatelessWidget {
                   backgroundImage: avatarUrl != null
                       ? NetworkImage(avatarUrl!)
                       : null,
-                  child: avatarUrl == null
-                      ? Text(username.isNotEmpty ? username[0].toUpperCase() : '?')
-                      : null,
+                  child: avatarUrl == null ? Text(username.isEmpty ? '?' : username[0].toUpperCase()) : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -398,20 +278,12 @@ class SocialActivityItem extends StatelessWidget {
   }
   
   String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-    
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
-    }
+    final d = DateTime.now().difference(timestamp);
+    if (d.inMinutes < 1) return 'Just now';
+    if (d.inHours < 1) return '${d.inMinutes}m ago';
+    if (d.inDays < 1) return '${d.inHours}h ago';
+    if (d.inDays < 7) return '${d.inDays}d ago';
+    return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
   }
 }
 

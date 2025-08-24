@@ -15,7 +15,8 @@ RUN groupadd -r flutter && useradd -r -g flutter flutter -m
 
 RUN mkdir -p /home/flutter && chown -R flutter:flutter /home/flutter
 
-RUN git clone https://github.com/flutter/flutter.git /flutter \
+# Use a specific Flutter version for consistency
+RUN git clone -b stable https://github.com/flutter/flutter.git /flutter \
     && chown -R flutter:flutter /flutter
 
 RUN mkdir -p /app && chown -R flutter:flutter /app
@@ -26,11 +27,15 @@ ENV PATH="/flutter/bin:${PATH}"
 RUN flutter channel stable
 RUN flutter upgrade
 RUN flutter config --enable-web
+# Pre-download Flutter dependencies
+RUN flutter precache --web
 
 WORKDIR /app
-COPY --chown=flutter:flutter . .
+COPY --chown=flutter:flutter pubspec.* ./
 RUN flutter pub get
-RUN flutter build web
+COPY --chown=flutter:flutter . .
+# Build with verbose output and skip tree shaking for better compatibility
+RUN flutter build web --release --verbose --no-tree-shake-icons
 
 FROM nginx:alpine
 

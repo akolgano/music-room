@@ -1,9 +1,44 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
 import 'apimonitor_services.dart';
+
+class _ResponseLimitingInterceptor extends Interceptor {
+  static const int maxLines = 60;
+  
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    // Log limited response
+    _logLimitedResponse(response);
+    handler.next(response);
+  }
+  
+  void _logLimitedResponse(Response response) {
+    final uri = response.requestOptions.uri;
+    print('✅ Response [${response.statusCode}] ${uri.path}');
+    
+    if (response.data != null) {
+      String responseStr;
+      try {
+        responseStr = const JsonEncoder.withIndent('  ').convert(response.data);
+      } catch (e) {
+        responseStr = response.data.toString();
+      }
+      
+      final lines = responseStr.split('\n');
+      if (lines.length <= maxLines) {
+        print(responseStr);
+      } else {
+        final truncated = lines.take(maxLines).join('\n');
+        print(truncated);
+        print('... Response truncated (${lines.length - maxLines} more lines) ...');
+      }
+    }
+  }
+}
 
 class ApiService {
   final Dio _dio;
@@ -26,8 +61,9 @@ class ApiService {
           sendTimeout: const Duration(seconds: 10))
       ..interceptors.addAll([
         PrettyDioLogger(
-            requestHeader: true, requestBody: true, responseBody: true, 
+            requestHeader: true, requestBody: true, responseBody: false, 
             responseHeader: false, error: true, compact: true, maxWidth: 120),
+        _ResponseLimitingInterceptor(),
         InterceptorsWrapper(onRequest: (options, handler) => handler.next(options), onError: (error, handler) {
           handler.next(error);
         })
