@@ -35,8 +35,8 @@ def search_tracks(request):
                         'artist': track_data['artist']['name'],
                         'album': track_data['album']['title'],
                         'url': track_data['link'],
-                        'picture_small': track_data['album']['picture_small'],
-                        'picture_medium': track_data['album']['picture_medium'],
+                        'picture_small': track_data['album']['cover_small'],
+                        'picture_medium': track_data['album']['cover_medium'],
 
                     }
                 )
@@ -62,8 +62,8 @@ def add_track_from_deezer(request, track_id):
         album=track_data['album']['title'],
         deezer_track_id=track_data['id'],
         url=track_data['link'],
-        picture_small=track_data['album']['picture_small'],
-        picture_medium=track_data['album']['picture_medium'],
+        picture_small=track_data['album']['cover_small'],
+        picture_medium=track_data['album']['cover_medium'],
 
     )
 
