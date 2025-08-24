@@ -199,9 +199,10 @@ class AppBuilder {
     
     if (args == null) {
       AppLogger.warning('No arguments provided for playlist detail', 'AppBuilder');
-      return _AutoRedirectWidget(
+      return const _AutoRedirectWidget(
         message: 'No playlist ID provided',
         redirectRoute: '/',
+        delay: Duration(seconds: 2),
       );
     }
 

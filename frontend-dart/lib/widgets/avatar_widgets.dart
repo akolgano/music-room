@@ -291,7 +291,7 @@ class ProfileAvatarWidget extends StatelessWidget {
                                 _editAvatar(context, e.key == 0 ? 'gallery' : e.key == 1 ? 'random_cat' : 'remove');
                               },
                             ),
-                          ]).expand((w) => w).toList(),
+                          ]).expand((w) => w),
                         ],
                       ),
                     ),

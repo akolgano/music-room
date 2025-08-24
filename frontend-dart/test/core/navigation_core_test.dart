@@ -16,7 +16,6 @@ void main() {
     });
 
     testWidgets('should observe navigation events', (WidgetTester tester) async {
-      
       await tester.pumpWidget(
         MaterialApp(
           navigatorObservers: [observer],
@@ -89,6 +88,63 @@ void main() {
       expect(() => observer.didPop(mockRoute, null), returnsNormally);
       expect(() => observer.didReplace(newRoute: mockRoute, oldRoute: null), returnsNormally);
       expect(() => observer.didRemove(mockRoute, null), returnsNormally);
+    });
+
+    test('should handle named routes with parameters', () {
+      final routeWithArgs = MaterialPageRoute(
+        builder: (context) => Container(),
+        settings: const RouteSettings(name: '/test', arguments: {'id': 123}),
+      );
+      expect(() => observer.didPush(routeWithArgs, null), returnsNormally);
+    });
+
+    testWidgets('should handle nested navigation', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [observer],
+          home: const Scaffold(body: Text('Home')),
+          routes: {
+            '/first': (context) => const Scaffold(body: Text('First')),
+            '/second': (context) => const Scaffold(body: Text('Second')),
+            '/third': (context) => const Scaffold(body: Text('Third')),
+          },
+        ),
+      );
+
+      final context = tester.element(find.text('Home'));
+      Navigator.pushNamed(context, '/first');
+      await tester.pumpAndSettle();
+      
+      Navigator.pushNamed(context, '/second');
+      await tester.pumpAndSettle();
+      
+      Navigator.pushNamed(context, '/third');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Third'), findsOneWidget);
+    });
+
+    testWidgets('should handle route replacement', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [observer],
+          home: const Scaffold(body: Text('Home')),
+          routes: {
+            '/first': (context) => const Scaffold(body: Text('First')),
+            '/second': (context) => const Scaffold(body: Text('Second')),
+          },
+        ),
+      );
+
+      final context = tester.element(find.text('Home'));
+      Navigator.pushNamed(context, '/first');
+      await tester.pumpAndSettle();
+
+      Navigator.pushReplacementNamed(context, '/second');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Second'), findsOneWidget);
+      expect(find.text('First'), findsNothing);
     });
   });
 }

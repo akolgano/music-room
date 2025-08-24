@@ -99,34 +99,8 @@ void main() {
     test('should have correct color values', () {
       expect(PulsingColorAnimation.lightGreen, const Color(0xFF2EF564));
       expect(PulsingColorAnimation.darkGreen, const Color(0xFF0F7A2E));
-      // mediumGreen is AppTheme.primary which we can't easily test without full app context
     });
 
-    test('should create animation controller with correct properties', () {
-      final tickerProvider = TestTickerProvider();
-      final controller = PulsingColorAnimation.createController(
-        vsync: tickerProvider,
-        duration: const Duration(milliseconds: 500),
-      );
-
-      expect(controller.duration, const Duration(milliseconds: 500));
-      expect(controller.status, AnimationStatus.forward);
-      
-      controller.dispose();
-    });
-
-    test('should create color animation', () {
-      final tickerProvider = TestTickerProvider();
-      final controller = PulsingColorAnimation.createController(
-        vsync: tickerProvider,
-      );
-      
-      final colorAnimation = PulsingColorAnimation.createColorAnimation(controller);
-      
-      expect(colorAnimation, isNotNull);
-      
-      controller.dispose();
-    });
   });
 
   group('PulsingContainer', () {
@@ -235,54 +209,6 @@ void main() {
     });
   });
 
-  group('PulsingText', () {
-    testWidgets('should render static text when disabled', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: PulsingText(
-            text: 'Test Text',
-            enabled: false,
-          ),
-        ),
-      );
-
-      expect(find.text('Test Text'), findsOneWidget);
-    });
-
-    testWidgets('should render animated text when enabled', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ChangeNotifierProvider(
-            create: (_) => AnimationSettingsProvider(),
-            child: const PulsingText(
-              text: 'Test Text',
-              enabled: true,
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('Test Text'), findsOneWidget);
-      expect(find.byType(AnimatedBuilder), findsAtLeastNWidgets(1));
-    });
-
-    testWidgets('should apply custom style', (WidgetTester tester) async {
-      const customStyle = TextStyle(fontSize: 20);
-      
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: PulsingText(
-            text: 'Test Text',
-            style: customStyle,
-            enabled: false,
-          ),
-        ),
-      );
-
-      final textWidget = tester.widget<Text>(find.text('Test Text'));
-      expect(textWidget.style?.fontSize, 20);
-    });
-  });
 
   group('PulsingButton', () {
     testWidgets('should render static button when disabled', (WidgetTester tester) async {

@@ -165,19 +165,23 @@ class PlaylistVotingWidgets {
           ),
         ),
         const SizedBox(height: 6),
-        ...[
-          ('open', 'Open Voting', 'Anyone can vote'),
-          ('location_time', 'Location & Time Restricted', 'Vote only at specific location and time'),
-        ].map((e) => ListTile(
-          title: Text(e.$2),
-          subtitle: Text(e.$3),
-          leading: Radio<String>(
-            value: e.$1,
-            groupValue: votingLicenseType,
-            onChanged: (v) => v != null ? onLicenseTypeChanged(v) : null,
+        RadioGroup<String>(
+          groupValue: votingLicenseType,
+          onChanged: (v) => v != null ? onLicenseTypeChanged(v) : null,
+          child: Column(
+            children: [
+              ('open', 'Open Voting', 'Anyone can vote'),
+              ('location_time', 'Location & Time Restricted', 'Vote only at specific location and time'),
+            ].map((e) => ListTile(
+              title: Text(e.$2),
+              subtitle: Text(e.$3),
+              leading: Radio<String>(
+                value: e.$1,
+              ),
+              onTap: () => onLicenseTypeChanged(e.$1),
+            )).toList(),
           ),
-          onTap: () => onLicenseTypeChanged(e.$1),
-        )),
+        ),
         if (votingLicenseType == 'location_time') _buildVotingTimeSettings(
           context: context,
           votingStartTime: votingStartTime,
