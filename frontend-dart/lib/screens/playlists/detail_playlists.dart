@@ -181,12 +181,15 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
               ),
               PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks, isEvent: _playlist?.isEvent ?? false),
               SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
-              PlaylistDetailWidgets.buildThemedPlaylistActions(
-                context, 
-                onPlayAll: _playPlaylist, 
-                onPlayRandom: _playRandomTrack,
-                onAddRandomTrack: _canEditPlaylist ? _addRandomTrack : null,
-                hasTracks: _tracks.isNotEmpty,
+              KeyedSubtree(
+                key: ValueKey('playlist_actions_${_tracks.length}_${_tracks.hashCode}'),
+                child: PlaylistDetailWidgets.buildThemedPlaylistActions(
+                  context, 
+                  onPlayAll: _tracks.isNotEmpty ? _playPlaylist : () {}, 
+                  onPlayRandom: _tracks.isNotEmpty ? _playRandomTrack : () {},
+                  onAddRandomTrack: _canEditPlaylist ? _addRandomTrack : null,
+                  hasTracks: _tracks.isNotEmpty,
+                ),
               ),
               SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
               _isVotingMode ? PlaylistVotingWidgets.buildVotingTracksSection(
@@ -353,7 +356,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       playlistOwnerId: _playlist?.creator,
       isEvent: _playlist?.isEvent ?? false,
       onVoteSuccess: _isVotingMode ? () {
-        // Toggle out of voting mode after successful vote
         setState(() => _isVotingMode = false);
       } : null,
       key: key,
@@ -496,10 +498,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       final musicProvider = _getMountedProvider<MusicProvider>();
       if (musicProvider != null) {
         musicProvider.setPlaylistTracks(tracksWithDetails);
+        musicProvider.notifyListeners();
       }
       
       final playerService = _getMountedProvider<MusicPlayerService>();
       if (playerService != null && playerService.playlistId == widget.playlistId) {
+        playerService.clearFailedTracks();
         playerService.updatePlaylist(tracksWithDetails);
       }
       
@@ -547,7 +551,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           await _refreshTracksFromProvider();
           
           if (_votingProvider != null) {
-            // Reset voting state for the new/reloaded playlist
             _votingProvider!.clearVotingData();
             _votingProvider!.setVotingPermission(true);
             _votingProvider!.setHasUserVotedForPlaylist(false);
@@ -636,6 +639,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     
     setState(() => _tracks = updatedTracks);
     musicProvider.updateTrackInPlaylist(trackId, trackDetails);
+    musicProvider.notifyListeners();
   }
 
   Future<void> _startBatchTrackDetailsFetch() async {
@@ -671,6 +675,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     
     try {
       final playerService = getProvider<MusicPlayerService>();
+      playerService.clearFailedTracks();
       await playerService.setPlaylistAndPlay(
         playlist: sortedTracks,
         startIndex: 0,
@@ -696,6 +701,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       final randomIndex = random.nextInt(sortedTracks.length);
       
       final playerService = getProvider<MusicPlayerService>();
+      playerService.clearFailedTracks();
       await playerService.setPlaylistAndPlay(
         playlist: sortedTracks,
         startIndex: randomIndex,
