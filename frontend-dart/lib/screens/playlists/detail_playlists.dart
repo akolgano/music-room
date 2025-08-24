@@ -703,13 +703,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         authToken: auth.token,
       );
       
-      final track = sortedTracks[randomIndex].track;
-      if (track != null) {
-        showSuccess('Playing random track: ${track.name}');
-      }
     } catch (e) {
       AppLogger.error('Failed to play random track', e, null, 'PlaylistDetailScreen');
-      showError('Failed to play random track');
     }
   }
 

@@ -94,25 +94,23 @@ class ProfileUpdateRequest {
     this.musicPreferencesVisibility,
   });
 
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    if (avatar != null) { json['avatar'] = avatar; }
-    if (mimeType != null) { json['mime_type'] = mimeType; }
-    if (name != null) { json['name'] = name; }
-    if (location != null) { json['location'] = location; }
-    if (bio != null) { json['bio'] = bio; }
-    if (phone != null) { json['phone'] = phone; }
-    if (friendInfo != null) { json['friend_info'] = friendInfo; }
-    if (musicPreferencesIds != null) { json['music_preferences_ids'] = musicPreferencesIds; }
-    if (avatarVisibility != null) { json['avatar_visibility'] = avatarVisibility; }
-    if (nameVisibility != null) { json['name_visibility'] = nameVisibility; }
-    if (locationVisibility != null) { json['location_visibility'] = locationVisibility; }
-    if (bioVisibility != null) { json['bio_visibility'] = bioVisibility; }
-    if (phoneVisibility != null) { json['phone_visibility'] = phoneVisibility; }
-    if (friendInfoVisibility != null) { json['friend_info_visibility'] = friendInfoVisibility; }
-    if (musicPreferencesVisibility != null) { json['music_preferences_visibility'] = musicPreferencesVisibility; }
-    return json;
-  }
+  Map<String, dynamic> toJson() => {
+    if (avatar != null) 'avatar': avatar,
+    if (mimeType != null) 'mime_type': mimeType,
+    if (name != null) 'name': name,
+    if (location != null) 'location': location,
+    if (bio != null) 'bio': bio,
+    if (phone != null) 'phone': phone,
+    if (friendInfo != null) 'friend_info': friendInfo,
+    if (musicPreferencesIds != null) 'music_preferences_ids': musicPreferencesIds,
+    if (avatarVisibility != null) 'avatar_visibility': avatarVisibility,
+    if (nameVisibility != null) 'name_visibility': nameVisibility,
+    if (locationVisibility != null) 'location_visibility': locationVisibility,
+    if (bioVisibility != null) 'bio_visibility': bioVisibility,
+    if (phoneVisibility != null) 'phone_visibility': phoneVisibility,
+    if (friendInfoVisibility != null) 'friend_info_visibility': friendInfoVisibility,
+    if (musicPreferencesVisibility != null) 'music_preferences_visibility': musicPreferencesVisibility,
+  };
 }
 
 class ProfileResponse {
@@ -279,8 +277,7 @@ class ProfileByIdResponse {
 }
 
 class AvatarUpdateRequest {
-  final String? avatar;
-  final String? mimeType;
+  final String? avatar, mimeType;
   const AvatarUpdateRequest({this.avatar, this.mimeType});
   Map<String, dynamic> toJson() => {
     if (avatar != null) 'avatar_base64': avatar,
@@ -289,8 +286,7 @@ class AvatarUpdateRequest {
 }
 
 class PublicBasicUpdateRequest {
-  final String? gender;
-  final String? location;
+  final String? gender, location;
   const PublicBasicUpdateRequest({this.gender, this.location});
   Map<String, dynamic> toJson() => {
     if (gender != null) 'gender': gender,
@@ -301,9 +297,7 @@ class PublicBasicUpdateRequest {
 class BioUpdateRequest {
   final String? bio;
   const BioUpdateRequest({this.bio});
-  Map<String, dynamic> toJson() => {
-    if (bio != null) 'bio': bio,
-  };
+  Map<String, dynamic> toJson() => {if (bio != null) 'bio': bio};
 }
 
 class CreatePlaylistRequest {
@@ -323,11 +317,11 @@ class CreatePlaylistRequest {
     this.event = false,
   });
   
-  Map<String, dynamic> toJson() {
-    final json = { 'name': name, 'description': description, 'public': public, 'license_type': licenseType, 'event': event };
-    if (deviceUuid != null) { json['device_uuid'] = deviceUuid!; }
-    return json;
-  }
+  Map<String, dynamic> toJson() => {
+    'name': name, 'description': description, 'public': public,
+    'license_type': licenseType, 'event': event,
+    if (deviceUuid != null) 'device_uuid': deviceUuid!,
+  };
 }
 
 class UpdatePlaylistRequest {
@@ -341,13 +335,11 @@ class UpdatePlaylistRequest {
     this.isEvent,
   });
   
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    if (name != null) json['name'] = name;
-    if (description != null) json['description'] = description;
-    if (isEvent != null) json['event'] = isEvent;
-    return json;
-  }
+  Map<String, dynamic> toJson() => {
+    if (name != null) 'name': name,
+    if (description != null) 'description': description,
+    if (isEvent != null) 'event': isEvent,
+  };
 }
 
 class VisibilityRequest {
@@ -360,11 +352,10 @@ class AddTrackRequest {
   final String trackId;
   final String? deviceUuid;
   const AddTrackRequest({required this.trackId, this.deviceUuid});
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic> { 'track_id': trackId };
-    if (deviceUuid != null) { json['device_uuid'] = deviceUuid; }
-    return json;
-  }
+  Map<String, dynamic> toJson() => {
+    'track_id': trackId,
+    if (deviceUuid != null) 'device_uuid': deviceUuid,
+  };
 }
 
 class MoveTrackRequest {
@@ -721,18 +712,14 @@ class BatchLibraryAddResult {
   bool get hasPartialSuccess => successCount > 0 && failureCount > 0;
   bool get isCompleteSuccess => successCount == totalTracks && failureCount == 0;
   
-  String get summaryMessage {
-    if (isCompleteSuccess) { return 'All $totalTracks tracks added to your library successfully!'; }
-    else if (hasPartialSuccess) { return '$successCount/$totalTracks tracks added to your library'; }
-    else { return 'Failed to add tracks to your library'; }
-  }
+  String get summaryMessage => isCompleteSuccess ? 'All $totalTracks tracks added to your library successfully!'
+    : hasPartialSuccess ? '$successCount/$totalTracks tracks added to your library'
+    : 'Failed to add tracks to your library';
 
-  String get detailedMessage {
-    final parts = <String>[];
-    if (successCount > 0) { parts.add('$successCount added'); }
-    if (failureCount > 0) { parts.add('$failureCount failed'); }
-    return parts.join(', ');
-  }
+  String get detailedMessage => [
+    if (successCount > 0) '$successCount added',
+    if (failureCount > 0) '$failureCount failed',
+  ].join(', ');
 }
 
 class ActivityLogRequest {
@@ -809,17 +796,13 @@ class BatchAddResult {
   bool get hasPartialSuccess => successCount > 0 && failureCount > 0;
   bool get isCompleteSuccess => successCount == totalTracks;
   
-  String get summaryMessage {
-    if (isCompleteSuccess) { return 'All $totalTracks tracks added successfully!'; }
-    else if (hasPartialSuccess) { return '$successCount/$totalTracks tracks added successfully'; }
-    else { return 'Failed to add tracks to playlist'; }
-  }
+  String get summaryMessage => isCompleteSuccess ? 'All $totalTracks tracks added successfully!'
+    : hasPartialSuccess ? '$successCount/$totalTracks tracks added successfully'
+    : 'Failed to add tracks to playlist';
 
-  String get detailedMessage {
-    final parts = <String>[];
-    if (successCount > 0) { parts.add('$successCount added'); }
-    if (duplicateCount > 0) { parts.add('$duplicateCount duplicates'); }
-    if (failureCount > 0) { parts.add('$failureCount failed'); }
-    return parts.join(', ');
-  }
+  String get detailedMessage => [
+    if (successCount > 0) '$successCount added',
+    if (duplicateCount > 0) '$duplicateCount duplicates',
+    if (failureCount > 0) '$failureCount failed',
+  ].join(', ');
 }
