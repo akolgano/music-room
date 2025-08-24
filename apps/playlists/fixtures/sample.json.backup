@@ -1,5 +1,1225 @@
 [
   {
+    "model": "admin.logentry",
+    "pk": 1,
+    "fields": {
+      "action_time": "2025-05-25T12:57:46.695Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 8,
+      "object_id": "1",
+      "object_repr": "1",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 2,
+    "fields": {
+      "action_time": "2025-05-26T03:59:45.007Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 8,
+      "object_id": "1",
+      "object_repr": "1",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Users saved\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 3,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.505Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "1",
+      "object_repr": "PlaylistTrack object (1)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 4,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.505Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "2",
+      "object_repr": "PlaylistTrack object (2)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 5,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.505Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "3",
+      "object_repr": "PlaylistTrack object (3)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 6,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.506Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "4",
+      "object_repr": "PlaylistTrack object (4)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 7,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.506Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "5",
+      "object_repr": "PlaylistTrack object (5)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 8,
+    "fields": {
+      "action_time": "2025-07-06T06:16:37.986Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 17,
+      "object_id": "1",
+      "object_repr": "anna's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 9,
+    "fields": {
+      "action_time": "2025-07-06T06:16:45.660Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 17,
+      "object_id": "1",
+      "object_repr": "admin's Profile",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"User\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 10,
+    "fields": {
+      "action_time": "2025-07-06T06:16:55.777Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 17,
+      "object_id": "2",
+      "object_repr": "elina's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 11,
+    "fields": {
+      "action_time": "2025-07-06T06:17:05.159Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 17,
+      "object_id": "3",
+      "object_repr": "elena's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 12,
+    "fields": {
+      "action_time": "2025-07-06T06:18:18.240Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 17,
+      "object_id": "4",
+      "object_repr": "anna's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 13,
+    "fields": {
+      "action_time": "2025-07-06T06:18:54.510Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 17,
+      "object_id": "4",
+      "object_repr": "anna's Profile",
+      "action_flag": 2,
+      "change_message": "[]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 14,
+    "fields": {
+      "action_time": "2025-07-06T06:19:11.993Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 17,
+      "object_id": "4",
+      "object_repr": "anna's Profile",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Avatar\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 15,
+    "fields": {
+      "action_time": "2025-08-24T09:12:52.582Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "29",
+      "object_repr": "Already Over by Mike Shinoda",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Picture small\", \"Picture medium\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 16,
+    "fields": {
+      "action_time": "2025-08-24T09:14:00.130Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "29",
+      "object_repr": "Already Over by Mike Shinoda",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Picture small\", \"Picture medium\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 17,
+    "fields": {
+      "action_time": "2025-08-24T09:16:19.901Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "28",
+      "object_repr": "Coastline by Hollow Coves",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Picture small\", \"Picture medium\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 18,
+    "fields": {
+      "action_time": "2025-08-24T09:17:29.301Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "27",
+      "object_repr": "Viva La Vida by Coldplay",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Picture small\", \"Picture medium\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 19,
+    "fields": {
+      "action_time": "2025-08-24T09:18:26.919Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "26",
+      "object_repr": "Budapest by George Ezra",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Picture small\", \"Picture medium\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 20,
+    "fields": {
+      "action_time": "2025-08-24T09:20:00.727Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "1",
+      "object_repr": "APT. by ROS\u00c9",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Picture small\", \"Picture medium\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 21,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "25",
+      "object_repr": "APT. by First to Eleven",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 22,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "24",
+      "object_repr": "APT by Coast Contra",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 23,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "23",
+      "object_repr": "APT. (ULTRAFUNK SPED UP) by HISTED",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 24,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "22",
+      "object_repr": "APT. (Metal) by Melodicka Bros",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 25,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "21",
+      "object_repr": "APT. (Workout Version 132 BPM) by Power Music Workout",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 26,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "20",
+      "object_repr": "APT. by Kymsue",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 27,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "19",
+      "object_repr": "APT (Piano Version) by Cozy Rabbit",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 28,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "18",
+      "object_repr": "APT. by Ben Woodward",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 29,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "17",
+      "object_repr": "APT. (Techno Mix) by LUCKY DEMON",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 30,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "16",
+      "object_repr": "APT (en espa\u00f1ol) (feat. Abi Rosales) by Alej C\u00e1zares",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 31,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "15",
+      "object_repr": "APT. (Sped up Nightcore) by Kymsue",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 32,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "14",
+      "object_repr": "APT. by Sandaru Sathsara",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 33,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "13",
+      "object_repr": "APT. by Perfect Pitch",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 34,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "12",
+      "object_repr": "APT. (French Cover) by Myu-Chan",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 35,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.912Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "11",
+      "object_repr": "APT. by Charles B",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 36,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "10",
+      "object_repr": "APT. by Clay K Slider",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 37,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "9",
+      "object_repr": "Apt (Nightcore) by Neko",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 38,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "8",
+      "object_repr": "APT (Funny Indian Remix) by Vindaloo Singh",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 39,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "7",
+      "object_repr": "APT. (ULTRAFUNK) by HISTED",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 40,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "6",
+      "object_repr": "APT. by KIDZ BOP Kids",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 41,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "5",
+      "object_repr": "APT. (Cover) by BuitTunes",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 42,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "4",
+      "object_repr": "APT. by Maria Jos\u00e9 Cardoso",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 43,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "3",
+      "object_repr": "APT. (Techno) by F4st",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 44,
+    "fields": {
+      "action_time": "2025-08-24T09:20:31.913Z",
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "content_type": 12,
+      "object_id": "2",
+      "object_repr": "APT. by Bongo Cat",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 1,
+    "fields": {
+      "name": "Can add log entry",
+      "content_type": 1,
+      "codename": "add_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 2,
+    "fields": {
+      "name": "Can change log entry",
+      "content_type": 1,
+      "codename": "change_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 3,
+    "fields": {
+      "name": "Can delete log entry",
+      "content_type": 1,
+      "codename": "delete_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 4,
+    "fields": {
+      "name": "Can view log entry",
+      "content_type": 1,
+      "codename": "view_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 5,
+    "fields": {
+      "name": "Can add permission",
+      "content_type": 2,
+      "codename": "add_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 6,
+    "fields": {
+      "name": "Can change permission",
+      "content_type": 2,
+      "codename": "change_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 7,
+    "fields": {
+      "name": "Can delete permission",
+      "content_type": 2,
+      "codename": "delete_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 8,
+    "fields": {
+      "name": "Can view permission",
+      "content_type": 2,
+      "codename": "view_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 9,
+    "fields": {
+      "name": "Can add group",
+      "content_type": 3,
+      "codename": "add_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 10,
+    "fields": {
+      "name": "Can change group",
+      "content_type": 3,
+      "codename": "change_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 11,
+    "fields": {
+      "name": "Can delete group",
+      "content_type": 3,
+      "codename": "delete_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 12,
+    "fields": {
+      "name": "Can view group",
+      "content_type": 3,
+      "codename": "view_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 13,
+    "fields": {
+      "name": "Can add content type",
+      "content_type": 4,
+      "codename": "add_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 14,
+    "fields": {
+      "name": "Can change content type",
+      "content_type": 4,
+      "codename": "change_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 15,
+    "fields": {
+      "name": "Can delete content type",
+      "content_type": 4,
+      "codename": "delete_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 16,
+    "fields": {
+      "name": "Can view content type",
+      "content_type": 4,
+      "codename": "view_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 17,
+    "fields": {
+      "name": "Can add session",
+      "content_type": 5,
+      "codename": "add_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 18,
+    "fields": {
+      "name": "Can change session",
+      "content_type": 5,
+      "codename": "change_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 19,
+    "fields": {
+      "name": "Can delete session",
+      "content_type": 5,
+      "codename": "delete_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 20,
+    "fields": {
+      "name": "Can view session",
+      "content_type": 5,
+      "codename": "view_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 21,
+    "fields": {
+      "name": "Can add Token",
+      "content_type": 6,
+      "codename": "add_token"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 22,
+    "fields": {
+      "name": "Can change Token",
+      "content_type": 6,
+      "codename": "change_token"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 23,
+    "fields": {
+      "name": "Can delete Token",
+      "content_type": 6,
+      "codename": "delete_token"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 24,
+    "fields": {
+      "name": "Can view Token",
+      "content_type": 6,
+      "codename": "view_token"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 25,
+    "fields": {
+      "name": "Can add Token",
+      "content_type": 7,
+      "codename": "add_tokenproxy"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 26,
+    "fields": {
+      "name": "Can change Token",
+      "content_type": 7,
+      "codename": "change_tokenproxy"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 27,
+    "fields": {
+      "name": "Can delete Token",
+      "content_type": 7,
+      "codename": "delete_tokenproxy"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 28,
+    "fields": {
+      "name": "Can view Token",
+      "content_type": 7,
+      "codename": "view_tokenproxy"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 29,
+    "fields": {
+      "name": "Can add signup one time passcode",
+      "content_type": 8,
+      "codename": "add_signuponetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 30,
+    "fields": {
+      "name": "Can change signup one time passcode",
+      "content_type": 8,
+      "codename": "change_signuponetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 31,
+    "fields": {
+      "name": "Can delete signup one time passcode",
+      "content_type": 8,
+      "codename": "delete_signuponetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 32,
+    "fields": {
+      "name": "Can view signup one time passcode",
+      "content_type": 8,
+      "codename": "view_signuponetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 33,
+    "fields": {
+      "name": "Can add user",
+      "content_type": 9,
+      "codename": "add_customuser"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 34,
+    "fields": {
+      "name": "Can change user",
+      "content_type": 9,
+      "codename": "change_customuser"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 35,
+    "fields": {
+      "name": "Can delete user",
+      "content_type": 9,
+      "codename": "delete_customuser"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 36,
+    "fields": {
+      "name": "Can view user",
+      "content_type": 9,
+      "codename": "view_customuser"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 37,
+    "fields": {
+      "name": "Can add one time passcode",
+      "content_type": 10,
+      "codename": "add_onetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 38,
+    "fields": {
+      "name": "Can change one time passcode",
+      "content_type": 10,
+      "codename": "change_onetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 39,
+    "fields": {
+      "name": "Can delete one time passcode",
+      "content_type": 10,
+      "codename": "delete_onetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 40,
+    "fields": {
+      "name": "Can view one time passcode",
+      "content_type": 10,
+      "codename": "view_onetimepasscode"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 41,
+    "fields": {
+      "name": "Can add Friendship",
+      "content_type": 11,
+      "codename": "add_friendship"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 42,
+    "fields": {
+      "name": "Can change Friendship",
+      "content_type": 11,
+      "codename": "change_friendship"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 43,
+    "fields": {
+      "name": "Can delete Friendship",
+      "content_type": 11,
+      "codename": "delete_friendship"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 44,
+    "fields": {
+      "name": "Can view Friendship",
+      "content_type": 11,
+      "codename": "view_friendship"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 45,
+    "fields": {
+      "name": "Can add track",
+      "content_type": 12,
+      "codename": "add_track"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 46,
+    "fields": {
+      "name": "Can change track",
+      "content_type": 12,
+      "codename": "change_track"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 47,
+    "fields": {
+      "name": "Can delete track",
+      "content_type": 12,
+      "codename": "delete_track"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 48,
+    "fields": {
+      "name": "Can view track",
+      "content_type": 12,
+      "codename": "view_track"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 49,
+    "fields": {
+      "name": "Can add playlist",
+      "content_type": 13,
+      "codename": "add_playlist"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 50,
+    "fields": {
+      "name": "Can change playlist",
+      "content_type": 13,
+      "codename": "change_playlist"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 51,
+    "fields": {
+      "name": "Can delete playlist",
+      "content_type": 13,
+      "codename": "delete_playlist"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 52,
+    "fields": {
+      "name": "Can view playlist",
+      "content_type": 13,
+      "codename": "view_playlist"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 53,
+    "fields": {
+      "name": "Can add playlist track",
+      "content_type": 14,
+      "codename": "add_playlisttrack"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 54,
+    "fields": {
+      "name": "Can change playlist track",
+      "content_type": 14,
+      "codename": "change_playlisttrack"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 55,
+    "fields": {
+      "name": "Can delete playlist track",
+      "content_type": 14,
+      "codename": "delete_playlisttrack"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 56,
+    "fields": {
+      "name": "Can view playlist track",
+      "content_type": 14,
+      "codename": "view_playlisttrack"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 57,
+    "fields": {
+      "name": "Can add Social Network Account",
+      "content_type": 15,
+      "codename": "add_socialnetwork"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 58,
+    "fields": {
+      "name": "Can change Social Network Account",
+      "content_type": 15,
+      "codename": "change_socialnetwork"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 59,
+    "fields": {
+      "name": "Can delete Social Network Account",
+      "content_type": 15,
+      "codename": "delete_socialnetwork"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 60,
+    "fields": {
+      "name": "Can view Social Network Account",
+      "content_type": 15,
+      "codename": "view_socialnetwork"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 61,
+    "fields": {
+      "name": "Can add music preference",
+      "content_type": 16,
+      "codename": "add_musicpreference"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 62,
+    "fields": {
+      "name": "Can change music preference",
+      "content_type": 16,
+      "codename": "change_musicpreference"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 63,
+    "fields": {
+      "name": "Can delete music preference",
+      "content_type": 16,
+      "codename": "delete_musicpreference"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 64,
+    "fields": {
+      "name": "Can view music preference",
+      "content_type": 16,
+      "codename": "view_musicpreference"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 65,
+    "fields": {
+      "name": "Can add profile",
+      "content_type": 17,
+      "codename": "add_profile"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 66,
+    "fields": {
+      "name": "Can change profile",
+      "content_type": 17,
+      "codename": "change_profile"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 67,
+    "fields": {
+      "name": "Can delete profile",
+      "content_type": 17,
+      "codename": "delete_profile"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 68,
+    "fields": {
+      "name": "Can view profile",
+      "content_type": 17,
+      "codename": "view_profile"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 69,
+    "fields": {
+      "name": "Can add API Log",
+      "content_type": 18,
+      "codename": "add_apilogsmodel"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 70,
+    "fields": {
+      "name": "Can change API Log",
+      "content_type": 18,
+      "codename": "change_apilogsmodel"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 71,
+    "fields": {
+      "name": "Can delete API Log",
+      "content_type": 18,
+      "codename": "delete_apilogsmodel"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 72,
+    "fields": {
+      "name": "Can view API Log",
+      "content_type": 18,
+      "codename": "view_apilogsmodel"
+    }
+  },
+  {
     "model": "sessions.session",
     "pk": "5pls7oo2f6addfzzgrhvmnp375l9fekq",
     "fields": {
@@ -33,10 +1253,114 @@
   },
   {
     "model": "sessions.session",
+    "pk": "ucekstdbnjpw29dw1dyd6rp6k0ob9c09",
+    "fields": {
+      "session_data": ".eJxVjrkOwjAQRP_FNbF8rI9Q0vMN0a7XSziUSDkqxL-TSCmgnXlvNG_V4br03TrXqbuzOisq1hJTaIKAa0BQmiy-bVoPjgCQoAZ1-tUIy7MOu8sPHG6jLuOwTHfSO6KPdtbXkevrcrB_Az3O_WYXDrlmE5gwOidsAginFI14sTHkTNalWBxuL1qDyYdUXMUtM1Qgg_p8ATQwQRA:1uq6ic:1Mp_mWFn88tHNX4jeMP71Xi2H7r5ZqQ2locFkSEHK5o",
+      "expire_date": "2025-09-07T09:08:54.434Z"
+    }
+  },
+  {
+    "model": "sessions.session",
     "pk": "z9e1ciru7ohcn0pq0lcn2lpv6f7xyl5s",
     "fields": {
       "session_data": ".eJxVjDsOwyAQBe9CHSHA_JIyfc6All0ITiKQjF1FuXtsyYXdzsx7XxZgmUtYeprCSOzGJLscWQR8p7oJekF9No6tztMY-Zbw3Xb-aJQ-9709HRToZV0jGZ-8MBTBKpVJGJ3JOSvykKU13kepnEUFWsNVgBuMQ5VgZSKi9pr9_uD0N3A:1uJQ84:qmR0Ku-2mD8GPW6R-X6UaWb7wqAhxQX8zXZRlWJbijI",
       "expire_date": "2025-06-09T05:12:04.319Z"
+    }
+  },
+  {
+    "model": "authtoken.token",
+    "pk": "259a85097be0108dc1679cfeddca7e42733192f2",
+    "fields": {
+      "user": "0b167734-e903-4f52-9192-03390a2ad42f",
+      "created": "2025-05-25T12:46:53.279Z"
+    }
+  },
+  {
+    "model": "authtoken.token",
+    "pk": "53b9600a7d16d334f8e698c28b4decdf0e0fabc2",
+    "fields": {
+      "user": "8681175d-2edc-481a-b135-8bd8972b2ad3",
+      "created": "2025-05-26T05:11:12.188Z"
+    }
+  },
+  {
+    "model": "authtoken.token",
+    "pk": "92ba40f8fc36498a8ed1cc513a1ebf9dedd1b1fd",
+    "fields": {
+      "user": "524f95f7-1b77-4001-b400-d69cbc03f3fd",
+      "created": "2025-05-25T01:40:57.800Z"
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": "0b167734-e903-4f52-9192-03390a2ad42f",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$DW3pWcpFlPNkAr1i7u7mBa$tMa0E32vC7DRC9e43rxAEIclFVczJepT/C5m5khFe8w=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "elina",
+      "first_name": "",
+      "last_name": "",
+      "email": "elina@mail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-25T12:46:52.674Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": "524f95f7-1b77-4001-b400-d69cbc03f3fd",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$ZaUAHKAaPPARl4j80zqy7k$66ImAOESKzZ3eHVUTfoEevpLpUMb7Lt0zJjno0Ey+Oo=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "anna",
+      "first_name": "",
+      "last_name": "",
+      "email": "anna@mail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-25T01:40:57.328Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": "8681175d-2edc-481a-b135-8bd8972b2ad3",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$9tNPQFCfE5l1txrxTL33HE$jf8t/YQ6jyjivLLJ+Ru0hcJewtR5MXVaphu/5Jzn+eU=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "elena",
+      "first_name": "",
+      "last_name": "",
+      "email": "elena@mail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-26T05:11:11.578Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "pk": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$BREebsxANALc3aJjoDAmiM$jXGmXaQm58Gsr8J2E9dTITYCNYBoR/IbLg0002NaJSQ=",
+      "last_login": "2025-08-24T09:08:54.423Z",
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "",
+      "last_name": "",
+      "email": "test@test.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2025-05-25T01:40:41.415Z",
+      "groups": [],
+      "user_permissions": []
     }
   },
   {
@@ -47,271 +1371,9 @@
       "artist": "ROS\u00c9",
       "deezer_track_id": "3050380851",
       "album": "APT.",
-      "url": "https://www.deezer.com/track/3050380851"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 2,
-    "fields": {
-      "name": "APT.",
-      "artist": "Bongo Cat",
-      "deezer_track_id": "3150664301",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3150664301"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 3,
-    "fields": {
-      "name": "APT. (Techno)",
-      "artist": "F4st",
-      "deezer_track_id": "3147218441",
-      "album": "APT. (Techno)",
-      "url": "https://www.deezer.com/track/3147218441"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 4,
-    "fields": {
-      "name": "APT.",
-      "artist": "Maria Jos\u00e9 Cardoso",
-      "deezer_track_id": "3383541501",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3383541501"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 5,
-    "fields": {
-      "name": "APT. (Cover)",
-      "artist": "BuitTunes",
-      "deezer_track_id": "3082894831",
-      "album": "APT. (Cover)",
-      "url": "https://www.deezer.com/track/3082894831"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 6,
-    "fields": {
-      "name": "APT.",
-      "artist": "KIDZ BOP Kids",
-      "deezer_track_id": "3255203181",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3255203181"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 7,
-    "fields": {
-      "name": "APT. (ULTRAFUNK)",
-      "artist": "HISTED",
-      "deezer_track_id": "3155955261",
-      "album": "APT. (ULTRAFUNK)",
-      "url": "https://www.deezer.com/track/3155955261"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 8,
-    "fields": {
-      "name": "APT (Funny Indian Remix)",
-      "artist": "Vindaloo Singh",
-      "deezer_track_id": "3099253701",
-      "album": "APT (Funny Indian Remix)",
-      "url": "https://www.deezer.com/track/3099253701"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 9,
-    "fields": {
-      "name": "Apt (Nightcore)",
-      "artist": "Neko",
-      "deezer_track_id": "3092274261",
-      "album": "Apt (Nightcore)",
-      "url": "https://www.deezer.com/track/3092274261"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 10,
-    "fields": {
-      "name": "APT.",
-      "artist": "Clay K Slider",
-      "deezer_track_id": "3127577581",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3127577581"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 11,
-    "fields": {
-      "name": "APT.",
-      "artist": "Charles B",
-      "deezer_track_id": "3243244571",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3243244571"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 12,
-    "fields": {
-      "name": "APT. (French Cover)",
-      "artist": "Myu-Chan",
-      "deezer_track_id": "3115004111",
-      "album": "APT. (French Cover)",
-      "url": "https://www.deezer.com/track/3115004111"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 13,
-    "fields": {
-      "name": "APT.",
-      "artist": "Perfect Pitch",
-      "deezer_track_id": "3327101101",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3327101101"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 14,
-    "fields": {
-      "name": "APT.",
-      "artist": "Sandaru Sathsara",
-      "deezer_track_id": "3088438421",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3088438421"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 15,
-    "fields": {
-      "name": "APT. (Sped up Nightcore)",
-      "artist": "Kymsue",
-      "deezer_track_id": "3092424821",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3092424821"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 16,
-    "fields": {
-      "name": "APT (en espa\u00f1ol) (feat. Abi Rosales)",
-      "artist": "Alej C\u00e1zares",
-      "deezer_track_id": "3083384771",
-      "album": "APT (en espa\u00f1ol) (feat. Abi Rosales)",
-      "url": "https://www.deezer.com/track/3083384771"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 17,
-    "fields": {
-      "name": "APT. (Techno Mix)",
-      "artist": "LUCKY DEMON",
-      "deezer_track_id": "3223192971",
-      "album": "APT. (Techno Mix)",
-      "url": "https://www.deezer.com/track/3223192971"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 18,
-    "fields": {
-      "name": "APT.",
-      "artist": "Ben Woodward",
-      "deezer_track_id": "3266991051",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3266991051"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 19,
-    "fields": {
-      "name": "APT (Piano Version)",
-      "artist": "Cozy Rabbit",
-      "deezer_track_id": "3124082141",
-      "album": "APT (Piano Version)",
-      "url": "https://www.deezer.com/track/3124082141"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 20,
-    "fields": {
-      "name": "APT.",
-      "artist": "Kymsue",
-      "deezer_track_id": "3092424811",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3092424811"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 21,
-    "fields": {
-      "name": "APT. (Workout Version 132 BPM)",
-      "artist": "Power Music Workout",
-      "deezer_track_id": "3098838161",
-      "album": "Best of 2024 Workout Mix (Nonstop Workout Mix 132 BPM)",
-      "url": "https://www.deezer.com/track/3098838161"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 22,
-    "fields": {
-      "name": "APT. (Metal)",
-      "artist": "Melodicka Bros",
-      "deezer_track_id": "3090560591",
-      "album": "APT. (Metal)",
-      "url": "https://www.deezer.com/track/3090560591"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 23,
-    "fields": {
-      "name": "APT. (ULTRAFUNK SPED UP)",
-      "artist": "HISTED",
-      "deezer_track_id": "3155955281",
-      "album": "APT. (ULTRAFUNK)",
-      "url": "https://www.deezer.com/track/3155955281"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 24,
-    "fields": {
-      "name": "APT",
-      "artist": "Coast Contra",
-      "deezer_track_id": "1688522507",
-      "album": "Apt. 505",
-      "url": "https://www.deezer.com/track/1688522507"
-    }
-  },
-  {
-    "model": "tracks.track",
-    "pk": 25,
-    "fields": {
-      "name": "APT.",
-      "artist": "First to Eleven",
-      "deezer_track_id": "3183030411",
-      "album": "APT.",
-      "url": "https://www.deezer.com/track/3183030411"
+      "url": "https://www.deezer.com/track/3050380851",
+      "picture_small": "https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/56x56-000000-80-0-0.jpg",
+      "picture_medium": "https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/250x250-000000-80-0-0.jpg"
     }
   },
   {
@@ -322,7 +1384,9 @@
       "artist": "George Ezra",
       "deezer_track_id": "71220746",
       "album": "Did You Hear the Rain?",
-      "url": "https://www.deezer.com/track/71220746"
+      "url": "https://www.deezer.com/track/71220746",
+      "picture_small": "https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/56x56-000000-80-0-0.jpg",
+      "picture_medium": "https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/250x250-000000-80-0-0.jpg"
     }
   },
   {
@@ -333,7 +1397,9 @@
       "artist": "Coldplay",
       "deezer_track_id": "3157972",
       "album": "Viva La Vida or Death and All His Friends",
-      "url": "https://www.deezer.com/track/3157972"
+      "url": "https://www.deezer.com/track/3157972",
+      "picture_small": "https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/56x56-000000-80-0-0.jpg",
+      "picture_medium": "https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/250x250-000000-80-0-0.jpg"
     }
   },
   {
@@ -344,7 +1410,9 @@
       "artist": "Hollow Coves",
       "deezer_track_id": "1647876002",
       "album": "Wanderlust",
-      "url": "https://www.deezer.com/track/1647876002"
+      "url": "https://www.deezer.com/track/1647876002",
+      "picture_small": "https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/56x56-000000-80-0-0.jpg",
+      "picture_medium": "https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/250x250-000000-80-0-0.jpg"
     }
   },
   {
@@ -355,7 +1423,33 @@
       "artist": "Mike Shinoda",
       "deezer_track_id": "2454911985",
       "album": "Already Over",
-      "url": "https://www.deezer.com/track/2454911985"
+      "url": "https://www.deezer.com/track/2454911985",
+      "picture_small": "https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/56x56-000000-80-0-0.jpg",
+      "picture_medium": "https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/250x250-000000-80-0-0.jpg"
+    }
+  },
+  {
+    "model": "playlists.playlist",
+    "pk": 1,
+    "fields": {
+      "creator": "524f95f7-1b77-4001-b400-d69cbc03f3fd",
+      "name": "1",
+      "description": "2025",
+      "public": true,
+      "event": false,
+      "license_type": "open",
+      "vote_start_time": null,
+      "vote_end_time": null,
+      "latitude": null,
+      "longitude": null,
+      "allowed_radius_meters": null,
+      "users_saved": [
+        "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+        "0b167734-e903-4f52-9192-03390a2ad42f",
+        "524f95f7-1b77-4001-b400-d69cbc03f3fd"
+      ],
+      "users_already_voted": [],
+      "invited_users": []
     }
   },
   {
@@ -514,187 +1608,10 @@
     }
   },
   {
-    "model": "users.customuser",
-    "fields": {
-      "password": "pbkdf2_sha256$870000$BREebsxANALc3aJjoDAmiM$jXGmXaQm58Gsr8J2E9dTITYCNYBoR/IbLg0002NaJSQ=",
-      "last_login": "2025-07-06T06:16:07.634Z",
-      "is_superuser": true,
-      "username": "admin",
-      "first_name": "",
-      "last_name": "",
-      "email": "test@test.com",
-      "is_staff": true,
-      "is_active": true,
-      "date_joined": "2025-05-25T01:40:41.415Z",
-      "groups": [],
-      "user_permissions": []
-    }
-  },
-  {
-    "model": "users.customuser",
-    "fields": {
-      "password": "pbkdf2_sha256$870000$ZaUAHKAaPPARl4j80zqy7k$66ImAOESKzZ3eHVUTfoEevpLpUMb7Lt0zJjno0Ey+Oo=",
-      "last_login": null,
-      "is_superuser": false,
-      "username": "anna",
-      "first_name": "",
-      "last_name": "",
-      "email": "anna@mail.com",
-      "is_staff": false,
-      "is_active": true,
-      "date_joined": "2025-05-25T01:40:57.328Z",
-      "groups": [],
-      "user_permissions": []
-    }
-  },
-  {
-    "model": "users.customuser",
-    "fields": {
-      "password": "pbkdf2_sha256$870000$DW3pWcpFlPNkAr1i7u7mBa$tMa0E32vC7DRC9e43rxAEIclFVczJepT/C5m5khFe8w=",
-      "last_login": null,
-      "is_superuser": false,
-      "username": "elina",
-      "first_name": "",
-      "last_name": "",
-      "email": "elina@mail.com",
-      "is_staff": false,
-      "is_active": true,
-      "date_joined": "2025-05-25T12:46:52.674Z",
-      "groups": [],
-      "user_permissions": []
-    }
-  },
-  {
-    "model": "users.customuser",
-    "fields": {
-      "password": "pbkdf2_sha256$870000$9tNPQFCfE5l1txrxTL33HE$jf8t/YQ6jyjivLLJ+Ru0hcJewtR5MXVaphu/5Jzn+eU=",
-      "last_login": null,
-      "is_superuser": false,
-      "username": "elena",
-      "first_name": "",
-      "last_name": "",
-      "email": "elena@mail.com",
-      "is_staff": false,
-      "is_active": true,
-      "date_joined": "2025-05-26T05:11:11.578Z",
-      "groups": [],
-      "user_permissions": []
-    }
-  },
-  {
-    "model": "authtoken.token",
-    "pk": "259a85097be0108dc1679cfeddca7e42733192f2",
-    "fields": {
-      "user": [
-        "elina"
-      ],
-      "created": "2025-05-25T12:46:53.279Z"
-    }
-  },
-  {
-    "model": "authtoken.token",
-    "pk": "53b9600a7d16d334f8e698c28b4decdf0e0fabc2",
-    "fields": {
-      "user": [
-        "elena"
-      ],
-      "created": "2025-05-26T05:11:12.188Z"
-    }
-  },
-  {
-    "model": "authtoken.token",
-    "pk": "92ba40f8fc36498a8ed1cc513a1ebf9dedd1b1fd",
-    "fields": {
-      "user": [
-        "anna"
-      ],
-      "created": "2025-05-25T01:40:57.800Z"
-    }
-  },
-  {
-    "model": "playlists.playlist",
-    "pk": 1,
-    "fields": {
-      "creator": [
-        "anna"
-      ],
-      "name": "1",
-      "description": "2025",
-      "public": true,
-      "license_type": "open",
-      "vote_start_time": null,
-      "vote_end_time": null,
-      "latitude": null,
-      "longitude": null,
-      "allowed_radius_meters": null,
-      "users_saved": [
-        [
-          "admin"
-        ],
-        [
-          "anna"
-        ],
-        [
-          "elina"
-        ]
-      ],
-      "users_already_voted": [],
-      "invited_users": []
-    }
-  },
-  {
-    "model": "profile.profile",
-    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b0",
-    "fields": {
-      "user": [
-        "admin"
-      ],
-      "avatar": "avatars/IMG_4039.JPG",
-      "avatar_visibility": "public",
-      "name": "",
-      "name_visibility": "public",
-      "location": "",
-      "location_visibility": "public",
-      "bio": "",
-      "bio_visibility": "public",
-      "phone": "",
-      "phone_visibility": "private",
-      "friend_info": "",
-      "friend_info_visibility": "friends",
-      "music_preferences_visibility": "public",
-      "music_preferences": []
-    }
-  },
-  {
-    "model": "profile.profile",
-    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b1",
-    "fields": {
-      "user": [
-        "elina"
-      ],
-      "avatar": "avatars/IMG_3629_pZ3ww8g.JPG",
-      "avatar_visibility": "public",
-      "name": "",
-      "name_visibility": "public",
-      "location": "",
-      "location_visibility": "public",
-      "bio": "",
-      "bio_visibility": "public",
-      "phone": "",
-      "phone_visibility": "private",
-      "friend_info": "",
-      "friend_info_visibility": "friends",
-      "music_preferences_visibility": "public",
-      "music_preferences": []
-    }
-  },
-  {
     "model": "profile.profile",
     "pk": "a82f7b61-8a2e-4b14-9e2d-53b297ef5a3c",
     "fields": {
-      "user": [
-        "elena"
-      ],
+      "user": "8681175d-2edc-481a-b135-8bd8972b2ad3",
       "avatar": "avatars/OjvUfUkYhuY.jpg",
       "avatar_visibility": "public",
       "name": "",
@@ -715,9 +1632,7 @@
     "model": "profile.profile",
     "pk": "d3f1c73a-5e44-4d12-9c3b-1a57f4f07c8a",
     "fields": {
-      "user": [
-        "anna"
-      ],
+      "user": "524f95f7-1b77-4001-b400-d69cbc03f3fd",
       "avatar": "avatars/N1JaKX_Ky2Q3.jpg",
       "avatar_visibility": "public",
       "name": "",
@@ -735,255 +1650,375 @@
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "profile.profile",
+    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b0",
+    "fields": {
+      "user": "bc11bdb5-5f42-4faf-8f39-9342b44ab4e5",
+      "avatar": "avatars/IMG_4039.JPG",
+      "avatar_visibility": "public",
+      "name": "",
+      "name_visibility": "public",
+      "location": "",
+      "location_visibility": "public",
+      "bio": "",
+      "bio_visibility": "public",
+      "phone": "",
+      "phone_visibility": "private",
+      "friend_info": "",
+      "friend_info_visibility": "friends",
+      "music_preferences_visibility": "public",
+      "music_preferences": []
+    }
+  },
+  {
+    "model": "profile.profile",
+    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b1",
+    "fields": {
+      "user": "0b167734-e903-4f52-9192-03390a2ad42f",
+      "avatar": "avatars/IMG_3629_pZ3ww8g.JPG",
+      "avatar_visibility": "public",
+      "name": "",
+      "name_visibility": "public",
+      "location": "",
+      "location_visibility": "public",
+      "bio": "",
+      "bio_visibility": "public",
+      "phone": "",
+      "phone_visibility": "private",
+      "friend_info": "",
+      "friend_info_visibility": "friends",
+      "music_preferences_visibility": "public",
+      "music_preferences": []
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 1,
     "fields": {
-      "action_time": "2025-05-25T12:57:46.695Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "users",
-        "signuponetimepasscode"
-      ],
-      "object_id": "1",
-      "object_repr": "1",
-      "action_flag": 1,
-      "change_message": "[{\"added\": {}}]"
+      "added_on": "2025-08-24T09:09:01.157Z",
+      "api": "http://localhost:8000/users/get_friends/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"friends\": []\n}",
+      "status_code": 200,
+      "execution_time": "0.09886"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 2,
     "fields": {
-      "action_time": "2025-05-26T03:59:45.007Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "users",
-        "signuponetimepasscode"
-      ],
-      "object_id": "1",
-      "object_repr": "1",
-      "action_flag": 2,
-      "change_message": "[{\"changed\": {\"fields\": [\"Users saved\"]}}]"
+      "added_on": "2025-08-24T09:09:01.179Z",
+      "api": "http://localhost:8000/users/invitations/sent/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"sent_invitations\": []\n}",
+      "status_code": 200,
+      "execution_time": "0.11626"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 3,
     "fields": {
-      "action_time": "2025-05-31T10:03:47.505Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "tracks",
-        "track"
-      ],
-      "object_id": "1",
-      "object_repr": "PlaylistTrack object (1)",
-      "action_flag": 3,
-      "change_message": ""
+      "added_on": "2025-08-24T09:09:01.188Z",
+      "api": "http://localhost:8000/users/get_user/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"username\": \"anna\",\n    \"id\": \"524f95f7-1b77-4001-b400-d69cbc03f3fd\",\n    \"email\": \"anna@mail.com\",\n    \"has_social_account\": false,\n    \"is_password_usable\": true\n}",
+      "status_code": 200,
+      "execution_time": "0.14351"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 4,
     "fields": {
-      "action_time": "2025-05-31T10:03:47.505Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "tracks",
-        "track"
-      ],
-      "object_id": "2",
-      "object_repr": "PlaylistTrack object (2)",
-      "action_flag": 3,
-      "change_message": ""
+      "added_on": "2025-08-24T09:09:01.202Z",
+      "api": "http://localhost:8000/users/invitations/received/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"received_invitations\": []\n}",
+      "status_code": 200,
+      "execution_time": "0.13520"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 5,
     "fields": {
-      "action_time": "2025-05-31T10:03:47.505Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "tracks",
-        "track"
-      ],
-      "object_id": "3",
-      "object_repr": "PlaylistTrack object (3)",
-      "action_flag": 3,
-      "change_message": ""
+      "added_on": "2025-08-24T09:09:01.338Z",
+      "api": "http://localhost:8000/playlists/saved_playlists/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"playlists\": [\n        {\n            \"id\": 1,\n            \"name\": \"1\",\n            \"description\": \"2025\",\n            \"public\": true,\n            \"creator\": \"anna\",\n            \"tracks\": [\n                {\n                    \"name\": \"APT.\",\n                    \"artist\": \"ROS\u00c9\"\n                },\n                {\n                    \"name\": \"Budapest\",\n                    \"artist\": \"George Ezra\"\n                },\n                {\n                    \"name\": \"Viva La Vida\",\n                    \"artist\": \"Coldplay\"\n                },\n                {\n                    \"name\": \"Coastline\",\n                    \"artist\": \"Hollow Coves\"\n                },\n                {\n                    \"name\": \"Already Over\",\n                    \"artist\": \"Mike Shinoda\"\n                }\n            ]\n        },\n        {\n            \"id\": 1,\n            \"name\": \"1\",\n            \"description\": \"2025\",\n            \"public\": true,\n            \"creator\": \"anna\",\n            \"tracks\": [\n                {\n                    \"name\": \"APT.\",\n                    \"artist\": \"ROS\u00c9\"\n                },\n                {\n                    \"name\": \"Budapest\",\n                    \"artist\": \"George Ezra\"\n                },\n                {\n                    \"name\": \"Viva La Vida\",\n                    \"artist\": \"Coldplay\"\n                },\n                {\n                    \"name\": \"Coastline\",\n                    \"artist\": \"Hollow Coves\"\n                },\n                {\n                    \"name\": \"Already Over\",\n                    \"artist\": \"Mike Shinoda\"\n                }\n            ]\n        },\n        {\n            \"id\": 1,\n            \"name\": \"1\",\n            \"description\": \"2025\",\n            \"public\": true,\n            \"creator\": \"anna\",\n            \"tracks\": [\n                {\n                    \"name\": \"APT.\",\n                    \"artist\": \"ROS\u00c9\"\n                },\n                {\n                    \"name\": \"Budapest\",\n                    \"artist\": \"George Ezra\"\n                },\n                {\n                    \"name\": \"Viva La Vida\",\n                    \"artist\": \"Coldplay\"\n                },\n                {\n                    \"name\": \"Coastline\",\n                    \"artist\": \"Hollow Coves\"\n                },\n                {\n                    \"name\": \"Already Over\",\n                    \"artist\": \"Mike Shinoda\"\n                }\n            ]\n        }\n    ]\n}",
+      "status_code": 200,
+      "execution_time": "0.29540"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 6,
     "fields": {
-      "action_time": "2025-05-31T10:03:47.506Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "tracks",
-        "track"
-      ],
-      "object_id": "4",
-      "object_repr": "PlaylistTrack object (4)",
-      "action_flag": 3,
-      "change_message": ""
+      "added_on": "2025-08-24T09:09:01.350Z",
+      "api": "http://localhost:8000/users/invitations/sent/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"sent_invitations\": []\n}",
+      "status_code": 200,
+      "execution_time": "0.09621"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 7,
     "fields": {
-      "action_time": "2025-05-31T10:03:47.506Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "tracks",
-        "track"
-      ],
-      "object_id": "5",
-      "object_repr": "PlaylistTrack object (5)",
-      "action_flag": 3,
-      "change_message": ""
+      "added_on": "2025-08-24T09:09:01.373Z",
+      "api": "http://localhost:8000/users/get_user/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"username\": \"anna\",\n    \"id\": \"524f95f7-1b77-4001-b400-d69cbc03f3fd\",\n    \"email\": \"anna@mail.com\",\n    \"has_social_account\": false,\n    \"is_password_usable\": true\n}",
+      "status_code": 200,
+      "execution_time": "0.11614"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 8,
     "fields": {
-      "action_time": "2025-07-06T06:16:37.986Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "profile",
-        "profile"
-      ],
-      "object_id": "1",
-      "object_repr": "anna's Profile",
-      "action_flag": 1,
-      "change_message": "[{\"added\": {}}]"
+      "added_on": "2025-08-24T09:09:01.382Z",
+      "api": "http://localhost:8000/users/invitations/received/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"received_invitations\": []\n}",
+      "status_code": 200,
+      "execution_time": "0.11028"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 9,
     "fields": {
-      "action_time": "2025-07-06T06:16:45.660Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "profile",
-        "profile"
-      ],
-      "object_id": "1",
-      "object_repr": "admin's Profile",
-      "action_flag": 2,
-      "change_message": "[{\"changed\": {\"fields\": [\"User\"]}}]"
+      "added_on": "2025-08-24T09:09:01.388Z",
+      "api": "http://localhost:8000/users/get_friends/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"friends\": []\n}",
+      "status_code": 200,
+      "execution_time": "0.15599"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 10,
     "fields": {
-      "action_time": "2025-07-06T06:16:55.777Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "profile",
-        "profile"
-      ],
-      "object_id": "2",
-      "object_repr": "elina's Profile",
-      "action_flag": 1,
-      "change_message": "[{\"added\": {}}]"
+      "added_on": "2025-08-24T09:09:01.467Z",
+      "api": "http://localhost:8000/playlists/saved_playlists/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"playlists\": [\n        {\n            \"id\": 1,\n            \"name\": \"1\",\n            \"description\": \"2025\",\n            \"public\": true,\n            \"creator\": \"anna\",\n            \"tracks\": [\n                {\n                    \"name\": \"APT.\",\n                    \"artist\": \"ROS\u00c9\"\n                },\n                {\n                    \"name\": \"Budapest\",\n                    \"artist\": \"George Ezra\"\n                },\n                {\n                    \"name\": \"Viva La Vida\",\n                    \"artist\": \"Coldplay\"\n                },\n                {\n                    \"name\": \"Coastline\",\n                    \"artist\": \"Hollow Coves\"\n                },\n                {\n                    \"name\": \"Already Over\",\n                    \"artist\": \"Mike Shinoda\"\n                }\n            ]\n        },\n        {\n            \"id\": 1,\n            \"name\": \"1\",\n            \"description\": \"2025\",\n            \"public\": true,\n            \"creator\": \"anna\",\n            \"tracks\": [\n                {\n                    \"name\": \"APT.\",\n                    \"artist\": \"ROS\u00c9\"\n                },\n                {\n                    \"name\": \"Budapest\",\n                    \"artist\": \"George Ezra\"\n                },\n                {\n                    \"name\": \"Viva La Vida\",\n                    \"artist\": \"Coldplay\"\n                },\n                {\n                    \"name\": \"Coastline\",\n                    \"artist\": \"Hollow Coves\"\n                },\n                {\n                    \"name\": \"Already Over\",\n                    \"artist\": \"Mike Shinoda\"\n                }\n            ]\n        },\n        {\n            \"id\": 1,\n            \"name\": \"1\",\n            \"description\": \"2025\",\n            \"public\": true,\n            \"creator\": \"anna\",\n            \"tracks\": [\n                {\n                    \"name\": \"APT.\",\n                    \"artist\": \"ROS\u00c9\"\n                },\n                {\n                    \"name\": \"Budapest\",\n                    \"artist\": \"George Ezra\"\n                },\n                {\n                    \"name\": \"Viva La Vida\",\n                    \"artist\": \"Coldplay\"\n                },\n                {\n                    \"name\": \"Coastline\",\n                    \"artist\": \"Hollow Coves\"\n                },\n                {\n                    \"name\": \"Already Over\",\n                    \"artist\": \"Mike Shinoda\"\n                }\n            ]\n        }\n    ]\n}",
+      "status_code": 200,
+      "execution_time": "0.10047"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 11,
     "fields": {
-      "action_time": "2025-07-06T06:17:05.159Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "profile",
-        "profile"
-      ],
-      "object_id": "3",
-      "object_repr": "elena's Profile",
-      "action_flag": 1,
-      "change_message": "[{\"added\": {}}]"
+      "added_on": "2025-08-24T09:12:27.454Z",
+      "api": "http://127.0.0.1:8000/deezer/track/2454911985/",
+      "headers": "{\n    \"HOST\": \"127.0.0.1:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"UPGRADE_INSECURE_REQUESTS\": \"1\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\n    \"SEC_FETCH_SITE\": \"none\",\n    \"SEC_FETCH_MODE\": \"navigate\",\n    \"SEC_FETCH_USER\": \"?1\",\n    \"SEC_FETCH_DEST\": \"document\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 2454911985,\n    \"readable\": true,\n    \"title\": \"Already Over\",\n    \"title_short\": \"Already Over\",\n    \"title_version\": \"\",\n    \"isrc\": \"USWB12304892\",\n    \"link\": \"https://www.deezer.com/track/2454911985\",\n    \"share\": \"https://www.deezer.com/track/2454911985?utm_source=deezer&utm_content=track-2454911985&utm_term=0_1756026747&utm_medium=web\",\n    \"duration\": 160,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 520252,\n    \"release_date\": \"2023-10-06\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 2,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/8/3/1/0/83195818fd1a588710dc755f2521f9ea.mp3?hdnea=exp=1756027647~acl=/api/1/1/8/3/1/0/83195818fd1a588710dc755f2521f9ea.mp3*~data=user_id=0,application_id=42~hmac=db6653f2226ae2c9913af5cf6ef2e8053f0a78a551115f0fd991a3b4fe8c8e4a\",\n    \"bpm\": 0,\n    \"gain\": -6.3,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"CA\",\n        \"CC\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CK\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CV\",\n        \"CW\",\n        \"CX\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FK\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GS\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HM\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IO\",\n        \"IQ\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NF\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NU\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TK\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 4485585,\n            \"name\": \"Mike Shinoda\",\n            \"link\": \"https://www.deezer.com/artist/4485585\",\n            \"share\": \"https://www.deezer.com/artist/4485585?utm_source=deezer&utm_content=artist-4485585&utm_term=0_1756026747&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/4485585/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/4485585/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"0924d0bac8223b062023a1ae9f6b58db\",\n    \"track_token\": \"AAAAAWiq13toq_C7REaY2NoUaloOffSHQ0CvenypyVcv2gDFmzkh8qrFchTkm6-QAoHMOqk3ALLV6c9C38wNBVSAt9PNayeyj3hhZ5Y2_CRikTLRfrKL0nHI9CweUQPMr5GE25Q0q56l1g9WRJmGY4l03DuO9rkzBc47mvNwKsYZN2ixM4nnckpnqMructUfc_-h2NVnDIvBRBcLxMcIKVu782zo2JViFcemZ935rpwE5jvB3y_pz1U8vuaECmMXNpeww8wAjRFxmZEM9JOtreq0Icg2-5nRFYytEHvxFwNDo6wfFVMfcQdLmRuUY4dng0xOxmidozBtxCm4lcqKqaRM1zH3BLSNwOo\",\n    \"artist\": {\n        \"id\": 4485585,\n        \"name\": \"Mike Shinoda\",\n        \"link\": \"https://www.deezer.com/artist/4485585\",\n        \"share\": \"https://www.deezer.com/artist/4485585?utm_source=deezer&utm_content=artist-4485585&utm_term=0_1756026747&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/4485585/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/4485585/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 488076495,\n        \"title\": \"Already Over\",\n        \"link\": \"https://www.deezer.com/album/488076495\",\n        \"cover\": \"https://api.deezer.com/album/488076495/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"0924d0bac8223b062023a1ae9f6b58db\",\n        \"release_date\": \"2023-10-06\",\n        \"tracklist\": \"https://api.deezer.com/album/488076495/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.31306"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 12,
     "fields": {
-      "action_time": "2025-07-06T06:18:18.240Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "profile",
-        "profile"
-      ],
-      "object_id": "4",
-      "object_repr": "anna's Profile",
-      "action_flag": 1,
-      "change_message": "[{\"added\": {}}]"
+      "added_on": "2025-08-24T09:15:52.644Z",
+      "api": "http://127.0.0.1:8000/deezer/track/1647876002/",
+      "headers": "{\n    \"HOST\": \"127.0.0.1:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"UPGRADE_INSECURE_REQUESTS\": \"1\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\n    \"SEC_FETCH_SITE\": \"none\",\n    \"SEC_FETCH_MODE\": \"navigate\",\n    \"SEC_FETCH_USER\": \"?1\",\n    \"SEC_FETCH_DEST\": \"document\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 1647876002,\n    \"readable\": true,\n    \"title\": \"Coastline\",\n    \"title_short\": \"Coastline\",\n    \"title_version\": \"\",\n    \"isrc\": \"AUGSG1600007\",\n    \"link\": \"https://www.deezer.com/track/1647876002\",\n    \"share\": \"https://www.deezer.com/track/1647876002?utm_source=deezer&utm_content=track-1647876002&utm_term=0_1756026952&utm_medium=web\",\n    \"duration\": 233,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 682560,\n    \"release_date\": \"2017-03-17\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 2,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/4/e/4/0/4e47bd33f1a4cbd431a40963a83300de.mp3?hdnea=exp=1756027852~acl=/api/1/1/4/e/4/0/4e47bd33f1a4cbd431a40963a83300de.mp3*~data=user_id=0,application_id=42~hmac=f40bdc7f532c17eeb44d1dcbffbbb0fb8cc23a7bca07e62fa6716eb0e6f45497\",\n    \"bpm\": 0,\n    \"gain\": -10.6,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"BY\",\n        \"CA\",\n        \"CC\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CK\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CU\",\n        \"CV\",\n        \"CW\",\n        \"CX\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FK\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GS\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HM\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IO\",\n        \"IQ\",\n        \"IR\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KP\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NF\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NU\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RU\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SY\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TK\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"UM\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 7492486,\n            \"name\": \"Hollow Coves\",\n            \"link\": \"https://www.deezer.com/artist/7492486\",\n            \"share\": \"https://www.deezer.com/artist/7492486?utm_source=deezer&utm_content=artist-7492486&utm_term=0_1756026952&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/7492486/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/7492486/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"694999b0e2c9c832d2ab406f861f9a96\",\n    \"track_token\": \"AAAAAWiq2Ehoq_GIQLSRI8csAW96imW_uW2ccJbRGRobjx4wGTxh_79ief0Rfy88F5xUM68lRhStdw9ZchXr7CiVW6edMD_cNCY-z_qHWLAUI-Ay5N-JmKRLPvUt08BD0PUTPmyg_zbO9IDdYWLN4w6dcsx7d_5VPx0pSfEUQst6BlKGVC4clP3xEbWTHnNAonmdY9UunVyKVWguj1e252C4pVQBCS5F2tpoBA0Kar1iaegggLOESliQG0ezOlbz3dOvofotleLsMs5Fatph5q5YDstY7cPJ8eeV1Kp8iygDytYfyepTEUqAcU7rY3wSMLgPq-ZPJkWV-SkDOxtIxysL-lV3FNPPUEnRrmMST-U4hN12vcFw6Otn9RxiiRVKd-GBGJrfy-18SPZDMA\",\n    \"artist\": {\n        \"id\": 7492486,\n        \"name\": \"Hollow Coves\",\n        \"link\": \"https://www.deezer.com/artist/7492486\",\n        \"share\": \"https://www.deezer.com/artist/7492486?utm_source=deezer&utm_content=artist-7492486&utm_term=0_1756026952&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/7492486/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/7492486/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 293759292,\n        \"title\": \"Wanderlust\",\n        \"link\": \"https://www.deezer.com/album/293759292\",\n        \"cover\": \"https://api.deezer.com/album/293759292/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"694999b0e2c9c832d2ab406f861f9a96\",\n        \"release_date\": \"2017-02-03\",\n        \"tracklist\": \"https://api.deezer.com/album/293759292/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.33599"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 13,
     "fields": {
-      "action_time": "2025-07-06T06:18:54.510Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "profile",
-        "profile"
-      ],
-      "object_id": "4",
-      "object_repr": "anna's Profile",
-      "action_flag": 2,
-      "change_message": "[]"
+      "added_on": "2025-08-24T09:16:42.708Z",
+      "api": "http://127.0.0.1:8000/deezer/track/3157972/",
+      "headers": "{\n    \"HOST\": \"127.0.0.1:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"UPGRADE_INSECURE_REQUESTS\": \"1\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\n    \"SEC_FETCH_SITE\": \"none\",\n    \"SEC_FETCH_MODE\": \"navigate\",\n    \"SEC_FETCH_USER\": \"?1\",\n    \"SEC_FETCH_DEST\": \"document\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 3157972,\n    \"readable\": true,\n    \"title\": \"Viva La Vida\",\n    \"title_short\": \"Viva La Vida\",\n    \"title_version\": \"\",\n    \"isrc\": \"GBAYE0800265\",\n    \"link\": \"https://www.deezer.com/track/3157972\",\n    \"share\": \"https://www.deezer.com/track/3157972?utm_source=deezer&utm_content=track-3157972&utm_term=0_1756027002&utm_medium=web\",\n    \"duration\": 242,\n    \"track_position\": 7,\n    \"disk_number\": 1,\n    \"rank\": 951268,\n    \"release_date\": \"2008-06-06\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 0,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/c/5/f/0/c5f0d57a616b78b9428bb966dbb959bf.mp3?hdnea=exp=1756027902~acl=/api/1/1/c/5/f/0/c5f0d57a616b78b9428bb966dbb959bf.mp3*~data=user_id=0,application_id=42~hmac=7fbe217ab22f02e9cf64ca304929a7d16b78b5d5f8b22a02b39b103cc88a6cd9\",\n    \"bpm\": 137.8,\n    \"gain\": -9.6,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"BY\",\n        \"CA\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CI\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CV\",\n        \"CY\",\n        \"CZ\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IL\",\n        \"IN\",\n        \"IQ\",\n        \"IS\",\n        \"JM\",\n        \"JO\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NG\",\n        \"NI\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RU\",\n        \"RW\",\n        \"SA\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SZ\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VE\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 892,\n            \"name\": \"Coldplay\",\n            \"link\": \"https://www.deezer.com/artist/892\",\n            \"share\": \"https://www.deezer.com/artist/892?utm_source=deezer&utm_content=artist-892&utm_term=0_1756027002&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/892/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/892/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"eede3cd0dc3a5a87c7a5b1085b022e2d\",\n    \"track_token\": \"AAAAAWiq2Hpoq_G6J0xOA6edfWg4VIG7MQAFYL2ddwLdFT_D8RkfxtAL9ns6VjFNiea1WMO9YsbEQMf0MjA7kDzhRk736awLvPgZuJsOSfWm5Afn5a5FF3Zxq7mM1I2mpr8lb8lMFzbeW_GOjlt0z3-vLdaRpPOxP8Q25PiW-rkWEqmevWXkhCr3ZnCrMmIgbn7To1mDYfl6LBmFAki_g1sAdKZU43pFZuSBaJxvujXHq0sodSY7FUWvFP3YfbLwXSQ3Q4S42ry_wTOHDzNiloZkOgTbT4M4xfhiUMgPPRi34e0hwKG7FORUkLQskZrEwFMXN5N3m9FC3E8vc6Mj1ulbt4VZbAJv0kYUzhQUCQkaGuBlISvOQa3E4KJqhNBYIK8btmzLXvpDkbice-B0N6KudVIKauoHX_UE_Ih15rmuSEyJfzuoPGOwcCbi1FAwCw\",\n    \"artist\": {\n        \"id\": 892,\n        \"name\": \"Coldplay\",\n        \"link\": \"https://www.deezer.com/artist/892\",\n        \"share\": \"https://www.deezer.com/artist/892?utm_source=deezer&utm_content=artist-892&utm_term=0_1756027002&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/892/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/892/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 303627,\n        \"title\": \"Viva La Vida or Death and All His Friends\",\n        \"link\": \"https://www.deezer.com/album/303627\",\n        \"cover\": \"https://api.deezer.com/album/303627/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"eede3cd0dc3a5a87c7a5b1085b022e2d\",\n        \"release_date\": \"2008-05-26\",\n        \"tracklist\": \"https://api.deezer.com/album/303627/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.34941"
     }
   },
   {
-    "model": "admin.logentry",
+    "model": "drf_api_logger.apilogsmodel",
     "pk": 14,
     "fields": {
-      "action_time": "2025-07-06T06:19:11.993Z",
-      "user": [
-        "admin"
-      ],
-      "content_type": [
-        "profile",
-        "profile"
-      ],
-      "object_id": "4",
-      "object_repr": "anna's Profile",
-      "action_flag": 2,
-      "change_message": "[{\"changed\": {\"fields\": [\"Avatar\"]}}]"
+      "added_on": "2025-08-24T09:17:52.945Z",
+      "api": "http://127.0.0.1:8000/deezer/track/71220746/",
+      "headers": "{\n    \"HOST\": \"127.0.0.1:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"UPGRADE_INSECURE_REQUESTS\": \"1\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\n    \"SEC_FETCH_SITE\": \"none\",\n    \"SEC_FETCH_MODE\": \"navigate\",\n    \"SEC_FETCH_USER\": \"?1\",\n    \"SEC_FETCH_DEST\": \"document\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 71220746,\n    \"readable\": true,\n    \"title\": \"Budapest\",\n    \"title_short\": \"Budapest\",\n    \"title_version\": \"\",\n    \"isrc\": \"GBARL1301120\",\n    \"link\": \"https://www.deezer.com/track/71220746\",\n    \"share\": \"https://www.deezer.com/track/71220746?utm_source=deezer&utm_content=track-71220746&utm_term=0_1756027072&utm_medium=web\",\n    \"duration\": 202,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 811418,\n    \"release_date\": \"2013-11-03\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 0,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/0/7/a/0/07abeb1936eaac500b89acf179f7dd9b.mp3?hdnea=exp=1756027972~acl=/api/1/1/0/7/a/0/07abeb1936eaac500b89acf179f7dd9b.mp3*~data=user_id=0,application_id=42~hmac=934081d8b080f86d262b5093eff4fcbeda16ad31d47fccfc68a914fec0173bb6\",\n    \"bpm\": 128,\n    \"gain\": -19.7,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AR\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BW\",\n        \"BY\",\n        \"CA\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CU\",\n        \"CV\",\n        \"CW\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GT\",\n        \"GW\",\n        \"HK\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IQ\",\n        \"IR\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MN\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RU\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 5241932,\n            \"name\": \"George Ezra\",\n            \"link\": \"https://www.deezer.com/artist/5241932\",\n            \"share\": \"https://www.deezer.com/artist/5241932?utm_source=deezer&utm_content=artist-5241932&utm_term=0_1756027072&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/5241932/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/5241932/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"8cb7398a61585a1b3ded2557b029e8a6\",\n    \"track_token\": \"AAAAAWiq2MBoq_IAnNNPfL4GNQHkXkXS9kh_ak6Qnk8prMvxAaE2SBIVgjEMGZTh7T-9ZLzG5Gfz_EL4qaj95ah7IYhglNIDJdg47oovn0yPEKCltYjC4oIIcnIJHccfr1TjzpwLUhUds_PG2w-Fq9SFf82cbMrpr1NO60ujROiLKFaaSZDIBdwgcEKzPWRt8p6hC__kKuG4S4LEstGFMSQJSY7phb9TjDEksKpZcoaMKTMetPf9d20dZCgEW2aM0NwOfzqGX0v3BEt_r4woSBD70JCy5voo09dHjkPTxdcsxkTnTyjeu2-KhOmg2jzj6EJ556X-cfBaF6_fUejrp9Nrs3lTNEuMPdb1m0FVhvB4QKv38qzEwQzmILaKBovPchcrC2VNXLTRCMHTKQMOvqfA3HQURJite4qGJNYKHifk43QO5lmBAJ_kQfN6-Ncu\",\n    \"artist\": {\n        \"id\": 5241932,\n        \"name\": \"George Ezra\",\n        \"link\": \"https://www.deezer.com/artist/5241932\",\n        \"share\": \"https://www.deezer.com/artist/5241932?utm_source=deezer&utm_content=artist-5241932&utm_term=0_1756027072&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/5241932/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/5241932/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 6991678,\n        \"title\": \"Did You Hear the Rain?\",\n        \"link\": \"https://www.deezer.com/album/6991678\",\n        \"cover\": \"https://api.deezer.com/album/6991678/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"8cb7398a61585a1b3ded2557b029e8a6\",\n        \"release_date\": \"2013-11-01\",\n        \"tracklist\": \"https://api.deezer.com/album/6991678/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.27295"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 15,
+    "fields": {
+      "added_on": "2025-08-24T09:18:57.170Z",
+      "api": "http://localhost:8000/playlists/playlists/1",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"playlist\": [\n        {\n            \"id\": 1,\n            \"playlist_name\": \"1\",\n            \"description\": \"2025\",\n            \"public\": true,\n            \"creator\": \"anna\",\n            \"license_type\": \"open\",\n            \"tracks\": [\n                {\n                    \"track_id\": 1,\n                    \"playlist_track_id\": 6,\n                    \"deezer_track_id\": \"3050380851\",\n                    \"name\": \"APT.\",\n                    \"artist\": \"ROS\u00c9\",\n                    \"position\": 1,\n                    \"points\": 0,\n                    \"url\": \"https://www.deezer.com/track/3050380851\",\n                    \"picture_small\": \"\",\n                    \"picture_medium\": \"\"\n                },\n                {\n                    \"track_id\": 26,\n                    \"playlist_track_id\": 7,\n                    \"deezer_track_id\": \"71220746\",\n                    \"name\": \"Budapest\",\n                    \"artist\": \"George Ezra\",\n                    \"position\": 2,\n                    \"points\": 0,\n                    \"url\": \"https://www.deezer.com/track/71220746\",\n                    \"picture_small\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/56x56-000000-80-0-0.jpg\",\n                    \"picture_medium\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/250x250-000000-80-0-0.jpg\"\n                },\n                {\n                    \"track_id\": 27,\n                    \"playlist_track_id\": 8,\n                    \"deezer_track_id\": \"3157972\",\n                    \"name\": \"Viva La Vida\",\n                    \"artist\": \"Coldplay\",\n                    \"position\": 3,\n                    \"points\": 0,\n                    \"url\": \"https://www.deezer.com/track/3157972\",\n                    \"picture_small\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/56x56-000000-80-0-0.jpg\",\n                    \"picture_medium\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/250x250-000000-80-0-0.jpg\"\n                },\n                {\n                    \"track_id\": 28,\n                    \"playlist_track_id\": 9,\n                    \"deezer_track_id\": \"1647876002\",\n                    \"name\": \"Coastline\",\n                    \"artist\": \"Hollow Coves\",\n                    \"position\": 4,\n                    \"points\": 0,\n                    \"url\": \"https://www.deezer.com/track/1647876002\",\n                    \"picture_small\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/56x56-000000-80-0-0.jpg\",\n                    \"picture_medium\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/250x250-000000-80-0-0.jpg\"\n                },\n                {\n                    \"track_id\": 29,\n                    \"playlist_track_id\": 10,\n                    \"deezer_track_id\": \"2454911985\",\n                    \"name\": \"Already Over\",\n                    \"artist\": \"Mike Shinoda\",\n                    \"position\": 5,\n                    \"points\": 0,\n                    \"url\": \"https://www.deezer.com/track/2454911985\",\n                    \"picture_small\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/56x56-000000-80-0-0.jpg\",\n                    \"picture_medium\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/250x250-000000-80-0-0.jpg\"\n                }\n            ],\n            \"shared_with\": [\n                {\n                    \"id\": \"524f95f7-1b77-4001-b400-d69cbc03f3fd\",\n                    \"username\": \"anna\"\n                },\n                {\n                    \"id\": \"0b167734-e903-4f52-9192-03390a2ad42f\",\n                    \"username\": \"elina\"\n                },\n                {\n                    \"id\": \"bc11bdb5-5f42-4faf-8f39-9342b44ab4e5\",\n                    \"username\": \"admin\"\n                }\n            ],\n            \"event\": false\n        }\n    ]\n}",
+      "status_code": 200,
+      "execution_time": "0.07146"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 16,
+    "fields": {
+      "added_on": "2025-08-24T09:18:57.368Z",
+      "api": "http://localhost:8000/playlists/playlist/1/tracks/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"playlist\": \"1\",\n    \"tracks\": [\n        {\n            \"track_id\": 1,\n            \"playlist_track_id\": 6,\n            \"deezer_track_id\": \"3050380851\",\n            \"name\": \"APT.\",\n            \"position\": 1,\n            \"points\": 0\n        },\n        {\n            \"track_id\": 26,\n            \"playlist_track_id\": 7,\n            \"deezer_track_id\": \"71220746\",\n            \"name\": \"Budapest\",\n            \"position\": 2,\n            \"points\": 0\n        },\n        {\n            \"track_id\": 27,\n            \"playlist_track_id\": 8,\n            \"deezer_track_id\": \"3157972\",\n            \"name\": \"Viva La Vida\",\n            \"position\": 3,\n            \"points\": 0\n        },\n        {\n            \"track_id\": 28,\n            \"playlist_track_id\": 9,\n            \"deezer_track_id\": \"1647876002\",\n            \"name\": \"Coastline\",\n            \"position\": 4,\n            \"points\": 0\n        },\n        {\n            \"track_id\": 29,\n            \"playlist_track_id\": 10,\n            \"deezer_track_id\": \"2454911985\",\n            \"name\": \"Already Over\",\n            \"position\": 5,\n            \"points\": 0\n        }\n    ]\n}",
+      "status_code": 200,
+      "execution_time": "0.03242"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 17,
+    "fields": {
+      "added_on": "2025-08-24T09:18:57.709Z",
+      "api": "http://localhost:8000/deezer/track/3050380851/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 3050380851,\n    \"readable\": true,\n    \"title\": \"APT.\",\n    \"title_short\": \"APT.\",\n    \"title_version\": \"\",\n    \"isrc\": \"USAT22409172\",\n    \"link\": \"https://www.deezer.com/track/3050380851\",\n    \"share\": \"https://www.deezer.com/track/3050380851?utm_source=deezer&utm_content=track-3050380851&utm_term=0_1756027137&utm_medium=web\",\n    \"duration\": 169,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 992741,\n    \"release_date\": \"2024-10-18\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 6,\n    \"explicit_content_cover\": 2,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/0/e/0/0/0e093da717796aa9d2dbe0d189cfba66.mp3?hdnea=exp=1756028037~acl=/api/1/1/0/e/0/0/0e093da717796aa9d2dbe0d189cfba66.mp3*~data=user_id=0,application_id=42~hmac=b5d5531af319bdd5c4fb41533e0d686a82d76e3fbddcd9005aa6c91605773bd1\",\n    \"bpm\": 0,\n    \"gain\": -7.8,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"CA\",\n        \"CC\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CK\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CV\",\n        \"CW\",\n        \"CX\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FK\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GS\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HM\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IO\",\n        \"IQ\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NF\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NU\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TK\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 126335112,\n            \"name\": \"ROS\u00c9\",\n            \"link\": \"https://www.deezer.com/artist/126335112\",\n            \"share\": \"https://www.deezer.com/artist/126335112?utm_source=deezer&utm_content=artist-126335112&utm_term=0_1756027137&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/126335112/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/126335112/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        },\n        {\n            \"id\": 429675,\n            \"name\": \"Bruno Mars\",\n            \"link\": \"https://www.deezer.com/artist/429675\",\n            \"share\": \"https://www.deezer.com/artist/429675?utm_source=deezer&utm_content=artist-429675&utm_term=0_1756027137&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/429675/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/429675/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"258e6042338ce64bb4157c0c94b232ac\",\n    \"track_token\": \"AAAAAWiq2QFoq_JB2qBolUry3JwMZzzCcjDXLhZIVZJKWpazVMfq8T_vohm-osDZYCmCB6YaADEZ8DXEqQfkD5cFU0Pw70OqkrpuCtWo2BwydknvLseIbrFyUuYD3LMe0sgHiMsftBI3gX1hN9ufJzG1FAy7SSmVS4UJp4DSAJxaAB0MoZ6cY-Fm3WuvkO31j_1mEtc9I9RKgjCOR_1rpnGCZeLBIOnbiV5fH5tVUg2voFEY5i4RtKVkQCSipNAlQ0fQVdEXCzIHLii0zaTScAbwFoogPFwt4-lstD4jX3ZvcxMFyM_gaG52rDRxpbfbGaTxMMRrfL2dSKEgj6rO6ldcIHvwR_fOK4-MLh_xOs3koZ7ZQKXtoYyWEf9Es8nb2LXn4K3GUJ2fa2ZXwXb_Z5ksjYKGmJcbKKK99CQCF1cZjHR34IARkspWkCbT_1PmqvFqYB_oOA\",\n    \"artist\": {\n        \"id\": 126335112,\n        \"name\": \"ROS\u00c9\",\n        \"link\": \"https://www.deezer.com/artist/126335112\",\n        \"share\": \"https://www.deezer.com/artist/126335112?utm_source=deezer&utm_content=artist-126335112&utm_term=0_1756027137&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/126335112/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/126335112/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 658285691,\n        \"title\": \"APT.\",\n        \"link\": \"https://www.deezer.com/album/658285691\",\n        \"cover\": \"https://api.deezer.com/album/658285691/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"258e6042338ce64bb4157c0c94b232ac\",\n        \"release_date\": \"2024-10-18\",\n        \"tracklist\": \"https://api.deezer.com/album/658285691/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.26131"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 18,
+    "fields": {
+      "added_on": "2025-08-24T09:18:57.744Z",
+      "api": "http://localhost:8000/deezer/track/71220746/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 71220746,\n    \"readable\": true,\n    \"title\": \"Budapest\",\n    \"title_short\": \"Budapest\",\n    \"title_version\": \"\",\n    \"isrc\": \"GBARL1301120\",\n    \"link\": \"https://www.deezer.com/track/71220746\",\n    \"share\": \"https://www.deezer.com/track/71220746?utm_source=deezer&utm_content=track-71220746&utm_term=0_1756027137&utm_medium=web\",\n    \"duration\": 202,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 811418,\n    \"release_date\": \"2013-11-03\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 0,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/0/7/a/0/07abeb1936eaac500b89acf179f7dd9b.mp3?hdnea=exp=1756028037~acl=/api/1/1/0/7/a/0/07abeb1936eaac500b89acf179f7dd9b.mp3*~data=user_id=0,application_id=42~hmac=38eae7aca804d2467fe9f307178ae7ac6282a357f91bacd14049f4be85473b69\",\n    \"bpm\": 128,\n    \"gain\": -19.7,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AR\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BW\",\n        \"BY\",\n        \"CA\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CU\",\n        \"CV\",\n        \"CW\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GT\",\n        \"GW\",\n        \"HK\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IQ\",\n        \"IR\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MN\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RU\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 5241932,\n            \"name\": \"George Ezra\",\n            \"link\": \"https://www.deezer.com/artist/5241932\",\n            \"share\": \"https://www.deezer.com/artist/5241932?utm_source=deezer&utm_content=artist-5241932&utm_term=0_1756027137&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/5241932/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/5241932/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"8cb7398a61585a1b3ded2557b029e8a6\",\n    \"track_token\": \"AAAAAWiq2QFoq_JB7nUY4h5B1NnnqTBTT37tZLA4S29y195ygsvLUcv6EY1hTiWltVV9AiCEPZoeVz53H5EiQa4RgzkORWZh7l7nyApWQ8BycJp42uB4ncYeBkmFWmn6lEsKAGtdrln0ak1n7d_iGROQyUAdZmn0wvP2Z4RcTlG2jYI_VnZdptH-em7rwvFJqwAIO5gWzDSRFUhgIyVOLQBb2TEqfd_YzVfuB04S0K9HWJlQe3onnrv0cxB2Ro7dhsuCzSWs6WV2CFql1alRCFQ1Ff6CVZykMVAflqkP4dNZhmj2ueJGr115Hz0blp7KEMQJq87h4Vegfq2F2uEbRsOLlUc8070OmflEzOmI4caj_cYYwVrktsg3Wf8VCk07lCTFv61iWLjlB4TobPTdvy0_7mpdjczBbA4PyP3QhJaOc4XWHAOSgJ7XBUGQR-Yo\",\n    \"artist\": {\n        \"id\": 5241932,\n        \"name\": \"George Ezra\",\n        \"link\": \"https://www.deezer.com/artist/5241932\",\n        \"share\": \"https://www.deezer.com/artist/5241932?utm_source=deezer&utm_content=artist-5241932&utm_term=0_1756027137&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/5241932/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/2685c0d156a661d3fc28678de3416750/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/5241932/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 6991678,\n        \"title\": \"Did You Hear the Rain?\",\n        \"link\": \"https://www.deezer.com/album/6991678\",\n        \"cover\": \"https://api.deezer.com/album/6991678/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/8cb7398a61585a1b3ded2557b029e8a6/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"8cb7398a61585a1b3ded2557b029e8a6\",\n        \"release_date\": \"2013-11-01\",\n        \"tracklist\": \"https://api.deezer.com/album/6991678/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.29497"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 19,
+    "fields": {
+      "added_on": "2025-08-24T09:18:58.017Z",
+      "api": "http://localhost:8000/deezer/track/3157972/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 3157972,\n    \"readable\": true,\n    \"title\": \"Viva La Vida\",\n    \"title_short\": \"Viva La Vida\",\n    \"title_version\": \"\",\n    \"isrc\": \"GBAYE0800265\",\n    \"link\": \"https://www.deezer.com/track/3157972\",\n    \"share\": \"https://www.deezer.com/track/3157972?utm_source=deezer&utm_content=track-3157972&utm_term=0_1756027137&utm_medium=web\",\n    \"duration\": 242,\n    \"track_position\": 7,\n    \"disk_number\": 1,\n    \"rank\": 951268,\n    \"release_date\": \"2008-06-06\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 0,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/c/5/f/0/c5f0d57a616b78b9428bb966dbb959bf.mp3?hdnea=exp=1756028037~acl=/api/1/1/c/5/f/0/c5f0d57a616b78b9428bb966dbb959bf.mp3*~data=user_id=0,application_id=42~hmac=7457c640391256b4179571507a40ece091999ad2380eb4fe65e8d077b7f058c3\",\n    \"bpm\": 137.8,\n    \"gain\": -9.6,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"BY\",\n        \"CA\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CI\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CV\",\n        \"CY\",\n        \"CZ\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IL\",\n        \"IN\",\n        \"IQ\",\n        \"IS\",\n        \"JM\",\n        \"JO\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NG\",\n        \"NI\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RU\",\n        \"RW\",\n        \"SA\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SZ\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VE\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 892,\n            \"name\": \"Coldplay\",\n            \"link\": \"https://www.deezer.com/artist/892\",\n            \"share\": \"https://www.deezer.com/artist/892?utm_source=deezer&utm_content=artist-892&utm_term=0_1756027137&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/892/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/892/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"eede3cd0dc3a5a87c7a5b1085b022e2d\",\n    \"track_token\": \"AAAAAWiq2QFoq_JB6mnkiaATW8HyOpRuJ8MlTBG2hCGoh51-g9E8IPoePU_SIBEc9lLH-8ji26zKPHkhYfQ7i6qPxXO1gIemOkskeKPx1NFH7r9RY3QVMYdEDmzBjKtWa7n-EmWhvtpy484pWw7PX4T_myLZk0DoPKyx6BJU-FsT2UidQSicduN7QOplCnoes4FLepu-D8V0IgcgDGwhTTIWgyM0LsSZtkeHZ449STy81c9z2n1j-rSakCRm16VlCNSxZZcDcuTjERCO1e09BmG92xPX0a2qS_bt4OTyvFVQDTJ6yJ2BUqbjgegfIxUx6AP8TiLBIvq_GGo2qIa79JAvhgEbyxa0_lTTcOfGiCjCNz9oU8FrSgv50kbF-uCKjOnUvb04-yae8rXti1CWkLgEEdHlwrUOhRYB2C6jOG18PL45pXLtH1kSG7MfWmuu-g\",\n    \"artist\": {\n        \"id\": 892,\n        \"name\": \"Coldplay\",\n        \"link\": \"https://www.deezer.com/artist/892\",\n        \"share\": \"https://www.deezer.com/artist/892?utm_source=deezer&utm_content=artist-892&utm_term=0_1756027137&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/892/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/892/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 303627,\n        \"title\": \"Viva La Vida or Death and All His Friends\",\n        \"link\": \"https://www.deezer.com/album/303627\",\n        \"cover\": \"https://api.deezer.com/album/303627/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/eede3cd0dc3a5a87c7a5b1085b022e2d/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"eede3cd0dc3a5a87c7a5b1085b022e2d\",\n        \"release_date\": \"2008-05-26\",\n        \"tracklist\": \"https://api.deezer.com/album/303627/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.29525"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 20,
+    "fields": {
+      "added_on": "2025-08-24T09:18:58.041Z",
+      "api": "http://localhost:8000/deezer/track/2454911985/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 2454911985,\n    \"readable\": true,\n    \"title\": \"Already Over\",\n    \"title_short\": \"Already Over\",\n    \"title_version\": \"\",\n    \"isrc\": \"USWB12304892\",\n    \"link\": \"https://www.deezer.com/track/2454911985\",\n    \"share\": \"https://www.deezer.com/track/2454911985?utm_source=deezer&utm_content=track-2454911985&utm_term=0_1756027137&utm_medium=web\",\n    \"duration\": 160,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 520252,\n    \"release_date\": \"2023-10-06\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 2,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/8/3/1/0/83195818fd1a588710dc755f2521f9ea.mp3?hdnea=exp=1756028037~acl=/api/1/1/8/3/1/0/83195818fd1a588710dc755f2521f9ea.mp3*~data=user_id=0,application_id=42~hmac=599b0827fa611fb298bc81753daa8e8a24de2386fc14b4ffc216fde2a74f406a\",\n    \"bpm\": 0,\n    \"gain\": -6.3,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"CA\",\n        \"CC\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CK\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CV\",\n        \"CW\",\n        \"CX\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FK\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GS\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HM\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IO\",\n        \"IQ\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NF\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NU\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TK\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 4485585,\n            \"name\": \"Mike Shinoda\",\n            \"link\": \"https://www.deezer.com/artist/4485585\",\n            \"share\": \"https://www.deezer.com/artist/4485585?utm_source=deezer&utm_content=artist-4485585&utm_term=0_1756027137&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/4485585/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/4485585/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"0924d0bac8223b062023a1ae9f6b58db\",\n    \"track_token\": \"AAAAAWiq2QFoq_JB3EPNkvnJNoYpPNDx-Qrl2jRufdkVfU8swgGK1V4hnxF1-l3xaQoLfk7TmWBrzA0boEfJF5lcLX8QpW8bB1_0D4hqlPxn6U-Ce_bY_83GIrZ8tBTEnf_0kwaKmtZ3yyJF4g5sa9SKxV30NDRY-DJdERt_q-bArQBQIMAA_x9YM5_kpKNcfN8F68et8cKiGrWuJs3f7lULYC4H697LjYTnofncvq4bquyez5mezw8lG-87Ez9wME6vFhKTHuf-C9OgOb2ZdqfXzrC48-vhF3x-aIhNPkFhhcchwtxHMtj_R2YKlRKtfQVqlq9ghCHa-TXliJEXYgGgnCJGWBeXikE\",\n    \"artist\": {\n        \"id\": 4485585,\n        \"name\": \"Mike Shinoda\",\n        \"link\": \"https://www.deezer.com/artist/4485585\",\n        \"share\": \"https://www.deezer.com/artist/4485585?utm_source=deezer&utm_content=artist-4485585&utm_term=0_1756027137&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/4485585/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/83893b115ac94cfa93fc8ba94bdc91f8/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/4485585/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 488076495,\n        \"title\": \"Already Over\",\n        \"link\": \"https://www.deezer.com/album/488076495\",\n        \"cover\": \"https://api.deezer.com/album/488076495/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/0924d0bac8223b062023a1ae9f6b58db/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"0924d0bac8223b062023a1ae9f6b58db\",\n        \"release_date\": \"2023-10-06\",\n        \"tracklist\": \"https://api.deezer.com/album/488076495/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.26565"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 21,
+    "fields": {
+      "added_on": "2025-08-24T09:18:58.058Z",
+      "api": "http://localhost:8000/deezer/track/1647876002/",
+      "headers": "{\n    \"HOST\": \"localhost:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"AUTHORIZATION\": \"***FILTERED***\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"application/json\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"ORIGIN\": \"http://localhost:8080\",\n    \"SEC_FETCH_SITE\": \"same-site\",\n    \"SEC_FETCH_MODE\": \"cors\",\n    \"SEC_FETCH_DEST\": \"empty\",\n    \"REFERER\": \"http://localhost:8080/\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 1647876002,\n    \"readable\": true,\n    \"title\": \"Coastline\",\n    \"title_short\": \"Coastline\",\n    \"title_version\": \"\",\n    \"isrc\": \"AUGSG1600007\",\n    \"link\": \"https://www.deezer.com/track/1647876002\",\n    \"share\": \"https://www.deezer.com/track/1647876002?utm_source=deezer&utm_content=track-1647876002&utm_term=0_1756027137&utm_medium=web\",\n    \"duration\": 233,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 682560,\n    \"release_date\": \"2017-03-17\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 0,\n    \"explicit_content_cover\": 2,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/4/e/4/0/4e47bd33f1a4cbd431a40963a83300de.mp3?hdnea=exp=1756028037~acl=/api/1/1/4/e/4/0/4e47bd33f1a4cbd431a40963a83300de.mp3*~data=user_id=0,application_id=42~hmac=8a843a57e570d8a33876906ad43eb2097e4ac2cf298e9771c1ae7317638b4350\",\n    \"bpm\": 0,\n    \"gain\": -10.6,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"BY\",\n        \"CA\",\n        \"CC\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CK\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CU\",\n        \"CV\",\n        \"CW\",\n        \"CX\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FK\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GS\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HM\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IO\",\n        \"IQ\",\n        \"IR\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KP\",\n        \"KR\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NF\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NU\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RU\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SY\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TK\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"UM\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 7492486,\n            \"name\": \"Hollow Coves\",\n            \"link\": \"https://www.deezer.com/artist/7492486\",\n            \"share\": \"https://www.deezer.com/artist/7492486?utm_source=deezer&utm_content=artist-7492486&utm_term=0_1756027137&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/7492486/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/7492486/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"694999b0e2c9c832d2ab406f861f9a96\",\n    \"track_token\": \"AAAAAWiq2QFoq_JBod-9jiVUulBS2jY6JpkYtKyHjUTeqRi54u1VxtdeS5OBol3-fzUD5l9bk0LwspXjtBIuPqfklGyLieEVSTSrJFICG4AVwjKNdKzCqyWMTF_vSYLBuvOUkBKoeLoS9AmW9arGF2MAtD4KPjp2ng9euZnsl3CswpOTXReVTso4dZuXs8XIBeDp4X2a_aPPW6S0m4kef2xDkOxXlosJD7SwLqXeadHTYxp8ooSKDB9Fe-sdqsgzr5tqXwV64awyb2KQ6zVNwA5ansL__X5ikja3Txj6YfXmMLWo-2Bp0jR0-lpixvhgQw0rn_L4eQKp5P33jahdYTBdEq5NOW0Pok5YBC4S58y5KjaAdGBmtupnlpJLLEZvmL8R6Ncc8xjvLi9BMQ\",\n    \"artist\": {\n        \"id\": 7492486,\n        \"name\": \"Hollow Coves\",\n        \"link\": \"https://www.deezer.com/artist/7492486\",\n        \"share\": \"https://www.deezer.com/artist/7492486?utm_source=deezer&utm_content=artist-7492486&utm_term=0_1756027137&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/7492486/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/b46f704b1500cfcd37e13dad8c67d6b6/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/7492486/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 293759292,\n        \"title\": \"Wanderlust\",\n        \"link\": \"https://www.deezer.com/album/293759292\",\n        \"cover\": \"https://api.deezer.com/album/293759292/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/694999b0e2c9c832d2ab406f861f9a96/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"694999b0e2c9c832d2ab406f861f9a96\",\n        \"release_date\": \"2017-02-03\",\n        \"tracklist\": \"https://api.deezer.com/album/293759292/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.28668"
+    }
+  },
+  {
+    "model": "drf_api_logger.apilogsmodel",
+    "pk": 22,
+    "fields": {
+      "added_on": "2025-08-24T09:19:24.585Z",
+      "api": "http://127.0.0.1:8000/deezer/track/3050380851/",
+      "headers": "{\n    \"HOST\": \"127.0.0.1:8000\",\n    \"CONNECTION\": \"keep-alive\",\n    \"SEC_CH_UA\": \"\\\"Not;A=Brand\\\";v=\\\"99\\\", \\\"Google Chrome\\\";v=\\\"139\\\", \\\"Chromium\\\";v=\\\"139\\\"\",\n    \"SEC_CH_UA_MOBILE\": \"?0\",\n    \"SEC_CH_UA_PLATFORM\": \"\\\"Windows\\\"\",\n    \"UPGRADE_INSECURE_REQUESTS\": \"1\",\n    \"USER_AGENT\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\",\n    \"ACCEPT\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\n    \"SEC_FETCH_SITE\": \"none\",\n    \"SEC_FETCH_MODE\": \"navigate\",\n    \"SEC_FETCH_USER\": \"?1\",\n    \"SEC_FETCH_DEST\": \"document\",\n    \"ACCEPT_ENCODING\": \"gzip, deflate, br, zstd\",\n    \"ACCEPT_LANGUAGE\": \"en-US,en;q=0.9\"\n}",
+      "body": "",
+      "method": "GET",
+      "client_ip_address": "10.0.2.2",
+      "response": "{\n    \"id\": 3050380851,\n    \"readable\": true,\n    \"title\": \"APT.\",\n    \"title_short\": \"APT.\",\n    \"title_version\": \"\",\n    \"isrc\": \"USAT22409172\",\n    \"link\": \"https://www.deezer.com/track/3050380851\",\n    \"share\": \"https://www.deezer.com/track/3050380851?utm_source=deezer&utm_content=track-3050380851&utm_term=0_1756027164&utm_medium=web\",\n    \"duration\": 169,\n    \"track_position\": 1,\n    \"disk_number\": 1,\n    \"rank\": 992741,\n    \"release_date\": \"2024-10-18\",\n    \"explicit_lyrics\": false,\n    \"explicit_content_lyrics\": 6,\n    \"explicit_content_cover\": 2,\n    \"preview\": \"https://cdnt-preview.dzcdn.net/api/1/1/0/e/0/0/0e093da717796aa9d2dbe0d189cfba66.mp3?hdnea=exp=1756028064~acl=/api/1/1/0/e/0/0/0e093da717796aa9d2dbe0d189cfba66.mp3*~data=user_id=0,application_id=42~hmac=9884e13c6ad8484d8c974827d05e22dcfa0bd6ba8a3a83450a02bcf497f06d5e\",\n    \"bpm\": 0,\n    \"gain\": -7.8,\n    \"available_countries\": [\n        \"AE\",\n        \"AF\",\n        \"AG\",\n        \"AI\",\n        \"AL\",\n        \"AM\",\n        \"AO\",\n        \"AQ\",\n        \"AR\",\n        \"AS\",\n        \"AT\",\n        \"AU\",\n        \"AZ\",\n        \"BA\",\n        \"BB\",\n        \"BD\",\n        \"BE\",\n        \"BF\",\n        \"BG\",\n        \"BH\",\n        \"BI\",\n        \"BJ\",\n        \"BN\",\n        \"BO\",\n        \"BQ\",\n        \"BR\",\n        \"BT\",\n        \"BV\",\n        \"BW\",\n        \"CA\",\n        \"CC\",\n        \"CD\",\n        \"CF\",\n        \"CG\",\n        \"CH\",\n        \"CI\",\n        \"CK\",\n        \"CL\",\n        \"CM\",\n        \"CN\",\n        \"CO\",\n        \"CR\",\n        \"CV\",\n        \"CW\",\n        \"CX\",\n        \"CY\",\n        \"CZ\",\n        \"DE\",\n        \"DJ\",\n        \"DK\",\n        \"DM\",\n        \"DO\",\n        \"DZ\",\n        \"EC\",\n        \"EE\",\n        \"EG\",\n        \"EH\",\n        \"ER\",\n        \"ES\",\n        \"ET\",\n        \"FI\",\n        \"FJ\",\n        \"FK\",\n        \"FM\",\n        \"FR\",\n        \"GA\",\n        \"GB\",\n        \"GD\",\n        \"GE\",\n        \"GH\",\n        \"GM\",\n        \"GN\",\n        \"GQ\",\n        \"GR\",\n        \"GS\",\n        \"GT\",\n        \"GU\",\n        \"GW\",\n        \"HK\",\n        \"HM\",\n        \"HN\",\n        \"HR\",\n        \"HU\",\n        \"ID\",\n        \"IE\",\n        \"IL\",\n        \"IN\",\n        \"IO\",\n        \"IQ\",\n        \"IS\",\n        \"IT\",\n        \"JM\",\n        \"JO\",\n        \"JP\",\n        \"KE\",\n        \"KG\",\n        \"KH\",\n        \"KI\",\n        \"KM\",\n        \"KN\",\n        \"KW\",\n        \"KY\",\n        \"KZ\",\n        \"LA\",\n        \"LB\",\n        \"LC\",\n        \"LK\",\n        \"LR\",\n        \"LS\",\n        \"LT\",\n        \"LU\",\n        \"LV\",\n        \"LY\",\n        \"MA\",\n        \"MD\",\n        \"ME\",\n        \"MG\",\n        \"MH\",\n        \"MK\",\n        \"ML\",\n        \"MM\",\n        \"MN\",\n        \"MP\",\n        \"MR\",\n        \"MS\",\n        \"MT\",\n        \"MU\",\n        \"MV\",\n        \"MW\",\n        \"MX\",\n        \"MY\",\n        \"MZ\",\n        \"NA\",\n        \"NE\",\n        \"NF\",\n        \"NG\",\n        \"NI\",\n        \"NL\",\n        \"NO\",\n        \"NP\",\n        \"NR\",\n        \"NU\",\n        \"NZ\",\n        \"OM\",\n        \"PA\",\n        \"PE\",\n        \"PG\",\n        \"PH\",\n        \"PK\",\n        \"PL\",\n        \"PN\",\n        \"PS\",\n        \"PT\",\n        \"PW\",\n        \"PY\",\n        \"QA\",\n        \"RO\",\n        \"RS\",\n        \"RW\",\n        \"SA\",\n        \"SB\",\n        \"SC\",\n        \"SD\",\n        \"SE\",\n        \"SG\",\n        \"SI\",\n        \"SJ\",\n        \"SK\",\n        \"SL\",\n        \"SN\",\n        \"SO\",\n        \"SS\",\n        \"ST\",\n        \"SV\",\n        \"SX\",\n        \"SZ\",\n        \"TC\",\n        \"TD\",\n        \"TG\",\n        \"TH\",\n        \"TJ\",\n        \"TK\",\n        \"TL\",\n        \"TM\",\n        \"TN\",\n        \"TO\",\n        \"TR\",\n        \"TV\",\n        \"TW\",\n        \"TZ\",\n        \"UA\",\n        \"UG\",\n        \"US\",\n        \"UY\",\n        \"UZ\",\n        \"VC\",\n        \"VE\",\n        \"VG\",\n        \"VI\",\n        \"VN\",\n        \"VU\",\n        \"WS\",\n        \"YE\",\n        \"ZA\",\n        \"ZM\",\n        \"ZW\"\n    ],\n    \"contributors\": [\n        {\n            \"id\": 126335112,\n            \"name\": \"ROS\u00c9\",\n            \"link\": \"https://www.deezer.com/artist/126335112\",\n            \"share\": \"https://www.deezer.com/artist/126335112?utm_source=deezer&utm_content=artist-126335112&utm_term=0_1756027164&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/126335112/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/126335112/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        },\n        {\n            \"id\": 429675,\n            \"name\": \"Bruno Mars\",\n            \"link\": \"https://www.deezer.com/artist/429675\",\n            \"share\": \"https://www.deezer.com/artist/429675?utm_source=deezer&utm_content=artist-429675&utm_term=0_1756027164&utm_medium=web\",\n            \"picture\": \"https://api.deezer.com/artist/429675/image\",\n            \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/56x56-000000-80-0-0.jpg\",\n            \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/250x250-000000-80-0-0.jpg\",\n            \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/500x500-000000-80-0-0.jpg\",\n            \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/7f3c0956357c326b2db2cf436f1dc8c5/1000x1000-000000-80-0-0.jpg\",\n            \"radio\": true,\n            \"tracklist\": \"https://api.deezer.com/artist/429675/top?limit=50\",\n            \"type\": \"artist\",\n            \"role\": \"Main\"\n        }\n    ],\n    \"md5_image\": \"258e6042338ce64bb4157c0c94b232ac\",\n    \"track_token\": \"AAAAAWiq2Rxoq_Jcb52bSFez6Z1HOCnZPQH7Sl-r97moiBkbodyUfqBUxRSiBrH7Anhpi_zXx2_n_M4J8pEEL0w8SCdl_jv9h3JV8GJmHfXPvv54AiTn7oPvIGA7x9lyDCj-pseMD-27M-_9YajoALi3BYJ0hhVTRa-HVgM8BNOE-ymkUre28pE80Y7enW0RusUjz9GnvI8DK1uEt8ZMjArrRvZYq6Y_IzRakIESF0Ncpbb23H8AwehGDSIf4VnMhGKKumD92nG5N6erZHej3Ohbs84-1WFojnUCMBAKS7ov1tHLMKLCLl5K-ijT6IEv_E8DmO29_YhiUQdoE78VH2KGdw9bmpejyoDki4HmSdKPuaM_TVbd5CcqLeWcHKlnGwXmQnvG4u30JWi0ngQle2jQ4jGWTeY9CKmntNCR-76cvUq6p6RvwUUQrWg9lMSxgt4aDFp7QQ\",\n    \"artist\": {\n        \"id\": 126335112,\n        \"name\": \"ROS\u00c9\",\n        \"link\": \"https://www.deezer.com/artist/126335112\",\n        \"share\": \"https://www.deezer.com/artist/126335112?utm_source=deezer&utm_content=artist-126335112&utm_term=0_1756027164&utm_medium=web\",\n        \"picture\": \"https://api.deezer.com/artist/126335112/image\",\n        \"picture_small\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/56x56-000000-80-0-0.jpg\",\n        \"picture_medium\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/250x250-000000-80-0-0.jpg\",\n        \"picture_big\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/500x500-000000-80-0-0.jpg\",\n        \"picture_xl\": \"https://cdn-images.dzcdn.net/images/artist/dca80c50292476001830d88019cdd2f2/1000x1000-000000-80-0-0.jpg\",\n        \"radio\": true,\n        \"tracklist\": \"https://api.deezer.com/artist/126335112/top?limit=50\",\n        \"type\": \"artist\"\n    },\n    \"album\": {\n        \"id\": 658285691,\n        \"title\": \"APT.\",\n        \"link\": \"https://www.deezer.com/album/658285691\",\n        \"cover\": \"https://api.deezer.com/album/658285691/image\",\n        \"cover_small\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/56x56-000000-80-0-0.jpg\",\n        \"cover_medium\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/250x250-000000-80-0-0.jpg\",\n        \"cover_big\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/500x500-000000-80-0-0.jpg\",\n        \"cover_xl\": \"https://cdn-images.dzcdn.net/images/cover/258e6042338ce64bb4157c0c94b232ac/1000x1000-000000-80-0-0.jpg\",\n        \"md5_image\": \"258e6042338ce64bb4157c0c94b232ac\",\n        \"release_date\": \"2024-10-18\",\n        \"tracklist\": \"https://api.deezer.com/album/658285691/tracks\",\n        \"type\": \"album\"\n    },\n    \"type\": \"track\"\n}",
+      "status_code": 200,
+      "execution_time": "0.26925"
     }
   }
 ]

@@ -1,0 +1,989 @@
+[
+  {
+    "model": "sessions.session",
+    "pk": "5pls7oo2f6addfzzgrhvmnp375l9fekq",
+    "fields": {
+      "session_data": ".eJxVjDsOwyAQBe9CHSHA_JIyfc6All0ITiKQjF1FuXtsyYXdzsx7XxZgmUtYeprCSOzGJLscWQR8p7oJekF9No6tztMY-Zbw3Xb-aJQ-9709HRToZV0jGZ-8MBTBKpVJGJ3JOSvykKU13kepnEUFWsNVgBuMQ5VgZSKi9pr9_uD0N3A:1uJPQf:FFePBv_aB16J3tyPAqhESjjHzz_AsUzfAhzJk7G9k1o",
+      "expire_date": "2025-06-09T04:27:13.632Z"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "6dvhsm2kc2k43qqz4dy1v1erau7tedv4",
+    "fields": {
+      "session_data": ".eJxVjDsOwyAQBe9CHSHA_JIyfc6All0ITiKQjF1FuXtsyYXdzsx7XxZgmUtYeprCSOzGJLscWQR8p7oJekF9No6tztMY-Zbw3Xb-aJQ-9709HRToZV0jGZ-8MBTBKpVJGJ3JOSvykKU13kepnEUFWsNVgBuMQ5VgZSKi9pr9_uD0N3A:1uLJ3m:SIVVGL4zCsM_vzLjXPqy-doQrPT7shZTLTZU8F9Z_hI",
+      "expire_date": "2025-06-14T10:03:26.281Z"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "d3ai6yu31m05o99z27hbf9084ody1vbg",
+    "fields": {
+      "session_data": ".eJxVjDsOwyAQBe9CHSHA_JIyfc6All0ITiKQjF1FuXtsyYXdzsx7XxZgmUtYeprCSOzGJLscWQR8p7oJekF9No6tztMY-Zbw3Xb-aJQ-9709HRToZV0jGZ-8MBTBKpVJGJ3JOSvykKU13kepnEUFWsNVgBuMQ5VgZSKi9pr9_uD0N3A:1uYIfX:4OVVKq3Chd2MMhCANt3C9KrGrZAT7c78Rho0oOXAWoQ",
+      "expire_date": "2025-07-20T06:16:07.641Z"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "dslkcgmj7e0vd8zan70fl1g5mqsowd0v",
+    "fields": {
+      "session_data": ".eJxVjDsOwyAQBe9CHSHA_JIyfc6All0ITiKQjF1FuXtsyYXdzsx7XxZgmUtYeprCSOzGJLscWQR8p7oJekF9No6tztMY-Zbw3Xb-aJQ-9709HRToZV0jGZ-8MBTBKpVJGJ3JOSvykKU13kepnEUFWsNVgBuMQ5VgZSKi9pr9_uD0N3A:1uJ0NV:n5VoVWqQZT-_Q8NbWi7CoyiwsW3DcJSgJRnbPn61IdU",
+      "expire_date": "2025-06-08T01:42:17.555Z"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "z9e1ciru7ohcn0pq0lcn2lpv6f7xyl5s",
+    "fields": {
+      "session_data": ".eJxVjDsOwyAQBe9CHSHA_JIyfc6All0ITiKQjF1FuXtsyYXdzsx7XxZgmUtYeprCSOzGJLscWQR8p7oJekF9No6tztMY-Zbw3Xb-aJQ-9709HRToZV0jGZ-8MBTBKpVJGJ3JOSvykKU13kepnEUFWsNVgBuMQ5VgZSKi9pr9_uD0N3A:1uJQ84:qmR0Ku-2mD8GPW6R-X6UaWb7wqAhxQX8zXZRlWJbijI",
+      "expire_date": "2025-06-09T05:12:04.319Z"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 1,
+    "fields": {
+      "name": "APT.",
+      "artist": "ROS\u00c9",
+      "deezer_track_id": "3050380851",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3050380851"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 2,
+    "fields": {
+      "name": "APT.",
+      "artist": "Bongo Cat",
+      "deezer_track_id": "3150664301",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3150664301"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 3,
+    "fields": {
+      "name": "APT. (Techno)",
+      "artist": "F4st",
+      "deezer_track_id": "3147218441",
+      "album": "APT. (Techno)",
+      "url": "https://www.deezer.com/track/3147218441"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 4,
+    "fields": {
+      "name": "APT.",
+      "artist": "Maria Jos\u00e9 Cardoso",
+      "deezer_track_id": "3383541501",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3383541501"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 5,
+    "fields": {
+      "name": "APT. (Cover)",
+      "artist": "BuitTunes",
+      "deezer_track_id": "3082894831",
+      "album": "APT. (Cover)",
+      "url": "https://www.deezer.com/track/3082894831"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 6,
+    "fields": {
+      "name": "APT.",
+      "artist": "KIDZ BOP Kids",
+      "deezer_track_id": "3255203181",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3255203181"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 7,
+    "fields": {
+      "name": "APT. (ULTRAFUNK)",
+      "artist": "HISTED",
+      "deezer_track_id": "3155955261",
+      "album": "APT. (ULTRAFUNK)",
+      "url": "https://www.deezer.com/track/3155955261"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 8,
+    "fields": {
+      "name": "APT (Funny Indian Remix)",
+      "artist": "Vindaloo Singh",
+      "deezer_track_id": "3099253701",
+      "album": "APT (Funny Indian Remix)",
+      "url": "https://www.deezer.com/track/3099253701"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 9,
+    "fields": {
+      "name": "Apt (Nightcore)",
+      "artist": "Neko",
+      "deezer_track_id": "3092274261",
+      "album": "Apt (Nightcore)",
+      "url": "https://www.deezer.com/track/3092274261"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 10,
+    "fields": {
+      "name": "APT.",
+      "artist": "Clay K Slider",
+      "deezer_track_id": "3127577581",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3127577581"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 11,
+    "fields": {
+      "name": "APT.",
+      "artist": "Charles B",
+      "deezer_track_id": "3243244571",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3243244571"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 12,
+    "fields": {
+      "name": "APT. (French Cover)",
+      "artist": "Myu-Chan",
+      "deezer_track_id": "3115004111",
+      "album": "APT. (French Cover)",
+      "url": "https://www.deezer.com/track/3115004111"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 13,
+    "fields": {
+      "name": "APT.",
+      "artist": "Perfect Pitch",
+      "deezer_track_id": "3327101101",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3327101101"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 14,
+    "fields": {
+      "name": "APT.",
+      "artist": "Sandaru Sathsara",
+      "deezer_track_id": "3088438421",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3088438421"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 15,
+    "fields": {
+      "name": "APT. (Sped up Nightcore)",
+      "artist": "Kymsue",
+      "deezer_track_id": "3092424821",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3092424821"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 16,
+    "fields": {
+      "name": "APT (en espa\u00f1ol) (feat. Abi Rosales)",
+      "artist": "Alej C\u00e1zares",
+      "deezer_track_id": "3083384771",
+      "album": "APT (en espa\u00f1ol) (feat. Abi Rosales)",
+      "url": "https://www.deezer.com/track/3083384771"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 17,
+    "fields": {
+      "name": "APT. (Techno Mix)",
+      "artist": "LUCKY DEMON",
+      "deezer_track_id": "3223192971",
+      "album": "APT. (Techno Mix)",
+      "url": "https://www.deezer.com/track/3223192971"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 18,
+    "fields": {
+      "name": "APT.",
+      "artist": "Ben Woodward",
+      "deezer_track_id": "3266991051",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3266991051"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 19,
+    "fields": {
+      "name": "APT (Piano Version)",
+      "artist": "Cozy Rabbit",
+      "deezer_track_id": "3124082141",
+      "album": "APT (Piano Version)",
+      "url": "https://www.deezer.com/track/3124082141"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 20,
+    "fields": {
+      "name": "APT.",
+      "artist": "Kymsue",
+      "deezer_track_id": "3092424811",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3092424811"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 21,
+    "fields": {
+      "name": "APT. (Workout Version 132 BPM)",
+      "artist": "Power Music Workout",
+      "deezer_track_id": "3098838161",
+      "album": "Best of 2024 Workout Mix (Nonstop Workout Mix 132 BPM)",
+      "url": "https://www.deezer.com/track/3098838161"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 22,
+    "fields": {
+      "name": "APT. (Metal)",
+      "artist": "Melodicka Bros",
+      "deezer_track_id": "3090560591",
+      "album": "APT. (Metal)",
+      "url": "https://www.deezer.com/track/3090560591"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 23,
+    "fields": {
+      "name": "APT. (ULTRAFUNK SPED UP)",
+      "artist": "HISTED",
+      "deezer_track_id": "3155955281",
+      "album": "APT. (ULTRAFUNK)",
+      "url": "https://www.deezer.com/track/3155955281"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 24,
+    "fields": {
+      "name": "APT",
+      "artist": "Coast Contra",
+      "deezer_track_id": "1688522507",
+      "album": "Apt. 505",
+      "url": "https://www.deezer.com/track/1688522507"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 25,
+    "fields": {
+      "name": "APT.",
+      "artist": "First to Eleven",
+      "deezer_track_id": "3183030411",
+      "album": "APT.",
+      "url": "https://www.deezer.com/track/3183030411"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 26,
+    "fields": {
+      "name": "Budapest",
+      "artist": "George Ezra",
+      "deezer_track_id": "71220746",
+      "album": "Did You Hear the Rain?",
+      "url": "https://www.deezer.com/track/71220746"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 27,
+    "fields": {
+      "name": "Viva La Vida",
+      "artist": "Coldplay",
+      "deezer_track_id": "3157972",
+      "album": "Viva La Vida or Death and All His Friends",
+      "url": "https://www.deezer.com/track/3157972"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 28,
+    "fields": {
+      "name": "Coastline",
+      "artist": "Hollow Coves",
+      "deezer_track_id": "1647876002",
+      "album": "Wanderlust",
+      "url": "https://www.deezer.com/track/1647876002"
+    }
+  },
+  {
+    "model": "tracks.track",
+    "pk": 29,
+    "fields": {
+      "name": "Already Over",
+      "artist": "Mike Shinoda",
+      "deezer_track_id": "2454911985",
+      "album": "Already Over",
+      "url": "https://www.deezer.com/track/2454911985"
+    }
+  },
+  {
+    "model": "playlists.playlisttrack",
+    "pk": 6,
+    "fields": {
+      "playlist": 1,
+      "track": 1,
+      "position": 1,
+      "points": 0
+    }
+  },
+  {
+    "model": "playlists.playlisttrack",
+    "pk": 7,
+    "fields": {
+      "playlist": 1,
+      "track": 26,
+      "position": 2,
+      "points": 0
+    }
+  },
+  {
+    "model": "playlists.playlisttrack",
+    "pk": 8,
+    "fields": {
+      "playlist": 1,
+      "track": 27,
+      "position": 3,
+      "points": 0
+    }
+  },
+  {
+    "model": "playlists.playlisttrack",
+    "pk": 9,
+    "fields": {
+      "playlist": 1,
+      "track": 28,
+      "position": 4,
+      "points": 0
+    }
+  },
+  {
+    "model": "playlists.playlisttrack",
+    "pk": 10,
+    "fields": {
+      "playlist": 1,
+      "track": 29,
+      "position": 5,
+      "points": 0
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 1,
+    "fields": {
+      "name": "rock"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 2,
+    "fields": {
+      "name": "pop"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 3,
+    "fields": {
+      "name": "hip hop"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 4,
+    "fields": {
+      "name": "jazz"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 5,
+    "fields": {
+      "name": "classical"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 6,
+    "fields": {
+      "name": "electronic"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 7,
+    "fields": {
+      "name": "blues"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 8,
+    "fields": {
+      "name": "country"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 9,
+    "fields": {
+      "name": "reggae"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 10,
+    "fields": {
+      "name": "indie"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 11,
+    "fields": {
+      "name": "metal"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 12,
+    "fields": {
+      "name": "techno"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 13,
+    "fields": {
+      "name": "lofi"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 14,
+    "fields": {
+      "name": "folk"
+    }
+  },
+  {
+    "model": "profile.musicpreference",
+    "pk": 15,
+    "fields": {
+      "name": "soul"
+    }
+  },
+  {
+    "model": "users.customuser",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$BREebsxANALc3aJjoDAmiM$jXGmXaQm58Gsr8J2E9dTITYCNYBoR/IbLg0002NaJSQ=",
+      "last_login": "2025-07-06T06:16:07.634Z",
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "",
+      "last_name": "",
+      "email": "test@test.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2025-05-25T01:40:41.415Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$ZaUAHKAaPPARl4j80zqy7k$66ImAOESKzZ3eHVUTfoEevpLpUMb7Lt0zJjno0Ey+Oo=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "anna",
+      "first_name": "",
+      "last_name": "",
+      "email": "anna@mail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-25T01:40:57.328Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$DW3pWcpFlPNkAr1i7u7mBa$tMa0E32vC7DRC9e43rxAEIclFVczJepT/C5m5khFe8w=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "elina",
+      "first_name": "",
+      "last_name": "",
+      "email": "elina@mail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-25T12:46:52.674Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.customuser",
+    "fields": {
+      "password": "pbkdf2_sha256$870000$9tNPQFCfE5l1txrxTL33HE$jf8t/YQ6jyjivLLJ+Ru0hcJewtR5MXVaphu/5Jzn+eU=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "elena",
+      "first_name": "",
+      "last_name": "",
+      "email": "elena@mail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-26T05:11:11.578Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "authtoken.token",
+    "pk": "259a85097be0108dc1679cfeddca7e42733192f2",
+    "fields": {
+      "user": [
+        "elina"
+      ],
+      "created": "2025-05-25T12:46:53.279Z"
+    }
+  },
+  {
+    "model": "authtoken.token",
+    "pk": "53b9600a7d16d334f8e698c28b4decdf0e0fabc2",
+    "fields": {
+      "user": [
+        "elena"
+      ],
+      "created": "2025-05-26T05:11:12.188Z"
+    }
+  },
+  {
+    "model": "authtoken.token",
+    "pk": "92ba40f8fc36498a8ed1cc513a1ebf9dedd1b1fd",
+    "fields": {
+      "user": [
+        "anna"
+      ],
+      "created": "2025-05-25T01:40:57.800Z"
+    }
+  },
+  {
+    "model": "playlists.playlist",
+    "pk": 1,
+    "fields": {
+      "creator": [
+        "anna"
+      ],
+      "name": "1",
+      "description": "2025",
+      "public": true,
+      "license_type": "open",
+      "vote_start_time": null,
+      "vote_end_time": null,
+      "latitude": null,
+      "longitude": null,
+      "allowed_radius_meters": null,
+      "users_saved": [
+        [
+          "admin"
+        ],
+        [
+          "anna"
+        ],
+        [
+          "elina"
+        ]
+      ],
+      "users_already_voted": [],
+      "invited_users": []
+    }
+  },
+  {
+    "model": "profile.profile",
+    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b0",
+    "fields": {
+      "user": [
+        "admin"
+      ],
+      "avatar": "avatars/IMG_4039.JPG",
+      "avatar_visibility": "public",
+      "name": "",
+      "name_visibility": "public",
+      "location": "",
+      "location_visibility": "public",
+      "bio": "",
+      "bio_visibility": "public",
+      "phone": "",
+      "phone_visibility": "private",
+      "friend_info": "",
+      "friend_info_visibility": "friends",
+      "music_preferences_visibility": "public",
+      "music_preferences": []
+    }
+  },
+  {
+    "model": "profile.profile",
+    "pk": "e4a7d01d-61c7-4c3a-8d56-f75e3fbb96b1",
+    "fields": {
+      "user": [
+        "elina"
+      ],
+      "avatar": "avatars/IMG_3629_pZ3ww8g.JPG",
+      "avatar_visibility": "public",
+      "name": "",
+      "name_visibility": "public",
+      "location": "",
+      "location_visibility": "public",
+      "bio": "",
+      "bio_visibility": "public",
+      "phone": "",
+      "phone_visibility": "private",
+      "friend_info": "",
+      "friend_info_visibility": "friends",
+      "music_preferences_visibility": "public",
+      "music_preferences": []
+    }
+  },
+  {
+    "model": "profile.profile",
+    "pk": "a82f7b61-8a2e-4b14-9e2d-53b297ef5a3c",
+    "fields": {
+      "user": [
+        "elena"
+      ],
+      "avatar": "avatars/OjvUfUkYhuY.jpg",
+      "avatar_visibility": "public",
+      "name": "",
+      "name_visibility": "public",
+      "location": "",
+      "location_visibility": "public",
+      "bio": "",
+      "bio_visibility": "public",
+      "phone": "",
+      "phone_visibility": "private",
+      "friend_info": "",
+      "friend_info_visibility": "friends",
+      "music_preferences_visibility": "public",
+      "music_preferences": []
+    }
+  },
+  {
+    "model": "profile.profile",
+    "pk": "d3f1c73a-5e44-4d12-9c3b-1a57f4f07c8a",
+    "fields": {
+      "user": [
+        "anna"
+      ],
+      "avatar": "avatars/N1JaKX_Ky2Q3.jpg",
+      "avatar_visibility": "public",
+      "name": "",
+      "name_visibility": "public",
+      "location": "",
+      "location_visibility": "public",
+      "bio": "",
+      "bio_visibility": "public",
+      "phone": "",
+      "phone_visibility": "private",
+      "friend_info": "",
+      "friend_info_visibility": "friends",
+      "music_preferences_visibility": "public",
+      "music_preferences": []
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 1,
+    "fields": {
+      "action_time": "2025-05-25T12:57:46.695Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "users",
+        "signuponetimepasscode"
+      ],
+      "object_id": "1",
+      "object_repr": "1",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 2,
+    "fields": {
+      "action_time": "2025-05-26T03:59:45.007Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "users",
+        "signuponetimepasscode"
+      ],
+      "object_id": "1",
+      "object_repr": "1",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Users saved\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 3,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.505Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "tracks",
+        "track"
+      ],
+      "object_id": "1",
+      "object_repr": "PlaylistTrack object (1)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 4,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.505Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "tracks",
+        "track"
+      ],
+      "object_id": "2",
+      "object_repr": "PlaylistTrack object (2)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 5,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.505Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "tracks",
+        "track"
+      ],
+      "object_id": "3",
+      "object_repr": "PlaylistTrack object (3)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 6,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.506Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "tracks",
+        "track"
+      ],
+      "object_id": "4",
+      "object_repr": "PlaylistTrack object (4)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 7,
+    "fields": {
+      "action_time": "2025-05-31T10:03:47.506Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "tracks",
+        "track"
+      ],
+      "object_id": "5",
+      "object_repr": "PlaylistTrack object (5)",
+      "action_flag": 3,
+      "change_message": ""
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 8,
+    "fields": {
+      "action_time": "2025-07-06T06:16:37.986Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "profile",
+        "profile"
+      ],
+      "object_id": "1",
+      "object_repr": "anna's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 9,
+    "fields": {
+      "action_time": "2025-07-06T06:16:45.660Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "profile",
+        "profile"
+      ],
+      "object_id": "1",
+      "object_repr": "admin's Profile",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"User\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 10,
+    "fields": {
+      "action_time": "2025-07-06T06:16:55.777Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "profile",
+        "profile"
+      ],
+      "object_id": "2",
+      "object_repr": "elina's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 11,
+    "fields": {
+      "action_time": "2025-07-06T06:17:05.159Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "profile",
+        "profile"
+      ],
+      "object_id": "3",
+      "object_repr": "elena's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 12,
+    "fields": {
+      "action_time": "2025-07-06T06:18:18.240Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "profile",
+        "profile"
+      ],
+      "object_id": "4",
+      "object_repr": "anna's Profile",
+      "action_flag": 1,
+      "change_message": "[{\"added\": {}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 13,
+    "fields": {
+      "action_time": "2025-07-06T06:18:54.510Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "profile",
+        "profile"
+      ],
+      "object_id": "4",
+      "object_repr": "anna's Profile",
+      "action_flag": 2,
+      "change_message": "[]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 14,
+    "fields": {
+      "action_time": "2025-07-06T06:19:11.993Z",
+      "user": [
+        "admin"
+      ],
+      "content_type": [
+        "profile",
+        "profile"
+      ],
+      "object_id": "4",
+      "object_repr": "anna's Profile",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Avatar\"]}}]"
+    }
+  }
+]

@@ -292,8 +292,8 @@ def add_track(request, playlist_id):
                     'artist': track_data['artist']['name'],
                     'album': track_data['album']['title'],
                     'url': track_data['link'],
-                    'picture_small': track_data['artist'].get('picture_small'),
-                    'picture_medium': track_data['artist'].get('picture_medium'),
+                    'picture_small': track_data['album'].get('cover_small'),
+                    'picture_medium': track_data['album'].get('cover_medium'),
                 }
             )
         if PlaylistTrack.objects.filter(playlist=playlist, track=track).exists():
