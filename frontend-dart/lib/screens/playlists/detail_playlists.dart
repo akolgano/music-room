@@ -343,6 +343,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final sortedTracks = musicProvider.sortedPlaylistTracks;
     
     final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
+    final bool canRemoveTrack = canModifyTracks && 
+        !((_playlist?.isEvent ?? false) && playlistTrack.points > 0);
     
     return PlaylistDetailWidgets.buildTrackItem(
       context: context,
@@ -350,7 +352,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       index: index,
       isOwner: _canEditPlaylist,
       onPlay: () => _playTrackAt(index),
-      onRemove: canModifyTracks ? () => _removeTrack(playlistTrack.trackId) : null,
+      onRemove: canRemoveTrack ? () => _removeTrack(playlistTrack.trackId) : null,
       onMoveUp: canModifyTracks && index > 0 ? () => _moveTrackWithSortCheck(index, index - 1) : null,
       onMoveDown: canModifyTracks && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
       canReorder: canModifyTracks,
@@ -712,6 +714,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   Future<void> _removeTrack(String trackId) async {
     final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
     if (!canModifyTracks) return;
+    
+    if (_playlist?.isEvent ?? false) {
+      final track = _tracks.firstWhere((t) => t.trackId == trackId, 
+          orElse: () => PlaylistTrack(trackId: '', name: '', position: 0, points: 0));
+      if (track.points > 0) {
+        showError('Cannot remove tracks with votes in events');
+        return;
+      }
+    }
+    
     final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
     if (!confirmed) return;
     await runAsyncAction(
