@@ -12,7 +12,6 @@ import '../../core/theme_core.dart';
 import '../../core/provider_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
-import '../../widgets/location_widgets.dart';
 import '../base_screens.dart';
 import 'collaborative_playlists.dart';
 
@@ -33,8 +32,8 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   bool _isEvent = false;
   bool _isLoading = false;
   String _licenseType = 'open';
-  TimeOfDay? _voteStartTime;
-  TimeOfDay? _voteEndTime;
+  DateTime? _voteStartTime;
+  DateTime? _voteEndTime;
   double? _latitude;
   double? _longitude;
   
@@ -220,136 +219,182 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   }
 
   Widget _buildLocationTimeFields() {
-    return Column(
-      children: [
-        const Divider(height: 1),
-        const SizedBox(height: 16),
-        const Text(
-          'Location Settings (Optional)',
-          style: TextStyle(
-            color: AppTheme.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          const Text(
+            'Location Settings',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Leave blank to allow voting from anywhere. If filled, all fields are required.',
-          style: TextStyle(color: Colors.white70, fontSize: 12),
-        ),
-        const SizedBox(height: 16),
-        LocationAutocompleteField(
-          initialValue: _locationController.text,
-          labelText: 'Event Location',
-          hintText: 'Enter location or use profile location',
-          onLocationSelected: (location) {
-            setState(() {
-              _locationController.text = location;
-            });
-          },
-          showAutoDetectButton: true,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _useProfileLocation,
-                icon: const Icon(Icons.person_pin, size: 18),
-                label: const Text('Use Profile Location'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.surface,
-                  foregroundColor: Colors.white,
+          const SizedBox(height: 8),
+          if (_latitude != null && _longitude != null)
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withValues(alpha: 0.15),
+                    AppTheme.primary.withValues(alpha: 0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1.5),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.location_on, color: AppTheme.primary, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Event Location Coordinates',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.white70),
+                        onPressed: () {
+                          setState(() {
+                            _latitude = null;
+                            _longitude = null;
+                            _locationController.clear();
+                          });
+                          showSuccess('Location cleared');
+                        },
+                        tooltip: 'Clear location',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'LATITUDE',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _latitude!.toStringAsFixed(6),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 40,
+                          color: Colors.white24,
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'LONGITUDE',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _longitude!.toStringAsFixed(6),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _getCurrentLocation,
-                icon: const Icon(Icons.my_location, size: 18),
-                label: const Text('Current Location'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.surface,
-                  foregroundColor: Colors.white,
-                ),
-              ),
+          ElevatedButton.icon(
+            onPressed: _getCurrentLocation,
+            icon: const Icon(Icons.my_location),
+            label: const Text('Detect Current Location'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 44),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Time Window (Optional)',
-          style: TextStyle(
-            color: AppTheme.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
           ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTimeSelector(
-                'Start Time',
-                _voteStartTime,
-                (time) => setState(() => _voteStartTime = time),
-              ),
+          const SizedBox(height: 16),
+          const Text(
+            'Time Settings',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildTimeSelector(
-                'End Time',
-                _voteEndTime,
-                (time) => setState(() => _voteEndTime = time),
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+          const SizedBox(height: 8),
+          ListTile(
+            leading: const Icon(Icons.access_time),
+            title: const Text('Start Time'),
+            subtitle: Text(_voteStartTime?.toString() ?? 'Not set'),
+            onTap: () => _selectVotingDateTime(true),
+          ),
+          ListTile(
+            leading: const Icon(Icons.access_time),
+            title: const Text('End Time'),
+            subtitle: Text(_voteEndTime?.toString() ?? 'Not set'),
+            onTap: () => _selectVotingDateTime(false),
+          ),
+        ],
+      ),
     );
   }
-
-  Widget _buildTimeSelector(
-    String label,
-    TimeOfDay? selectedTime,
-    Function(TimeOfDay) onTimeSelected,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white70, fontSize: 12),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () => _selectTime(onTimeSelected),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceVariant,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.access_time, color: Colors.white70, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  selectedTime?.format(context) ?? 'Not Set',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-
 
 
 
@@ -547,24 +592,29 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
 
 
-  Future<void> _selectTime(Function(TimeOfDay) onTimeSelected) async {
-    final TimeOfDay? picked = await showTimePicker(
+  Future<void> _selectVotingDateTime(bool isStartTime) async {
+    final date = await showDatePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppTheme.primary,
-              surface: AppTheme.surface,
-            ),
-          ),
-          child: child!,
-        );
-      },
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null) {
-      onTimeSelected(picked);
+    
+    if (date != null && mounted) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+      if (time != null && mounted) {
+        final dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+        setState(() {
+          if (isStartTime) {
+            _voteStartTime = dateTime;
+          } else {
+            _voteEndTime = dateTime;
+          }
+        });
+      }
     }
   }
 
@@ -605,31 +655,12 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         _locationController.text = 'Current Location (${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)})';
       });
       
-      showSuccess('Location set to current position');
+      showSuccess('Location detected successfully!');
     } catch (e) {
       showError('Failed to get current location: ${e.toString()}');
     }
   }
 
-  Future<void> _useProfileLocation() async {
-    try {
-      final profileProvider = getProvider<ProfileProvider>();
-      final profileLocation = profileProvider.location;
-      
-      if (profileLocation == null || profileLocation.isEmpty) {
-        showError('No location set in your profile');
-        return;
-      }
-      
-      setState(() {
-        _locationController.text = profileLocation;
-      });
-      
-      showSuccess('Using profile location: $profileLocation');
-    } catch (e) {
-      showError('Failed to get profile location');
-    }
-  }
 
   @override
   void dispose() {

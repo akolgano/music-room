@@ -62,8 +62,7 @@ class FormWidgets {
     String? hintText,
     Function(String)? onFieldSubmitted,
     bool enabled = true,
-  }) {
-    return AppWidgets.textField(
+  }) => AppWidgets.textField(
       context: context,
       controller: controller,
       labelText: labelText,
@@ -74,7 +73,6 @@ class FormWidgets {
       onFieldSubmitted: onFieldSubmitted,
       enabled: enabled,
     );
-  }
   
   static Widget usernameField({
     required BuildContext context,
@@ -82,8 +80,7 @@ class FormWidgets {
     String labelText = 'Username',
     String? hintText,
     Function(String)? onFieldSubmitted,
-  }) {
-    return AppWidgets.textField(
+  }) => AppWidgets.textField(
       context: context,
       controller: controller,
       labelText: labelText,
@@ -92,7 +89,6 @@ class FormWidgets {
       validator: AppValidators.username,
       onFieldSubmitted: onFieldSubmitted,
     );
-  }
   
   static Widget numericField({
     required BuildContext context,
@@ -103,8 +99,7 @@ class FormWidgets {
     int? maxLength,
     String? Function(String?)? validator,
     Function(String)? onFieldSubmitted,
-  }) {
-    return AppWidgets.textField(
+  }) => AppWidgets.textField(
       context: context,
       controller: controller,
       labelText: labelText,
@@ -114,15 +109,13 @@ class FormWidgets {
       validator: validator,
       onFieldSubmitted: onFieldSubmitted,
     );
-  }
   
   static Widget otpField({
     required BuildContext context,
     required TextEditingController controller,
     Function(String)? onFieldSubmitted,
     Function(String)? onChanged,
-  }) {
-    return numericField(
+  }) => numericField(
       context: context,
       controller: controller,
       labelText: 'OTP Code',
@@ -130,20 +123,13 @@ class FormWidgets {
       prefixIcon: Icons.security,
       maxLength: 6,
       validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter OTP';
-        }
-        if (value.trim() != value) {
-          return 'OTP cannot have spaces';
-        }
-        if (!RegExp(r'^\d{6}$').hasMatch(value)) {
-          return 'OTP must be exactly 6 digits';
-        }
+        if (value == null || value.isEmpty) return 'Please enter OTP';
+        if (value.trim() != value) return 'OTP cannot have spaces';
+        if (!RegExp(r'^\d{6}$').hasMatch(value)) return 'OTP must be exactly 6 digits';
         return null;
       },
       onFieldSubmitted: onFieldSubmitted,
     );
-  }
   
   static Widget searchField({
     required BuildContext context,
@@ -224,8 +210,7 @@ class FormWidgets {
     DateTime? firstDate,
     DateTime? lastDate,
     Function(DateTime)? onDateSelected,
-  }) {
-    return AppWidgets.textField(
+  }) => AppWidgets.textField(
       context: context,
       controller: controller,
       labelText: labelText,
@@ -233,33 +218,19 @@ class FormWidgets {
       prefixIcon: Icons.calendar_today,
       readOnly: true,
       onTap: () async {
-        final DateTime? picked = await showDatePicker(
+        final picked = await showDatePicker(
           context: context,
           initialDate: initialDate ?? DateTime.now(),
           firstDate: firstDate ?? DateTime(2000),
           lastDate: lastDate ?? DateTime(2100),
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: AppTheme.primary,
-                  onPrimary: Colors.white,
-                  surface: AppTheme.surface,
-                  onSurface: AppTheme.onSurface,
-                ),
-              ),
-              child: child!,
-            );
-          },
+          builder: _pickerThemeBuilder,
         );
-        
         if (picked != null) {
           controller.text = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
           onDateSelected?.call(picked);
         }
       },
     );
-  }
   
   static Widget timePickerField({
     required BuildContext context,
@@ -268,8 +239,7 @@ class FormWidgets {
     String? hintText,
     TimeOfDay? initialTime,
     Function(TimeOfDay)? onTimeSelected,
-  }) {
-    return AppWidgets.textField(
+  }) => AppWidgets.textField(
       context: context,
       controller: controller,
       labelText: labelText,
@@ -277,24 +247,11 @@ class FormWidgets {
       prefixIcon: Icons.access_time,
       readOnly: true,
       onTap: () async {
-        final TimeOfDay? picked = await showTimePicker(
+        final picked = await showTimePicker(
           context: context,
           initialTime: initialTime ?? TimeOfDay.now(),
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: AppTheme.primary,
-                  onPrimary: Colors.white,
-                  surface: AppTheme.surface,
-                  onSurface: AppTheme.onSurface,
-                ),
-              ),
-              child: child!,
-            );
-          },
+          builder: _pickerThemeBuilder,
         );
-        
         if (picked != null) {
           final hour = picked.hourOfPeriod == 0 && picked.period == DayPeriod.pm ? 12 : picked.hourOfPeriod;
           final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
@@ -303,7 +260,18 @@ class FormWidgets {
         }
       },
     );
-  }
+  
+  static Widget Function(BuildContext, Widget?) _pickerThemeBuilder = (context, child) => Theme(
+    data: Theme.of(context).copyWith(
+      colorScheme: Theme.of(context).colorScheme.copyWith(
+        primary: AppTheme.primary,
+        onPrimary: Colors.white,
+        surface: AppTheme.surface,
+        onSurface: AppTheme.onSurface,
+      ),
+    ),
+    child: child!,
+  );
   
   static Widget dropdownField<T>({
     required BuildContext context,
@@ -347,46 +315,33 @@ class FormWidgets {
     int? divisions,
     String? Function(double)? labelBuilder,
   }) {
+    final label = labelBuilder?.call(value) ?? value.toStringAsFixed(0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          labelText,
-          style: ThemeUtils.getSubheadingStyle(context),
-        ),
+        Text(labelText, style: ThemeUtils.getSubheadingStyle(context)),
         SizedBox(height: _responsive(8.0, type: 'h')),
         Row(
           children: [
-            Text(
-              min.toStringAsFixed(0),
-              style: ThemeUtils.getCaptionStyle(context),
-            ),
+            Text(min.toStringAsFixed(0), style: ThemeUtils.getCaptionStyle(context)),
             Expanded(
               child: Slider(
                 value: value,
                 min: min,
                 max: max,
                 divisions: divisions,
-                label: labelBuilder?.call(value) ?? value.toStringAsFixed(0),
+                label: label,
                 onChanged: onChanged,
                 activeColor: AppTheme.primary,
                 inactiveColor: AppTheme.primary.withValues(alpha: 0.3),
               ),
             ),
-            Text(
-              max.toStringAsFixed(0),
-              style: ThemeUtils.getCaptionStyle(context),
-            ),
+            Text(max.toStringAsFixed(0), style: ThemeUtils.getCaptionStyle(context)),
           ],
         ),
         if (labelBuilder != null)
           Center(
-            child: Text(
-              labelBuilder(value) ?? value.toStringAsFixed(0),
-              style: ThemeUtils.getBodyStyle(context).copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Text(label, style: ThemeUtils.getBodyStyle(context).copyWith(fontWeight: FontWeight.bold)),
           ),
       ],
     );
@@ -399,35 +354,15 @@ class FormWidgets {
     required Function(bool) onChanged,
     String? subtitle,
     IconData? leadingIcon,
-  }) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: _responsive(4.0, type: 'h')),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        ),
-      ),
+  }) => _cardField(
+      context: context,
       child: ListTile(
         leading: leadingIcon != null ? Icon(leadingIcon, color: AppTheme.primary) : null,
-        title: Text(
-          labelText,
-          style: ThemeUtils.getBodyStyle(context),
-        ),
-        subtitle: subtitle != null
-            ? Text(
-                subtitle,
-                style: ThemeUtils.getCaptionStyle(context),
-              )
-            : null,
-        trailing: Switch(
-          value: value,
-          onChanged: onChanged,
-          activeThumbColor: AppTheme.primary,
-        ),
+        title: Text(labelText, style: ThemeUtils.getBodyStyle(context)),
+        subtitle: subtitle != null ? Text(subtitle, style: ThemeUtils.getCaptionStyle(context)) : null,
+        trailing: Switch(value: value, onChanged: onChanged, activeThumbColor: AppTheme.primary),
       ),
     );
-  }
   
   static Widget checkboxField({
     required BuildContext context,
@@ -436,26 +371,11 @@ class FormWidgets {
     required Function(bool?) onChanged,
     String? subtitle,
     bool tristate = false,
-  }) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: _responsive(4.0, type: 'h')),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        ),
-      ),
+  }) => _cardField(
+      context: context,
       child: CheckboxListTile(
-        title: Text(
-          labelText,
-          style: ThemeUtils.getBodyStyle(context),
-        ),
-        subtitle: subtitle != null
-            ? Text(
-                subtitle,
-                style: ThemeUtils.getCaptionStyle(context),
-              )
-            : null,
+        title: Text(labelText, style: ThemeUtils.getBodyStyle(context)),
+        subtitle: subtitle != null ? Text(subtitle, style: ThemeUtils.getCaptionStyle(context)) : null,
         value: value,
         onChanged: onChanged,
         tristate: tristate,
@@ -463,7 +383,15 @@ class FormWidgets {
         controlAffinity: ListTileControlAffinity.leading,
       ),
     );
-  }
+  
+  static Widget _cardField({required BuildContext context, required Widget child}) => Card(
+    margin: EdgeInsets.symmetric(vertical: _responsive(4.0, type: 'h')),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8.0),
+      side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+    ),
+    child: child,
+  );
   
   static Widget radioGroupField<T>({
     required BuildContext context,
@@ -525,132 +453,82 @@ class RadioOption<T> {
 class FormValidationUtils {
 
   static String? validateCreditCard(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a credit card number';
-    }
-    
+    if (value == null || value.isEmpty) return 'Please enter a credit card number';
     final cleanNumber = value.replaceAll(RegExp(r'\D'), '');
-    
-    if (cleanNumber.length < 13 || cleanNumber.length > 19) {
-      return 'Invalid credit card number length';
-    }
+    if (cleanNumber.length < 13 || cleanNumber.length > 19) return 'Invalid credit card number length';
     
     int sum = 0;
     bool alternate = false;
-    
     for (int i = cleanNumber.length - 1; i >= 0; i--) {
       int digit = int.parse(cleanNumber[i]);
-      
       if (alternate) {
         digit *= 2;
-        if (digit > 9) {
-          digit = (digit % 10) + 1;
-        }
+        if (digit > 9) digit = (digit % 10) + 1;
       }
-      
       sum += digit;
       alternate = !alternate;
     }
-    
-    if (sum % 10 != 0) {
-      return 'Invalid credit card number';
-    }
-    
-    return null;
+    return sum % 10 != 0 ? 'Invalid credit card number' : null;
   }
   
   static String? validatePhoneNumber(String? value, {String? countryCode}) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a phone number';
-    }
-    
+    if (value == null || value.isEmpty) return 'Please enter a phone number';
     final cleanNumber = value.replaceAll(RegExp(r'\D'), '');
-    
     if (countryCode == 'US' || countryCode == null) {
-      if (cleanNumber.length != 10 && cleanNumber.length != 11) {
-        return 'Invalid phone number format';
-      }
-      if (cleanNumber.length == 11 && !cleanNumber.startsWith('1')) {
-        return 'Invalid country code';
-      }
+      if (cleanNumber.length != 10 && cleanNumber.length != 11) return 'Invalid phone number format';
+      if (cleanNumber.length == 11 && !cleanNumber.startsWith('1')) return 'Invalid country code';
     }
-    
     return null;
   }
   
   static String? validateUrl(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a URL';
-    }
-    
+    if (value == null || value.isEmpty) return 'Please enter a URL';
     final urlPattern = RegExp(
-      r'^(https?:\/\/)?'
-      r'((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|'
-      r'((\d{1,3}\.){3}\d{1,3}))'
-      r'(\:\d+)?(\/[-a-z\d%_.~+]*)*'
-      r'(\?[;&a-z\d%_.~+=-]*)?'
-      r'(\#[-a-z\d_]*)?$',
+      r'^(https?:\/\/)?((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|((\d{1,3}\.){3}\d{1,3}))(\:\d+)?(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$',
       caseSensitive: false,
     );
-    
-    if (!urlPattern.hasMatch(value)) {
-      return 'Please enter a valid URL';
-    }
-    
-    return null;
+    return !urlPattern.hasMatch(value) ? 'Please enter a valid URL' : null;
   }
   
-  static String? Function(String?) matchValidator(
-    String? otherValue,
-    String fieldName,
-  ) {
-    return (String? value) {
-      if (value != otherValue) {
-        return '$fieldName does not match';
-      }
-      return null;
-    };
-  }
+  static String? Function(String?) matchValidator(String? otherValue, String fieldName) => 
+      (String? value) => value != otherValue ? '$fieldName does not match' : null;
 }
 
 class FormDecorationPresets {
 
-  static InputDecoration outlined({
+  static InputDecoration _baseDecoration({
     required BuildContext context,
     required String labelText,
     String? hintText,
     Widget? prefixIcon,
     Widget? suffixIcon,
+    bool filled = false,
+    bool outline = true,
   }) {
+    final borderFunc = outline ? OutlineInputBorder.new : UnderlineInputBorder.new;
+    final borderRadius = outline ? BorderRadius.circular(8.0) : null;
     return InputDecoration(
       labelText: labelText,
       hintText: hintText,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.outline,
-        ),
+      filled: filled,
+      fillColor: filled ? Theme.of(context).colorScheme.surface : null,
+      border: borderFunc(
+        borderRadius: borderRadius,
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
-        ),
+      enabledBorder: borderFunc(
+        borderRadius: borderRadius,
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(
-          color: AppTheme.primary,
-          width: 2.0,
-        ),
+      focusedBorder: borderFunc(
+        borderRadius: borderRadius,
+        borderSide: BorderSide(color: AppTheme.primary, width: 2.0),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.error,
-        ),
+      errorBorder: borderFunc(
+        borderRadius: borderRadius,
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
       ),
       contentPadding: EdgeInsets.symmetric(
         horizontal: _responsive(16.0, type: 'w'),
@@ -658,6 +536,20 @@ class FormDecorationPresets {
       ),
     );
   }
+  
+  static InputDecoration outlined({
+    required BuildContext context,
+    required String labelText,
+    String? hintText,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+  }) => _baseDecoration(
+      context: context,
+      labelText: labelText,
+      hintText: hintText,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+    );
   
   static InputDecoration filled({
     required BuildContext context,
@@ -665,39 +557,13 @@ class FormDecorationPresets {
     String? hintText,
     Widget? prefixIcon,
     Widget? suffixIcon,
-  }) {
-    return InputDecoration(
+  }) => _baseDecoration(
+      context: context,
       labelText: labelText,
       hintText: hintText,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: Theme.of(context).colorScheme.surface,
-      border: UnderlineInputBorder(
-        borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.outline,
-        ),
-      ),
-      enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
-        ),
-      ),
-      focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(
-          color: AppTheme.primary,
-          width: 2.0,
-        ),
-      ),
-      errorBorder: UnderlineInputBorder(
-        borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.error,
-        ),
-      ),
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: _responsive(16.0, type: 'w'),
-        vertical: _responsive(12.0, type: 'h'),
-      ),
+      outline: false,
     );
-  }
 }

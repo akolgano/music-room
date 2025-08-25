@@ -16,18 +16,17 @@ class AddFriendScreen extends StatefulWidget {
 class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   final _userIdController = TextEditingController();
   final _formKey = GlobalKey<FormState>(); 
+  static final _uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
 
   @override
   String get screenTitle => 'Add New Friend';
 
   @override
-  List<Widget> get actions => [
-    TextButton.icon(
-      onPressed: () => navigateTo(AppRoutes.friendRequests),
-      icon: const Icon(Icons.inbox, color: AppTheme.primary),
-      label: const Text('Requests', style: TextStyle(color: AppTheme.primary)),
-    ),
-  ];
+  List<Widget> get actions => [TextButton.icon(
+    onPressed: () => navigateTo(AppRoutes.friendRequests),
+    icon: const Icon(Icons.inbox, color: AppTheme.primary),
+    label: const Text('Requests', style: TextStyle(color: AppTheme.primary)),
+  )];
 
   @override
   void dispose() {
@@ -35,112 +34,77 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
     super.dispose();
   }
 
-  @override
-  Widget buildContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(4),
-      child: Column(
-        children: [
-          AppTheme.buildFormCard(
-            title: 'Add Friend by User ID', 
-            titleIcon: Icons.person_add,
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  AppWidgets.textField(
-                    context: context,
-                    controller: _userIdController, 
-                    labelText: 'User ID',
-                    hintText: 'e.g., 4270552b-1e03-4f35-980c-723b52b91d10',
-                    prefixIcon: Icons.person_search,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) return 'Please enter a user ID';
-                      final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
-                      if (!uuidRegex.hasMatch(value!.trim())) {
-                        return 'Please enter a valid UUID format';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) => setState(() {}),
-                    onFieldSubmitted: kIsWeb ? (_) => _sendFriendRequest() : null,
-                  ),
-                  const SizedBox(height: 16),
-                  buildConsumerContent<FriendProvider>(
-                    builder: (context, friendProvider) {
-                      final userId = _userIdController.text.trim();
-                      final showButtons = userId.isNotEmpty;
-                      
-                      return Column(
-                        children: [
-                          if (showButtons) ...[
-                            SizedBox(
-                              width: double.infinity,
-                              child: AppWidgets.primaryButton(
-                                context: context,
-                                text: 'View Profile',
-                                onPressed: () => Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.userPage,
-                                  arguments: {
-                                    'userId': userId,
-                                    'username': null,
-                                  },
-                                ),
-                                icon: Icons.person,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-                          SizedBox(
-                            width: double.infinity,
-                            child: AppWidgets.primaryButton(
-                              context: context,
-                              text: friendProvider.isLoading ? 'Sending...' : 'Send Request',
-                              onPressed: _userIdController.text.isNotEmpty && !friendProvider.isLoading 
-                                ? _sendFriendRequest 
-                                : null, 
-                              icon: Icons.send,
-                              isLoading: friendProvider.isLoading,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
+  String? _validateUuid(String? value) {
+    if (value?.isEmpty ?? true) return 'Please enter a user ID';
+    return !_uuidRegex.hasMatch(value!.trim()) ? 'Please enter a valid UUID format' : null;
   }
 
+  Widget _buildButton({required String text, VoidCallback? onPressed, required IconData icon, bool isLoading = false}) =>
+    SizedBox(
+      width: double.infinity,
+      child: AppWidgets.primaryButton(
+        context: context,
+        text: text,
+        onPressed: onPressed,
+        icon: icon,
+        isLoading: isLoading,
+      ),
+    );
+
+  @override
+  Widget buildContent() => SingleChildScrollView(
+    padding: const EdgeInsets.all(4),
+    child: Column(children: [
+      AppTheme.buildFormCard(
+        title: 'Add Friend by User ID', 
+        titleIcon: Icons.person_add,
+        child: Form(
+          key: _formKey,
+          child: Column(children: [
+            AppWidgets.textField(
+              context: context,
+              controller: _userIdController, 
+              labelText: 'User ID',
+              hintText: 'e.g., 4270552b-1e03-4f35-980c-723b52b91d10',
+              prefixIcon: Icons.person_search,
+              validator: _validateUuid,
+              onChanged: (value) => setState(() {}),
+              onFieldSubmitted: kIsWeb ? (_) => _sendFriendRequest() : null,
+            ),
+            const SizedBox(height: 16),
+            buildConsumerContent<FriendProvider>(
+              builder: (context, friendProvider) {
+                final userId = _userIdController.text.trim();
+                return Column(children: [
+                  if (userId.isNotEmpty) ...[
+                    _buildButton(
+                      text: 'View Profile',
+                      onPressed: () => Navigator.pushNamed(context, AppRoutes.userPage, 
+                        arguments: {'userId': userId, 'username': null}),
+                      icon: Icons.person,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  _buildButton(
+                    text: friendProvider.isLoading ? 'Sending...' : 'Send Request',
+                    onPressed: userId.isNotEmpty && !friendProvider.isLoading ? _sendFriendRequest : null,
+                    icon: Icons.send,
+                    isLoading: friendProvider.isLoading,
+                  ),
+                ]);
+              },
+            ),
+          ]),
+        ),
+      ),
+      const SizedBox(height: 16),
+    ]),
+  );
+
   Future<void> _sendFriendRequest() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    final userInput = _userIdController.text.trim();
-    if (userInput.isEmpty) {
-      showError('Please enter a user ID');
-      return;
-    }
-
-    final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
-    if (!uuidRegex.hasMatch(userInput)) {
-      showError('Invalid UUID format. Please enter a valid user ID');
-      return;
-    }
-
-    final userId = userInput;
-
-    if (userId == auth.userId) {
-      showError('You cannot add yourself as a friend');
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
+    final userId = _userIdController.text.trim();
+    if (userId == auth.userId) return showError('You cannot add yourself as a friend');
 
     await runAsyncAction(
       () async {
@@ -151,37 +115,19 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
           friendProvider.fetchSentInvitations(auth.token!),
         ]);
         
-        final isAlreadyFriend = friendProvider.friends.any((friend) => friend.id == userId);
-        if (isAlreadyFriend) {
+        if (friendProvider.friends.any((f) => f.id == userId)) 
           throw Exception('This user is already your friend');
-        }
         
-        final sentInvitations = friendProvider.sentInvitations;
-        final alreadySent = sentInvitations.any((invitation) {
-          final toUserId = friendProvider.getToUserId(invitation);
-          final status = friendProvider.getInvitationStatus(invitation);
-          return toUserId == userId && status == 'pending';
-        });
-        
-        if (alreadySent) {
+        if (friendProvider.sentInvitations.any((inv) => 
+            friendProvider.getToUserId(inv) == userId && friendProvider.getInvitationStatus(inv) == 'pending'))
           throw Exception('You already sent a friend request to this user');
-        }
         
-        final receivedInvitations = friendProvider.receivedInvitations;
-        final hasReceivedRequest = receivedInvitations.any((invitation) {
-          final fromUserId = friendProvider.getFromUserId(invitation);
-          final status = friendProvider.getInvitationStatus(invitation);
-          return fromUserId == userId && status == 'pending';
-        });
-        
-        if (hasReceivedRequest) {
+        if (friendProvider.receivedInvitations.any((inv) => 
+            friendProvider.getFromUserId(inv) == userId && friendProvider.getInvitationStatus(inv) == 'pending'))
           throw Exception('This user has already sent you a friend request. Check your pending requests.');
-        }
         
-        final success = await friendProvider.sendFriendRequest(auth.token!, userId);
-        if (!success) {
+        if (!await friendProvider.sendFriendRequest(auth.token!, userId))
           throw Exception(friendProvider.errorMessage ?? 'Failed to send friend request');
-        }
         _userIdController.clear();
       },
       successMessage: 'Friend request sent successfully!',
