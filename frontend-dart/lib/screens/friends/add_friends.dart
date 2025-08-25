@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../providers/friend_providers.dart';
 import '../../widgets/app_widgets.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../base_screens.dart';
 
 class AddFriendScreen extends StatefulWidget {

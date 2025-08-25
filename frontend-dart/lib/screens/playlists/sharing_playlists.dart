@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../providers/friend_providers.dart';
 import '../../models/api_models.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../../models/music_models.dart';
 import '../../widgets/app_widgets.dart';
 import '../../services/music_services.dart';

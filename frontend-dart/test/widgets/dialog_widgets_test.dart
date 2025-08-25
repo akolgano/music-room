@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/widgets/dialog_widgets.dart';
+import 'package:music_room/widgets/core_widgets.dart';
 
 void main() {
   group('DialogWidgets Tests', () {

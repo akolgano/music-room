@@ -6,7 +6,7 @@ import '../../providers/theme_providers.dart';
 import '../../services/player_services.dart';
 import '../../models/music_models.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../widgets/votes_widgets.dart';

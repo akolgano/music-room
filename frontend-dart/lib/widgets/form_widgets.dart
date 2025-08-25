@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../core/constants_core.dart';
+import '../core/provider_core.dart';
 import '../core/theme_core.dart';
 import 'core_widgets.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../../providers/friend_providers.dart';
 import '../../providers/music_providers.dart';
 import '../../models/api_models.dart';
