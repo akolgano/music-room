@@ -15,8 +15,7 @@ class AddFriendScreen extends StatefulWidget {
 
 class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   final _userIdController = TextEditingController();
-  final _formKey = GlobalKey<FormState>(); 
-  static final _uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+  final _formKey = GlobalKey<FormState>();
 
   @override
   String get screenTitle => 'Add New Friend';
@@ -29,27 +28,14 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
   )];
 
   @override
-  void dispose() {
-    _userIdController.dispose();
-    super.dispose();
-  }
+  void dispose() { _userIdController.dispose(); super.dispose(); }
 
-  String? _validateUuid(String? value) {
-    if (value?.isEmpty ?? true) return 'Please enter a user ID';
-    return !_uuidRegex.hasMatch(value!.trim()) ? 'Please enter a valid UUID format' : null;
-  }
+  String? _validateUuid(String? v) => v?.trim().isEmpty ?? true ? 'Please enter a user ID'
+    : !RegExp(r'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$').hasMatch(v!.trim()) ? 'Invalid UUID' : null;
 
-  Widget _buildButton({required String text, VoidCallback? onPressed, required IconData icon, bool isLoading = false}) =>
-    SizedBox(
-      width: double.infinity,
-      child: AppWidgets.primaryButton(
-        context: context,
-        text: text,
-        onPressed: onPressed,
-        icon: icon,
-        isLoading: isLoading,
-      ),
-    );
+  Widget _buildButton(String text, VoidCallback? onPressed, IconData icon, [bool isLoading = false]) =>
+    SizedBox(width: double.infinity, child: AppWidgets.primaryButton(
+      context: context, text: text, onPressed: onPressed, icon: icon, isLoading: isLoading));
 
   @override
   Widget buildContent() => SingleChildScrollView(
@@ -73,64 +59,36 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
             ),
             const SizedBox(height: 16),
             buildConsumerContent<FriendProvider>(
-              builder: (context, friendProvider) {
-                final userId = _userIdController.text.trim();
-                return Column(children: [
-                  if (userId.isNotEmpty) ...[
-                    _buildButton(
-                      text: 'View Profile',
-                      onPressed: () => Navigator.pushNamed(context, AppRoutes.userPage, 
-                        arguments: {'userId': userId, 'username': null}),
-                      icon: Icons.person,
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  _buildButton(
-                    text: friendProvider.isLoading ? 'Sending...' : 'Send Request',
-                    onPressed: userId.isNotEmpty && !friendProvider.isLoading ? _sendFriendRequest : null,
-                    icon: Icons.send,
-                    isLoading: friendProvider.isLoading,
-                  ),
-                ]);
-              },
+              builder: (context, fp) => Column(children: [
+                if (_userIdController.text.trim().isNotEmpty) ...[
+                  _buildButton('View Profile', () => Navigator.pushNamed(context, AppRoutes.userPage,
+                    arguments: {'userId': _userIdController.text.trim(), 'username': null}), Icons.person),
+                  const SizedBox(height: 12)],
+                _buildButton(fp.isLoading ? 'Sending...' : 'Send Request',
+                  _userIdController.text.trim().isNotEmpty && !fp.isLoading ? _sendFriendRequest : null,
+                  Icons.send, fp.isLoading)]),
             ),
           ]),
         ),
       ),
-      const SizedBox(height: 16),
-    ]),
-  );
+      const SizedBox(height: 16)]));
 
   Future<void> _sendFriendRequest() async {
     if (!_formKey.currentState!.validate()) return;
     final userId = _userIdController.text.trim();
     if (userId == auth.userId) return showError('You cannot add yourself as a friend');
-
-    await runAsyncAction(
-      () async {
-        final friendProvider = getProvider<FriendProvider>();
-        await Future.wait([
-          friendProvider.fetchFriends(auth.token!),
-          friendProvider.fetchReceivedInvitations(auth.token!),
-          friendProvider.fetchSentInvitations(auth.token!),
-        ]);
-        
-        if (friendProvider.friends.any((f) => f.id == userId)) 
-          throw Exception('This user is already your friend');
-        
-        if (friendProvider.sentInvitations.any((inv) => 
-            friendProvider.getToUserId(inv) == userId && friendProvider.getInvitationStatus(inv) == 'pending'))
-          throw Exception('You already sent a friend request to this user');
-        
-        if (friendProvider.receivedInvitations.any((inv) => 
-            friendProvider.getFromUserId(inv) == userId && friendProvider.getInvitationStatus(inv) == 'pending'))
-          throw Exception('This user has already sent you a friend request. Check your pending requests.');
-        
-        if (!await friendProvider.sendFriendRequest(auth.token!, userId))
-          throw Exception(friendProvider.errorMessage ?? 'Failed to send friend request');
-        _userIdController.clear();
-      },
-      successMessage: 'Friend request sent successfully!',
-    );
+    await runAsyncAction(() async {
+      final fp = getProvider<FriendProvider>();
+      await Future.wait([fp.fetchFriends(auth.token!), fp.fetchReceivedInvitations(auth.token!),
+        fp.fetchSentInvitations(auth.token!)]);
+      if (fp.friends.any((f) => f.id == userId)) throw Exception('Already your friend');
+      final pending = 'pending';
+      if (fp.sentInvitations.any((i) => fp.getToUserId(i) == userId && fp.getInvitationStatus(i) == pending))
+        throw Exception('Request already sent');
+      if (fp.receivedInvitations.any((i) => fp.getFromUserId(i) == userId && fp.getInvitationStatus(i) == pending))
+        throw Exception('User sent you a request. Check pending.');
+      if (!await fp.sendFriendRequest(auth.token!, userId)) throw Exception(fp.errorMessage ?? 'Failed');
+      _userIdController.clear();
+    }, successMessage: 'Friend request sent successfully!');
   }
 }

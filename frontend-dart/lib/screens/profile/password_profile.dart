@@ -16,14 +16,12 @@ class UserPasswordChangeScreen extends StatefulWidget {
 
 class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  final _currentPasswordController = TextEditingController(), _newPasswordController = TextEditingController(), _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => Provider.of<ProfileProvider>(context, listen: false).clearMessages());
+    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<ProfileProvider>().clearMessages());
   }
 
   @override
@@ -48,41 +46,25 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
                         children: [
                           const Text('Change Password', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                           const SizedBox(height: 24),
-                          if (profileProvider.hasError) ...[
-                            AppWidgets.errorBanner(message: profileProvider.errorMessage ?? 'An error occurred', onDismiss: () => profileProvider.clearMessages()),
-                            const SizedBox(height: 16),
-                          ],
-                          if (profileProvider.hasSuccess) ...[
-                            AppWidgets.infoBanner(title: 'Success', message: profileProvider.successMessage ?? 'Success', icon: Icons.check_circle, color: Colors.green),
-                            const SizedBox(height: 16),
-                          ],
-                          AppWidgets.textField(
-                            context: context,
-                            controller: _currentPasswordController,
-                            labelText: 'Current Password',
-                            obscureText: true,
-                            validator: (v) => v?.isEmpty ?? true ? 'Please enter current password' : null,
-                            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
-                          ),
-                          const SizedBox(height: 24),
-                          AppWidgets.textField(
-                            context: context,
-                            controller: _newPasswordController,
-                            labelText: 'New Password',
-                            obscureText: true,
-                            validator: AppValidators.password,
-                            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
-                          ),
-                          const SizedBox(height: 24),
-                          AppWidgets.textField(
-                            context: context,
-                            controller: _confirmPasswordController,
-                            labelText: 'Confirm New Password',
-                            obscureText: true,
-                            validator: (v) => v?.isEmpty ?? true ? 'Please confirm new password' : v != _newPasswordController.text ? 'Passwords do not match' : null,
-                            onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
-                          ), 
-                          const SizedBox(height: 24),
+                          if (profileProvider.hasError)
+                            Padding(padding: const EdgeInsets.only(bottom: 16), child: AppWidgets.errorBanner(message: profileProvider.errorMessage ?? 'An error occurred', onDismiss: profileProvider.clearMessages)),
+                          if (profileProvider.hasSuccess)
+                            Padding(padding: const EdgeInsets.only(bottom: 16), child: AppWidgets.infoBanner(title: 'Success', message: profileProvider.successMessage ?? 'Success', icon: Icons.check_circle, color: Colors.green)),
+                          ...[
+                            ('Current Password', _currentPasswordController, (v) => v?.isEmpty ?? true ? 'Please enter current password' : null),
+                            ('New Password', _newPasswordController, AppValidators.password),
+                            ('Confirm New Password', _confirmPasswordController, (v) => v?.isEmpty ?? true ? 'Please confirm new password' : v != _newPasswordController.text ? 'Passwords do not match' : null),
+                          ].map((field) => Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: AppWidgets.textField(
+                              context: context,
+                              controller: field.$2,
+                              labelText: field.$1,
+                              obscureText: true,
+                              validator: field.$3 as String? Function(String?)?,
+                              onFieldSubmitted: kIsWeb ? (_) => _submit() : null,
+                            ),
+                          )), 
                           profileProvider.isLoading ? const CircularProgressIndicator(color: AppTheme.primary) : AppWidgets.primaryButton(context: context, text: 'Submit', onPressed: _submit),
                           const SizedBox(height: 24),
                           TextButton(onPressed: () => Navigator.pop(context), style: TextButton.styleFrom(foregroundColor: Colors.white), child: const Text('Cancel')),
@@ -101,11 +83,9 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    if (authProvider.token == null) return;
-    bool success = await profileProvider.userPasswordChange(authProvider.token, _currentPasswordController.text, _newPasswordController.text);
-    if (success && mounted) {
+    final auth = context.read<AuthProvider>();
+    if (auth.token == null) return;
+    if (await context.read<ProfileProvider>().userPasswordChange(auth.token, _currentPasswordController.text, _newPasswordController.text) && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password changed successfully'), backgroundColor: Colors.green));
       Navigator.pop(context);
     }
@@ -113,9 +93,7 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
 
   @override
   void dispose() {
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
+    for (final c in [_currentPasswordController, _newPasswordController, _confirmPasswordController]) c.dispose();
     super.dispose();
   }
 }

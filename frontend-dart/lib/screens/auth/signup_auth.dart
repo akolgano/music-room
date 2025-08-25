@@ -18,11 +18,13 @@ class SignupWithOtpScreen extends StatefulWidget {
 
 class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _otpController = TextEditingController();
+  final _controllers = {
+    'email': TextEditingController(),
+    'username': TextEditingController(),
+    'password': TextEditingController(),
+    'confirmPassword': TextEditingController(),
+    'otp': TextEditingController(),
+  };
   
   bool _isLoading = false;
   int _currentStep = 0; 
@@ -64,21 +66,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
   }
 
   String _getStepTitle() => ['Enter Email', 'Create Account', 'Verify Email'][_currentStep.clamp(0, 2)];
-
   IconData _getStepIcon() => [Icons.email, Icons.person_add, Icons.verified_user][_currentStep.clamp(0, 2)];
 
   List<Widget> _buildEmailStep() {
     return [
       const Text('Enter your email address to get started', style: TextStyle(color: Colors.white70), textAlign: TextAlign.center),
       const SizedBox(height: 16),
-      AppWidgets.textField(
-        context: context,
-        controller: _emailController,
-        labelText: 'Email',
-        prefixIcon: Icons.email,
-        validator: AppValidators.email,
-        onFieldSubmitted: kIsWeb ? (_) => _validateEmail() : null,
-      ),
+      _buildTextField('email', 'Email', Icons.email, AppValidators.email, _validateEmail),
       const SizedBox(height: 24),
       AppWidgets.primaryButton(
         context: context,
@@ -92,36 +86,15 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   List<Widget> _buildCredentialsStep() {
     return [
-      Text('Create your account for ${_emailController.text}', style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
+      Text('Create your account for ${_controllers['email']!.text}', style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
       const SizedBox(height: 16),
-      AppWidgets.textField(
-        context: context,
-        controller: _usernameController,
-        labelText: 'Username',
-        prefixIcon: Icons.person,
-        validator: AppValidators.username,
-        onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
-      ),
+      _buildTextField('username', 'Username', Icons.person, AppValidators.username, _sendOtp),
       const SizedBox(height: 16),
-      AppWidgets.textField(
-        context: context,
-        controller: _passwordController,
-        labelText: 'Password',
-        prefixIcon: Icons.lock,
-        obscureText: true,
-        validator: AppValidators.password,
-        onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
-      ),
+      _buildTextField('password', 'Password', Icons.lock, AppValidators.password, _sendOtp, obscureText: true),
       const SizedBox(height: 16),
-      AppWidgets.textField(
-        context: context,
-        controller: _confirmPasswordController,
-        labelText: 'Confirm Password',
-        prefixIcon: Icons.lock,
-        obscureText: true,
-        validator: (value) => (value?.isEmpty ?? true) ? 'Please confirm your password' : value != _passwordController.text ? 'Passwords do not match' : null,
-        onFieldSubmitted: kIsWeb ? (_) => _sendOtp() : null,
-      ),
+      _buildTextField('confirmPassword', 'Confirm Password', Icons.lock, 
+        (value) => (value?.isEmpty ?? true) ? 'Please confirm your password' : value != _controllers['password']!.text ? 'Passwords do not match' : null,
+        _sendOtp, obscureText: true),
       const SizedBox(height: 24),
       Row(
         children: [
@@ -146,18 +119,13 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     return [
       AppWidgets.infoBanner(
         title: 'Check Your Email',
-        message: 'We sent a verification code to ${_emailController.text}',
+        message: 'We sent a verification code to ${_controllers['email']!.text}',
         icon: Icons.email,
       ),
       const SizedBox(height: 16),
-      AppWidgets.textField(
-        context: context,
-        controller: _otpController,
-        labelText: 'Verification Code',
-        prefixIcon: Icons.lock,
-        validator: (value) => (value?.isEmpty ?? true) ? 'Please enter verification code' : !RegExp(r'^\d{6}$').hasMatch(value!) ? 'Code must be 6 digits' : null,
-        onFieldSubmitted: kIsWeb ? (_) => _signup() : null,
-      ),
+      _buildTextField('otp', 'Verification Code', Icons.lock,
+        (value) => (value?.isEmpty ?? true) ? 'Please enter verification code' : !RegExp(r'^\d{6}$').hasMatch(value!) ? 'Code must be 6 digits' : null,
+        _signup),
       const SizedBox(height: 16),
       Row(
         children: [
@@ -214,7 +182,7 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
-      final isEmailAvailable = await authProvider.checkEmailAvailability(_emailController.text);
+      final isEmailAvailable = await authProvider.checkEmailAvailability(_controllers['email']!.text);
       if (!isEmailAvailable) {
         if (mounted) {
           AppWidgets.showSnackBar(context, 'This email is already registered. Please use a different email or try logging in.', backgroundColor: AppTheme.error);
@@ -245,12 +213,12 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
-      final success = await authProvider.sendSignupEmailOtp(_emailController.text);
+      final success = await authProvider.sendSignupEmailOtp(_controllers['email']!.text);
       if (success) {
         if (mounted) {
           setState(() { _currentStep = 2; _canResendOtp = false; _resendCountdown = 60; });
           _startResendCountdown();
-          _showSuccess('Verification code sent to ${_emailController.text}');
+          _showSuccess('Verification code sent to ${_controllers['email']!.text}');
         }
       } else {
         if (mounted) {
@@ -277,10 +245,10 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.signupWithOtp(
-        _usernameController.text,
-        _emailController.text,
-        _passwordController.text,
-        _otpController.text,
+        _controllers['username']!.text,
+        _controllers['email']!.text,
+        _controllers['password']!.text,
+        _controllers['otp']!.text,
       );
       
       if (success) {
@@ -306,50 +274,47 @@ class _SignupWithOtpScreenState extends State<SignupWithOtpScreen> {
 
   void _startResendCountdown() {
     _countdownTimer?.cancel();
-    _countdownTimer = null;
-    _canResendOtp = false;
-    _resendCountdown = 60; 
-    
+    setState(() { _canResendOtp = false; _resendCountdown = 60; });
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      
+      if (!mounted) return timer.cancel();
       if (_resendCountdown <= 0) {
-        _canResendOtp = true;
         timer.cancel();
-        _countdownTimer = null;
-        if (mounted) {
-          setState(() {});
-        }
-        return;
+        setState(() { _canResendOtp = true; _countdownTimer = null; });
+      } else {
+        setState(() => _resendCountdown--);
       }
-      
-      setState(() => _resendCountdown--);
     });
   }
 
   void _showSuccess(String message) => AppWidgets.showSnackBar(context, message, backgroundColor: Colors.green);
   
-  void _resetToStep(int step) => setState(() {
-    _currentStep = step;
-    _otpController.clear();
+  void _resetToStep(int step) {
     _countdownTimer?.cancel();
-    _countdownTimer = null;
-    _canResendOtp = true;
-    _resendCountdown = 0;
-  });
+    setState(() {
+      _currentStep = step;
+      _controllers['otp']!.clear();
+      _countdownTimer = null;
+      _canResendOtp = true;
+      _resendCountdown = 0;
+    });
+  }
+
+  Widget _buildTextField(String key, String label, IconData icon, FormFieldValidator<String> validator, VoidCallback onSubmit, {bool obscureText = false}) {
+    return AppWidgets.textField(
+      context: context,
+      controller: _controllers[key]!,
+      labelText: label,
+      prefixIcon: icon,
+      obscureText: obscureText,
+      validator: validator,
+      onFieldSubmitted: kIsWeb ? (_) => onSubmit() : null,
+    );
+  }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    _countdownTimer = null;
-    _emailController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _otpController.dispose();
+    _controllers.forEach((_, controller) => controller.dispose());
     super.dispose();
   }
 }

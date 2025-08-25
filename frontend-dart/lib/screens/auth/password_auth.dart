@@ -20,14 +20,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Widget _buildButton(String text, VoidCallback onPressed, Color color) => ElevatedButton(
     onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: color,
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-    ),
-    child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-  );
+    style: ElevatedButton.styleFrom(backgroundColor: color, foregroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32))),
+    child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.5)));
 
   @override
   Widget build(BuildContext context) {
@@ -35,52 +30,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [Colors.black, AppTheme.background], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 450),
-                child: Column(
+        decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.black, AppTheme.background], 
+          begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+        child: Center(child: SingleChildScrollView(child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: ConstrainedBox(constraints: BoxConstraints(maxWidth: 450), child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    isLandscape ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.music_note, size: 60, color: AppTheme.primary),
-                        SizedBox(width: 20),
-                        Text('Music Room', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2)),
-                      ],
-                    ) : Column(children: const [
-                      SizedBox(height: 20),
-                      Icon(Icons.music_note, size: 80, color: AppTheme.primary),
-                      SizedBox(height: 20),
-                      Text('Music Room', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2)),
-                      SizedBox(height: 40),
-                    ]),
+                    isLandscape 
+                      ? Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                          Icon(Icons.music_note, size: 60, color: AppTheme.primary),
+                          SizedBox(width: 20),
+                          Text('Music Room', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2))])
+                      : Column(children: const [
+                          SizedBox(height: 20),
+                          Icon(Icons.music_note, size: 80, color: AppTheme.primary),
+                          SizedBox(height: 20),
+                          Text('Music Room', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2)),
+                          SizedBox(height: 40)]),
                     if (isLandscape) const SizedBox(height: 20),
-                    Card(
-                      color: AppTheme.surface,
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Form(
+                    Card(color: AppTheme.surface, elevation: 8,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(padding: const EdgeInsets.all(12.0), child: Form(
                           key: _formKey,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text(
-                                _isGetEmail ? 'Forgot Password' : 'Reset Password',
+                              Text(_isGetEmail ? 'Forgot Password' : 'Reset Password',
                                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                                textAlign: TextAlign.center,
-                              ),
+                                textAlign: TextAlign.center),
                               const SizedBox(height: 24),
 
                               if (_isGetEmail)
@@ -89,12 +68,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   controller: _emailController,
                                   labelText: 'Email',
                                   prefixIcon: Icons.email,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) return 'Please enter an email';
-                                    if (value.trim() != value) return 'Email cannot have leading or trailing spaces';
-                                    if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value)) return 'Enter a valid email address';
-                                    return null;
-                                  },
+                                  validator: (value) => (value == null || value.isEmpty) ? 'Please enter an email'
+                                    : value.trim() != value ? 'Email cannot have leading or trailing spaces'
+                                    : !RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value) ? 'Enter a valid email address' : null,
                                 ),
 
                               if (_isGetOtp) ...[
@@ -103,12 +79,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   controller: _otpController,
                                   labelText: 'OTP Code',
                                   prefixIcon: Icons.lock,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) return 'Please enter OTP';
-                                    if (value.trim() != value) return 'OTP cannot have leading or trailing spaces';
-                                    if (!RegExp(r'^\d{6}$').hasMatch(value)) return 'OTP must be exactly 6 digits';
-                                    return null;
-                                  },
+                                  validator: (value) => (value == null || value.isEmpty) ? 'Please enter OTP'
+                                    : value.trim() != value ? 'OTP cannot have leading or trailing spaces'
+                                    : !RegExp(r'^\d{6}$').hasMatch(value) ? 'OTP must be exactly 6 digits' : null,
                                 ),
                                 const SizedBox(height: 24),
                                 AppWidgets.textField(
@@ -117,11 +90,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   labelText: 'Password',
                                   prefixIcon: Icons.lock,
                                   obscureText: true,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) return 'Please enter a password';
-                                    if (value.length < 4) return 'Password must be at least 4 characters';
-                                    return null;
-                                  },
+                                  validator: (value) => (value == null || value.isEmpty) ? 'Please enter a password'
+                                    : value.length < 4 ? 'Password must be at least 4 characters' : null,
                                 ),
                               ],
 
@@ -140,11 +110,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ],
                 ),
-              ),
-            ),
-          ),
-        ),
-      ),
+              )))),),
     );
   }
 
@@ -175,10 +141,5 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _otpController.dispose();
-    super.dispose();
-  }
+  void dispose() { _emailController.dispose(); _passwordController.dispose(); _otpController.dispose(); super.dispose(); }
 }

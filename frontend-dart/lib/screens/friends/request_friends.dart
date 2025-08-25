@@ -34,8 +34,8 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
             Tab(text: 'Sent (${friendProvider.sentInvitations.length})'),
           ],
           tabViews: [
-            _buildReceivedInvitationsTab(friendProvider),
-            _buildSentInvitationsTab(friendProvider),
+            _buildInvitationsTab(friendProvider, true),
+            _buildInvitationsTab(friendProvider, false),
           ],
           controller: _tabController,
         );
@@ -43,39 +43,17 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     );
   }
 
-  Widget _buildReceivedInvitationsTab(FriendProvider friendProvider) {
-    if (friendProvider.isLoading) {
-      return buildLoadingState(message: 'Loading friend requests...');
-    }
-
+  Widget _buildInvitationsTab(FriendProvider provider, bool isReceived) {
+    if (provider.isLoading) return buildLoadingState(message: isReceived ? 'Loading friend requests...' : 'Loading sent requests...');
     return buildListContent<Map<String, dynamic>>(
-      items: friendProvider.receivedInvitations,
-      itemBuilder: (invitation, index) => _buildReceivedInvitationCard(invitation, friendProvider),
+      items: isReceived ? provider.receivedInvitations : provider.sentInvitations,
+      itemBuilder: (inv, idx) => isReceived ? _buildReceivedInvitationCard(inv, provider) : _buildSentInvitationCard(inv),
       onRefresh: _loadInvitations,
       emptyState: buildEmptyState(
-        icon: Icons.inbox,
-        title: 'No friend requests',
-        subtitle: 'You don\'t have any pending friend requests',
-        buttonText: 'Find Friends',
-        onButtonPressed: () => navigateTo(AppRoutes.addFriend),
-      ),
-    );
-  }
-
-  Widget _buildSentInvitationsTab(FriendProvider friendProvider) {
-    if (friendProvider.isLoading) {
-      return buildLoadingState(message: 'Loading sent requests...');
-    }
-
-    return buildListContent<Map<String, dynamic>>(
-      items: friendProvider.sentInvitations,
-      itemBuilder: (invitation, index) => _buildSentInvitationCard(invitation),
-      onRefresh: _loadInvitations,
-      emptyState: buildEmptyState(
-        icon: Icons.send,
-        title: 'No sent requests',
-        subtitle: 'You haven\'t sent any friend requests yet',
-        buttonText: 'Add Friend',
+        icon: isReceived ? Icons.inbox : Icons.send,
+        title: isReceived ? 'No friend requests' : 'No sent requests',
+        subtitle: isReceived ? 'You don\'t have any pending friend requests' : 'You haven\'t sent any friend requests yet',
+        buttonText: isReceived ? 'Find Friends' : 'Add Friend',
         onButtonPressed: () => navigateTo(AppRoutes.addFriend),
       ),
     );
@@ -86,109 +64,18 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     final fromUsername = friendProvider.getFromUsername(invitation) ?? 'User $fromUserId';
     final friendshipId = friendProvider.getFriendshipId(invitation);
     final status = friendProvider.getInvitationStatus(invitation);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      color: AppTheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: fromUserId != null 
-                ? ThemeUtils.getColorFromString(fromUserId)
-                : Colors.grey,
-              child: const Icon(Icons.person, color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    fromUsername,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Wants to be your friend',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                  if (fromUserId != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      'User ID: $fromUserId',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (status == 'pending' && friendshipId != null) ...[
-              Column(
-                children: [
-                  SizedBox(
-                    width: 80,
-                    child: ElevatedButton(
-                      onPressed: friendProvider.isLoading 
-                        ? null 
-                        : () => _acceptFriendRequest(friendshipId, friendProvider),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                      ),
-                      child: const Text('Accept', style: TextStyle(fontSize: 12)),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: 80,
-                    child: ElevatedButton(
-                      onPressed: friendProvider.isLoading 
-                        ? null 
-                        : () => _rejectFriendRequest(friendshipId, friendProvider),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                      ),
-                      child: const Text('Reject', style: TextStyle(fontSize: 12)),
-                    ),
-                  ),
-                ],
-              ),
-            ] else ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(status).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _getStatusColor(status)),
-                ),
-                child: Text(
-                  status?.toUpperCase() ?? 'UNKNOWN',
-                  style: TextStyle(
-                    color: _getStatusColor(status),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+    return _buildInvitationCard(
+      userId: fromUserId,
+      username: fromUsername,
+      subtitle: 'Wants to be your friend',
+      status: status,
+      actions: status == 'pending' && friendshipId != null ? Column(
+        children: [
+          _buildActionButton('Accept', Colors.green, () => _acceptFriendRequest(friendshipId, friendProvider), friendProvider.isLoading),
+          const SizedBox(height: 8),
+          _buildActionButton('Reject', Colors.red, () => _rejectFriendRequest(friendshipId, friendProvider), friendProvider.isLoading),
+        ],
+      ) : null,
     );
   }
 
@@ -197,7 +84,15 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     final toUserId = friendProvider.getToUserId(invitation);
     final toUsername = friendProvider.getToUsername(invitation) ?? 'User $toUserId';
     final status = friendProvider.getInvitationStatus(invitation);
+    return _buildInvitationCard(
+      userId: toUserId,
+      username: toUsername,
+      subtitle: 'Friend request sent',
+      status: status,
+    );
+  }
 
+  Widget _buildInvitationCard({String? userId, required String username, required String subtitle, String? status, Widget? actions}) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       color: AppTheme.surface,
@@ -206,9 +101,7 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: toUserId != null 
-                ? ThemeUtils.getColorFromString(toUserId)
-                : Colors.grey,
+              backgroundColor: userId != null ? ThemeUtils.getColorFromString(userId) : Colors.grey,
               child: const Icon(Icons.person, color: Colors.white),
             ),
             const SizedBox(width: 16),
@@ -216,68 +109,31 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    toUsername,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
+                  Text(username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
                   const SizedBox(height: 4),
-                  Text(
-                    'Friend request sent',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                  if (toUserId != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      'User ID: $toUserId',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                  Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                  if (userId != null) ...[const SizedBox(height: 2), Text('User ID: $userId', style: const TextStyle(color: Colors.grey, fontSize: 12))],
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              decoration: BoxDecoration(
-                color: _getStatusColor(status).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _getStatusColor(status)),
-              ),
-              child: Text(
-                status?.toUpperCase() ?? 'UNKNOWN',
-                style: TextStyle(
-                  color: _getStatusColor(status),
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            actions ?? _buildStatusBadge(status),
           ],
         ),
       ),
     );
   }
 
-  Color _getStatusColor(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'pending':
-        return Colors.orange;
-      case 'accepted':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
+  Widget _buildStatusBadge(String? status) {
+    final color = {'pending': Colors.orange, 'accepted': Colors.green, 'rejected': Colors.red}[status?.toLowerCase()] ?? Colors.grey;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
+      ),
+      child: Text(status?.toUpperCase() ?? 'UNKNOWN', style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+    );
   }
 
   Future<void> _loadInvitations() async {
@@ -294,23 +150,14 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
     );
   }
 
-  Future<void> _acceptFriendRequest(String friendshipId, FriendProvider friendProvider) async {
-    await runAsyncAction(
-      () async {
-        await friendProvider.acceptFriendRequest(auth.token!, friendshipId);
-      },
-      successMessage: 'Friend request accepted!',
-      errorMessage: 'Failed to accept friend request',
-    );
-  }
+  Future<void> _acceptFriendRequest(String friendshipId, FriendProvider friendProvider) => runAsyncAction(
+    () async => await friendProvider.acceptFriendRequest(auth.token!, friendshipId),
+    successMessage: 'Friend request accepted!',
+    errorMessage: 'Failed to accept friend request',
+  );
 
   Future<void> _rejectFriendRequest(String friendshipId, FriendProvider friendProvider) async {
-    final confirmed = await showConfirmDialog(
-      'Reject Friend Request',
-      'Are you sure you want to reject this friend request?',
-    );
-    
-    if (confirmed) {
+    if (await showConfirmDialog('Reject Friend Request', 'Are you sure you want to reject this friend request?')) {
       await runAsyncAction(
         () async => await friendProvider.rejectFriendRequest(auth.token!, friendshipId),
         successMessage: 'Friend request rejected',
@@ -318,6 +165,15 @@ class _FriendRequestScreenState extends BaseScreen<FriendRequestScreen> with Tic
       );
     }
   }
+
+  Widget _buildActionButton(String text, Color color, VoidCallback onPressed, bool isLoading) => SizedBox(
+    width: 80,
+    child: ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(backgroundColor: color, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 4)),
+      child: Text(text, style: const TextStyle(fontSize: 12)),
+    ),
+  );
 
   @override
   void dispose() {

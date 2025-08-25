@@ -58,10 +58,7 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
             (inv['friend_id'] ?? inv['to_user']) == widget.userId);
       }
 
-      setState(() {
-        _userProfile = userProfile;
-        _isLoading = false;
-      });
+      setState(() { _userProfile = userProfile; _isLoading = false; });
       if (kDebugMode) debugPrint('[UserPageScreen] Loaded profile for user ${widget.userId}');
     } catch (e) {
       if (kDebugMode) debugPrint('[UserPageScreen] Error loading user profile: $e');
@@ -89,20 +86,15 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
     );
   }
 
-  Widget _buildNotFoundState() => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.person_off, size: 64, color: Colors.grey),
-        const SizedBox(height: 16),
-        const Text('User profile not found', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-        const SizedBox(height: 8),
-        Text('User ID: ${widget.userId}', style: const TextStyle(color: Colors.grey)),
-        const SizedBox(height: 24),
-        ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Go Back')),
-      ],
-    ),
-  );
+  Widget _buildNotFoundState() => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+    const Icon(Icons.person_off, size: 64, color: Colors.grey),
+    const SizedBox(height: 16),
+    const Text('User profile not found', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+    const SizedBox(height: 8),
+    Text('User ID: ${widget.userId}', style: const TextStyle(color: Colors.grey)),
+    const SizedBox(height: 24),
+    ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Go Back'))
+  ]));
 
   Widget _buildUserHeader() => AppTheme.buildHeaderCard(
     child: Column(children: [
@@ -119,30 +111,20 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
   Widget _buildInfoChip(IconData icon, String text) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Colors.white, size: 14),
-        const SizedBox(width: 4),
-        Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12)),
-      ],
-    ),
-  );
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, color: Colors.white, size: 14),
+      const SizedBox(width: 4),
+      Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12))
+    ]));
 
   Widget _buildAvatar() {
     final name = _userProfile!.name ?? _userProfile!.user;
     final initials = _getInitials(name);
-    final gradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7), Colors.purple.withValues(alpha: 0.8)],
-    );
+    final gradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
+      colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7), Colors.purple.withValues(alpha: 0.8)]);
     
-    final initialsAvatar = Container(
-      width: 120, height: 120,
-      decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
-      child: Center(child: Text(initials, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold))),
-    );
+    final initialsAvatar = Container(width: 120, height: 120, decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
+      child: Center(child: Text(initials, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold))));
 
     return Container(
       width: 120, height: 120,
@@ -160,19 +142,13 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
   }
 
   String _getInitials(String name) {
-    if (name.isEmpty) return 'U';
     final words = name.trim().split(' ').where((w) => w.isNotEmpty).toList();
-    if (words.isEmpty) return 'U';
-    return words.length == 1 ? words[0][0].toUpperCase() : '${words[0][0]}${words[1][0]}'.toUpperCase();
+    return words.isEmpty ? 'U' : words.length == 1 ? words[0][0].toUpperCase() : '${words[0][0]}${words[1][0]}'.toUpperCase();
   }
 
   Widget _buildStatusText({required IconData icon, required String title, required String subtitle, required Color color}) =>
-    ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: const TextStyle(color: Colors.white70)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    );
+    ListTile(leading: Icon(icon, color: color), title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+      subtitle: Text(subtitle, style: const TextStyle(color: Colors.white70)), contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4));
 
   Widget _buildActionButtons() {
     if (_isCurrentUser) return const SizedBox.shrink();
@@ -208,11 +184,9 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
   );
 
   Widget _buildInfoItem(IconData icon, String title, String value, {int maxLines = 1}) => ListTile(
-    leading: Icon(icon, color: AppTheme.primary),
-    title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+    leading: Icon(icon, color: AppTheme.primary), title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
     subtitle: Text(value, style: const TextStyle(color: Colors.white70), maxLines: maxLines, overflow: TextOverflow.ellipsis),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  );
+    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4));
 
   Future<void> _sendFriendRequest() async {
     final friendProvider = getProvider<FriendProvider>();
@@ -224,12 +198,8 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
       if (kDebugMode) debugPrint('[UserPageScreen] Friend request sent to user ${widget.userId}');
     } else if (friendProvider.hasError) {
       final errorMessage = friendProvider.errorMessage!;
-      if (errorMessage.toLowerCase().contains('already friends')) {
-        showError('You are already friends with this user');
-        setState(() => _isFriend = true);
-      } else {
-        showError(errorMessage);
-      }
+      if (errorMessage.toLowerCase().contains('already friends')) { showError('You are already friends with this user'); setState(() => _isFriend = true); }
+      else showError(errorMessage);
       if (kDebugMode) debugPrint('[UserPageScreen] Error sending friend request: $errorMessage');
     }
   }
@@ -273,9 +243,9 @@ class _SocialNetworkLinkScreenState extends BaseScreen<SocialNetworkLinkScreen> 
       padding: const EdgeInsets.all(5),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 450),
-        child: AppTheme.buildFormCard( 
-          title: 'Link with Social Network',
-          titleIcon: Icons.link,
+        child: AppTheme.buildFormCard(
+          title: 'Link with Social Network', 
+          titleIcon: Icons.link, 
           context: context,
           child: buildConsumerContent<ProfileProvider>(
             builder: (context, profileProvider) => Column(children: [
