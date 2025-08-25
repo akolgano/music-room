@@ -164,9 +164,10 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
           controller: _controller,
           validator: widget.validator,
           style: theme.textTheme.bodyLarge,
+          readOnly: true,
           decoration: InputDecoration(
             labelText: widget.labelText,
-            hintText: widget.hintText,
+            hintText: 'Use buttons to select location',
             prefixIcon: Icon(Icons.location_on, color: theme.colorScheme.primary),
             suffixIcon: _isLoading
                 ? const Padding(
@@ -179,7 +180,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
                   )
                 : null,
             filled: true,
-            fillColor: theme.colorScheme.surface,
+            fillColor: theme.colorScheme.surface.withValues(alpha: 0.7),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3), width: 1),
@@ -210,15 +211,6 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
           ),
-          onChanged: (value) {
-            widget.onLocationSelected(value);
-            _searchLocations(value);
-          },
-          onTap: () {
-            if (_controller.text.isNotEmpty) {
-              _searchLocations(_controller.text);
-            }
-          },
         ),
         if (_showSuggestions && _suggestions.isNotEmpty)
           Container(

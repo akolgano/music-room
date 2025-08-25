@@ -31,6 +31,10 @@ class PlaylistVotingWidgets {
     required ValueChanged<String> onLicenseTypeChanged,
     required Future<void> Function() onApplyVotingSettings,
     required Future<void> Function(bool) onSelectVotingDateTime,
+    double? latitude,
+    double? longitude,
+    Future<void> Function()? onDetectLocation,
+    VoidCallback? onClearLocation,
   }) {
     return [
       _buildVotingModeInfoBanner(context, isOwner),
@@ -45,6 +49,10 @@ class PlaylistVotingWidgets {
         onLicenseTypeChanged: onLicenseTypeChanged,
         onApplyVotingSettings: onApplyVotingSettings,
         onSelectVotingDateTime: onSelectVotingDateTime,
+        latitude: latitude,
+        longitude: longitude,
+        onDetectLocation: onDetectLocation,
+        onClearLocation: onClearLocation,
       ),
       if (votingInfo != null) _buildVotingStats(context, votingInfo),
     ];
@@ -135,6 +143,10 @@ class PlaylistVotingWidgets {
     required ValueChanged<String> onLicenseTypeChanged,
     required Future<void> Function() onApplyVotingSettings,
     required Future<void> Function(bool) onSelectVotingDateTime,
+    double? latitude,
+    double? longitude,
+    Future<void> Function()? onDetectLocation,
+    VoidCallback? onClearLocation,
   }) => _CollapsibleVotingSettings(
     isPublicVoting: isPublicVoting,
     votingLicenseType: votingLicenseType,
@@ -144,6 +156,10 @@ class PlaylistVotingWidgets {
     onLicenseTypeChanged: onLicenseTypeChanged,
     onApplyVotingSettings: onApplyVotingSettings,
     onSelectVotingDateTime: onSelectVotingDateTime,
+    latitude: latitude,
+    longitude: longitude,
+    onDetectLocation: onDetectLocation,
+    onClearLocation: onClearLocation,
   );
 
   static Widget _buildVotingLicenseSettings({
@@ -154,6 +170,10 @@ class PlaylistVotingWidgets {
     required ValueChanged<bool> onPublicVotingChanged,
     required ValueChanged<String> onLicenseTypeChanged,
     required Future<void> Function(bool) onSelectVotingDateTime,
+    double? latitude,
+    double? longitude,
+    Future<void> Function()? onDetectLocation,
+    VoidCallback? onClearLocation,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,26 +202,185 @@ class PlaylistVotingWidgets {
             )).toList(),
           ),
         ),
-        if (votingLicenseType == 'location_time') _buildVotingTimeSettings(
+        if (votingLicenseType == 'location_time') _buildLocationTimeSettings(
           context: context,
           votingStartTime: votingStartTime,
           votingEndTime: votingEndTime,
           onSelectVotingDateTime: onSelectVotingDateTime,
+          latitude: latitude,
+          longitude: longitude,
+          onDetectLocation: onDetectLocation,
+          onClearLocation: onClearLocation,
         ),
       ],
     );
   }
 
-  static Widget _buildVotingTimeSettings({
+  static Widget _buildLocationTimeSettings({
     required BuildContext context,
     required DateTime? votingStartTime,
     required DateTime? votingEndTime,
     required Future<void> Function(bool) onSelectVotingDateTime,
+    double? latitude,
+    double? longitude,
+    Future<void> Function()? onDetectLocation,
+    VoidCallback? onClearLocation,
   }) {
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Column(
         children: [
+          const SizedBox(height: 8),
+          const Text(
+            'Location Settings',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (latitude != null && longitude != null)
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withValues(alpha: 0.15),
+                    AppTheme.primary.withValues(alpha: 0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1.5),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.location_on, color: AppTheme.primary, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Event Location Coordinates',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (onClearLocation != null)
+                        IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.white70),
+                          onPressed: onClearLocation,
+                          tooltip: 'Clear location',
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'LATITUDE',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                latitude.toStringAsFixed(6),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 40,
+                          color: Colors.white24,
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'LONGITUDE',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                longitude.toStringAsFixed(6),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (onDetectLocation != null)
+            ElevatedButton.icon(
+              onPressed: onDetectLocation,
+              icon: const Icon(Icons.my_location),
+              label: const Text('Detect Current Location'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 44),
+              ),
+            ),
+          const SizedBox(height: 16),
+          const Text(
+            'Time Settings',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
           ListTile(
             leading: const Icon(Icons.access_time),
             title: const Text('Start Time'),
@@ -592,6 +771,10 @@ class _CollapsibleVotingSettings extends StatefulWidget {
   final ValueChanged<String> onLicenseTypeChanged;
   final Future<void> Function() onApplyVotingSettings;
   final Future<void> Function(bool) onSelectVotingDateTime;
+  final double? latitude, longitude;
+  final Future<void> Function()? onDetectLocation;
+  final VoidCallback? onClearLocation;
+  
   const _CollapsibleVotingSettings({
     required this.isPublicVoting,
     required this.votingLicenseType,
@@ -601,6 +784,10 @@ class _CollapsibleVotingSettings extends StatefulWidget {
     required this.onLicenseTypeChanged,
     required this.onApplyVotingSettings,
     required this.onSelectVotingDateTime,
+    this.latitude,
+    this.longitude,
+    this.onDetectLocation,
+    this.onClearLocation,
   });
 
   @override
@@ -650,6 +837,10 @@ class _CollapsibleVotingSettingsState extends State<_CollapsibleVotingSettings> 
                     onPublicVotingChanged: widget.onPublicVotingChanged,
                     onLicenseTypeChanged: widget.onLicenseTypeChanged,
                     onSelectVotingDateTime: widget.onSelectVotingDateTime,
+                    latitude: widget.latitude,
+                    longitude: widget.longitude,
+                    onDetectLocation: widget.onDetectLocation,
+                    onClearLocation: widget.onClearLocation,
                   ),
                   const SizedBox(height: 12),
                   AppWidgets.primaryButton(

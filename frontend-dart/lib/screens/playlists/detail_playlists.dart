@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import '../../core/navigation_core.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_providers.dart';
 import '../../providers/theme_providers.dart';
@@ -178,6 +179,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 onLicenseTypeChanged: (value) => setState(() => _votingService.setVotingLicenseType(value)),
                 onApplyVotingSettings: _applyVotingSettings,
                 onSelectVotingDateTime: _selectVotingDateTime,
+                latitude: _votingService.latitude,
+                longitude: _votingService.longitude,
+                onDetectLocation: _isOwner ? _detectCurrentLocation : null,
+                onClearLocation: _isOwner ? _clearLocation : null,
               ),
               PlaylistDetailWidgets.buildThemedPlaylistStats(context, _tracks, isEvent: _playlist?.isEvent ?? false),
               SizedBox(height: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
@@ -886,5 +891,59 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         errorMessage: 'Failed to delete playlist',
       );
     }
+  }
+
+  Future<void> _detectCurrentLocation() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          AppWidgets.showSnackBar(context, 'Location permissions are denied', backgroundColor: Colors.red);
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        AppWidgets.showSnackBar(context, 'Location permissions are permanently denied', backgroundColor: Colors.red);
+        return;
+      }
+
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        AppWidgets.showSnackBar(context, 'Location services are disabled', backgroundColor: Colors.red);
+        return;
+      }
+
+      AppWidgets.showSnackBar(context, 'Detecting location...', backgroundColor: Colors.blue);
+      
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+      
+      setState(() {
+        _votingService.setLatitude(position.latitude);
+        _votingService.setLongitude(position.longitude);
+      });
+      
+      AppWidgets.showSnackBar(
+        context, 
+        'Location detected: Lat ${position.latitude.toStringAsFixed(6)}, Lng ${position.longitude.toStringAsFixed(6)}',
+        backgroundColor: Colors.green
+      );
+    } catch (e) {
+      AppWidgets.showSnackBar(context, 'Failed to get location: ${e.toString()}', backgroundColor: Colors.red);
+    }
+  }
+
+  void _clearLocation() {
+    setState(() {
+      _votingService.setLatitude(null);
+      _votingService.setLongitude(null);
+    });
+    AppWidgets.showSnackBar(context, 'Location cleared', backgroundColor: Colors.green);
   }
 }

@@ -34,6 +34,8 @@ class PlaylistVotingService {
   void setVotingLicenseType(String value) => _votingLicenseType = value;
   void setVotingStartTime(DateTime? value) => _votingStartTime = value;
   void setVotingEndTime(DateTime? value) => _votingEndTime = value;
+  void setLatitude(double? value) => _latitude = value;
+  void setLongitude(double? value) => _longitude = value;
 
   String? _formatTime(DateTime? time) => time != null 
     ? '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}'
