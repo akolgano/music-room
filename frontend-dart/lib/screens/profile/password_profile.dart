@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../../widgets/app_widgets.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/profile_providers.dart';

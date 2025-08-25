@@ -4,12 +4,12 @@ import 'package:form_validator/form_validator.dart';
 import '../providers/profile_providers.dart';
 import '../providers/auth_providers.dart';
 import '../core/theme_core.dart';
-import '../core/constants_core.dart';
+import '../core/provider_core.dart';
 import '../core/navigation_core.dart';
 import '../widgets/app_widgets.dart';
 import '../widgets/location_widgets.dart';
 import '../screens/profile/password_profile.dart';
-import '../screens/profile/social_profile.dart';
+import '../screens/profile/user_profile.dart';
 
 class ProfileSectionsWidget extends StatelessWidget {
   final ProfileProvider profileProvider;

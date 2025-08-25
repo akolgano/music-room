@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../providers/music_providers.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../../core/locator_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart'; 

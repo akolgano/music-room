@@ -10,7 +10,6 @@ import '../models/music_models.dart';
 import '../models/api_models.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../core/signin_core.dart';
 
 class AuthProvider extends BaseProvider {
   late final AuthService _authService;

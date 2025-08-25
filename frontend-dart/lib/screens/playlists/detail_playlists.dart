@@ -14,7 +14,7 @@ import '../../core/locator_core.dart';
 import '../../models/music_models.dart';
 import '../../models/sort_models.dart';
 import '../../core/theme_core.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../../core/logging_core.dart';
 import '../../core/responsive_core.dart';
 import '../base_screens.dart';

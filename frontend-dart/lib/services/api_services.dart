@@ -2,9 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import '../models/music_models.dart';
 import '../models/api_models.dart';
-import 'apimonitor_services.dart';
+import '../providers/auth_providers.dart';
+import '../core/locator_core.dart';
+import '../core/navigation_core.dart';
 
 class _ResponseLimitingInterceptor extends Interceptor {
   static const int maxLines = 60;
@@ -352,4 +356,131 @@ class ApiService {
   void dispose() {
     _rateMonitor.dispose();
   }
+}
+
+class ApiRateMonitorService {
+  static const int _maxRequestsPerMinute = 60;
+  static const Duration _windowDuration = Duration(minutes: 1);
+  
+  final List<DateTime> _requestTimestamps = [];
+  Timer? _cleanupTimer;
+  
+  ApiRateMonitorService() {
+    _cleanupTimer = Timer.periodic(const Duration(seconds: 30), (_) => _cleanup());
+  }
+  
+  bool canMakeRequest() {
+    _cleanup();
+    return _requestTimestamps.length < _maxRequestsPerMinute;
+  }
+  
+  void recordRequest() {
+    _requestTimestamps.add(DateTime.now());
+    AppLogger.debug('API request recorded. Total in window: ${_requestTimestamps.length}', 'ApiRateMonitorService');
+  }
+  
+  int get remainingRequests {
+    _cleanup();
+    return _maxRequestsPerMinute - _requestTimestamps.length;
+  }
+  
+  Duration? get timeUntilReset {
+    if (_requestTimestamps.isEmpty) return null;
+    final oldestRequest = _requestTimestamps.first;
+    final resetTime = oldestRequest.add(_windowDuration);
+    final now = DateTime.now();
+    if (resetTime.isAfter(now)) {
+      return resetTime.difference(now);
+    }
+    return null;
+  }
+  
+  void _cleanup() {
+    final cutoff = DateTime.now().subtract(_windowDuration);
+    _requestTimestamps.removeWhere((timestamp) => timestamp.isBefore(cutoff));
+  }
+  
+  void dispose() {
+    _cleanupTimer?.cancel();
+  }
+  
+  Map<String, dynamic> getStats() {
+    _cleanup();
+    return {
+      'currentRequests': _requestTimestamps.length,
+      'maxRequests': _maxRequestsPerMinute,
+      'remainingRequests': remainingRequests,
+      'timeUntilReset': timeUntilReset?.inSeconds,
+    };
+  }
+  
+  void startMonitoring() {
+    AppLogger.debug('API rate monitoring started', 'ApiRateMonitorService');
+  }
+  
+  void recordApiCall() {
+    recordRequest();
+  }
+}
+
+class ActivityService {
+  final ApiService _api = getIt<ApiService>();
+
+  Future<void> logUserActivity({
+    required String action,
+    required String token,
+    String? details,
+    Map<String, dynamic>? metadata,
+  }) async {
+    try {
+      await _api.logActivity(token, ActivityLogRequest(
+        action: action,
+        details: details,
+        metadata: metadata,
+      ));
+    } catch (e) {
+      AppLogger.error('Failed to log user activity', e, null, 'ActivityService');
+    }
+  }
+
+  Future<void> _logWithToken(String action, String? details, String token, Map<String, dynamic>? metadata) =>
+    logUserActivity(action: action, token: token, details: details, metadata: metadata);
+
+  Future<void> logButtonClick(String buttonName, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('button_click', buttonName, token, metadata);
+
+  Future<void> logScreenView(String screenName, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('screen_view', screenName, token, metadata);
+
+  Future<void> logPlaylistAction(String action, String playlistId, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('playlist_$action', playlistId, token, metadata);
+
+  Future<void> logTrackAction(String action, String trackId, String token, {Map<String, dynamic>? metadata}) =>
+    _logWithToken('track_$action', trackId, token, metadata);
+
+  Future<void> logActivity({
+    required String action,
+    String? details,
+    Map<String, dynamic>? metadata,
+  }) async {
+    try {
+      final token = getIt<AuthProvider>().token;
+      if (token != null) {
+        await logUserActivity(
+          action: action,
+          token: token,
+          details: details,
+          metadata: metadata,
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to log activity: $e');
+    }
+  }
+
+  Future<void> logPlaylistActionAuto(String action, String playlistId, {Map<String, dynamic>? metadata}) =>
+    logActivity(action: 'playlist_$action', details: playlistId, metadata: metadata);
+
+  Future<void> logTrackActionAuto(String action, String trackId, {Map<String, dynamic>? metadata}) =>
+    logActivity(action: 'track_$action', details: trackId, metadata: metadata);
 }

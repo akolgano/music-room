@@ -8,7 +8,7 @@ import '../core/locator_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../core/provider_core.dart'; 
-import '../core/signin_core.dart';
+import '../services/auth_services.dart';
 import '../models/api_models.dart';
 
 enum VisibilityLevel { public, friends, private }

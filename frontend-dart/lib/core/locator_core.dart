@@ -12,7 +12,6 @@ import '../services/websocket_services.dart';
 import '../services/logging_services.dart';
 import '../services/notification_services.dart';
 import '../services/beacon_services.dart';
-import '../services/activity_services.dart';
 import '../providers/theme_providers.dart';
 import '../providers/music_providers.dart';
 import '../providers/voting_providers.dart';

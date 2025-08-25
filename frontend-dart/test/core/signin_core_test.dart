@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:music_room/core/signin_core.dart';
+import 'package:music_room/services/auth_services.dart';
 
 class MockGoogleSignIn extends Mock implements GoogleSignIn {}
 

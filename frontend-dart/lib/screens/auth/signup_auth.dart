@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_providers.dart';
 import '../../core/theme_core.dart';
 import '../../core/responsive_core.dart';
-import '../../core/constants_core.dart';
+import '../../core/provider_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
 
