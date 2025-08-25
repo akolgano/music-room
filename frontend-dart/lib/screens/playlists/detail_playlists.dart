@@ -342,16 +342,18 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final musicProvider = getProvider<MusicProvider>();
     final sortedTracks = musicProvider.sortedPlaylistTracks;
     
+    final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
+    
     return PlaylistDetailWidgets.buildTrackItem(
       context: context,
       playlistTrack: playlistTrack,
       index: index,
       isOwner: _canEditPlaylist,
       onPlay: () => _playTrackAt(index),
-      onRemove: _canEditPlaylist ? () => _removeTrack(playlistTrack.trackId) : null,
-      onMoveUp: _canEditPlaylist && index > 0 ? () => _moveTrackWithSortCheck(index, index - 1) : null,
-      onMoveDown: _canEditPlaylist && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
-      canReorder: _canEditPlaylist,
+      onRemove: canModifyTracks ? () => _removeTrack(playlistTrack.trackId) : null,
+      onMoveUp: canModifyTracks && index > 0 ? () => _moveTrackWithSortCheck(index, index - 1) : null,
+      onMoveDown: canModifyTracks && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
+      canReorder: canModifyTracks,
       playlistId: widget.playlistId,
       playlistOwnerId: _playlist?.creator,
       isEvent: _playlist?.isEvent ?? false,
@@ -708,7 +710,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Future<void> _removeTrack(String trackId) async {
-    if (!_canEditPlaylist) return;
+    final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
+    if (!canModifyTracks) return;
     final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
     if (!confirmed) return;
     await runAsyncAction(
@@ -724,7 +727,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Future<void> _moveTrackWithSortCheck(int fromIndex, int toIndex) async {
-    if (!_canEditPlaylist) return;
+    final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
+    if (!canModifyTracks) return;
     
     final musicProvider = getProvider<MusicProvider>();
     final currentSort = musicProvider.currentSortOption;

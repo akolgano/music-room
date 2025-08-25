@@ -38,22 +38,14 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
   void initState() {
     super.initState();
     _beaconProvider = Provider.of<BeaconProvider>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeBeacons();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initializeBeacons());
   }
 
-  Future<void> _initializeBeacons() async {
-    await _beaconProvider.initializeBeacons();
-  }
+  Future<void> _initializeBeacons() async => await _beaconProvider.initializeBeacons();
 
-  Future<void> _toggleScanning() async {
-    if (_beaconProvider.isScanning) {
-      await _beaconProvider.stopScanning();
-    } else {
-      await _beaconProvider.startScanning();
-    }
-  }
+  Future<void> _toggleScanning() async => _beaconProvider.isScanning 
+      ? await _beaconProvider.stopScanning() 
+      : await _beaconProvider.startScanning();
 
   Future<void> _refreshBeacons() async {
     if (_beaconProvider.isScanning) {
@@ -80,33 +72,19 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
     return Consumer<BeaconProvider>(
       builder: (context, beaconProvider, child) {
         _beaconProvider = beaconProvider;
-        
-        if (beaconProvider.isLoading) {
-          return buildLoadingState(message: 'Initializing beacons...');
-        }
-
-        if (beaconProvider.hasError) {
-          return buildErrorState(
+        if (beaconProvider.isLoading) return buildLoadingState(message: 'Initializing beacons...');
+        if (beaconProvider.hasError) return buildErrorState(
             message: beaconProvider.errorMessage ?? 'Unknown error occurred',
-            onRetry: _initializeBeacons,
-          );
-        }
-
+            onRetry: _initializeBeacons);
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStatusCard(beaconProvider),
-              const SizedBox(height: 16),
-              _buildPlaylistMonitoringCard(beaconProvider),
-              const SizedBox(height: 16),
-              _buildDiscoveredBeaconsCard(beaconProvider),
-            ],
-          ),
-        );
-      },
-    );
+            children: [_buildStatusCard(beaconProvider), const SizedBox(height: 16),
+              _buildPlaylistMonitoringCard(beaconProvider), const SizedBox(height: 16),
+              _buildDiscoveredBeaconsCard(beaconProvider)],
+          ));
+      });
   }
 
   Widget _buildStatusCard(BeaconProvider beaconProvider) {
@@ -149,8 +127,7 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
     );
   }
 
-  Widget _buildStatusRow(String label, String value) {
-    return Padding(
+  Widget _buildStatusRow(String label, String value) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -160,7 +137,6 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
         ],
       ),
     );
-  }
 
   Widget _buildPlaylistMonitoringCard(BeaconProvider beaconProvider) {
     return Card(
@@ -238,15 +214,11 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
               const Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Text(
-                    'No beacons discovered\nStart scanning to find nearby beacons',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              )
+                  child: Text('No beacons discovered\nStart scanning to find nearby beacons',
+                    textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                ))
             else
-              ...beaconProvider.discoveredBeacons.map((beacon) => _buildBeaconTile(beacon)),
+              ...beaconProvider.discoveredBeacons.map(_buildBeaconTile),
           ],
         ),
       ),
@@ -254,22 +226,12 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
   }
 
   Widget _buildBeaconTile(BeaconInfo beacon) {
-    Color statusColor;
-    IconData statusIcon;
-    
-    if (beacon.isImmediate) {
-      statusColor = Colors.green;
-      statusIcon = Icons.near_me;
-    } else if (beacon.isNear) {
-      statusColor = Colors.orange;
-      statusIcon = Icons.location_on;
-    } else if (beacon.isFar) {
-      statusColor = Colors.red;
-      statusIcon = Icons.location_searching;
-    } else {
-      statusColor = Colors.grey;
-      statusIcon = Icons.bluetooth;
-    }
+    final statusColor = beacon.isImmediate ? Colors.green
+        : beacon.isNear ? Colors.orange
+        : beacon.isFar ? Colors.red : Colors.grey;
+    final statusIcon = beacon.isImmediate ? Icons.near_me
+        : beacon.isNear ? Icons.location_on
+        : beacon.isFar ? Icons.location_searching : Icons.bluetooth;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -292,19 +254,8 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
             const SizedBox(height: 4),
-            Row(
-              children: [
-                Text(
-                  'Distance: ${beacon.distance.toStringAsFixed(1)}m',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  'RSSI: ${beacon.rssi} dBm',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
-            ),
+            Text('Distance: ${beacon.distance.toStringAsFixed(1)}m  |  RSSI: ${beacon.rssi} dBm',
+              style: const TextStyle(color: Colors.grey, fontSize: 12)),
           ],
         ),
         trailing: Chip(

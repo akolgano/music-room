@@ -49,8 +49,7 @@ class FrontendLogEvent {
     this.route,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson() => {
       'id': id,
       'timestamp': timestamp.toIso8601String(),
       'action_type': actionType.name,
@@ -63,7 +62,6 @@ class FrontendLogEvent {
       'platform': 'flutter',
       'app_version': '1.0.0',
     };
-  }
 }
 
 class FrontendLoggingService {
@@ -99,13 +97,9 @@ class FrontendLoggingService {
     'client_secret',
   ];
 
-  static String maskSensitiveString(String? value, {int showChars = 0}) {
-    if (value == null || value.isEmpty) return '[NULL]';
-    if (showChars > 0 && value.length > showChars) {
-      return '${value.substring(0, showChars)}...[MASKED]';
-    }
-    return '[MASKED]';
-  }
+  static String maskSensitiveString(String? value, {int showChars = 0}) => 
+    value == null || value.isEmpty ? '[NULL]' : 
+    (showChars > 0 && value.length > showChars) ? '${value.substring(0, showChars)}...[MASKED]' : '[MASKED]';
 
   @visibleForTesting
   Map<String, dynamic> sanitizeMetadata(Map<String, dynamic>? metadata) {
@@ -142,8 +136,7 @@ class FrontendLoggingService {
     return sanitized;
   }
 
-  bool _containsSensitivePattern(String value) {
-    final patterns = [
+  bool _containsSensitivePattern(String value) => [
       RegExp(r'^[A-Za-z0-9+/=]{20,}$'),
       RegExp(r'^Bearer\s+', caseSensitive: false),
       RegExp(r'^Token\s+', caseSensitive: false),
@@ -151,10 +144,7 @@ class FrontendLoggingService {
       RegExp(r'token\s*[:=]\s*\S+', caseSensitive: false),
       RegExp(r'secret\s*[:=]\s*\S+', caseSensitive: false),
       RegExp(r'key\s*[:=]\s*\S+', caseSensitive: false),
-    ];
-    
-    return patterns.any((pattern) => pattern.hasMatch(value));
-  }
+    ].any((pattern) => pattern.hasMatch(value));
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -177,13 +167,8 @@ class FrontendLoggingService {
     }
   }
 
-  void updateUserId(String? userId) {
-    _currentUserId = userId;
-  }
-
-  void updateCurrentRoute(String? route) {
-    _currentRoute = route;
-  }
+  void updateUserId(String? userId) => _currentUserId = userId;
+  void updateCurrentRoute(String? route) => _currentRoute = route;
 
   void logUserAction({
     required UserActionType actionType,
@@ -223,87 +208,54 @@ class FrontendLoggingService {
     }
   }
 
-  void logNavigation(String from, String to, {Map<String, dynamic>? metadata}) {
-    logUserAction(
+  void logNavigation(String from, String to, {Map<String, dynamic>? metadata}) => logUserAction(
       actionType: UserActionType.navigation,
       description: 'Navigation from $from to $to',
-      metadata: {
-        'from': from,
-        'to': to,
-        ...?metadata,
-      },
+      metadata: {'from': from, 'to': to, ...?metadata},
       screenName: to,
     );
-  }
 
-  void logButtonClick(String buttonName, String screenName, {Map<String, dynamic>? metadata}) {
-    logUserAction(
+  void logButtonClick(String buttonName, String screenName, {Map<String, dynamic>? metadata}) => logUserAction(
       actionType: UserActionType.buttonClick,
       description: 'Button clicked: $buttonName',
-      metadata: {
-        'button_name': buttonName,
-        ...?metadata,
-      },
+      metadata: {'button_name': buttonName, ...?metadata},
       screenName: screenName,
     );
-  }
 
-  void logFormSubmit(String formName, String screenName, {bool success = true, Map<String, dynamic>? metadata}) {
-    logUserAction(
+  void logFormSubmit(String formName, String screenName, {bool success = true, Map<String, dynamic>? metadata}) => logUserAction(
       actionType: UserActionType.formSubmit,
       description: 'Form ${success ? 'submitted' : 'failed'}: $formName',
       level: success ? LogLevel.info : LogLevel.warning,
-      metadata: {
-        'form_name': formName,
-        'success': success,
-        ...?metadata,
-      },
+      metadata: {'form_name': formName, 'success': success, ...?metadata},
       screenName: screenName,
     );
-  }
 
-  void logSearch(String query, String screenName, {int? resultCount, Map<String, dynamic>? metadata}) {
-    logUserAction(
+  void logSearch(String query, String screenName, {int? resultCount, Map<String, dynamic>? metadata}) => logUserAction(
       actionType: UserActionType.search,
       description: 'Search performed: $query',
-      metadata: {
-        'query': query,
-        'result_count': resultCount,
-        ...?metadata,
-      },
+      metadata: {'query': query, 'result_count': resultCount, ...?metadata},
       screenName: screenName,
     );
-  }
 
   void _startBatchTimer() {
     _batchTimer?.cancel();
-    _batchTimer = Timer.periodic(_batchInterval, (timer) {
-      if (_pendingLogs.isNotEmpty) {
-        _sendPendingLogs();
-      }
-    });
+    _batchTimer = Timer.periodic(_batchInterval, (timer) => 
+      _pendingLogs.isNotEmpty ? _sendPendingLogs() : null);
   }
 
   Future<void> _sendPendingLogs() async {
-    if (_pendingLogs.isEmpty) return;
-
-    if (_currentUserId == null) {
+    if (_pendingLogs.isEmpty || _currentUserId == null) {
       _pendingLogs.clear();
       return;
     }
 
     String? authToken;
     try {
-      final storageService = getIt<StorageService>();
-      authToken = storageService.get<String>('auth_token');
+      authToken = getIt<StorageService>().get<String>('auth_token');
     } catch (e) {
       authToken = null;
     }
-
-    if (authToken == null) {
-      _pendingLogs.clear();
-      return;
-    }
+    if (authToken == null) { _pendingLogs.clear(); return; }
 
     final logsToSend = List<FrontendLogEvent>.from(_pendingLogs);
     _pendingLogs.clear();
@@ -353,11 +305,7 @@ class FrontendLoggingService {
     }
   }
 
-  Future<void> flush() async {
-    if (_pendingLogs.isNotEmpty) {
-      await _sendPendingLogs();
-    }
-  }
+  Future<void> flush() async => _pendingLogs.isNotEmpty ? await _sendPendingLogs() : null;
 
   void dispose() {
     _batchTimer?.cancel();

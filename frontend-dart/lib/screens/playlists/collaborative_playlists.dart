@@ -40,6 +40,8 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
   StreamSubscription? _wsSubscription;
 
   bool get _canEdit => widget.playlist.canEdit(auth.username);
+  bool get _isOwner => widget.playlist.creator == auth.username;
+  bool get _canModifyTracks => widget.playlist.isEvent ? _isOwner : _canEdit;
 
   AuthProvider get auth => Provider.of<AuthProvider>(context, listen: false);
   
@@ -280,7 +282,7 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
               ),
           ],
         ),
-        trailing: _canEdit 
+        trailing: _canModifyTracks 
           ? Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -422,7 +424,7 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
   }
 
   Future<void> _moveTrack(int fromIndex, int toIndex) async {
-    if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || 
+    if (!_canModifyTracks || fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || 
         fromIndex >= _playlistTracks.length || toIndex >= _playlistTracks.length) {
       return;
     }
@@ -470,6 +472,7 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
   }
 
   Future<void> _removeTrack(Track track, int index) async {
+    if (!_canModifyTracks) return;
     try {
       final musicProvider = getProvider<MusicProvider>();
       await musicProvider.removeTrackFromPlaylist(
