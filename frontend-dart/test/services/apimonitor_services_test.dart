@@ -34,7 +34,6 @@ void main() {
     });
 
     test('should prevent requests when limit is reached', () {
-      // Record 60 requests (the max)
       for (int i = 0; i < 60; i++) {
         service.recordRequest();
       }
@@ -72,13 +71,9 @@ void main() {
     });
 
     test('should handle cleanup correctly', () {
-      // This test would need to mock time or wait for actual time to pass
-      // For now, we just verify that cleanup doesn't throw
       service.recordRequest();
       expect(service.remainingRequests, equals(59));
       
-      // The cleanup happens automatically via timer and when accessing remainingRequests
-      // We can't easily test the time-based cleanup without mocking time
     });
 
     test('should handle multiple services independently', () {
@@ -97,7 +92,6 @@ void main() {
 
     test('dispose should not throw', () {
       expect(() => service.dispose(), returnsNormally);
-      // Calling dispose multiple times should also be safe
       expect(() => service.dispose(), returnsNormally);
     });
   });

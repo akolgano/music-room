@@ -448,7 +448,6 @@ class MusicProvider extends BaseProvider {
         }
       }
     } catch (e) {
-      // Silently ignore errors to prevent app crash
     }
   }
 

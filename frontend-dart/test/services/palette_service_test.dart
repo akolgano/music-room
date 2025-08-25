@@ -30,7 +30,6 @@ void main() {
 
   group('ColorPaletteService', () {
     test('extractColorsFromImageProvider should return ColorPalette', () async {
-      // This is a basic test - in a real scenario you'd mock ImageProvider
       const imageProvider = AssetImage('assets/test_image.png');
       
       final result = await ColorPaletteService.extractColorsFromImageProvider(imageProvider);
@@ -39,7 +38,6 @@ void main() {
     });
 
     test('extractColorsFromImageProvider should handle errors gracefully', () async {
-      // Test with invalid image provider
       const imageProvider = AssetImage('nonexistent.png');
       
       final result = await ColorPaletteService.extractColorsFromImageProvider(imageProvider);

@@ -82,7 +82,6 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<bool> logout() async {
-    // Stop music player before logout
     try {
       final playerService = getIt<MusicPlayerService>();
       await playerService.stop();

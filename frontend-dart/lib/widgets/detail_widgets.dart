@@ -313,7 +313,6 @@ class PlaylistDetailWidgets {
                 AppWidgets.showSnackBar(context, 'Vote submitted successfully!', backgroundColor: Colors.green);
                 onVoteSuccess?.call();
               } else if (votingProvider.hasError) {
-                // Show the actual backend error message
                 AppWidgets.showSnackBar(context, votingProvider.errorMessage ?? 'Failed to vote', backgroundColor: Colors.red);
               }
             }

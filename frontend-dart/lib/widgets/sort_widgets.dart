@@ -11,24 +11,25 @@ class SortButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCustomOrder = (currentSort as dynamic).isDefault ?? false;
-    final icon = (currentSort as dynamic).icon ?? Icons.sort;
-    final displayName = (currentSort as dynamic).displayName ?? 'Sort';
+    final s = currentSort as dynamic;
+    final isCustom = s.isDefault ?? false;
+    final icon = s.icon ?? Icons.sort;
+    final name = s.displayName ?? 'Sort';
     
     return showLabel ? ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 18),
-      label: Text(isCustomOrder ? 'Sort' : displayName, style: const TextStyle(fontSize: 14)),
+      label: Text(isCustom ? 'Sort' : name, style: const TextStyle(fontSize: 14)),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isCustomOrder ? AppTheme.surface : AppTheme.primary,
-        foregroundColor: isCustomOrder ? Colors.white : Colors.black,
-        side: BorderSide(color: isCustomOrder ? Colors.white54 : AppTheme.primary),
+        backgroundColor: isCustom ? AppTheme.surface : AppTheme.primary,
+        foregroundColor: isCustom ? Colors.white : Colors.black,
+        side: BorderSide(color: isCustom ? Colors.white54 : AppTheme.primary),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     ) : IconButton(
       onPressed: onPressed,
-      icon: Icon(icon, color: isCustomOrder ? Colors.white : AppTheme.primary),
-      tooltip: displayName,
+      icon: Icon(icon, color: isCustom ? Colors.white : AppTheme.primary),
+      tooltip: name,
     );
   }
 }
@@ -42,57 +43,51 @@ class _GenericSortBottomSheet<T> extends StatelessWidget {
   const _GenericSortBottomSheet({super.key, required this.currentSort, required this.onSortChanged, required this.title, required this.options});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40, height: 4,
-            margin: const EdgeInsets.only(top: 12),
-            decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(2)),
+  Widget build(BuildContext context) => Container(
+    decoration: const BoxDecoration(
+      color: AppTheme.surface,
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 40, height: 4,
+          margin: const EdgeInsets.only(top: 12),
+          decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(2)),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(children: [
+            const Icon(Icons.sort, color: AppTheme.primary),
+            const SizedBox(width: 12),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))),
+            IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.grey)),
+          ]),
+        ),
+        Flexible(
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: options.length,
+            itemBuilder: (context, index) {
+              final o = options[index] as dynamic;
+              final selected = o == currentSort;
+              return ListTile(
+                leading: Icon(o.icon ?? Icons.sort, color: selected ? AppTheme.primary : Colors.white70),
+                title: Text(o.displayName ?? '', style: TextStyle(
+                  color: selected ? AppTheme.primary : Colors.white,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                )),
+                trailing: selected ? const Icon(Icons.check, color: AppTheme.primary) : null,
+                onTap: () { onSortChanged(o); Navigator.pop(context); },
+              );
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(children: [
-              const Icon(Icons.sort, color: AppTheme.primary),
-              const SizedBox(width: 12),
-              Expanded(child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))),
-              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.grey)),
-            ]),
-          ),
-          
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: options.length,
-              itemBuilder: (context, index) {
-                final option = options[index];
-                final isSelected = option == currentSort;
-                final icon = (option as dynamic).icon ?? Icons.sort;
-                final displayName = (option as dynamic).displayName ?? '';
-                
-                return ListTile(
-                  leading: Icon(icon, color: isSelected ? AppTheme.primary : Colors.white70),
-                  title: Text(displayName, style: TextStyle(
-                    color: isSelected ? AppTheme.primary : Colors.white,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  )),
-                  trailing: isSelected ? const Icon(Icons.check, color: AppTheme.primary) : null,
-                  onTap: () { onSortChanged(option); Navigator.pop(context); },
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(height: 20),
+      ],
+    ),
+  );
 }
 
 class TrackSortBottomSheet extends StatelessWidget {

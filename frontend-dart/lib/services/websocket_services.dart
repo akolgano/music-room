@@ -7,6 +7,7 @@ import '../models/music_models.dart';
 import '../core/navigation_core.dart';
 import '../core/locator_core.dart';
 import '../core/theme_core.dart';
+import '../core/logging_core.dart';
 import '../providers/music_providers.dart';
 import '../providers/voting_providers.dart';
 import 'notification_services.dart';
@@ -31,20 +32,30 @@ enum PlaylistWebSocketMessageType {
 class PlaylistUpdateMessage {
   final String playlistId;
   final List<PlaylistTrack> tracks;
+  final String? action;
+  final String? updateType;
   
   PlaylistUpdateMessage({
     required this.playlistId,
     required this.tracks,
+    this.action,
+    this.updateType,
   });
   
   factory PlaylistUpdateMessage.fromJson(Map<String, dynamic> json) {
     return PlaylistUpdateMessage(
       playlistId: json['playlist_id'].toString(),
-      tracks: (json['data'] as List<dynamic>)
+      tracks: (json['data'] as List<dynamic>? ?? json['tracks'] as List<dynamic>? ?? [])
           .map((trackData) => PlaylistTrack.fromJson(trackData))
           .toList(),
+      action: json['action'] as String?,
+      updateType: json['update_type'] as String?,
     );
   }
+  
+  bool get isPositionChange => action == 'reorder' || updateType == 'position_change';
+  bool get isAddition => action == 'add' || updateType == 'track_added';
+  bool get isRemoval => action == 'remove' || updateType == 'track_removed';
 }
 
 class _NotificationInfo {
@@ -215,13 +226,33 @@ class WebSocketService {
 
   void _handlePlaylistUpdate(Map<String, dynamic> data) {
     try {
+      _log('Raw WebSocket data received: ${jsonEncode(data)}');
+      
       final updateMessage = PlaylistUpdateMessage.fromJson(data);
       _playlistUpdateController?.add(updateMessage);
-      _log('Parsed playlist update: ${updateMessage.tracks.length} tracks');
+      
+      _log('Parsed playlist update: ${updateMessage.tracks.length} tracks, action: ${updateMessage.action}, updateType: ${updateMessage.updateType}');
+      
+      if (updateMessage.tracks.isNotEmpty) {
+        final firstTrack = updateMessage.tracks.first;
+        _log('First track info - ID: ${firstTrack.trackId}, Name: ${firstTrack.name}, Has track object: ${firstTrack.track != null}');
+        if (firstTrack.track != null) {
+          _log('Track details - DeezerID: ${firstTrack.track!.deezerTrackId}, Image: ${firstTrack.track!.imageUrl != null}, Preview: ${firstTrack.track!.previewUrl != null}');
+        }
+      }
+      
+      if (updateMessage.isPositionChange) {
+        _log('Position change detected in WebSocket message - triggering full refresh');
+      } else if (updateMessage.isAddition) {
+        _log('Track addition detected in WebSocket message');
+      } else if (updateMessage.isRemoval) {
+        _log('Track removal detected in WebSocket message');
+      }
       
       _updateProvidersWithPlaylistData(updateMessage);
     } catch (e) {
       _log('Error parsing playlist update: $e');
+      _log('Failed data: ${jsonEncode(data)}');
     }
   }
 

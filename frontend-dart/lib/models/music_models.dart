@@ -200,9 +200,13 @@ class PlaylistTrack {
       } catch (e) {
         AppLogger.error('Error parsing nested track: ${e.toString()}', null, null, 'PlaylistTrack');
       }
-    } 
-    else if (json['deezer_track_id'] != null) {
-      final deezerTrackId = json['deezer_track_id'].toString();
+    }
+    
+    final deezerIdField = json['deezer_id'] ?? json['deezer_track_id'];
+    final pictureField = json['picture'] ?? json['image_url'] ?? json['picture_medium'];
+    
+    if (track == null && deezerIdField != null) {
+      final deezerTrackId = deezerIdField.toString();
       
       String? artist;
       String? album;
@@ -225,21 +229,32 @@ class PlaylistTrack {
 
       track = Track(
         id: 'deezer_$deezerTrackId',
-        name: json['name'] as String? ?? '',
+        name: json['name'] as String? ?? json['title'] as String? ?? '',
         artist: artist ?? '', 
         album: album ?? '',   
-        url: json['url'] as String? ?? '',
+        url: json['url'] as String? ?? json['link'] as String? ?? '',
         deezerTrackId: deezerTrackId,
-        previewUrl: json['preview_url'] as String?,
-        imageUrl: json['image_url'] as String?,
+        previewUrl: json['preview_url'] as String? ?? json['preview'] as String?,
+        imageUrl: pictureField as String?,
+      );
+    } else if (track != null && pictureField != null && track.imageUrl == null) {
+      track = Track(
+        id: track.id,
+        name: track.name,
+        artist: track.artist,
+        album: track.album,
+        url: track.url,
+        deezerTrackId: track.deezerTrackId ?? deezerIdField?.toString(),
+        previewUrl: track.previewUrl,
+        imageUrl: pictureField as String?,
       );
     }
 
     return PlaylistTrack(
       trackId: (json['track_id'] ?? json['id']).toString(),
       playlistTrackId: json['playlist_track_id']?.toString(),
-      name: (json['name'] ?? track?.name ?? '').toString(),
-      position: json['position'] as int,
+      name: (json['name'] ?? json['title'] ?? track?.name ?? '').toString(),
+      position: json['position'] as int? ?? 0,
       points: json['points'] as int? ?? 0, 
       track: track,
     );

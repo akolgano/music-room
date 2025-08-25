@@ -365,10 +365,10 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   void _setupWebSocketConnection() {
     _playlistUpdateSubscription = _webSocketService.playlistUpdateStream.listen(
       (updateMessage) {
-        AppLogger.debug('Received WebSocket playlist update: ${updateMessage.tracks.length} tracks', 'PlaylistDetailScreen');
+        AppLogger.debug('Received WebSocket playlist update: ${updateMessage.tracks.length} tracks, action: ${updateMessage.action}', 'PlaylistDetailScreen');
         
         if (updateMessage.playlistId == widget.playlistId && mounted) {
-          _handlePlaylistUpdate(updateMessage.tracks);
+          _handlePlaylistUpdateMessage(updateMessage);
         }
       },
       onError: (error) {
@@ -393,6 +393,68 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     if (playerService != null && playerService.playlistId == widget.playlistId) {
       playerService.updatePlaylist(_tracks);
     }
+  }
+
+  Future<void> _forceFullRefresh() async {
+    try {
+      AppLogger.debug('Force refreshing playlist data after WebSocket update', 'PlaylistDetailScreen');
+      
+      final musicProvider = _getMountedProvider<MusicProvider>();
+      if (musicProvider == null || auth.token == null) return;
+      
+      final response = await _apiService.getPlaylistTracks(widget.playlistId, auth.token!);
+      
+      if (!mounted) return;
+      
+      final updatedTracks = response.tracks;
+      
+      AppLogger.debug('Received ${updatedTracks.length} tracks from API with new backend structure', 'PlaylistDetailScreen');
+      
+      setState(() {
+        _tracks = updatedTracks;
+        _updateTrackIdMapping(_tracks);
+      });
+      
+      musicProvider.setPlaylistTracks(updatedTracks);
+      musicProvider.notifyListeners();
+      
+      final playerService = _getMountedProvider<MusicPlayerService>();
+      if (playerService != null && playerService.playlistId == widget.playlistId) {
+        AppLogger.debug('Clearing and updating player service with fresh data', 'PlaylistDetailScreen');
+        playerService.clearFailedTracks();
+        playerService.updatePlaylist(updatedTracks);
+      }
+      
+      _initializeVotingIfNeeded();
+      
+      final tracksWithoutFullDetails = updatedTracks.where((pt) {
+        final t = pt.track;
+        return t == null || 
+               t.previewUrl == null || 
+               t.imageUrl == null ||
+               t.artist.isEmpty ||
+               t.album.isEmpty;
+      }).toList();
+      
+      if (tracksWithoutFullDetails.isNotEmpty) {
+        AppLogger.debug('${tracksWithoutFullDetails.length} tracks need additional details', 'PlaylistDetailScreen');
+        for (final pt in tracksWithoutFullDetails) {
+          if (pt.track?.deezerTrackId != null) {
+            _fetchTrackDetailsIfNeeded(pt, _tracks.indexOf(pt));
+          }
+        }
+      }
+      
+      AppLogger.debug('Force refresh completed successfully', 'PlaylistDetailScreen');
+      
+    } catch (e) {
+      AppLogger.error('Failed to force refresh tracks', e, null, 'PlaylistDetailScreen');
+      _loadData();
+    }
+  }
+
+  Future<void> _fetchUpdatedTracksFromAPI() async {
+    await _forceFullRefresh();
   }
 
   void _logError(String message, dynamic error) {
@@ -438,99 +500,14 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
   }
 
-  void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) {
-    AppLogger.debug('Handling playlist update - WebSocket received with ${updatedTracks.length} tracks', 'PlaylistDetailScreen');
-    
+  void _handlePlaylistUpdateMessage(PlaylistUpdateMessage updateMessage) {
     if (!mounted) return;
-    
-    final existingTrackDetails = <String, Track>{};
-    for (final track in _tracks) {
-      if (track.track != null) {
-        existingTrackDetails[track.trackId] = track.track!;
-      }
-    }
-    
-    final existingTrackIds = _tracks.map((t) => t.trackId).toSet();
-    final updatedTrackIds = updatedTracks.map((t) => t.trackId).toSet();
-    final isPositionChange = existingTrackIds.length == updatedTrackIds.length && 
-                             existingTrackIds.containsAll(updatedTrackIds);
-    
-    if (isPositionChange) {
-      AppLogger.debug('Position change detected - preserving and fetching track details', 'PlaylistDetailScreen');
-      
-      final tracksWithDetails = updatedTracks.map((updatedTrack) {
-        final existingDetail = existingTrackDetails[updatedTrack.trackId];
-        if (existingDetail != null) {
-          return PlaylistTrack(
-            trackId: updatedTrack.trackId,
-            name: updatedTrack.name,
-            position: updatedTrack.position,
-            points: updatedTrack.points,
-            track: existingDetail,
-          );
-        } else {
-          Track? minimalTrack;
-          if (updatedTrack.track == null && updatedTrack.trackId.contains('deezer_')) {
-            minimalTrack = Track(
-              id: updatedTrack.trackId,
-              name: updatedTrack.name,
-              artist: '',
-              album: '',
-              url: '',
-              deezerTrackId: updatedTrack.trackId.replaceFirst('deezer_', ''),
-            );
-          }
-          return PlaylistTrack(
-            trackId: updatedTrack.trackId,
-            name: updatedTrack.name,
-            position: updatedTrack.position,
-            points: updatedTrack.points,
-            track: updatedTrack.track ?? minimalTrack,
-          );
-        }
-      }).toList();
-      
-      setState(() {
-        _tracks = tracksWithDetails;
-        _updateTrackIdMapping(_tracks);
-      });
-      
-      final musicProvider = _getMountedProvider<MusicProvider>();
-      if (musicProvider != null) {
-        musicProvider.setPlaylistTracks(tracksWithDetails);
-        musicProvider.notifyListeners();
-      }
-      
-      final playerService = _getMountedProvider<MusicPlayerService>();
-      if (playerService != null && playerService.playlistId == widget.playlistId) {
-        playerService.clearFailedTracks();
-        playerService.updatePlaylist(tracksWithDetails);
-      }
-      
-      _initializeVotingIfNeeded();
-      
-      final tracksNeedingDetails = tracksWithDetails.where((pt) => 
-        pt.track == null || pt.track!.imageUrl == null || pt.track!.previewUrl == null
-      ).toList();
-      
-      if (tracksNeedingDetails.isNotEmpty) {
-        AppLogger.debug('Fetching details for ${tracksNeedingDetails.length} tracks after position change', 'PlaylistDetailScreen');
-        _trackService.batchFetchTrackDetailsProgressive(
-          tracksNeedingDetails,
-          auth.token!,
-          onTrackLoaded: (playlistTrack, trackDetails) {
-            if (mounted && trackDetails != null) {
-              _updateTrackDetails(playlistTrack.trackId, trackDetails);
-            }
-          },
-        );
-      }
-      
-    } else {
-      AppLogger.debug('Track add/delete detected - full reload needed', 'PlaylistDetailScreen');
-      _loadData();
-    }
+    AppLogger.debug('WebSocket update received - forcing refresh', 'PlaylistDetailScreen');
+    _forceFullRefresh();
   }
+  
+  void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) => 
+    _handlePlaylistUpdateMessage(PlaylistUpdateMessage(playlistId: widget.playlistId, tracks: updatedTracks));
 
   Future<void> _loadData() async {
     await runAsyncAction(
@@ -573,50 +550,27 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Future<void> _refreshWithReconnect() async {
-    if (!_webSocketService.isConnected && auth.token != null) {
-      await _webSocketService.forceReconnect();
-    }
+    if (!_webSocketService.isConnected && auth.token != null) await _webSocketService.forceReconnect();
     await _loadData();
   }
 
   Future<void> _refreshPlaylistData() async {
-    try {
-      await _refreshTracksFromProvider();
-    } catch (e) {
-      AppLogger.error('Error refreshing playlist data: ${e.toString()}', null, null, 'PlaylistDetailScreen');
-    }
+    try { await _refreshTracksFromProvider(); } 
+    catch (e) { AppLogger.error('Error refreshing playlist data', e, null, 'PlaylistDetailScreen'); }
   }
 
   Future<void> _fetchTrackDetailsIfNeeded(PlaylistTrack playlistTrack, int index) async {
     final trackDetails = await _trackService.fetchTrackDetailsIfNeeded(playlistTrack, auth.token!);
-    if (trackDetails != null && mounted) {
-      _updateTrackDetails(playlistTrack.trackId, trackDetails);
-    }
+    if (trackDetails != null && mounted) _updateTrackDetails(playlistTrack.trackId, trackDetails);
   }
 
   Future<Track?> _fetchTrackDetailsForPlay(PlaylistTrack playlistTrack) async {
     try {
-      String trackIdToFetch;
-      
-      if (playlistTrack.track?.deezerTrackId != null) {
-        trackIdToFetch = playlistTrack.track!.deezerTrackId!;
-      } else if (playlistTrack.trackId.startsWith('deezer_')) {
-        trackIdToFetch = playlistTrack.trackId.replaceFirst('deezer_', '');
-      } else {
-        trackIdToFetch = playlistTrack.trackId;
-      }
-      
-      AppLogger.debug('Fetching track details for play: $trackIdToFetch', 'PlaylistDetailScreen');
-      
-      final trackDetails = await _trackCacheService.getTrackDetails(
-        trackIdToFetch,
-        auth.token!,
-        getIt<ApiService>(),
-      );
-      
-      return trackDetails;
+      final trackIdToFetch = playlistTrack.track?.deezerTrackId ?? 
+        (playlistTrack.trackId.startsWith('deezer_') ? playlistTrack.trackId.replaceFirst('deezer_', '') : playlistTrack.trackId);
+      return await _trackCacheService.getTrackDetails(trackIdToFetch, auth.token!, getIt<ApiService>());
     } catch (e) {
-      AppLogger.error('Failed to fetch track details for play', e, null, 'PlaylistDetailScreen');
+      AppLogger.error('Failed to fetch track details', e, null, 'PlaylistDetailScreen');
       return null;
     }
   }
@@ -644,173 +598,115 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   Future<void> _startBatchTrackDetailsFetch() async {
     if (!mounted) return;
-    
-    final tracksNeedingDetails = <PlaylistTrack>[];
-    
-    for (int i = 0; i < _tracks.length; i++) {
-      final track = _tracks[i].track;
-      if (_trackService.needsTrackDetailsFetch(track)) {
-        tracksNeedingDetails.add(_tracks[i]);
-      }
-    }
-    
+    final tracksNeedingDetails = _tracks.where((t) => _trackService.needsTrackDetailsFetch(t.track)).toList();
     _trackService.batchFetchTrackDetailsProgressive(
-      tracksNeedingDetails, 
-      auth.token!,
+      tracksNeedingDetails, auth.token!,
       onTrackLoaded: (playlistTrack, trackDetails) {
-        if (mounted && trackDetails != null) {
-          _updateTrackDetails(playlistTrack.trackId, trackDetails);
-        }
+        if (mounted && trackDetails != null) _updateTrackDetails(playlistTrack.trackId, trackDetails);
       },
     );
   }
 
   Future<void> _playPlaylist() async {
-    final musicProvider = getProvider<MusicProvider>();
-    final sortedTracks = musicProvider.sortedPlaylistTracks;
-    
-    if (sortedTracks.isEmpty) {
-      return;
-    }
-    
+    final sortedTracks = getProvider<MusicProvider>().sortedPlaylistTracks;
+    if (sortedTracks.isEmpty) return;
     try {
+      await _ensureTracksHaveDetails(sortedTracks);
       final playerService = getProvider<MusicPlayerService>();
       playerService.clearFailedTracks();
       await playerService.setPlaylistAndPlay(
-        playlist: sortedTracks,
-        startIndex: 0,
-        playlistId: widget.playlistId,
-        authToken: auth.token,
+        playlist: sortedTracks, startIndex: 0,
+        playlistId: widget.playlistId, authToken: auth.token,
       );
     } catch (e) {
       AppLogger.error('Failed to play playlist', e, null, 'PlaylistDetailScreen');
+      showError('Failed to play playlist');
     }
   }
 
   Future<void> _playRandomTrack() async {
-    final musicProvider = getProvider<MusicProvider>();
-    final sortedTracks = musicProvider.sortedPlaylistTracks;
-    
-    if (sortedTracks.isEmpty) {
-      showError('No tracks available to play');
-      return;
-    }
-    
+    final sortedTracks = getProvider<MusicProvider>().sortedPlaylistTracks;
+    if (sortedTracks.isEmpty) { showError('No tracks available to play'); return; }
     try {
-      final random = Random();
-      final randomIndex = random.nextInt(sortedTracks.length);
-      
+      final randomIndex = Random().nextInt(sortedTracks.length);
+      await _ensureTracksHaveDetails(sortedTracks);
       final playerService = getProvider<MusicPlayerService>();
       playerService.clearFailedTracks();
       await playerService.setPlaylistAndPlay(
-        playlist: sortedTracks,
-        startIndex: randomIndex,
-        playlistId: widget.playlistId,
-        authToken: auth.token,
+        playlist: sortedTracks, startIndex: randomIndex,
+        playlistId: widget.playlistId, authToken: auth.token,
       );
-      
     } catch (e) {
       AppLogger.error('Failed to play random track', e, null, 'PlaylistDetailScreen');
+      showError('Failed to play random track');
+    }
+  }
+  
+  Future<void> _ensureTracksHaveDetails(List<PlaylistTrack> tracks) async {
+    final needsDetails = tracks.where((pt) => pt.track == null || pt.track!.deezerTrackId == null || pt.track!.previewUrl == null).toList();
+    for (final pt in needsDetails) {
+      final details = await _fetchTrackDetailsForPlay(pt);
+      if (details != null) {
+        final index = tracks.indexOf(pt);
+        if (index >= 0) tracks[index] = PlaylistTrack(
+          trackId: pt.trackId, name: pt.name,
+          position: pt.position, points: pt.points, track: details,
+        );
+      }
     }
   }
 
   Future<void> _addRandomTrack() async {
-    if (auth.token == null) {
-      return;
-    }
-
+    if (auth.token == null) return;
     await runAsyncAction(
       () async {
-        final musicProvider = getProvider<MusicProvider>();
-        final result = await musicProvider.addRandomTrackToPlaylist(widget.playlistId, auth.token!);
-        
-        if (result.success) {
-          await _refreshTracksFromProvider();
-        } else {
-        }
+        final result = await getProvider<MusicProvider>().addRandomTrackToPlaylist(widget.playlistId, auth.token!);
+        if (result.success) await _refreshTracksFromProvider();
       },
       errorMessage: 'Failed to add random track',
     );
   }
 
   Future<void> _playTrackAt(int index) async {
-    final musicProvider = getProvider<MusicProvider>();
-    final sortedTracks = musicProvider.sortedPlaylistTracks;
-    
+    final sortedTracks = getProvider<MusicProvider>().sortedPlaylistTracks;
     if (index < 0 || index >= sortedTracks.length) return;
-    
     try {
       final playlistTrack = sortedTracks[index];
-      final track = playlistTrack.track;
-      
-      if (track == null || track.previewUrl == null || track.deezerTrackId == null) {
-        AppLogger.debug('Track missing details, fetching before play...', 'PlaylistDetailScreen');
-        
+      var track = playlistTrack.track;
+      if (track == null || track.previewUrl == null || track.deezerTrackId == null || track.artist.isEmpty || track.album.isEmpty) {
         final trackDetails = await _fetchTrackDetailsForPlay(playlistTrack);
-        if (trackDetails != null) {
-          final updatedTrack = PlaylistTrack(
-            trackId: playlistTrack.trackId,
-            name: playlistTrack.name,
-            position: playlistTrack.position,
-            points: playlistTrack.points,
-            track: trackDetails,
-          );
-          
-          sortedTracks[index] = updatedTrack;
-          _updateTrackDetails(playlistTrack.trackId, trackDetails);
-        }
+        if (trackDetails == null) { showError('Unable to play track'); return; }
+        track = trackDetails;
+        sortedTracks[index] = PlaylistTrack(
+          trackId: playlistTrack.trackId, name: playlistTrack.name,
+          position: playlistTrack.position, points: playlistTrack.points, track: trackDetails,
+        );
+        _updateTrackDetails(playlistTrack.trackId, trackDetails);
       }
-      
-      final playerService = getProvider<MusicPlayerService>();
-      
-      await playerService.setPlaylistAndPlay(
-        playlist: sortedTracks,
-        startIndex: index,
-        playlistId: widget.playlistId,
-        authToken: auth.token,
+      await getProvider<MusicPlayerService>().setPlaylistAndPlay(
+        playlist: sortedTracks, startIndex: index,
+        playlistId: widget.playlistId, authToken: auth.token,
       );
-      
-      final playingTrack = sortedTracks[index].track;
-      if (playingTrack != null) {
-        AppLogger.debug('Playing track: ${playingTrack.name}', 'PlaylistDetailScreen');
-      }
     } catch (e) {
-      AppLogger.error('Failed to play track at index $index', e, null, 'PlaylistDetailScreen');
+      AppLogger.error('Failed to play track', e, null, 'PlaylistDetailScreen');
+      showError('Failed to play track');
     }
   }
 
   Future<void> _removeTrack(String trackId) async {
     if (!_canEditPlaylist) return;
-    
     final confirmed = await showConfirmDialog('Remove Track', 'Remove this track from the playlist?');
-    
-    if (confirmed) {
-      await runAsyncAction(
-        () async {
-          final musicProvider = getProvider<MusicProvider>();
-          
-          final playlistTrackId = _trackIdToPlaylistTrackId[trackId] ?? trackId;
-          AppLogger.debug('Removing track: Track.id=$trackId, using PlaylistTrackId=$playlistTrackId', 'PlaylistDetailScreen');
-          AppLogger.debug('TrackId mapping size: ${_trackIdToPlaylistTrackId.length}', 'PlaylistDetailScreen');
-          
-          try {
-            int.parse(playlistTrackId);
-            AppLogger.debug('PlaylistTrackId $playlistTrackId is valid integer', 'PlaylistDetailScreen');
-          } catch (e) {
-            AppLogger.error('PlaylistTrackId $playlistTrackId is not a valid integer', e, null, 'PlaylistDetailScreen');
-          }
-          
-          await musicProvider.removeTrackFromPlaylist(
-            playlistId: widget.playlistId, 
-            trackId: playlistTrackId, 
-            token: auth.token!
-          );
-          await _refreshTracksFromProvider();
-        },
-        successMessage: 'Track removed from playlist',
-        errorMessage: 'Failed to remove track',
-      );
-    }
+    if (!confirmed) return;
+    await runAsyncAction(
+      () async {
+        final playlistTrackId = _trackIdToPlaylistTrackId[trackId] ?? trackId;
+        await getProvider<MusicProvider>().removeTrackFromPlaylist(
+          playlistId: widget.playlistId, trackId: playlistTrackId, token: auth.token!
+        );
+        await _refreshTracksFromProvider();
+      },
+      successMessage: 'Track removed', errorMessage: 'Failed to remove track',
+    );
   }
 
   Future<void> _moveTrackWithSortCheck(int fromIndex, int toIndex) async {
@@ -840,97 +736,55 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   Future<void> _moveTrack(int fromIndex, int toIndex) async {
     if (!mounted || fromIndex == toIndex || fromIndex < 0 || toIndex < 0) return;
-    
-    final musicProvider = getProvider<MusicProvider>();
-    final sortedTracks = musicProvider.sortedPlaylistTracks;
-    
+    final sortedTracks = getProvider<MusicProvider>().sortedPlaylistTracks;
     if (fromIndex >= sortedTracks.length || toIndex >= sortedTracks.length) return;
-    
     try {
       setState(() {
         final tracks = List<PlaylistTrack>.from(sortedTracks);
-        final item = tracks.removeAt(fromIndex);
-        tracks.insert(toIndex, item);
-        
+        tracks.insert(toIndex, tracks.removeAt(fromIndex));
         for (int i = 0; i < tracks.length; i++) {
           tracks[i] = PlaylistTrack(
-            trackId: tracks[i].trackId, 
-            name: tracks[i].name, 
-            position: i, 
-            track: tracks[i].track,
-            points: tracks[i].points,
+            trackId: tracks[i].trackId, name: tracks[i].name, position: i,
+            track: tracks[i].track, points: tracks[i].points,
           );
         }
         _tracks = tracks;
       });
       await _updateTrackOrder(fromIndex, toIndex);
-    } catch (e) {
-      _logError('moving track', e);
-    }
+    } catch (e) { _logError('moving track', e); }
   }
 
   Future<void> _updateTrackOrder(int oldIndex, int newIndex) async {
     try {
-      final musicProvider = getProvider<MusicProvider>();
-      
-      int adjustedInsertBefore = newIndex;
-      if (newIndex > oldIndex) {
-        adjustedInsertBefore = newIndex + 1;
-      }
-      
-      await musicProvider.moveTrackInPlaylist(
-        playlistId: widget.playlistId, 
-        rangeStart: oldIndex, 
-        insertBefore: adjustedInsertBefore,
+      await getProvider<MusicProvider>().moveTrackInPlaylist(
+        playlistId: widget.playlistId, rangeStart: oldIndex,
+        insertBefore: newIndex > oldIndex ? newIndex + 1 : newIndex,
         token: auth.token!,
       );
-      
-      if (mounted) {
-        await _refreshTracksFromProvider();
-      }
+      if (mounted) await _refreshTracksFromProvider();
     } catch (e) {
       _logError('updating track order', e);
-      if (mounted) {
-        await _loadData();
-      }
+      if (mounted) await _loadData();
     }
   }
 
-  void _showSortOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => TrackSortBottomSheet(
-        currentSort: getProvider<MusicProvider>().currentSortOption,
-        onSortChanged: (sortOption) {
-          final musicProvider = getProvider<MusicProvider>();
-          musicProvider.setSortOption(sortOption);
-          if (mounted) {
-          }
-        },
-      ),
-    );
-  }
+  void _showSortOptions() => showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) => TrackSortBottomSheet(
+      currentSort: getProvider<MusicProvider>().currentSortOption,
+      onSortChanged: (sortOption) => getProvider<MusicProvider>().setSortOption(sortOption),
+    ),
+  );
 
-  void _openPlaylistEditor() {
-    Navigator.pushNamed(
-      context,
-      AppRoutes.playlistEditor,
-      arguments: widget.playlistId,
-    ).then((_) {
-      if (mounted) _loadData();
-    });
-  }
+  void _openPlaylistEditor() => Navigator.pushNamed(context, AppRoutes.playlistEditor, arguments: widget.playlistId)
+    .then((_) { if (mounted) _loadData(); });
 
   Future<void> _sharePlaylist() async {
     if (_playlist != null && mounted) {
       final result = await Navigator.pushNamed(context, AppRoutes.playlistSharing, arguments: _playlist);
-      if (result is Playlist && mounted) {
-        setState(() {
-          _playlist = result;
-        });
-      }
+      if (result is Playlist && mounted) setState(() => _playlist = result);
     }
   }
 
@@ -942,75 +796,42 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   void _validateTrackCounts() {
     final musicProvider = _getMountedProvider<MusicProvider>();
     if (musicProvider == null) return;
-
-    final displayedTracks = musicProvider.sortedPlaylistTracks;
-    final localTracksCount = _tracks.length;
-    final displayedTracksCount = displayedTracks.length;
-
-    if (localTracksCount != displayedTracksCount) {
-      AppLogger.debug('Track count mismatch detected: local=$localTracksCount, displayed=$displayedTracksCount - triggering hard refresh', 'PlaylistDetailScreen');
-      _loadData();
-    }
+    if (_tracks.length != musicProvider.sortedPlaylistTracks.length) _loadData();
   }
 
   void _cancelPendingOperations() {
-    for (final completer in _pendingOperations) {
-      if (!completer.isCompleted) completer.complete();
-    }
+    _pendingOperations.forEach((c) { if (!c.isCompleted) c.complete(); });
     _pendingOperations.clear();
     _trackService.clearFetchingState();
     _trackIdToPlaylistTrackId.clear();
   }
 
   Future<void> _applyVotingSettings() async {
-    final auth = getProvider<AuthProvider>();
     if (auth.token == null) {
       AppWidgets.showSnackBar(context, 'Authentication required', backgroundColor: Colors.red);
       return;
     }
-
     try {
       await _votingService.applyVotingSettings(auth.token!);
-      if (mounted) {
-        AppWidgets.showSnackBar(context, 'Voting settings updated successfully!', backgroundColor: Colors.green);
-      }
+      if (mounted) AppWidgets.showSnackBar(context, 'Voting settings updated!', backgroundColor: Colors.green);
     } catch (e) {
-      AppLogger.error('Failed to update voting settings', e, null, 'PlaylistDetailScreen');
-      if (mounted) {
-        AppWidgets.showSnackBar(context, 'Failed to update voting settings: ${e.toString()}', backgroundColor: Colors.red);
-      }
+      if (mounted) AppWidgets.showSnackBar(context, 'Failed to update voting settings', backgroundColor: Colors.red);
     }
-    
     setState(() {});
   }
 
   Future<void> _selectVotingDateTime(bool isStartTime) async {
     final result = await _votingService.selectVotingDateTime(context, isStartTime);
-    if (result != null && mounted) {
-      setState(() {});
-    }
+    if (result != null && mounted) setState(() {});
   }
 
   Future<void> _suggestTrackForVoting() async {
-    final selectedTrack = await Navigator.pushNamed(
-      context, 
-      AppRoutes.trackSearch,
-      arguments: {'selectMode': true},
-    ) as Track?;
-
+    final selectedTrack = await Navigator.pushNamed(context, AppRoutes.trackSearch, arguments: {'selectMode': true}) as Track?;
     if (selectedTrack != null) {
       try {
-        final musicProvider = getProvider<MusicProvider>();
-        await musicProvider.addTrackObjectToPlaylist(
-          widget.playlistId,
-          selectedTrack,
-          auth.token!,
-        );
-        
+        await getProvider<MusicProvider>().addTrackObjectToPlaylist(widget.playlistId, selectedTrack, auth.token!);
         await _loadData();
-      } catch (e) {
-        AppLogger.error('Failed to suggest track for voting', e, null, 'PlaylistDetailScreen');
-      }
+      } catch (e) { AppLogger.error('Failed to suggest track', e, null, 'PlaylistDetailScreen'); }
     }
   }
 

@@ -264,7 +264,6 @@ void main() {
       await tester.pumpAndSettle();
 
       final textField = tester.widget<TextFormField>(find.byType(TextFormField));
-      // TextFormField.maxLines is not accessible, test widget existence instead
       expect(textField, isNotNull);
     });
   });
