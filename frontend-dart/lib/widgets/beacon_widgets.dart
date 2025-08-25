@@ -40,10 +40,7 @@ class BeaconStatusWidget extends StatelessWidget {
     mainAxisSize: MainAxisSize.min,
     children: [
       Icon(isScanning ? Icons.bluetooth_searching : Icons.bluetooth_disabled, color: isScanning ? Colors.blue : Colors.grey, size: 16),
-      if (nearbyCount > 0) ...[
-        const SizedBox(width: 4),
-        Text('$nearbyCount', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-      ],
+      if (nearbyCount > 0) ...[const SizedBox(width: 4), Text('$nearbyCount', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))],
     ],
   );
 

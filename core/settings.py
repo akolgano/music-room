@@ -158,6 +158,8 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
+    "x-user-latitude",
+    "x-user-longitude",
 ]
 
 # Static files (CSS, JavaScript, Images)

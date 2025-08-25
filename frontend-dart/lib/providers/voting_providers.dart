@@ -6,14 +6,33 @@ import '../models/api_models.dart';
 import '../models/music_models.dart';
 import '../models/voting_models.dart';
 import 'package:dio/dio.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class VotingService {
   final ApiService _api;
   
   VotingService(this._api);
 
-  Future<VoteResponse> voteForTrack({required String playlistId, required int trackIndex, required String token}) async => 
-    await _api.voteForTrack(playlistId, token, VoteRequest(rangeStart: trackIndex));
+  Future<VoteResponse> voteForTrack({
+    required String playlistId, 
+    required int trackIndex, 
+    required String token,
+    double? latitude,
+    double? longitude,
+  }) async {
+    AppLogger.debug('[VotingService] Creating VoteRequest with lat: $latitude, lon: $longitude', 'VotingService');
+    final request = VoteRequest(
+      rangeStart: trackIndex,
+      latitude: latitude,
+      longitude: longitude,
+    );
+    final json = request.toJson();
+    AppLogger.debug('[VotingService] VoteRequest JSON: $json', 'VotingService');
+    print('VOTE REQUEST JSON: $json');
+    return await _api.voteForTrack(playlistId, token, request);
+  }
 }
 
 class VotingProvider extends BaseProvider {
@@ -70,8 +89,8 @@ class VotingProvider extends BaseProvider {
     
     switch (playlist.licenseType) {
       case 'open': setVotingPermission(true); break;
-      case 'invite_only': AppLogger.debug('Invite-only playlist detected - voting eligibility depends on backend invitation status', 'VotingProvider'); break;
-      case 'location_time': AppLogger.debug('Location/time restricted playlist detected - voting eligibility depends on backend validation', 'VotingProvider'); break;
+      case 'invite_only': AppLogger.debug('Invite-only playlist detected - voting eligibility depends on backend invitation status', 'VotingProvider'); setVotingPermission(true); break;
+      case 'location_time': AppLogger.debug('Location/time restricted playlist detected - voting eligibility depends on backend validation', 'VotingProvider'); setVotingPermission(true); break;
       default: AppLogger.warning('Unknown license type: ${playlist.licenseType}', 'VotingProvider'); setVotingPermission(false);
     }
   }
@@ -88,9 +107,7 @@ class VotingProvider extends BaseProvider {
     AppLogger.debug('[VoteForTrackByIndex] playlistOwnerId: $playlistOwnerId, currentUsername: $currentUsername, currentUserId: $currentUserId', 'VotingProvider');
     
     if (!canVote) {
-      AppLogger.warning('Voting not allowed - canVote: $canVote', 'VotingProvider');
-      setError('Voting not allowed');
-      return false;
+      AppLogger.warning('Voting not allowed - canVote: $canVote - will attempt anyway with location', 'VotingProvider');
     }
     if (_hasUserVotedForPlaylist) {
       AppLogger.warning('User has already voted for playlist', 'VotingProvider');
@@ -100,12 +117,70 @@ class VotingProvider extends BaseProvider {
     
     AppLogger.debug('Proceeding with vote for track at index $trackIndex', 'VotingProvider');
     
+    double? userLatitude;
+    double? userLongitude;
+    
     try {
       AppLogger.debug('[VoteForTrackByIndex] Attempting initial vote...', 'VotingProvider');
+      
+      try {
+        var permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+        
+        if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+          final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+          if (serviceEnabled) {
+            try {
+              final position = await Geolocator.getCurrentPosition(
+                desiredAccuracy: LocationAccuracy.high,
+                timeLimit: const Duration(seconds: 10),
+              );
+              userLatitude = position.latitude;
+              userLongitude = position.longitude;
+              AppLogger.debug('[VoteForTrackByIndex] Got GPS location: $userLatitude, $userLongitude', 'VotingProvider');
+            } catch (gpsError) {
+              AppLogger.debug('[VoteForTrackByIndex] GPS failed, will try IP location: $gpsError', 'VotingProvider');
+            }
+          }
+        }
+        
+        if (userLatitude == null || userLongitude == null) {
+          AppLogger.info('[VoteForTrackByIndex] Trying IP-based location detection', 'VotingProvider');
+          try {
+            final ipLocation = await _getLocationByIP();
+            if (ipLocation != null) {
+              userLatitude = ipLocation['lat'];
+              userLongitude = ipLocation['lon'];
+              AppLogger.info('[VoteForTrackByIndex] Got IP-based location: $userLatitude, $userLongitude (${ipLocation['city']}, ${ipLocation['country']})', 'VotingProvider');
+            }
+          } catch (ipError) {
+            AppLogger.error('[VoteForTrackByIndex] IP location also failed: $ipError', 'VotingProvider');
+          }
+        }
+        
+        if (userLatitude == null || userLongitude == null) {
+          AppLogger.warning('[VoteForTrackByIndex] Could not get location from GPS or IP', 'VotingProvider');
+          setError('Unable to determine your location. Location is required for voting on this playlist.');
+          return false;
+        } else {
+          AppLogger.info('[VoteForTrackByIndex] Successfully got location (lat: $userLatitude, lon: $userLongitude) - proceeding with vote', 'VotingProvider');
+        }
+      } catch (e) {
+        AppLogger.error('[VoteForTrackByIndex] Unexpected error getting location: $e', 'VotingProvider');
+        setError('Unable to get your location. Please try again.');
+        return false;
+      }
+      
+      AppLogger.info('[VoteForTrackByIndex] About to call voteForTrack with lat: $userLatitude, lon: $userLongitude', 'VotingProvider');
+      
       final response = await _votingService.voteForTrack(
         playlistId: playlistId,
         trackIndex: trackIndex,
-        token: token
+        token: token,
+        latitude: userLatitude,
+        longitude: userLongitude,
       );
       
       _hasUserVotedForPlaylist = true;
@@ -165,7 +240,13 @@ class VotingProvider extends BaseProvider {
             await apiService.inviteUserToPlaylist(playlistId, token, InviteUserRequest(userId: currentUserId));
             AppLogger.info('[VoteForTrackByIndex] Successfully auto-invited playlist owner', 'VotingProvider');
             
-            final retryResponse = await _votingService.voteForTrack(playlistId: playlistId, trackIndex: trackIndex, token: token);
+            final retryResponse = await _votingService.voteForTrack(
+              playlistId: playlistId, 
+              trackIndex: trackIndex, 
+              token: token,
+              latitude: userLatitude,
+              longitude: userLongitude,
+            );
             
             _hasUserVotedForPlaylist = true;
             
@@ -200,19 +281,19 @@ class VotingProvider extends BaseProvider {
         AppLogger.warning('Backend confirmed user already voted', 'VotingProvider');
         setError('You have already voted for this playlist');
       } else if (errorString.contains('not allowed at this time') || errorString.contains('time window')) {
-        setError('Voting is not allowed at this time'); _canVote = false;
+        setError('Voting is not allowed at this time');
         AppLogger.warning('Voting outside allowed time window', 'VotingProvider');
       } else if (errorString.contains('not within') || errorString.contains('voting area')) {
-        setError('You are not within the allowed voting area'); _canVote = false;
+        setError('You are not within the allowed voting area');
         AppLogger.warning('User outside allowed voting area', 'VotingProvider');
-      } else if (errorString.contains('location is missing')) {
-        setError('Location is required for voting'); _canVote = false;
+      } else if (errorString.contains('location is missing') || responseDetail?.contains('location is missing') == true) {
+        setError('Location is required for voting. Please enable location services and try again.');
         AppLogger.warning('User location missing for location-based voting', 'VotingProvider');
       } else if (errorString.contains('time window not configured') || errorString.contains('location settings not configured')) {
-        setError('Playlist voting settings not configured properly'); _canVote = false;
+        setError('Playlist voting settings not configured properly');
         AppLogger.error('Playlist license settings incomplete', 'VotingProvider');
       } else if (errorString.contains('not allowed') || errorString.contains('permission')) {
-        setError('Voting not permitted'); _canVote = false;
+        setError('Voting not permitted');
         AppLogger.warning('Backend rejected vote due to permissions/license', 'VotingProvider');
       } else if (errorString.contains('invalid track')) {
         setError('Invalid track selection');
@@ -303,5 +384,23 @@ class VotingProvider extends BaseProvider {
         updateTrackPoints(i, points);
       }
     }
+  }
+  
+  Future<Map<String, dynamic>?> _getLocationByIP() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://ip-api.com/json?fields=status,country,city,lat,lon'),
+      ).timeout(const Duration(seconds: 5));
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return data;
+        }
+      }
+    } catch (e) {
+      AppLogger.debug('IP location service error: $e', 'VotingProvider');
+    }
+    return null;
   }
 }

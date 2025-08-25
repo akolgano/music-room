@@ -6,6 +6,7 @@ import '../widgets/app_widgets.dart';
 import '../core/theme_core.dart';
 import '../core/responsive_core.dart';
 import '../core/navigation_core.dart';
+import '../core/provider_core.dart';
 import '../providers/voting_providers.dart';
 import '../providers/auth_providers.dart';
 
@@ -31,34 +32,20 @@ class PlaylistVotingWidgets {
     required ValueChanged<String> onLicenseTypeChanged,
     required Future<void> Function() onApplyVotingSettings,
     required Future<void> Function(bool) onSelectVotingDateTime,
+    String? playlistId,
     double? latitude,
     double? longitude,
     Future<void> Function()? onDetectLocation,
     VoidCallback? onClearLocation,
   }) {
     return [
-      _buildVotingModeInfoBanner(context, isOwner),
+      _buildVotingModeInfoBanner(context, isOwner, playlistId: playlistId),
       SizedBox(height: MusicAppResponsive.getSpacing(context)),
-      if (isOwner) _buildCollapsibleVotingSettings(
-        context: context,
-        isPublicVoting: isPublicVoting,
-        votingLicenseType: votingLicenseType,
-        votingStartTime: votingStartTime,
-        votingEndTime: votingEndTime,
-        onPublicVotingChanged: onPublicVotingChanged,
-        onLicenseTypeChanged: onLicenseTypeChanged,
-        onApplyVotingSettings: onApplyVotingSettings,
-        onSelectVotingDateTime: onSelectVotingDateTime,
-        latitude: latitude,
-        longitude: longitude,
-        onDetectLocation: onDetectLocation,
-        onClearLocation: onClearLocation,
-      ),
       if (votingInfo != null) _buildVotingStats(context, votingInfo),
     ];
   }
 
-  static Widget _buildVotingModeInfoBanner(BuildContext context, bool isOwner) {
+  static Widget _buildVotingModeInfoBanner(BuildContext context, bool isOwner, {String? playlistId}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -100,7 +87,7 @@ class PlaylistVotingWidgets {
                     const SizedBox(height: 4),
                     Text(
                       isOwner 
-                        ? 'Users can vote for their favorite track below. Tap settings to configure voting rules.'
+                        ? 'Users can vote for their favorite track. Go to Edit Playlist to configure voting settings.'
                         : 'Vote for your favorite track below to boost its ranking!',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey[700],
@@ -111,8 +98,20 @@ class PlaylistVotingWidgets {
               ),
             ],
           ),
-          if (!isOwner) ...[
-            const SizedBox(height: 12),
+          const SizedBox(height: 12),
+          if (isOwner && playlistId != null) 
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.playlistEditor, arguments: playlistId);
+              },
+              icon: const Icon(Icons.settings),
+              label: const Text('Configure Voting Settings'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+              ),
+            )
+          else
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -127,7 +126,6 @@ class PlaylistVotingWidgets {
                 const Icon(Icons.keyboard_arrow_down, color: AppTheme.primary),
               ],
             ),
-          ],
         ],
       ),
     );

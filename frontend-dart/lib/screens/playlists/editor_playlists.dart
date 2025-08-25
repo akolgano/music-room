@@ -218,6 +218,12 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
     );
   }
 
+  String _formatTime(DateTime dateTime) {
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   Widget _buildLocationTimeFields() {
     return Padding(
       padding: const EdgeInsets.only(top: 6),
@@ -381,16 +387,44 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           const SizedBox(height: 8),
           ListTile(
             leading: const Icon(Icons.access_time),
-            title: const Text('Start Time'),
-            subtitle: Text(_voteStartTime?.toString() ?? 'Not set'),
-            onTap: () => _selectVotingDateTime(true),
+            title: const Text('Vote Start Time'),
+            subtitle: Text(_voteStartTime != null 
+              ? _formatTime(_voteStartTime!)
+              : 'Not set'),
+            onTap: () => _selectVotingTime(true),
           ),
           ListTile(
             leading: const Icon(Icons.access_time),
-            title: const Text('End Time'),
-            subtitle: Text(_voteEndTime?.toString() ?? 'Not set'),
-            onTap: () => _selectVotingDateTime(false),
+            title: const Text('Vote End Time'),
+            subtitle: Text(_voteEndTime != null 
+              ? _formatTime(_voteEndTime!)
+              : 'Not set'),
+            onTap: () => _selectVotingTime(false),
           ),
+          if (_voteStartTime != null && _voteEndTime != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Voting window repeats daily at these times (server timezone)',
+                        style: TextStyle(color: Colors.blue[300], fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -433,6 +467,76 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
             _licenseType = _playlist!.licenseType;
           });
 
+          if (_isEvent) {
+            try {
+              final apiService = ApiService();
+              final licenseResponse = await apiService.getPlaylistLicense(widget.playlistId!, auth.token!);
+              
+              if (kDebugMode) {
+                debugPrint('========================================');
+                debugPrint('DEBUG: FETCHED LICENSE FROM BACKEND');
+                debugPrint('License Type from backend: ${licenseResponse.licenseType}');
+                debugPrint('Latitude from backend: ${licenseResponse.latitude}');
+                debugPrint('Longitude from backend: ${licenseResponse.longitude}');
+                debugPrint('Vote Start Time from backend: ${licenseResponse.voteStartTime}');
+                debugPrint('Vote End Time from backend: ${licenseResponse.voteEndTime}');
+                debugPrint('========================================');
+              }
+              
+              setState(() {
+                if (licenseResponse.licenseType != null) {
+                  _licenseType = licenseResponse.licenseType!;
+                }
+                
+                if (licenseResponse.latitude != null && licenseResponse.longitude != null) {
+                  _latitude = licenseResponse.latitude;
+                  _longitude = licenseResponse.longitude;
+                  _locationController.text = 'Location Set (${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)})';
+                }
+                
+                if (licenseResponse.voteStartTime != null) {
+                  final startParts = licenseResponse.voteStartTime!.split(':');
+                  if (startParts.length >= 2) {
+                    final now = DateTime.now();
+                    _voteStartTime = DateTime(
+                      now.year, now.month, now.day,
+                      int.parse(startParts[0]),
+                      int.parse(startParts[1]),
+                    );
+                  }
+                }
+                
+                if (licenseResponse.voteEndTime != null) {
+                  final endParts = licenseResponse.voteEndTime!.split(':');
+                  if (endParts.length >= 2) {
+                    final now = DateTime.now();
+                    _voteEndTime = DateTime(
+                      now.year, now.month, now.day,
+                      int.parse(endParts[0]),
+                      int.parse(endParts[1]),
+                    );
+                  }
+                }
+              });
+              
+              if (kDebugMode) {
+                debugPrint('========================================');
+                debugPrint('DEBUG: LOADED VOTING SETTINGS');
+                debugPrint('Location: $_latitude, $_longitude');
+                debugPrint('Start Time UTC from backend: ${licenseResponse.voteStartTime}');
+                debugPrint('Start Time Local: $_voteStartTime');
+                debugPrint('End Time UTC from backend: ${licenseResponse.voteEndTime}');
+                debugPrint('End Time Local: $_voteEndTime');
+                debugPrint('Current Time Local: ${DateTime.now()}');
+                debugPrint('========================================');
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('Failed to load voting settings: $e');
+              }
+            }
+          }
+
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
           
           setState(() {});
@@ -462,6 +566,43 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
       if (playlistId?.isEmpty ?? true) {
         throw Exception('Invalid playlist ID received');
+      }
+
+      if (_isEvent && _licenseType == 'location_time' && 
+          (_latitude != null || _longitude != null || _voteStartTime != null || _voteEndTime != null)) {
+        
+        if ((_latitude != null || _longitude != null) && (_voteStartTime == null || _voteEndTime == null)) {
+          showError('When setting location, both start and end times are required');
+          return;
+        }
+        if ((_voteStartTime != null || _voteEndTime != null) && (_latitude == null || _longitude == null)) {
+          showError('When setting time window, location is required');
+          return;
+        }
+        
+        String? voteStartTimeStr;
+        String? voteEndTimeStr;
+        
+        if (_voteStartTime != null) {
+          voteStartTimeStr = '${_voteStartTime!.hour.toString().padLeft(2, '0')}:'
+              '${_voteStartTime!.minute.toString().padLeft(2, '0')}:00';
+        }
+        if (_voteEndTime != null) {
+          voteEndTimeStr = '${_voteEndTime!.hour.toString().padLeft(2, '0')}:'
+              '${_voteEndTime!.minute.toString().padLeft(2, '0')}:00';
+        }
+        
+        final apiService = getIt<ApiService>();
+        final licenseRequest = PlaylistLicenseRequest(
+          licenseType: _licenseType,
+          voteStartTime: voteStartTimeStr,
+          voteEndTime: voteEndTimeStr,
+          latitude: _latitude,
+          longitude: _longitude,
+          allowedRadiusMeters: _licenseType == 'location_time' ? 100 : null,
+        );
+        
+        await apiService.updatePlaylistLicense(playlistId!, auth.token!, licenseRequest);
       }
 
       showSuccess('Playlist created successfully!');
@@ -528,12 +669,12 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
         String? voteStartTimeStr;
         String? voteEndTimeStr;
         
-        if (_licenseType == 'location_time' && (_locationController.text.isNotEmpty || _voteStartTime != null || _voteEndTime != null)) {
-          if (_locationController.text.isNotEmpty && (_voteStartTime == null || _voteEndTime == null)) {
+        if (_licenseType == 'location_time' && (_latitude != null || _longitude != null || _voteStartTime != null || _voteEndTime != null)) {
+          if ((_latitude != null || _longitude != null) && (_voteStartTime == null || _voteEndTime == null)) {
             showError('When setting location, both start and end times are required');
             return;
           }
-          if ((_voteStartTime != null || _voteEndTime != null) && _locationController.text.isEmpty) {
+          if ((_voteStartTime != null || _voteEndTime != null) && (_latitude == null || _longitude == null)) {
             showError('When setting time window, location is required');
             return;
           }
@@ -556,6 +697,23 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           longitude: _longitude,
           allowedRadiusMeters: _licenseType == 'location_time' ? 100 : null,
         );
+        
+        if (kDebugMode) {
+          debugPrint('========================================');
+          debugPrint('DEBUG: SENDING LICENSE UPDATE TO BACKEND');
+          debugPrint('License Type: $_licenseType');
+          debugPrint('Latitude: $_latitude');
+          debugPrint('Longitude: $_longitude');
+          debugPrint('Vote Start Time: $_voteStartTime');
+          debugPrint('Vote Start Time (Sent): $voteStartTimeStr');
+          debugPrint('Vote End Time: $_voteEndTime');
+          debugPrint('Vote End Time (Sent): $voteEndTimeStr');
+          debugPrint('Current Time (Local): ${DateTime.now()}');
+          debugPrint('Current Time (UTC): ${DateTime.now().toUtc()}');
+          debugPrint('Allowed Radius: ${_licenseType == 'location_time' ? 100 : null}');
+          debugPrint('========================================');
+        }
+        
         await apiService.updatePlaylistLicense(widget.playlistId!, auth.token!, licenseRequest);
       }
       
@@ -592,29 +750,25 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
 
 
 
-  Future<void> _selectVotingDateTime(bool isStartTime) async {
-    final date = await showDatePicker(
+  Future<void> _selectVotingTime(bool isStartTime) async {
+    final time = await showTimePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialTime: isStartTime 
+        ? (_voteStartTime != null ? TimeOfDay.fromDateTime(_voteStartTime!) : TimeOfDay.now())
+        : (_voteEndTime != null ? TimeOfDay.fromDateTime(_voteEndTime!) : TimeOfDay.now()),
     );
     
-    if (date != null && mounted) {
-      final time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-      if (time != null && mounted) {
-        final dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-        setState(() {
-          if (isStartTime) {
-            _voteStartTime = dateTime;
-          } else {
-            _voteEndTime = dateTime;
-          }
-        });
-      }
+    if (time != null && mounted) {
+      final now = DateTime.now();
+      final dateTime = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+      
+      setState(() {
+        if (isStartTime) {
+          _voteStartTime = dateTime;
+        } else {
+          _voteEndTime = dateTime;
+        }
+      });
     }
   }
 

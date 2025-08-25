@@ -445,8 +445,20 @@ class PlaylistLicenseResponse {
 
 class VoteRequest {
   final int rangeStart;
-  const VoteRequest({ required this.rangeStart });
-  Map<String, dynamic> toJson() => { 'range_start': rangeStart };
+  final double? latitude;
+  final double? longitude;
+  
+  const VoteRequest({ 
+    required this.rangeStart,
+    this.latitude,
+    this.longitude,
+  });
+  
+  Map<String, dynamic> toJson() => {
+    'range_start': rangeStart,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
+  };
 }
 
 class VoteResponse {

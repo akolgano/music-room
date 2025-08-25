@@ -179,6 +179,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 onLicenseTypeChanged: (value) => setState(() => _votingService.setVotingLicenseType(value)),
                 onApplyVotingSettings: _applyVotingSettings,
                 onSelectVotingDateTime: _selectVotingDateTime,
+                playlistId: widget.playlistId,
                 latitude: _votingService.latitude,
                 longitude: _votingService.longitude,
                 onDetectLocation: _isOwner ? _detectCurrentLocation : null,
@@ -546,6 +547,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                 ),
               );
             }
+            _requestLocationPermissionForVoting();
           }
           
           await _refreshTracksFromProvider();
@@ -890,6 +892,47 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         },
         errorMessage: 'Failed to delete playlist',
       );
+    }
+  }
+
+  Future<void> _requestLocationPermissionForVoting() async {
+    try {
+      if (_playlist?.licenseType == 'location_time') {
+        var permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            AppWidgets.showSnackBar(
+              context, 
+              'This event requires location for voting. Please allow location access.',
+              backgroundColor: Colors.blue,
+            );
+          }
+          permission = await Geolocator.requestPermission();
+          if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+            AppLogger.info('Location permission denied - will use IP location as fallback', 'PlaylistDetailScreen');
+            if (mounted) {
+              AppWidgets.showSnackBar(
+                context,
+                'Location denied. Using approximate location for voting.',
+                backgroundColor: Colors.orange,
+              );
+            }
+          } else {
+            AppLogger.info('Location permission granted for voting', 'PlaylistDetailScreen');
+            if (mounted) {
+              AppWidgets.showSnackBar(
+                context,
+                'Location enabled! You can now vote on tracks.',
+                backgroundColor: Colors.green,
+              );
+            }
+          }
+        } else if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+          AppLogger.debug('Location permission already granted', 'PlaylistDetailScreen');
+        }
+      }
+    } catch (e) {
+      AppLogger.debug('Could not request location permission: $e', 'PlaylistDetailScreen');
     }
   }
 
