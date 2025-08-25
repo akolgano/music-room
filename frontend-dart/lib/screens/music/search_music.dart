@@ -65,20 +65,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     icon: Icons.sort_by_alpha
   );
 
-  @override
-  String get screenTitle => 'Search Tracks';
-
-  @override
-  bool get showBackButton => !widget.isEmbedded;
-
-  @override
-  bool get showMiniPlayer => !widget.isEmbedded; 
-
-  @override
-  List<Widget> get actions => _buildAppBarActions();
-
-  @override
-  Widget? get floatingActionButton => _buildFloatingActionButton();
+  @override String get screenTitle => 'Search Tracks';
+  @override bool get showBackButton => !widget.isEmbedded;
+  @override bool get showMiniPlayer => !widget.isEmbedded; 
+  @override List<Widget> get actions => _buildAppBarActions();
+  @override Widget? get floatingActionButton => _buildFloatingActionButton();
 
   @override
   void initState() {
@@ -86,8 +77,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     _initializeScreen();
   }
 
-  void _initializeScreen() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  void _initializeScreen() => WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.initialTrack != null) {
         _searchController.text = widget.initialTrack!.name;
         _performSearch();
@@ -96,7 +86,6 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       }
       _loadUserPlaylists();
     });
-  }
 
   Future<void> _checkFirstVisitAndSetRandomSearch() async {
     try {
@@ -107,9 +96,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
         final random = Random();
         final randomSuggestion = _randomSearchSuggestions[random.nextInt(_randomSearchSuggestions.length)];
         
-        setState(() {
-          _searchController.text = randomSuggestion;
-        });
+        setState(() => _searchController.text = randomSuggestion);
         
         await box.put('has_visited_search_screen', true);
         await box.close();
@@ -124,18 +111,14 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   @override
-  Widget buildContent() {
-    return Consumer<MusicProvider>(
-      builder: (context, music, _) => Column(
-        children: [
-          _buildSearchHeader(music),
-          if (_isAddingToPlaylist && _isMultiSelectMode) _buildQuickActions(),
-          if (_isAddingTracks) _buildProgressIndicator(),
-          Expanded(child: _buildResults(music.searchResults)),
-        ],
-      ),
+  Widget buildContent() => Consumer<MusicProvider>(
+      builder: (context, music, _) => Column(children: [
+        _buildSearchHeader(music),
+        if (_isAddingToPlaylist && _isMultiSelectMode) _buildQuickActions(),
+        if (_isAddingTracks) _buildProgressIndicator(),
+        Expanded(child: _buildResults(music.searchResults)),
+      ]),
     );
-  }
 
   List<Widget> _buildAppBarActions() {
     final actions = <Widget>[];
@@ -149,17 +132,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     if (_isAddingToPlaylist) {
       actions.add(TextButton(
         onPressed: _isLoading ? null : _toggleMultiSelectMode,
-        child: Text(
-          _isMultiSelectMode ? 'Cancel' : 'Multi-Select', 
-          style: const TextStyle(color: AppTheme.primary)
-        ),
+        child: Text(_isMultiSelectMode ? 'Cancel' : 'Multi-Select', 
+          style: const TextStyle(color: AppTheme.primary)),
       ));
     }
-    actions.add(IconButton(
-      icon: const Icon(Icons.clear), 
-      onPressed: _clearSearch, 
-      tooltip: 'Clear Search'
-    )); 
+    actions.add(IconButton(icon: const Icon(Icons.clear), onPressed: _clearSearch, tooltip: 'Clear Search')); 
     return actions;
   }
 
@@ -192,12 +169,9 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
       children: [
         Expanded(
           child: AppWidgets.textField(
-            context: context,
-            controller: _searchController,
-            labelText: '',
+            context: context, controller: _searchController, labelText: '',
             hintText: _isAddingToPlaylist ? 'Search Deezer tracks to add to playlist' : 'Search Deezer tracks',
-            prefixIcon: Icons.search,
-            onChanged: _onSearchTextChanged, 
+            prefixIcon: Icons.search, onChanged: _onSearchTextChanged, 
           ),
         ),
         const SizedBox(width: 8),
@@ -286,57 +260,38 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     );
   }
 
-  Widget _buildProgressIndicator() {
-    return Padding(
+  Widget _buildProgressIndicator() => Padding(
       padding: const EdgeInsets.all(8),
       child: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Adding ${_selectedTracks.length} tracks...',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
+        decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(8)),
+        child: Row(children: [
+          const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary)),
+          const SizedBox(width: 12),
+          Text('Adding ${_selectedTracks.length} tracks...',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+        ]),
       ),
     );
-  }
 
   Widget? _buildFloatingActionButton() {
     if (!_isAddingToPlaylist) return null;
-    if (_isMultiSelectMode && _hasSelection) {
-      return FloatingActionButton.extended(
-        onPressed: _canAddTracks ? _addSelectedTracks : null,
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.black,
-        icon: _isAddingTracks 
-          ? const SizedBox(width: 20, height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
-            )
-          : const Icon(Icons.playlist_add),
-        label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
-      );
-    }
-    if (!_isMultiSelectMode) {
-      return FloatingActionButton(
-        onPressed: _toggleMultiSelectMode,
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.black,
-        tooltip: 'Select multiple tracks',
-        child: const Icon(Icons.playlist_add),
-      );
-    }
+    if (_isMultiSelectMode && _hasSelection) return FloatingActionButton.extended(
+      onPressed: _canAddTracks ? _addSelectedTracks : null,
+      backgroundColor: AppTheme.primary,
+      foregroundColor: Colors.black,
+      icon: _isAddingTracks 
+        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+        : const Icon(Icons.playlist_add),
+      label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
+    );
+    if (!_isMultiSelectMode) return FloatingActionButton(
+      onPressed: _toggleMultiSelectMode,
+      backgroundColor: AppTheme.primary,
+      foregroundColor: Colors.black,
+      tooltip: 'Select multiple tracks',
+      child: const Icon(Icons.playlist_add),
+    );
     return null;
   }
 
@@ -358,16 +313,11 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Future<void> _performSearch({bool isAutoSearch = false}) async {
     if (!mounted || _searchController.text.trim().length < _minSearchLength) return;
-    
     final query = _searchController.text.trim();
-    
-    await runAsyncAction(
-      () async {
-        _setLoadingState(LoadingState.searching);
-        await getProvider<MusicProvider>().searchDeezerTracks(query);
-      },
-      errorMessage: isAutoSearch ? null : 'Search failed. Please try again.',
-    );
+    await runAsyncAction(() async {
+      _setLoadingState(LoadingState.searching);
+      await getProvider<MusicProvider>().searchDeezerTracks(query);
+    }, errorMessage: isAutoSearch ? null : 'Search failed. Please try again.');
     _setLoadingState(LoadingState.idle);
   }
 
@@ -558,15 +508,12 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
   }
 
   Future<void> _handlePlaylistSelection(int selectedIndex, Track track, 
-      List<Playlist> regularPlaylists, List<Playlist> eventPlaylists) async {
-    final playlists = [...regularPlaylists, ...eventPlaylists];
-    await _addTrackToPlaylist(playlists[selectedIndex].id, track);
-  }
+      List<Playlist> regularPlaylists, List<Playlist> eventPlaylists) async => 
+    await _addTrackToPlaylist([...regularPlaylists, ...eventPlaylists][selectedIndex].id, track);
 
 
 
-  void _showMessage(String message, {bool isError = true}) => 
-    isError ? showError(message) : showSuccess(message);
+  void _showMessage(String message, {bool isError = true}) => isError ? showError(message) : showSuccess(message);
 
   void _showSearchSortOptions() {
     final searchSortOptions = TrackSortOption.defaultOptions
@@ -591,16 +538,8 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
                 children: [
                   const Icon(Icons.sort, color: AppTheme.primary),
                   const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Sort Search Results',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  const Expanded(child: Text('Sort Search Results',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close, color: Colors.grey),

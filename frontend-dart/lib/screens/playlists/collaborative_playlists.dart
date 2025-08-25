@@ -55,16 +55,12 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildEditorHeader(),
-        if (_activeCollaborators.isNotEmpty) _buildActiveCollaborators(),
-        Expanded(child: _buildTracksList()),
-        if (_canEdit) _buildEditorActions(),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Column(children: [
+    _buildEditorHeader(),
+    if (_activeCollaborators.isNotEmpty) _buildActiveCollaborators(),
+    Expanded(child: _buildTracksList()),
+    if (_canEdit) _buildEditorActions(),
+  ]);
 
   Widget _buildEditorHeader() {
     return Container(
@@ -80,21 +76,12 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
         children: [
           Row(
             children: [
-              Icon(
-                widget.playlist.isPublic ? Icons.public : Icons.lock,
-                color: AppTheme.primary,
-                size: 20,
-              ),
+              Icon(widget.playlist.isPublic ? Icons.public : Icons.lock,
+                color: AppTheme.primary, size: 20),
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  widget.playlist.name,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              Expanded(child: Text(widget.playlist.name,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppTheme.primary, fontWeight: FontWeight.bold))),
               if (!_canEdit)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -200,27 +187,13 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.queue_music,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.queue_music, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            Text(
-              'No tracks yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey[600],
-              ),
-            ),
+            Text('No tracks yet',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.grey[600])),
             const SizedBox(height: 8),
-            Text(
-              _canEdit 
-                ? 'Add the first track to get started!'
-                : 'This playlist is empty',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
-            ),
+            Text(_canEdit ? 'Add the first track to get started!' : 'This playlist is empty',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[500])),
           ],
         ),
       );
@@ -261,12 +234,9 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
               )
             : _buildDefaultAlbumArt(),
         ),
-        title: Text(
-          track.name,
+        title: Text(track.name,
           style: const TextStyle(fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+          maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -287,17 +257,11 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (index > 0)
-                  IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_up),
-                    onPressed: () => _moveTrack(index, index - 1),
-                    tooltip: 'Move up',
-                  ),
+                  IconButton(icon: const Icon(Icons.keyboard_arrow_up),
+                    onPressed: () => _moveTrack(index, index - 1), tooltip: 'Move up'),
                 if (index < _playlistTracks.length - 1)
-                  IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    onPressed: () => _moveTrack(index, index + 1),
-                    tooltip: 'Move down',
-                  ),
+                  IconButton(icon: const Icon(Icons.keyboard_arrow_down),
+                    onPressed: () => _moveTrack(index, index + 1), tooltip: 'Move down'),
                 PopupMenuButton<String>(
                   onSelected: (action) => _handleTrackAction(action, track, index),
                   itemBuilder: (context) => [
@@ -356,15 +320,9 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
       ),
       child: Row(
         children: [
-          Expanded(
-            child: AppWidgets.primaryButton(
-              context: context,
-              text: 'Add Track',
-              icon: Icons.add,
-              onPressed: _addTrackToPlaylist,
-              isLoading: false,
-            ),
-          ),
+          Expanded(child: AppWidgets.primaryButton(
+            context: context, text: 'Add Track', icon: Icons.add,
+            onPressed: _addTrackToPlaylist, isLoading: false)),
           const SizedBox(width: 12),
           OutlinedButton.icon(
             onPressed: _clearPlaylist,
@@ -380,9 +338,7 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
     try {
       getIt<WebSocketService>();
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('WebSocket connection failed: ${e.toString()}');
-      }
+      if (kDebugMode) debugPrint('WebSocket connection failed: ${e.toString()}');
     }
   }
 
@@ -405,19 +361,14 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
         setState(() {
           _playlistTracks.add(selectedTrack);
           _recentEdits.add(RecentEdit(
-            trackId: selectedTrack.id,
-            action: 'added',
-            userName: 'You',
-            timestamp: DateTime.now(),
-          ));
+            trackId: selectedTrack.id, action: 'added',
+            userName: 'You', timestamp: DateTime.now()));
         });
 
         widget.onTracksUpdated(_playlistTracks);
         widget.onSuccess('Track added to playlist!');
       } catch (e) {
-        if (kDebugMode) {
-          debugPrint('Failed to add track: $e');
-        }
+        if (kDebugMode) debugPrint('Failed to add track: $e');
         widget.onError('Failed to add track: ${e.toString()}');
       }
     }
@@ -432,8 +383,7 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
     final track = _playlistTracks.removeAt(fromIndex);
     _playlistTracks.insert(toIndex, track);
 
-    setState(() {});
-    widget.onTracksUpdated(_playlistTracks);
+    setState(() => widget.onTracksUpdated(_playlistTracks));
 
     try {
       final musicProvider = getProvider<MusicProvider>();
@@ -444,9 +394,7 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
         token: auth.token!,
       );
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Failed to save track order: $e');
-      }
+      if (kDebugMode) debugPrint('Failed to save track order: $e');
       widget.onError('Failed to save track order: ${e.toString()}');
       
       final restoredTrack = _playlistTracks.removeAt(toIndex);
@@ -458,18 +406,12 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
 
   void _handleTrackAction(String action, Track track, int index) {
     switch (action) {
-      case 'play':
-        _playTrack(track);
-        break;
-      case 'remove':
-        _removeTrack(track, index);
-        break;
+      case 'play': _playTrack(track); break;
+      case 'remove': _removeTrack(track, index); break;
     }
   }
 
-  void _playTrack(Track track) {
-    widget.onInfo('Playing: ${track.name}');
-  }
+  void _playTrack(Track track) => widget.onInfo('Playing: ${track.name}');
 
   Future<void> _removeTrack(Track track, int index) async {
     if (!_canModifyTracks) return;
@@ -524,16 +466,12 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
     if (confirm) {
       try {
         getProvider<MusicProvider>();
-        setState(() {
-          _playlistTracks.clear();
-        });
+        setState(() => _playlistTracks.clear());
 
         widget.onTracksUpdated(_playlistTracks);
         widget.onSuccess('Playlist cleared!');
       } catch (e) {
-        if (kDebugMode) {
-          debugPrint('Failed to clear playlist: $e');
-        }
+        if (kDebugMode) debugPrint('Failed to clear playlist: $e');
         widget.onError('Failed to clear playlist: ${e.toString()}');
       }
     }
@@ -566,10 +504,8 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
               return ListTile(
                 leading: CircleAvatar(
                   backgroundColor: collaborator.color,
-                  child: Text(
-                    collaborator.initials,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+                  child: Text(collaborator.initials,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
                 title: Text(collaborator.name),
                 subtitle: const Text('Collaborator'),
@@ -579,10 +515,7 @@ class _PlaylistCollaborativeEditorState extends State<PlaylistCollaborativeEdito
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
         ],
       ),
     );
