@@ -101,7 +101,40 @@ class TrackSortOption {
       displayName: 'Oldest First',
       icon: Icons.schedule,
     ),
+    TrackSortOption(
+      field: TrackSortField.points,
+      order: SortOrder.descending,
+      displayName: 'Most Votes',
+      icon: Icons.how_to_vote,
+    ),
+    TrackSortOption(
+      field: TrackSortField.points,
+      order: SortOrder.ascending,
+      displayName: 'Least Votes',
+      icon: Icons.how_to_vote,
+    ),
   ];
+  
+  static List<TrackSortOption> getOptionsForPlaylist({bool isEvent = false}) {
+    if (isEvent) {
+      return [
+        TrackSortOption(
+          field: TrackSortField.points,
+          order: SortOrder.descending,
+          displayName: 'Most Votes',
+          icon: Icons.how_to_vote,
+        ),
+        TrackSortOption(
+          field: TrackSortField.points,
+          order: SortOrder.ascending,
+          displayName: 'Least Votes',
+          icon: Icons.how_to_vote,
+        ),
+        ...defaultOptions,
+      ];
+    }
+    return defaultOptions;
+  }
 }
 
 class PlaylistSortOption {

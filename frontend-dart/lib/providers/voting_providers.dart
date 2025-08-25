@@ -220,14 +220,12 @@ class VotingProvider extends BaseProvider {
       } else {
         AppLogger.error('Vote failed with error', e, null, 'VotingProvider');
         
-        // Extract the actual error message from the backend response
         String errorMessage = 'Voting failed. Please try again.';
         
         if (e is DioException && e.response?.data != null) {
           try {
             final responseData = e.response!.data;
             if (responseData is Map<String, dynamic>) {
-              // Try to get 'detail' field first, then 'message', then 'error'
               errorMessage = responseData['detail']?.toString() ?? 
                              responseData['message']?.toString() ?? 
                              responseData['error']?.toString() ?? 

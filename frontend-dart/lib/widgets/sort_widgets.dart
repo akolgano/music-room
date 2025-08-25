@@ -93,12 +93,21 @@ class _GenericSortBottomSheet<T> extends StatelessWidget {
 class TrackSortBottomSheet extends StatelessWidget {
   final TrackSortOption currentSort;
   final Function(TrackSortOption) onSortChanged;
-  const TrackSortBottomSheet({super.key, required this.currentSort, required this.onSortChanged});
+  final bool isEvent;
+  
+  const TrackSortBottomSheet({
+    super.key, 
+    required this.currentSort, 
+    required this.onSortChanged,
+    this.isEvent = false,
+  });
 
   @override
   Widget build(BuildContext context) => _GenericSortBottomSheet<TrackSortOption>(
-    currentSort: currentSort, onSortChanged: onSortChanged,
-    title: 'Sort Tracks', options: TrackSortOption.defaultOptions,
+    currentSort: currentSort, 
+    onSortChanged: onSortChanged,
+    title: 'Sort Tracks', 
+    options: TrackSortOption.getOptionsForPlaylist(isEvent: isEvent),
   );
 }
 
