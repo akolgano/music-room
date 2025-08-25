@@ -525,6 +525,20 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
             }
           });
           
+          if (_playlist!.isEvent) {
+            final musicProvider = getProvider<MusicProvider>();
+            if (musicProvider.currentSortOption.field == TrackSortField.position) {
+              musicProvider.setSortOption(
+                const TrackSortOption(
+                  field: TrackSortField.points,
+                  order: SortOrder.descending,
+                  displayName: 'Most Votes',
+                  icon: Icons.how_to_vote,
+                ),
+              );
+            }
+          }
+          
           await _refreshTracksFromProvider();
           
           if (_votingProvider != null) {
@@ -775,6 +789,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     builder: (context) => TrackSortBottomSheet(
       currentSort: getProvider<MusicProvider>().currentSortOption,
       onSortChanged: (sortOption) => getProvider<MusicProvider>().setSortOption(sortOption),
+      isEvent: _playlist?.isEvent ?? false,
     ),
   );
 

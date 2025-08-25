@@ -39,7 +39,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   double? _longitude;
   
   Playlist? _playlist;
-  // Collaborative features moved to collaborative_playlists.dart
   bool _showCollaborationFeatures = false;
 
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
@@ -390,8 +389,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
           });
 
           await musicProvider.fetchPlaylistTracks(widget.playlistId!, auth.token!);
-          
-          // WebSocket initialization is handled in PlaylistCollaborativeEditor
           
           setState(() {});
         }

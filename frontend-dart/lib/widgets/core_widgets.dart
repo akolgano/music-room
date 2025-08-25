@@ -659,7 +659,6 @@ class AppWidgets {
   }
 }
 
-// Backward compatibility - DialogWidgets class provides the same methods as AppWidgets
 class DialogWidgets {
   static Future<String?> showTextInputDialog(
     BuildContext context, {
