@@ -462,11 +462,41 @@ class MusicPlayerService with ChangeNotifier {
     }
   }
 
+  void clearFailedTracks() {
+    _failedTracks.clear();
+    AppLogger.debug('Cleared failed tracks cache', 'MusicPlayerService');
+  }
+
   void updatePlaylist(List<PlaylistTrack> updatedPlaylist) {
     if (_playlistId == null) return;
     
     final oldLength = _playlist.length;
+    
+    Track? currentPlayingTrack = null;
+    if (_currentIndex >= 0 && _currentIndex < _playlist.length && _currentTrack != null) {
+      currentPlayingTrack = _currentTrack;
+    }
+    
     _playlist = List.from(updatedPlaylist);
+    
+    if (currentPlayingTrack != null) {
+      int newIndex = -1;
+      for (int i = 0; i < _playlist.length; i++) {
+        final track = _playlist[i].track;
+        if (track != null && 
+            (track.id == currentPlayingTrack.id || 
+             track.deezerTrackId == currentPlayingTrack.deezerTrackId ||
+             (track.name == currentPlayingTrack.name && track.artist == currentPlayingTrack.artist))) {
+          newIndex = i;
+          break;
+        }
+      }
+      
+      if (newIndex != -1) {
+        _currentIndex = newIndex;
+        AppLogger.debug('Updated current track index from $_currentIndex to $newIndex after playlist update', 'MusicPlayerService');
+      }
+    }
     
     if (_playlist.length > oldLength) {
       _failedTracks.clear();
@@ -478,7 +508,7 @@ class MusicPlayerService with ChangeNotifier {
     }
     
     notifyListeners();
-    AppLogger.debug('Playlist updated: $oldLength -> ${_playlist.length} tracks', 'MusicPlayerService');
+    AppLogger.debug('Playlist updated: $oldLength -> ${_playlist.length} tracks, current index: $_currentIndex', 'MusicPlayerService');
   }
 
   @override

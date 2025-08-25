@@ -151,7 +151,6 @@ class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerServic
     notifyListeners();
   }
 
-  // Required implementations for MusicPlayerService interface
   @override
   DynamicThemeProvider get themeProvider => DynamicThemeProvider();
 

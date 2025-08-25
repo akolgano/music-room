@@ -1,5 +1,3 @@
-// DISABLED - Missing beacon service methods
-/*
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/services/beacon_services.dart';
 import 'package:dchs_flutter_beacon/dchs_flutter_beacon.dart';
@@ -281,19 +279,16 @@ void main() {
     });
 
     test('should get beacon by identifier', () {
-      // Since we can't easily mock the internal state, we'll test the method signature
       final beacon = beaconService.getBeaconByIdentifier('test-uuid-1-2');
       expect(beacon, isNull); // Should be null since no beacons are discovered
     });
 
     test('should filter beacons by proximity', () {
-      // Since we can't easily mock the internal state, we'll test the method signature
       final nearbyBeacons = beaconService.getBeaconsByProximity('near');
       expect(nearbyBeacons, isEmpty); // Should be empty since no beacons are discovered
     });
 
     test('should get strongest beacon', () {
-      // Since we can't easily mock the internal state, we'll test the method signature
       final strongestBeacon = beaconService.getStrongestBeacon();
       expect(strongestBeacon, isNull); // Should be null since no beacons are discovered
     });

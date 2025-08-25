@@ -11,7 +11,6 @@ class _ResponseLimitingInterceptor extends Interceptor {
   
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    // Log limited response
     _logLimitedResponse(response);
     handler.next(response);
   }

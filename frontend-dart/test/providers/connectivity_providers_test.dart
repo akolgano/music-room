@@ -1,5 +1,3 @@
-// DISABLED - Missing mock files
-/*
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -21,7 +19,6 @@ void main() {
       mockApiService = MockApiService();
       when(mockApiService.baseUrl).thenReturn('https://api.test.com');
 
-      // Register mock service
       if (getIt.isRegistered<ApiService>()) {
         getIt.unregister<ApiService>();
       }
@@ -56,17 +53,14 @@ void main() {
         bool listenerCalled = false;
         provider.addListener(() => listenerCalled = true);
 
-        // Simulate successful connection check by allowing the check to complete
         await Future.delayed(const Duration(milliseconds: 100));
 
-        // The listener should have been called due to status changes
         expect(listenerCalled, isTrue);
       });
 
       test('should set correct boolean flags for each status', () {
         provider = ConnectivityProvider();
         
-        // Test checking status (initial state)
         expect(provider.connectionStatus, ConnectionStatus.checking);
         expect(provider.isChecking, isTrue);
         expect(provider.isConnected, isFalse);
@@ -92,7 +86,6 @@ void main() {
       test('should format time correctly for different durations', () {
         provider = ConnectivityProvider();
         
-        // Test the detailed status text formatting indirectly
         expect(provider.detailedStatusText, isA<String>());
         expect(provider.detailedStatusText.isNotEmpty, isTrue);
       });
@@ -109,7 +102,6 @@ void main() {
       test('should track consecutive failures', () {
         provider = ConnectivityProvider();
         
-        // Initial state should have no failures
         expect(provider.consecutiveFailures, 0);
       });
     });
@@ -118,27 +110,20 @@ void main() {
       test('should set status to checking when check starts', () async {
         provider = ConnectivityProvider();
         
-        // Clear any previous status by waiting
         await Future.delayed(const Duration(milliseconds: 50));
         
-        // Manually trigger connection check
         final checkFuture = provider.checkConnection();
         
-        // Status should be checking immediately
         expect(provider.connectionStatus, ConnectionStatus.checking);
         
-        // Wait for check to complete
         await checkFuture;
       });
 
       test('should handle successful connection check', () async {
         provider = ConnectivityProvider();
         
-        // The provider will automatically start checking on creation
-        // We just need to wait for it to complete and verify state
         await Future.delayed(const Duration(milliseconds: 200));
         
-        // Check that provider properties are accessible
         expect(provider.connectionStatus, isA<ConnectionStatus>());
         expect(provider.currentCheckInterval, isA<Duration>());
       });
@@ -146,10 +131,8 @@ void main() {
       test('should handle failed connection check gracefully', () async {
         provider = ConnectivityProvider();
         
-        // Wait for initial check to complete
         await Future.delayed(const Duration(milliseconds: 200));
         
-        // Verify the provider is still functional
         expect(provider.connectionStatus, isA<ConnectionStatus>());
         expect(provider.consecutiveFailures, isA<int>());
       });
@@ -159,17 +142,13 @@ void main() {
       test('should use exponential backoff for consecutive failures', () {
         provider = ConnectivityProvider();
         
-        // Initial interval should be 30 seconds
         expect(provider.currentCheckInterval, const Duration(seconds: 30));
         
-        // After failures, the interval should potentially increase
-        // (We can't easily test the private failure logic without mocking HTTP)
       });
 
       test('should cap maximum interval', () {
         provider = ConnectivityProvider();
         
-        // The interval should never exceed 10 minutes
         expect(provider.currentCheckInterval.inMilliseconds, 
                lessThanOrEqualTo(const Duration(minutes: 10).inMilliseconds));
       });
@@ -177,7 +156,6 @@ void main() {
       test('should reset interval on successful connection', () {
         provider = ConnectivityProvider();
         
-        // Even after potential failures, a successful connection should reset
         expect(provider.currentCheckInterval, 
                lessThanOrEqualTo(const Duration(minutes: 10)));
       });
@@ -187,14 +165,12 @@ void main() {
       test('should start health check timer on initialization', () {
         provider = ConnectivityProvider();
         
-        // Provider should be created and timer should be running
         expect(provider.connectionStatus, isA<ConnectionStatus>());
       });
 
       test('should cancel timer on dispose', () {
         provider = ConnectivityProvider();
         
-        // Dispose should not throw
         expect(() => provider.dispose(), returnsNormally);
       });
     });
@@ -206,10 +182,8 @@ void main() {
         int notificationCount = 0;
         provider.addListener(() => notificationCount++);
         
-        // Wait for some status changes to occur
         await Future.delayed(const Duration(milliseconds: 200));
         
-        // Should have received at least one notification
         expect(notificationCount, greaterThan(0));
       });
 
@@ -221,11 +195,8 @@ void main() {
         
         final currentStatus = provider.connectionStatus;
         
-        // Reset count after initial notifications
         notificationCount = 0;
         
-        // If we somehow set the same status, it shouldn't notify
-        // (This is difficult to test directly due to private methods)
         expect(provider.connectionStatus, currentStatus);
       });
     });
@@ -234,7 +205,6 @@ void main() {
       test('should generate appropriate status text for connected state', () {
         provider = ConnectivityProvider();
         
-        // Even if not connected, the text generation should work
         final statusText = provider.connectionStatusText;
         expect(statusText, isA<String>());
         expect(statusText.isNotEmpty, isTrue);
@@ -251,10 +221,8 @@ void main() {
       test('should handle null last connected time gracefully', () {
         provider = ConnectivityProvider();
         
-        // Initially lastConnectedTime should be null
         expect(provider.lastConnectedTime, isNull);
         
-        // Should still generate valid status text
         expect(provider.detailedStatusText, isNotEmpty);
       });
     });
@@ -263,10 +231,8 @@ void main() {
       test('should handle rapid successive status checks', () async {
         provider = ConnectivityProvider();
         
-        // Start multiple checks rapidly
         final futures = List.generate(5, (index) => provider.checkConnection());
         
-        // All should complete without throwing
         await Future.wait(futures);
         
         expect(provider.connectionStatus, isA<ConnectionStatus>());
@@ -275,14 +241,12 @@ void main() {
       test('should handle very short time differences', () {
         provider = ConnectivityProvider();
         
-        // Test that the provider handles edge cases in time calculations
         expect(provider.detailedStatusText, isA<String>());
       });
 
       test('should maintain consistency during concurrent operations', () async {
         provider = ConnectivityProvider();
         
-        // Start check and immediately access properties
         final checkFuture = provider.checkConnection();
         
         expect(provider.connectionStatus, isA<ConnectionStatus>());
@@ -296,7 +260,6 @@ void main() {
       test('should properly dispose without memory leaks', () {
         provider = ConnectivityProvider();
         
-        // Add listener to ensure cleanup
         provider.addListener(() {});
         
         expect(() => provider.dispose(), returnsNormally);
@@ -314,17 +277,14 @@ void main() {
       test('should work correctly with no internet connection', () async {
         provider = ConnectivityProvider();
         
-        // Wait for initial check to complete
         await Future.delayed(const Duration(milliseconds: 300));
         
-        // Should handle offline state gracefully
         expect(provider.connectionStatus, isA<ConnectionStatus>());
       });
 
       test('should recover from temporary network issues', () async {
         provider = ConnectivityProvider();
         
-        // Simulate network issue by waiting and checking status
         await Future.delayed(const Duration(milliseconds: 200));
         
         expect(provider.connectionStatus, isA<ConnectionStatus>());
@@ -344,7 +304,6 @@ void main() {
       test('should have reasonable timeout values', () {
         provider = ConnectivityProvider();
         
-        // Check that intervals are reasonable
         expect(provider.currentCheckInterval.inSeconds, greaterThan(0));
         expect(provider.currentCheckInterval.inMinutes, lessThanOrEqualTo(10));
       });
@@ -354,7 +313,6 @@ void main() {
       test('should have mutually exclusive boolean properties', () {
         provider = ConnectivityProvider();
         
-        // Only one of these should be true at any time
         final boolCount = [
           provider.isConnected,
           provider.isDisconnected,

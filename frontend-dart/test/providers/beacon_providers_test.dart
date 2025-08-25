@@ -1,5 +1,3 @@
-// DISABLED - Missing mock files and outdated beacon functionality
-/*
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -27,13 +25,11 @@ void main() {
       beaconExitedController = StreamController<BeaconInfo>.broadcast();
       scanningStateController = StreamController<bool>.broadcast();
 
-      // Mock stream getters
       when(mockBeaconService.beaconsStream).thenAnswer((_) => beaconsController.stream);
       when(mockBeaconService.beaconEnteredStream).thenAnswer((_) => beaconEnteredController.stream);
       when(mockBeaconService.beaconExitedStream).thenAnswer((_) => beaconExitedController.stream);
       when(mockBeaconService.scanningStateStream).thenAnswer((_) => scanningStateController.stream);
 
-      // Register mock service
       if (getIt.isRegistered<BeaconService>()) {
         getIt.unregister<BeaconService>();
       }
@@ -92,11 +88,9 @@ void main() {
       test('should not reinitialize if already initialized', () async {
         when(mockBeaconService.initialize()).thenAnswer((_) async => true);
 
-        // First initialization
         await provider.initializeBeacons();
         expect(provider.isInitialized, isTrue);
 
-        // Second attempt should return true without calling service
         final result = await provider.initializeBeacons();
         expect(result, isTrue);
         verify(mockBeaconService.initialize()).called(1); // Only called once
@@ -404,11 +398,9 @@ void main() {
 
         expect(provider.nearestBeacon?.uuid, 'test-uuid-1');
 
-        // Simulate nearest beacon exiting
         beaconExitedController.add(beacon1);
         await Future.delayed(Duration.zero);
 
-        // Should recalculate nearest beacon
       });
     });
 
