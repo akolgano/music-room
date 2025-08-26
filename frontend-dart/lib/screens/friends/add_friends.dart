@@ -83,10 +83,12 @@ class _AddFriendScreenState extends BaseScreen<AddFriendScreen> {
         fp.fetchSentInvitations(auth.token!)]);
       if (fp.friends.any((f) => f.id == userId)) throw Exception('Already your friend');
       final pending = 'pending';
-      if (fp.sentInvitations.any((i) => fp.getToUserId(i) == userId && fp.getInvitationStatus(i) == pending))
+      if (fp.sentInvitations.any((i) => fp.getToUserId(i) == userId && fp.getInvitationStatus(i) == pending)) {
         throw Exception('Request already sent');
-      if (fp.receivedInvitations.any((i) => fp.getFromUserId(i) == userId && fp.getInvitationStatus(i) == pending))
+      }
+      if (fp.receivedInvitations.any((i) => fp.getFromUserId(i) == userId && fp.getInvitationStatus(i) == pending)) {
         throw Exception('User sent you a request. Check pending.');
+      }
       if (!await fp.sendFriendRequest(auth.token!, userId)) throw Exception(fp.errorMessage ?? 'Failed');
       _userIdController.clear();
     }, successMessage: 'Friend request sent successfully!');

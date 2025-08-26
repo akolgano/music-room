@@ -1,36 +1,32 @@
-import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:dio/dio.dart';
 import 'package:music_room/providers/connectivity_providers.dart';
 import 'package:music_room/services/api_services.dart';
 import 'package:music_room/core/locator_core.dart';
-
-import 'connectivity_providers_test.mocks.dart';
+import 'package:get_it/get_it.dart';
 
 @GenerateMocks([ApiService])
+import 'connectivity_providers_test.mocks.dart';
 void main() {
   group('ConnectivityProvider', () {
     late ConnectivityProvider provider;
     late MockApiService mockApiService;
 
     setUp(() {
+      GetIt.instance.reset();
       mockApiService = MockApiService();
       when(mockApiService.baseUrl).thenReturn('https://api.test.com');
-
-      if (getIt.isRegistered<ApiService>()) {
-        getIt.unregister<ApiService>();
-      }
+      
       getIt.registerSingleton<ApiService>(mockApiService);
     });
 
     tearDown(() {
-      provider.dispose();
-      
-      if (getIt.isRegistered<ApiService>()) {
-        getIt.unregister<ApiService>();
+      if (provider != null) {
+        provider.dispose();
       }
+      
+      GetIt.instance.reset();
     });
 
     group('Initial State', () {
@@ -324,4 +320,3 @@ void main() {
     });
   });
 }
-*/

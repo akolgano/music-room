@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import '../../providers/music_providers.dart';
-import '../../providers/profile_providers.dart';
 import '../../core/locator_core.dart';
 import '../../services/api_services.dart';
 import '../../models/music_models.dart';
@@ -484,9 +483,7 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
               }
               
               setState(() {
-                if (licenseResponse.licenseType != null) {
-                  _licenseType = licenseResponse.licenseType!;
-                }
+                _licenseType = licenseResponse.licenseType;
                 
                 if (licenseResponse.latitude != null && licenseResponse.longitude != null) {
                   _latitude = licenseResponse.latitude;

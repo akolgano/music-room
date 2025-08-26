@@ -487,8 +487,8 @@ void main() {
       expect(slider, findsOneWidget);
 
       final sliderWidget = tester.widget<Slider>(slider);
-      expect(sliderWidget.value, equals(60.0)); // 1 minute in seconds
-      expect(sliderWidget.max, equals(180.0)); // 3 minutes in seconds
+      expect(sliderWidget.value, equals(60.0));
+      expect(sliderWidget.max, equals(180.0));
     });
 
     testWidgets('should show minimal progress bar when duration is zero', (tester) async {

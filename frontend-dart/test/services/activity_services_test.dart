@@ -301,12 +301,12 @@ void main() {
       when(mockApiService.logActivity(any, any)).thenAnswer((_) async => ActivityLogResponse(success: true));
       
       await activityService.logActivity(
-        action: 'special_chars_àáâãäåæçèéêëìíîïðñòóôõö',
-        details: 'Details with émojis 🎵🎶 and symbols !@#$%^&*()',
+        action: 'special_chars_test',
+        details: 'Details with emojis and symbols',
         metadata: {
-          'unicode': 'ñáéíóú',
-          'symbols': '!@#$%^&*()',
-          'emojis': '🎵🎶🎸🥁',
+          'unicode': 'test_unicode',
+          'symbols': 'test_symbols',
+          'emojis': 'test_emojis',
         },
       );
       

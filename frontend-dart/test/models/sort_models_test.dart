@@ -163,7 +163,6 @@ void main() {
     });
 
     test('should be comparable', () {
-      // Just verify that fields have indices
       expect(TrackSortField.position.index, greaterThanOrEqualTo(0));
       expect(TrackSortField.name.index, greaterThanOrEqualTo(0));
     });

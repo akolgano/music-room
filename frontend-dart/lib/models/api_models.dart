@@ -553,11 +553,13 @@ class PlaylistTracksResponse {
 
 class Friend {
   final String id, username;
+  final String? email;
   final String? profilePictureUrl;
-  const Friend({required this.id, required this.username, this.profilePictureUrl});
+  const Friend({required this.id, required this.username, this.email, this.profilePictureUrl});
   factory Friend.fromJson(Map<String, dynamic> json) => Friend(
     id: (json['friend_id'] ?? json['id'])?.toString() ?? '',
     username: json['friend_username'] as String? ?? json['username'] as String? ?? 'Unknown User',
+    email: json['email'] as String?,
     profilePictureUrl: json['profile_picture_url'] as String?,
   );
 }

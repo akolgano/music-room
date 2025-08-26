@@ -7,7 +7,7 @@ import 'package:music_room/models/api_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 
-@GenerateMocks([ApiService, SharedPreferences])
+@GenerateMocks([ApiService])
 import 'auth_services_test.mocks.dart';
 
 void main() {

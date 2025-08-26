@@ -443,11 +443,13 @@ class MusicProvider extends BaseProvider {
             _trackCacheService.preloadTracks(trackIdsToPreload, token, _apiService).then((_) {
               _updateTracksWithCachedDetails();
             }).catchError((e) {
+              AppLogger.debug('Error preloading tracks: $e', 'MusicProvider');
             });
           }
         }
       }
     } catch (e) {
+      AppLogger.debug('Error in _preloadTrackDetails: $e', 'MusicProvider');
     }
   }
 

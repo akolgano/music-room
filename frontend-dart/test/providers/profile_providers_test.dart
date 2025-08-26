@@ -5,6 +5,7 @@ import 'package:music_room/providers/profile_providers.dart';
 import 'package:music_room/services/api_services.dart';
 import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/models/api_models.dart';
+import 'package:music_room/models/music_models.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -20,7 +19,6 @@ class _ResponseLimitingInterceptor extends Interceptor {
   }
   
   void _logLimitedResponse(Response response) {
-    final uri = response.requestOptions.uri;
     if (response.data != null) {
       String responseStr;
       try {
@@ -31,11 +29,11 @@ class _ResponseLimitingInterceptor extends Interceptor {
       
       final lines = responseStr.split('\n');
       if (lines.length <= maxLines) {
-        print(responseStr);
+        debugPrint(responseStr);
       } else {
         final truncated = lines.take(maxLines).join('\n');
-        print(truncated);
-        print('... Response truncated (${lines.length - maxLines} more lines) ...');
+        debugPrint(truncated);
+        debugPrint('... Response truncated (${lines.length - maxLines} more lines) ...');
       }
     }
   }
@@ -69,7 +67,6 @@ class ApiService {
           responseBody: true,
           error: true,
           logPrint: (log) {
-            // Mask sensitive data
             String maskedLog = log.toString();
             if (maskedLog.contains('password')) {
               maskedLog = maskedLog.replaceAllMapped(
@@ -77,25 +74,25 @@ class ApiService {
                 (match) => '"password": "***HIDDEN***"'
               );
             }
-            print('DIO >>> $maskedLog');
+            debugPrint('DIO >>> $maskedLog');
           },
         ),
         _ResponseLimitingInterceptor(),
         InterceptorsWrapper(
           onRequest: (options, handler) {
             if (options.path.contains('/tracks/vote/')) {
-              print('INTERCEPTOR >>> Vote request headers:');
+              debugPrint('INTERCEPTOR >>> Vote request headers:');
               options.headers.forEach((key, value) {
-                print('  $key: $value');
+                debugPrint('  $key: $value');
               });
             }
             handler.next(options);
           },
           onError: (error, handler) {
             if (error.requestOptions.path.contains('/tracks/vote/')) {
-              print('INTERCEPTOR >>> Vote request failed');
-              print('  Headers sent: ${error.requestOptions.headers}');
-              print('  Data sent: ${error.requestOptions.data}');
+              debugPrint('INTERCEPTOR >>> Vote request failed');
+              debugPrint('  Headers sent: ${error.requestOptions.headers}');
+              debugPrint('  Data sent: ${error.requestOptions.data}');
             }
             handler.next(error);
           }
@@ -125,25 +122,23 @@ class ApiService {
     } catch (e) {
       processedData = data;
     }
-    
-    // For vote endpoints, add location to headers if present in data
+
     if (endpoint.contains('/tracks/vote/') && processedData is Map) {
-      print('API >>> Vote endpoint: $endpoint');
-      print('API >>> Vote data: $processedData');
+      debugPrint('API >>> Vote endpoint: $endpoint');
+      debugPrint('API >>> Vote data: $processedData');
       
       if (processedData['latitude'] != null) {
         headers['X-User-Latitude'] = processedData['latitude'].toString();
-        print('API >>> Adding X-User-Latitude: ${headers['X-User-Latitude']}');
+        debugPrint('API >>> Adding X-User-Latitude: ${headers['X-User-Latitude']}');
       }
       if (processedData['longitude'] != null) {
         headers['X-User-Longitude'] = processedData['longitude'].toString();
-        print('API >>> Adding X-User-Longitude: ${headers['X-User-Longitude']}');
+        debugPrint('API >>> Adding X-User-Longitude: ${headers['X-User-Longitude']}');
       }
       
-      print('API >>> Final headers for vote: $headers');
+      debugPrint('API >>> Final headers for vote: $headers');
     }
-    
-    // Ensure Content-Type is set for POST requests
+
     if (method.toUpperCase() == 'POST' && !headers.containsKey('Content-Type')) {
       headers['Content-Type'] = 'application/json';
     }

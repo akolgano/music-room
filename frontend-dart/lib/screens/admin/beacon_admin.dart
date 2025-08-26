@@ -72,10 +72,14 @@ class _BeaconAdminScreenState extends BaseScreen<BeaconAdminScreen> {
     return Consumer<BeaconProvider>(
       builder: (context, beaconProvider, child) {
         _beaconProvider = beaconProvider;
-        if (beaconProvider.isLoading) return buildLoadingState(message: 'Initializing beacons...');
-        if (beaconProvider.hasError) return buildErrorState(
-            message: beaconProvider.errorMessage ?? 'Unknown error occurred',
-            onRetry: _initializeBeacons);
+        if (beaconProvider.isLoading) {
+          return buildLoadingState(message: 'Initializing beacons...');
+        }
+        if (beaconProvider.hasError) {
+          return buildErrorState(
+              message: beaconProvider.errorMessage ?? 'Unknown error occurred',
+              onRetry: _initializeBeacons);
+        }
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(

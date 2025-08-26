@@ -276,22 +276,26 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
 
   Widget? _buildFloatingActionButton() {
     if (!_isAddingToPlaylist) return null;
-    if (_isMultiSelectMode && _hasSelection) return FloatingActionButton.extended(
-      onPressed: _canAddTracks ? _addSelectedTracks : null,
-      backgroundColor: AppTheme.primary,
-      foregroundColor: Colors.black,
-      icon: _isAddingTracks 
-        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-        : const Icon(Icons.playlist_add),
-      label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
-    );
-    if (!_isMultiSelectMode) return FloatingActionButton(
-      onPressed: _toggleMultiSelectMode,
-      backgroundColor: AppTheme.primary,
-      foregroundColor: Colors.black,
-      tooltip: 'Select multiple tracks',
-      child: const Icon(Icons.playlist_add),
-    );
+    if (_isMultiSelectMode && _hasSelection) {
+      return FloatingActionButton.extended(
+        onPressed: _canAddTracks ? _addSelectedTracks : null,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.black,
+        icon: _isAddingTracks 
+          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+          : const Icon(Icons.playlist_add),
+        label: Text(_isAddingTracks ? 'Adding...' : 'Add ${_selectedTracks.length} tracks'),
+      );
+    }
+    if (!_isMultiSelectMode) {
+      return FloatingActionButton(
+        onPressed: _toggleMultiSelectMode,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.black,
+        tooltip: 'Select multiple tracks',
+        child: const Icon(Icons.playlist_add),
+      );
+    }
     return null;
   }
 
@@ -465,7 +469,7 @@ class _TrackSearchScreenState extends BaseScreen<TrackSearchScreen> {
     try {
       final result = await getProvider<MusicProvider>().addMultipleTracksToPlaylist(
         playlistId: widget.playlistId!, trackIds: _selectedTracks.toList(),
-        token: auth.token!, onProgress: (_, __) {});
+        token: auth.token!, onProgress: (_, progress) {});
       _showMessage('Added ${result.successCount} tracks to playlist!', isError: false);
       if (result.duplicateCount > 0) _showMessage('${result.duplicateCount} tracks were already in playlist', isError: false);
       if (result.failureCount > 0) _showMessage('${result.failureCount} tracks failed to add');

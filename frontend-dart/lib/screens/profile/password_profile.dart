@@ -93,7 +93,9 @@ class _UserPasswordChangeScreenState extends State<UserPasswordChangeScreen> {
 
   @override
   void dispose() {
-    for (final c in [_currentPasswordController, _newPasswordController, _confirmPasswordController]) c.dispose();
+    for (final c in [_currentPasswordController, _newPasswordController, _confirmPasswordController]) {
+      c.dispose();
+    }
     super.dispose();
   }
 }

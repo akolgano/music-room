@@ -27,6 +27,8 @@ class MusicPlayerService with ChangeNotifier {
   String? _authToken;
   final Set<String> _failedTracks = {};
   double _playbackSpeed = 1.0;
+  bool _isHandlingCompletion = false;
+  DateTime? _lastCompletionTime;
 
   MusicPlayerService({required this.themeProvider}) {
     _audioPlayer.positionStream.listen((position) {
@@ -47,16 +49,14 @@ class MusicPlayerService with ChangeNotifier {
       if (!_disposed) {
         _isPlaying = state.playing;
         notifyListeners();
-      }
-    });
-
-    _audioPlayer.playerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed) {
-        Future.delayed(const Duration(milliseconds: 100), () {
-          if (!_disposed) {
-            _onTrackCompleted();
-          }
-        });
+        
+        if (state.processingState == ProcessingState.completed) {
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (!_disposed) {
+              _onTrackCompleted();
+            }
+          });
+        }
       }
     });
   }
@@ -137,6 +137,8 @@ class MusicPlayerService with ChangeNotifier {
 
   Future<void> _playCurrentTrack() async {
     if (_currentIndex < 0 || _currentIndex >= _playlist.length) return;
+    
+    _isHandlingCompletion = false; // Reset flag when starting new track
     
     final playlistTrack = _playlist[_currentIndex];
     final track = playlistTrack.track;
@@ -230,6 +232,7 @@ class MusicPlayerService with ChangeNotifier {
     if (!hasNextTrack) {
       if (_isRepeatMode && _playlist.isNotEmpty) {
         _currentIndex = 0;
+        _lastPlayedIndex = -1;
         await _playCurrentTrack();
       }
       return;
@@ -244,6 +247,7 @@ class MusicPlayerService with ChangeNotifier {
     if (!hasPreviousTrack) {
       if (_isRepeatMode && _playlist.isNotEmpty) {
         _currentIndex = _playlist.length - 1;
+        _lastPlayedIndex = _playlist.length - 2;
         await _playCurrentTrack();
       }
       return;
@@ -262,18 +266,38 @@ class MusicPlayerService with ChangeNotifier {
     AppLogger.debug('Playing track at index $index: ${_currentTrack?.name}', 'MusicPlayerService');
   }
 
-  void _onTrackCompleted() {
+  Future<void> _onTrackCompleted() async {
+    // Debounce: ignore if called within 500ms of last completion
+    final now = DateTime.now();
+    if (_lastCompletionTime != null && 
+        now.difference(_lastCompletionTime!).inMilliseconds < 500) {
+      AppLogger.debug('Ignoring duplicate track completion event', 'MusicPlayerService');
+      return;
+    }
+    
+    if (_isHandlingCompletion) {
+      AppLogger.debug('Already handling track completion, skipping', 'MusicPlayerService');
+      return;
+    }
+    
+    _isHandlingCompletion = true;
+    _lastCompletionTime = now;
     AppLogger.debug('Track completed: ${_currentTrack?.name ?? "Unknown"}', 'MusicPlayerService');
     
-    if (_isRepeatMode && _playlist.isNotEmpty) {
-      AppLogger.debug('Repeat mode enabled, auto-progressing to next track', 'MusicPlayerService');
-      playNext();
-    } else if (hasNextTrack) {
-      AppLogger.debug('Auto-progressing to next track', 'MusicPlayerService');
-      playNext();
-    } else {
-      AppLogger.debug('No more tracks to play, stopping', 'MusicPlayerService');
-      stop();
+    try {
+      if (_isRepeatMode && _playlist.isNotEmpty) {
+        AppLogger.debug('Repeat mode enabled, auto-progressing to next track', 'MusicPlayerService');
+        await playNext();
+      } else if (hasNextTrack) {
+        AppLogger.debug('Auto-progressing to next track', 'MusicPlayerService');
+        await playNext();
+      } else {
+        AppLogger.debug('No more tracks to play, stopping', 'MusicPlayerService');
+        await stop();
+      }
+    } finally {
+      // Reset the flag only after the operation completes
+      _isHandlingCompletion = false;
     }
   }
 
@@ -472,7 +496,7 @@ class MusicPlayerService with ChangeNotifier {
     
     final oldLength = _playlist.length;
     
-    Track? currentPlayingTrack = null;
+    Track? currentPlayingTrack;
     if (_currentIndex >= 0 && _currentIndex < _playlist.length && _currentTrack != null) {
       currentPlayingTrack = _currentTrack;
     }

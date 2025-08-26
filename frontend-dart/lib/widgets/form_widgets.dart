@@ -261,7 +261,7 @@ class FormWidgets {
       },
     );
   
-  static Widget Function(BuildContext, Widget?) _pickerThemeBuilder = (context, child) => Theme(
+  static Widget _pickerThemeBuilder(BuildContext context, Widget? child) => Theme(
     data: Theme.of(context).copyWith(
       colorScheme: Theme.of(context).colorScheme.copyWith(
         primary: AppTheme.primary,

@@ -280,18 +280,17 @@ void main() {
 
     test('should get beacon by identifier', () {
       final beacon = beaconService.getBeaconByIdentifier('test-uuid-1-2');
-      expect(beacon, isNull); // Should be null since no beacons are discovered
+      expect(beacon, isNull);
     });
 
     test('should filter beacons by proximity', () {
       final nearbyBeacons = beaconService.getBeaconsByProximity('near');
-      expect(nearbyBeacons, isEmpty); // Should be empty since no beacons are discovered
+      expect(nearbyBeacons, isEmpty);
     });
 
     test('should get strongest beacon', () {
       final strongestBeacon = beaconService.getStrongestBeacon();
-      expect(strongestBeacon, isNull); // Should be null since no beacons are discovered
+      expect(strongestBeacon, isNull);
     });
   });
 }
-*/

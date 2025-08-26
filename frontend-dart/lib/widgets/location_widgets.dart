@@ -26,7 +26,7 @@ class LocationAutocompleteField extends StatefulWidget {
 class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
   late TextEditingController _controller;
   List<LocationSuggestion> _suggestions = [];
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _showSuggestions = false;
   bool _isDetectingLocation = false;
 
@@ -42,37 +42,6 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     super.dispose();
   }
 
-  Future<void> _searchLocations(String query) async {
-    if (query.trim().isEmpty) {
-      setState(() {
-        _suggestions = [];
-        _showSuggestions = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _showSuggestions = true;
-    });
-
-    try {
-      final suggestions = await LocationService.searchCities(query);
-      if (mounted) {
-        setState(() {
-          _suggestions = suggestions;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _suggestions = [];
-          _isLoading = false;
-        });
-      }
-    }
-  }
 
   void _selectLocation(LocationSuggestion suggestion) {
     _controller.text = suggestion.displayName;

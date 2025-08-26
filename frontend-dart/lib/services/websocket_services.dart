@@ -7,7 +7,6 @@ import '../models/music_models.dart';
 import '../core/navigation_core.dart';
 import '../core/locator_core.dart';
 import '../core/theme_core.dart';
-import '../core/logging_core.dart';
 import '../providers/music_providers.dart';
 import '../providers/voting_providers.dart';
 import 'notification_services.dart';
