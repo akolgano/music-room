@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:provider/provider.dart';
 import 'package:music_room/widgets/avatar_widgets.dart';
 import 'package:music_room/providers/profile_providers.dart';
 import 'package:music_room/providers/auth_providers.dart';
 
-@GenerateMocks([ProfileProvider, AuthProvider])
-import 'avatar_widgets_test.mocks.dart';
 
 void main() {
   group('ProfileAvatarWidget', () {

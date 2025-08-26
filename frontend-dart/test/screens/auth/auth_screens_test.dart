@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/screens/auth/auth_screens.dart';
 import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
 
-@GenerateMocks([AuthProvider])
-import 'auth_screens_test.mocks.dart';
 
 void main() {
   group('AuthScreens Tests', () {

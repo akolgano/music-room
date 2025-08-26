@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/providers/beacon_providers.dart';
 import 'package:music_room/services/beacon_services.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 
-@GenerateMocks([BeaconService])
-import 'beacon_providers_test.mocks.dart';
 void main() {
   group('BeaconProvider', () {
     late BeaconProvider provider;

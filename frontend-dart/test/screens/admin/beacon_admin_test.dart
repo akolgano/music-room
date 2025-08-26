@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:provider/provider.dart';
 import 'package:music_room/screens/admin/beacon_admin.dart';
 import 'package:music_room/providers/beacon_providers.dart';
 import 'package:music_room/services/beacon_services.dart';
 
-import 'beacon_admin_test.mocks.dart';
 
-@GenerateMocks([BeaconProvider])
 void main() {
   group('BeaconAdminScreen', () {
     late MockBeaconProvider mockBeaconProvider;

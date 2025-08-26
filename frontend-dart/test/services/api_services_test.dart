@@ -1,13 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/services/api_services.dart';
 import 'package:music_room/models/api_models.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-@GenerateMocks([http.Client])
-import 'api_services_test.mocks.dart';
 
 void main() {
   group('ApiService Tests', () {
