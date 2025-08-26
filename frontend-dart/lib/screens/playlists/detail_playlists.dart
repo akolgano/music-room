@@ -23,7 +23,6 @@ import '../../providers/voting_providers.dart';
 import '../../widgets/detail_widgets.dart';
 import '../../widgets/sort_widgets.dart';
 import '../../widgets/votes_widgets.dart';
-import '../../providers/auth_providers.dart';
 import '../../widgets/app_widgets.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
@@ -365,6 +364,7 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       playlistId: widget.playlistId,
       playlistOwnerId: _playlist?.creator,
       isEvent: _playlist?.isEvent ?? false,
+      isVotingMode: _isVotingMode,
       onVoteSuccess: _isVotingMode ? () {
         setState(() => _isVotingMode = false);
       } : null,
@@ -426,7 +426,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       });
       
       musicProvider.setPlaylistTracks(updatedTracks);
-      musicProvider.notifyListeners();
       
       final playerService = _getMountedProvider<MusicPlayerService>();
       if (playerService != null && playerService.playlistId == widget.playlistId) {
@@ -463,9 +462,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     }
   }
 
-  Future<void> _fetchUpdatedTracksFromAPI() async {
-    await _forceFullRefresh();
-  }
 
   void _logError(String message, dynamic error) {
     AppLogger.error('ERROR $message', error, null, 'PlaylistDetailScreen');
@@ -516,8 +512,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     _forceFullRefresh();
   }
   
-  void _handlePlaylistUpdate(List<PlaylistTrack> updatedTracks) => 
-    _handlePlaylistUpdateMessage(PlaylistUpdateMessage(playlistId: widget.playlistId, tracks: updatedTracks));
 
   Future<void> _loadData() async {
     await runAsyncAction(
@@ -618,7 +612,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     
     setState(() => _tracks = updatedTracks);
     musicProvider.updateTrackInPlaylist(trackId, trackDetails);
-    musicProvider.notifyListeners();
   }
 
   Future<void> _startBatchTrackDetailsFetch() async {
