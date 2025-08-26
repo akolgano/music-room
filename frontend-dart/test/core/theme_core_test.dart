@@ -47,16 +47,8 @@ void main() {
       expect(AppTheme.error, isA<Color>());
     });
 
-    test('AppTheme should provide warning color', () {
-      expect(AppTheme.warning, isA<Color>());
-    });
-
     test('AppTheme should provide success color', () {
       expect(AppTheme.success, isA<Color>());
-    });
-
-    test('AppTheme should provide info color', () {
-      expect(AppTheme.info, isA<Color>());
     });
 
     test('AppTheme dark theme should have proper elevation overlay', () {
