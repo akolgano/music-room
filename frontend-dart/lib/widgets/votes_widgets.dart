@@ -741,9 +741,10 @@ class _CollapsibleVotingSettings extends StatefulWidget {
   final ValueChanged<String> onLicenseTypeChanged;
   final Future<void> Function() onApplyVotingSettings;
   final Future<void> Function(bool) onSelectVotingDateTime;
-  final double? latitude, longitude;
+  final double? latitude;
+  final double? longitude;
   final Future<void> Function()? onDetectLocation;
-  final VoidCallback? onClearLocation;
+  final Future<void> Function()? onClearLocation;
   
   const _CollapsibleVotingSettings({
     required this.isPublicVoting,

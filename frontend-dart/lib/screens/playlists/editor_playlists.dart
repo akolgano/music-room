@@ -12,7 +12,6 @@ import '../../core/provider_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart';
 import '../base_screens.dart';
-import 'collaborative_playlists.dart';
 
 class PlaylistEditorScreen extends StatefulWidget {
   final String? playlistId;
@@ -37,7 +36,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   double? _longitude;
   
   Playlist? _playlist;
-  bool _showCollaborationFeatures = false;
 
   bool get _isEditMode => widget.playlistId?.isNotEmpty == true && widget.playlistId != 'null';
  
@@ -53,16 +51,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   @override
   List<Widget> get actions => [
     if (_isEditMode) ...[
-      IconButton(
-        icon: Icon(_showCollaborationFeatures ? Icons.edit : Icons.people),
-        onPressed: () => setState(() => _showCollaborationFeatures = !_showCollaborationFeatures),
-        tooltip: _showCollaborationFeatures ? 'Show Settings' : 'Show Collaboration',
-      ),
-      IconButton(
-        icon: const Icon(Icons.group),
-        onPressed: () {},
-        tooltip: 'Active Collaborators',
-      ),
       TextButton(
         onPressed: () => navigateTo(AppRoutes.playlistDetail, arguments: widget.playlistId),
         child: const Text('View Details', style: TextStyle(color: AppTheme.primary)),
@@ -82,17 +70,6 @@ class _PlaylistEditorScreenState extends BaseScreen<PlaylistEditorScreen> {
   Widget buildContent() {
     if (_isLoading) {
       return buildLoadingState(message: _isEditMode ? 'Loading playlist...' : 'Creating playlist...');
-    }
-
-    if (_isEditMode && _showCollaborationFeatures && _playlist != null) {
-      return PlaylistCollaborativeEditor(
-        playlistId: widget.playlistId!,
-        playlist: _playlist!,
-        onTracksUpdated: (tracks) {},
-        onError: showError,
-        onSuccess: showSuccess,
-        onInfo: showInfo,
-      );
     }
 
     return SingleChildScrollView(
