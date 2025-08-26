@@ -194,6 +194,7 @@ class PlaylistDetailWidgets {
     String? playlistId,
     String? playlistOwnerId,
     bool isEvent = false,
+    bool isVotingMode = false,
     VoidCallback? onVoteSuccess,
     Key? key,
   }) {
@@ -258,6 +259,7 @@ class PlaylistDetailWidgets {
                 playlistId: playlistId, 
                 playlistOwnerId: playlistOwnerId,
                 onVoteSuccess: onVoteSuccess,
+                isVotingMode: isVotingMode,
               ),
             ],
             SizedBox(width: MusicAppResponsive.getSpacing(context, tiny: 4.0, small: 5.0, medium: 6.0)),
@@ -282,12 +284,13 @@ class PlaylistDetailWidgets {
     String? playlistId, 
     String? playlistOwnerId,
     VoidCallback? onVoteSuccess,
+    bool isVotingMode = false,
   }) {
     return Consumer<VotingProvider>(
       builder: (context, votingProvider, _) {
         final currentPoints = playlistTrack.points;
         final hasUserVoted = votingProvider.hasUserVotedForPlaylist;
-        final canVote = votingProvider.canVote && !hasUserVoted;
+        final canVote = votingProvider.canVote && !hasUserVoted && isVotingMode;
         
         return GestureDetector(
           onTap: canVote ? () async {
@@ -334,7 +337,7 @@ class PlaylistDetailWidgets {
                     hasUserVoted ? Icons.thumb_up : Icons.thumb_up_outlined,
                     color: hasUserVoted 
                       ? Colors.green 
-                      : (canVote ? getPointsColor(currentPoints) : Colors.grey),
+                      : (isVotingMode && votingProvider.canVote && !hasUserVoted ? getPointsColor(currentPoints) : Colors.grey),
                     size: 14,
                   ),
                   Text(

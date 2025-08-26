@@ -505,8 +505,7 @@ class FormDecorationPresets {
     bool filled = false,
     bool outline = true,
   }) {
-    final borderFunc = outline ? OutlineInputBorder.new : UnderlineInputBorder.new;
-    final borderRadius = outline ? BorderRadius.circular(8.0) : null;
+    final borderRadius = BorderRadius.circular(8.0);
     return InputDecoration(
       labelText: labelText,
       hintText: hintText,
@@ -514,22 +513,38 @@ class FormDecorationPresets {
       suffixIcon: suffixIcon,
       filled: filled,
       fillColor: filled ? Theme.of(context).colorScheme.surface : null,
-      border: borderFunc(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
-      ),
-      enabledBorder: borderFunc(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
-      ),
-      focusedBorder: borderFunc(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: AppTheme.primary, width: 2.0),
-      ),
-      errorBorder: borderFunc(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
-      ),
+      border: outline
+          ? OutlineInputBorder(
+              borderRadius: borderRadius,
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+            )
+          : UnderlineInputBorder(
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+            ),
+      enabledBorder: outline
+          ? OutlineInputBorder(
+              borderRadius: borderRadius,
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
+            )
+          : UnderlineInputBorder(
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
+            ),
+      focusedBorder: outline
+          ? OutlineInputBorder(
+              borderRadius: borderRadius,
+              borderSide: BorderSide(color: AppTheme.primary, width: 2.0),
+            )
+          : UnderlineInputBorder(
+              borderSide: BorderSide(color: AppTheme.primary, width: 2.0),
+            ),
+      errorBorder: outline
+          ? OutlineInputBorder(
+              borderRadius: borderRadius,
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+            )
+          : UnderlineInputBorder(
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+            ),
       contentPadding: EdgeInsets.symmetric(
         horizontal: _responsive(16.0, type: 'w'),
         vertical: _responsive(12.0, type: 'h'),
