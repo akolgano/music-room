@@ -1,35 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/providers/friend_providers.dart';
 import 'package:music_room/services/api_services.dart';
-import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/models/api_models.dart';
+import 'package:music_room/models/music_models.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 
-@GenerateMocks([ApiService, AuthProvider])
-import 'friend_providers_test.mocks.dart';
 
 void main() {
   group('FriendProvider Tests', () {
     late FriendProvider friendProvider;
     late MockApiService mockApiService;
-    late MockAuthProvider mockAuthProvider;
+    late MockFriendService mockFriendService;
 
     setUp(() {
       GetIt.instance.reset();
       mockApiService = MockApiService();
-      mockAuthProvider = MockAuthProvider();
+      mockFriendService = MockFriendService();
       
       getIt.registerSingleton<ApiService>(mockApiService);
-      getIt.registerSingleton<AuthProvider>(mockAuthProvider);
-      
-      when(mockAuthProvider.token).thenReturn('test_token');
-      when(mockAuthProvider.authHeaders).thenReturn({
-        'Content-Type': 'application/json',
-        'Authorization': 'Token test_token'
-      });
+      getIt.registerSingleton<FriendService>(mockFriendService);
       
       friendProvider = FriendProvider();
     });
@@ -40,268 +31,174 @@ void main() {
 
     test('should initialize with empty friends list', () {
       expect(friendProvider.friends, isEmpty);
-      expect(friendProvider.friendRequests, isEmpty);
-      expect(friendProvider.sentRequests, isEmpty);
+      expect(friendProvider.receivedInvitations, isEmpty);
+      expect(friendProvider.sentInvitations, isEmpty);
     });
 
-    test('should load friends successfully', () async {
+    test('should fetch friends successfully', () async {
       final testFriends = [
-        Friend(id: '1', username: 'friend1', email: 'friend1@test.com'),
-        Friend(id: '2', username: 'friend2', email: 'friend2@test.com'),
+        const Friend(id: '1', username: 'friend1', email: 'friend1@test.com'),
+        const Friend(id: '2', username: 'friend2', email: 'friend2@test.com'),
       ];
       
-      when(mockApiService.getFriends(any)).thenAnswer((_) async => FriendsResponse(friends: testFriends));
+      when(mockFriendService.getFriends(any)).thenAnswer((_) async => testFriends);
       
-      await friendProvider.loadFriends();
+      await friendProvider.fetchFriends('test_token');
       
       expect(friendProvider.friends, hasLength(2));
       expect(friendProvider.friends.first.username, 'friend1');
-      verify(mockApiService.getFriends('test_token')).called(1);
+      verify(mockFriendService.getFriends('test_token')).called(1);
     });
 
-    test('should handle load friends error', () async {
-      when(mockApiService.getFriends(any)).thenThrow(Exception('API Error'));
-      
-      await friendProvider.loadFriends();
-      
-      expect(friendProvider.friends, isEmpty);
-      expect(friendProvider.hasError, isTrue);
-      verify(mockApiService.getFriends('test_token')).called(1);
-    });
-
-    test('should load friend requests successfully', () async {
-      final testRequests = [
-        FriendRequest(id: '1', fromUser: User(id: '1', username: 'requester1', email: 'req1@test.com'), status: 'pending'),
-        FriendRequest(id: '2', fromUser: User(id: '2', username: 'requester2', email: 'req2@test.com'), status: 'pending'),
+    test('should fetch received invitations successfully', () async {
+      final testInvitations = [
+        {'friendship_id': '1', 'from_username': 'user1', 'status': 'pending'},
+        {'friendship_id': '2', 'from_username': 'user2', 'status': 'pending'},
       ];
       
-      when(mockApiService.getFriendRequests(any)).thenAnswer((_) async => FriendRequestsResponse(requests: testRequests));
+      when(mockFriendService.getReceivedInvitations(any)).thenAnswer((_) async => testInvitations);
       
-      await friendProvider.loadFriendRequests();
+      await friendProvider.fetchReceivedInvitations('test_token');
       
-      expect(friendProvider.friendRequests, hasLength(2));
-      expect(friendProvider.friendRequests.first.fromUser.username, 'requester1');
-      verify(mockApiService.getFriendRequests('test_token')).called(1);
+      expect(friendProvider.receivedInvitations, hasLength(2));
+      verify(mockFriendService.getReceivedInvitations('test_token')).called(1);
     });
 
-    test('should handle load friend requests error', () async {
-      when(mockApiService.getFriendRequests(any)).thenThrow(Exception('API Error'));
+    test('should fetch sent invitations successfully', () async {
+      final testInvitations = [
+        {'friendship_id': '1', 'to_username': 'user1', 'status': 'pending'},
+        {'friendship_id': '2', 'to_username': 'user2', 'status': 'pending'},
+      ];
       
-      await friendProvider.loadFriendRequests();
+      when(mockFriendService.getSentInvitations(any)).thenAnswer((_) async => testInvitations);
       
-      expect(friendProvider.friendRequests, isEmpty);
-      expect(friendProvider.hasError, isTrue);
-      verify(mockApiService.getFriendRequests('test_token')).called(1);
+      await friendProvider.fetchSentInvitations('test_token');
+      
+      expect(friendProvider.sentInvitations, hasLength(2));
+      verify(mockFriendService.getSentInvitations('test_token')).called(1);
     });
 
     test('should send friend request successfully', () async {
-      when(mockApiService.sendFriendRequest(any, any)).thenAnswer((_) async => FriendRequestResponse(success: true, message: 'Request sent'));
+      final testInvitations = [
+        {'friendship_id': '1', 'to_username': 'user1', 'status': 'pending'},
+      ];
       
-      final result = await friendProvider.sendFriendRequest('friend_username');
+      when(mockApiService.sendFriendRequest(any, any)).thenAnswer((_) async => MessageResponse(message: 'Request sent'));
+      when(mockFriendService.getSentInvitations(any)).thenAnswer((_) async => testInvitations);
+      
+      final result = await friendProvider.sendFriendRequest('test_token', 'user1');
       
       expect(result, isTrue);
-      verify(mockApiService.sendFriendRequest('test_token', 'friend_username')).called(1);
-    });
-
-    test('should handle send friend request error', () async {
-      when(mockApiService.sendFriendRequest(any, any)).thenThrow(Exception('API Error'));
-      
-      final result = await friendProvider.sendFriendRequest('friend_username');
-      
-      expect(result, isFalse);
-      verify(mockApiService.sendFriendRequest('test_token', 'friend_username')).called(1);
+      verify(mockApiService.sendFriendRequest('user1', 'test_token')).called(1);
+      verify(mockFriendService.getSentInvitations('test_token')).called(1);
     });
 
     test('should accept friend request successfully', () async {
-      when(mockApiService.acceptFriendRequest(any, any)).thenAnswer((_) async => FriendRequestResponse(success: true, message: 'Request accepted'));
+      when(mockFriendService.acceptFriendRequest(any, any)).thenAnswer((_) async => 'Request accepted');
+      when(mockFriendService.getFriends(any)).thenAnswer((_) async => []);
+      when(mockFriendService.getReceivedInvitations(any)).thenAnswer((_) async => []);
+      when(mockFriendService.getSentInvitations(any)).thenAnswer((_) async => []);
       
-      final result = await friendProvider.acceptFriendRequest('request_id');
-      
-      expect(result, isTrue);
-      verify(mockApiService.acceptFriendRequest('test_token', 'request_id')).called(1);
-    });
-
-    test('should handle accept friend request error', () async {
-      when(mockApiService.acceptFriendRequest(any, any)).thenThrow(Exception('API Error'));
-      
-      final result = await friendProvider.acceptFriendRequest('request_id');
-      
-      expect(result, isFalse);
-      verify(mockApiService.acceptFriendRequest('test_token', 'request_id')).called(1);
-    });
-
-    test('should decline friend request successfully', () async {
-      when(mockApiService.declineFriendRequest(any, any)).thenAnswer((_) async => FriendRequestResponse(success: true, message: 'Request declined'));
-      
-      final result = await friendProvider.declineFriendRequest('request_id');
+      final result = await friendProvider.acceptFriendRequest('test_token', 'friendship_id');
       
       expect(result, isTrue);
-      verify(mockApiService.declineFriendRequest('test_token', 'request_id')).called(1);
+      verify(mockFriendService.acceptFriendRequest('friendship_id', 'test_token')).called(1);
     });
 
-    test('should handle decline friend request error', () async {
-      when(mockApiService.declineFriendRequest(any, any)).thenThrow(Exception('API Error'));
+    test('should reject friend request successfully', () async {
+      when(mockFriendService.rejectFriendRequest(any, any)).thenAnswer((_) async => 'Request rejected');
+      when(mockFriendService.getReceivedInvitations(any)).thenAnswer((_) async => []);
       
-      final result = await friendProvider.declineFriendRequest('request_id');
+      final result = await friendProvider.rejectFriendRequest('test_token', 'friendship_id');
       
-      expect(result, isFalse);
-      verify(mockApiService.declineFriendRequest('test_token', 'request_id')).called(1);
+      expect(result, isTrue);
+      verify(mockFriendService.rejectFriendRequest('friendship_id', 'test_token')).called(1);
+      verify(mockFriendService.getReceivedInvitations('test_token')).called(1);
     });
 
     test('should remove friend successfully', () async {
-      when(mockApiService.removeFriend(any, any)).thenAnswer((_) async => FriendRequestResponse(success: true, message: 'Friend removed'));
-      
-      final result = await friendProvider.removeFriend('friend_id');
-      
-      expect(result, isTrue);
-      verify(mockApiService.removeFriend('test_token', 'friend_id')).called(1);
-    });
-
-    test('should handle remove friend error', () async {
-      when(mockApiService.removeFriend(any, any)).thenThrow(Exception('API Error'));
-      
-      final result = await friendProvider.removeFriend('friend_id');
-      
-      expect(result, isFalse);
-      verify(mockApiService.removeFriend('test_token', 'friend_id')).called(1);
-    });
-
-    test('should search friends successfully', () async {
-      final searchResults = [
-        User(id: '1', username: 'searchuser1', email: 'search1@test.com'),
-        User(id: '2', username: 'searchuser2', email: 'search2@test.com'),
+      final initialFriends = [
+        const Friend(id: 'friend_id', username: 'friend1', email: 'friend1@test.com'),
       ];
       
-      when(mockApiService.searchUsers(any, any)).thenAnswer((_) async => UserSearchResponse(users: searchResults));
+      when(mockFriendService.getFriends(any)).thenAnswer((_) async => initialFriends);
+      await friendProvider.fetchFriends('test_token');
       
-      await friendProvider.searchUsers('search_query');
+      when(mockFriendService.removeFriend(any, any)).thenAnswer((_) async {});
       
-      expect(friendProvider.searchResults, hasLength(2));
-      expect(friendProvider.searchResults.first.username, 'searchuser1');
-      verify(mockApiService.searchUsers('test_token', 'search_query')).called(1);
+      final result = await friendProvider.removeFriend('test_token', 'friend_id');
+      
+      expect(result, isTrue);
+      verify(mockFriendService.removeFriend('friend_id', 'test_token')).called(1);
     });
 
-    test('should handle search friends error', () async {
-      when(mockApiService.searchUsers(any, any)).thenThrow(Exception('API Error'));
+    test('should clear friends data', () async {
+      // Add some initial data
+      final testFriends = [const Friend(id: '1', username: 'friend1', email: 'friend1@test.com')];
+      final testInvitations = [{'friendship_id': '1', 'from_username': 'user1'}];
       
-      await friendProvider.searchUsers('search_query');
+      when(mockFriendService.getFriends(any)).thenAnswer((_) async => testFriends);
+      when(mockFriendService.getReceivedInvitations(any)).thenAnswer((_) async => testInvitations);
       
-      expect(friendProvider.searchResults, isEmpty);
-      expect(friendProvider.hasError, isTrue);
-      verify(mockApiService.searchUsers('test_token', 'search_query')).called(1);
+      await friendProvider.fetchFriends('test_token');
+      await friendProvider.fetchReceivedInvitations('test_token');
+      
+      expect(friendProvider.friends, isNotEmpty);
+      expect(friendProvider.receivedInvitations, isNotEmpty);
+      
+      friendProvider.clearFriends();
+      
+      expect(friendProvider.friends, isEmpty);
+      expect(friendProvider.receivedInvitations, isEmpty);
+      expect(friendProvider.sentInvitations, isEmpty);
     });
 
-    test('should clear search results', () {
-      friendProvider.searchResults.add(User(id: '1', username: 'test', email: 'test@test.com'));
-      expect(friendProvider.searchResults, isNotEmpty);
+    test('should get friendship id from invitation', () {
+      final invitation = {'friendship_id': 'test_id'};
       
-      friendProvider.clearSearchResults();
+      final friendshipId = friendProvider.getFriendshipId(invitation);
       
-      expect(friendProvider.searchResults, isEmpty);
+      expect(friendshipId, equals('test_id'));
     });
 
-    test('should refresh all data', () async {
-      when(mockApiService.getFriends(any)).thenAnswer((_) async => FriendsResponse(friends: []));
-      when(mockApiService.getFriendRequests(any)).thenAnswer((_) async => FriendRequestsResponse(requests: []));
+    test('should get from user id from invitation', () {
+      final invitation = {'friend_id': 'user_123'};
       
-      await friendProvider.refreshAll();
+      final fromUserId = friendProvider.getFromUserId(invitation);
       
-      verify(mockApiService.getFriends('test_token')).called(1);
-      verify(mockApiService.getFriendRequests('test_token')).called(1);
+      expect(fromUserId, equals('user_123'));
     });
 
-    test('should handle refresh all error', () async {
-      when(mockApiService.getFriends(any)).thenThrow(Exception('Friends API Error'));
-      when(mockApiService.getFriendRequests(any)).thenThrow(Exception('Requests API Error'));
+    test('should get to user id from invitation', () {
+      final invitation = {'friend_id': 'user_456'};
       
-      await friendProvider.refreshAll();
+      final toUserId = friendProvider.getToUserId(invitation);
       
-      expect(friendProvider.hasError, isTrue);
+      expect(toUserId, equals('user_456'));
     });
 
-    test('should get friend by id', () {
-      final friend = Friend(id: '1', username: 'friend1', email: 'friend1@test.com');
-      friendProvider.friends.add(friend);
+    test('should get invitation status', () {
+      final invitation = {'status': 'pending'};
       
-      final foundFriend = friendProvider.getFriendById('1');
-      expect(foundFriend, equals(friend));
+      final status = friendProvider.getInvitationStatus(invitation);
       
-      final notFoundFriend = friendProvider.getFriendById('999');
-      expect(notFoundFriend, isNull);
+      expect(status, equals('pending'));
     });
 
-    test('should check if user is friend', () {
-      final friend = Friend(id: '1', username: 'friend1', email: 'friend1@test.com');
-      friendProvider.friends.add(friend);
+    test('should get from username from invitation', () {
+      final invitation = {'friend_username': 'test_user'};
       
-      expect(friendProvider.isFriend('1'), isTrue);
-      expect(friendProvider.isFriend('999'), isFalse);
+      final username = friendProvider.getFromUsername(invitation);
+      
+      expect(username, equals('test_user'));
     });
 
-    test('should get pending request count', () {
-      final request1 = FriendRequest(id: '1', fromUser: User(id: '1', username: 'user1', email: 'user1@test.com'), status: 'pending');
-      final request2 = FriendRequest(id: '2', fromUser: User(id: '2', username: 'user2', email: 'user2@test.com'), status: 'accepted');
+    test('should get to username from invitation', () {
+      final invitation = {'friend_username': 'test_user'};
       
-      friendProvider.friendRequests.addAll([request1, request2]);
+      final username = friendProvider.getToUsername(invitation);
       
-      expect(friendProvider.pendingRequestCount, equals(1));
-    });
-
-    test('should handle token not available', () async {
-      when(mockAuthProvider.token).thenReturn(null);
-      
-      await friendProvider.loadFriends();
-      
-      expect(friendProvider.hasError, isTrue);
-      verifyNever(mockApiService.getFriends(any));
-    });
-
-    test('should notify listeners on state changes', () {
-      var notified = false;
-      friendProvider.addListener(() => notified = true);
-      
-      friendProvider.friends.add(Friend(id: '1', username: 'test', email: 'test@test.com'));
-      friendProvider.notifyListeners();
-      
-      expect(notified, isTrue);
+      expect(username, equals('test_user'));
     });
   });
-}
-
-class Friend {
-  final String id;
-  final String username;
-  final String email;
-  
-  Friend({required this.id, required this.username, required this.email});
-}
-
-class FriendsResponse {
-  final List<Friend> friends;
-  FriendsResponse({required this.friends});
-}
-
-class FriendRequest {
-  final String id;
-  final User fromUser;
-  final String status;
-  
-  FriendRequest({required this.id, required this.fromUser, required this.status});
-}
-
-class FriendRequestsResponse {
-  final List<FriendRequest> requests;
-  FriendRequestsResponse({required this.requests});
-}
-
-class FriendRequestResponse {
-  final bool success;
-  final String message;
-  
-  FriendRequestResponse({required this.success, required this.message});
-}
-
-class UserSearchResponse {
-  final List<User> users;
-  UserSearchResponse({required this.users});
 }

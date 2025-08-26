@@ -37,8 +37,7 @@ void main() {
       bool notified = false;
       provider.addListener(() => notified = true);
 
-      provider.setPulsingEnabled(true); // same as default
-
+      provider.setPulsingEnabled(true);
       expect(notified, isFalse);
     });
 
@@ -57,8 +56,7 @@ void main() {
       bool notified = false;
       provider.addListener(() => notified = true);
 
-      provider.setPulsingDuration(const Duration(seconds: 2)); // same as default
-
+      provider.setPulsingDuration(const Duration(seconds: 2));
       expect(notified, isFalse);
     });
 
@@ -71,12 +69,12 @@ void main() {
       expect(notified, isTrue);
 
       notified = false;
-      provider.setPulsingIntensity(5.0); // should be clamped to 3.0
+      provider.setPulsingIntensity(5.0);
       expect(provider.pulsingIntensity, 3.0);
       expect(notified, isTrue);
 
       notified = false;
-      provider.setPulsingIntensity(0.05); // should be clamped to 0.1
+      provider.setPulsingIntensity(0.05);
       expect(provider.pulsingIntensity, 0.1);
       expect(notified, isTrue);
     });
@@ -85,8 +83,7 @@ void main() {
       bool notified = false;
       provider.addListener(() => notified = true);
 
-      provider.setPulsingIntensity(1.0); // same as default
-
+      provider.setPulsingIntensity(1.0);
       expect(notified, isFalse);
     });
   });

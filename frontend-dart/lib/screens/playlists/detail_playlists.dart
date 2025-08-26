@@ -256,7 +256,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                     ),
                   ],
                 ),
-                if (currentSort.field != TrackSortField.position) ...[
+                // Only show sort indicator for non-default sorts (and only for event playlists if it's votes-related)
+                if (currentSort.field != TrackSortField.position && 
+                    (currentSort.field != TrackSortField.points || _playlist?.isEvent == true)) ...[
                   const SizedBox(height: 4),
                   _buildStyledIndicator(
                     Row(
@@ -666,10 +668,12 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       final details = await _fetchTrackDetailsForPlay(pt);
       if (details != null) {
         final index = tracks.indexOf(pt);
-        if (index >= 0) tracks[index] = PlaylistTrack(
-          trackId: pt.trackId, name: pt.name,
-          position: pt.position, points: pt.points, track: details,
-        );
+        if (index >= 0) {
+          tracks[index] = PlaylistTrack(
+            trackId: pt.trackId, name: pt.name,
+            position: pt.position, points: pt.points, track: details,
+          );
+        }
       }
     }
   }
@@ -831,7 +835,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   void _cancelPendingOperations() {
-    _pendingOperations.forEach((c) { if (!c.isCompleted) c.complete(); });
+    for (final c in _pendingOperations) {
+      if (!c.isCompleted) c.complete();
+    }
     _pendingOperations.clear();
     _trackService.clearFetchingState();
     _trackIdToPlaylistTrackId.clear();
@@ -935,23 +941,31 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          AppWidgets.showSnackBar(context, 'Location permissions are denied', backgroundColor: Colors.red);
+          if (mounted) {
+            AppWidgets.showSnackBar(context, 'Location permissions are denied', backgroundColor: Colors.red);
+          }
           return;
         }
       }
       
       if (permission == LocationPermission.deniedForever) {
-        AppWidgets.showSnackBar(context, 'Location permissions are permanently denied', backgroundColor: Colors.red);
+        if (mounted) {
+          AppWidgets.showSnackBar(context, 'Location permissions are permanently denied', backgroundColor: Colors.red);
+        }
         return;
       }
 
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        AppWidgets.showSnackBar(context, 'Location services are disabled', backgroundColor: Colors.red);
+        if (mounted) {
+          AppWidgets.showSnackBar(context, 'Location services are disabled', backgroundColor: Colors.red);
+        }
         return;
       }
 
-      AppWidgets.showSnackBar(context, 'Detecting location...', backgroundColor: Colors.blue);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, 'Detecting location...', backgroundColor: Colors.blue);
+      }
       
       Position position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
@@ -959,6 +973,8 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
           timeLimit: Duration(seconds: 15),
         ),
       );
+      
+      if (!mounted) return;
       
       setState(() {
         _votingService.setLatitude(position.latitude);
@@ -971,7 +987,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
         backgroundColor: Colors.green
       );
     } catch (e) {
-      AppWidgets.showSnackBar(context, 'Failed to get location: ${e.toString()}', backgroundColor: Colors.red);
+      if (mounted) {
+        AppWidgets.showSnackBar(context, 'Failed to get location: ${e.toString()}', backgroundColor: Colors.red);
+      }
     }
   }
 

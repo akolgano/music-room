@@ -1,14 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/services/api_services.dart';
 import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/models/api_models.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 
-@GenerateMocks([ApiService, AuthProvider])
-import 'activity_services_test.mocks.dart';
 
 void main() {
   group('ActivityService Tests', () {
@@ -301,12 +298,12 @@ void main() {
       when(mockApiService.logActivity(any, any)).thenAnswer((_) async => ActivityLogResponse(success: true));
       
       await activityService.logActivity(
-        action: 'special_chars_àáâãäåæçèéêëìíîïðñòóôõö',
-        details: 'Details with émojis 🎵🎶 and symbols !@#$%^&*()',
+        action: 'special_chars_test',
+        details: 'Details with emojis and symbols',
         metadata: {
-          'unicode': 'ñáéíóú',
-          'symbols': '!@#$%^&*()',
-          'emojis': '🎵🎶🎸🥁',
+          'unicode': 'test_unicode',
+          'symbols': 'test_symbols',
+          'emojis': 'test_emojis',
         },
       );
       

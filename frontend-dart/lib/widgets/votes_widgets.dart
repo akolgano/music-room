@@ -131,34 +131,6 @@ class PlaylistVotingWidgets {
     );
   }
 
-  static Widget _buildCollapsibleVotingSettings({
-    required BuildContext context,
-    required bool isPublicVoting,
-    required String votingLicenseType,
-    required DateTime? votingStartTime,
-    required DateTime? votingEndTime,
-    required ValueChanged<bool> onPublicVotingChanged,
-    required ValueChanged<String> onLicenseTypeChanged,
-    required Future<void> Function() onApplyVotingSettings,
-    required Future<void> Function(bool) onSelectVotingDateTime,
-    double? latitude,
-    double? longitude,
-    Future<void> Function()? onDetectLocation,
-    VoidCallback? onClearLocation,
-  }) => _CollapsibleVotingSettings(
-    isPublicVoting: isPublicVoting,
-    votingLicenseType: votingLicenseType,
-    votingStartTime: votingStartTime,
-    votingEndTime: votingEndTime,
-    onPublicVotingChanged: onPublicVotingChanged,
-    onLicenseTypeChanged: onLicenseTypeChanged,
-    onApplyVotingSettings: onApplyVotingSettings,
-    onSelectVotingDateTime: onSelectVotingDateTime,
-    latitude: latitude,
-    longitude: longitude,
-    onDetectLocation: onDetectLocation,
-    onClearLocation: onClearLocation,
-  );
 
   static Widget _buildVotingLicenseSettings({
     required BuildContext context,

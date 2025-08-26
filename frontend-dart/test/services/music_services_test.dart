@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/services/music_services.dart';
+import 'package:music_room/models/music_models.dart';
 
 class MockMusicService extends Mock implements MusicService {}
 
@@ -21,17 +22,17 @@ void main() {
     test('should search for tracks', () async {
       const query = 'test song';
       when(mockMusicService.searchTracks(query)).thenAnswer(
-        (_) async => [Track(id: '1', title: 'Test Song', artist: 'Test Artist')],
+        (_) async => [Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com')],
       );
 
       final results = await mockMusicService.searchTracks(query);
       expect(results.length, 1);
-      expect(results.first.title, 'Test Song');
+      expect(results.first.name, 'Test Song');
       verify(mockMusicService.searchTracks(query)).called(1);
     });
 
     test('should play track', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
       when(mockMusicService.playTrack(track)).thenAnswer((_) async => true);
 
       final result = await mockMusicService.playTrack(track);
@@ -118,7 +119,7 @@ void main() {
     });
 
     test('should add track to playlist', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
       const playlistId = 'playlist_1';
       when(mockMusicService.addTrackToPlaylist(playlistId, track)).thenAnswer((_) async => true);
 
@@ -128,7 +129,7 @@ void main() {
     });
 
     test('should remove track from playlist', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
       const playlistId = 'playlist_1';
       when(mockMusicService.removeTrackFromPlaylist(playlistId, track)).thenAnswer((_) async => true);
 
@@ -164,7 +165,7 @@ void main() {
     });
 
     test('should get track lyrics', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
       const lyrics = 'Test lyrics content';
       when(mockMusicService.getTrackLyrics(track)).thenAnswer((_) async => lyrics);
 
@@ -174,7 +175,7 @@ void main() {
     });
 
     test('should get track recommendations', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
       final recommendations = [Track(id: '2', title: 'Similar Song', artist: 'Similar Artist')];
       when(mockMusicService.getRecommendations(track)).thenAnswer((_) async => recommendations);
 
@@ -185,7 +186,7 @@ void main() {
     });
 
     test('should handle playback errors', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
       when(mockMusicService.playTrack(track)).thenThrow(Exception('Playback failed'));
 
       expect(() => mockMusicService.playTrack(track), throwsException);
@@ -221,7 +222,7 @@ void main() {
     });
 
     test('should add track to playlist', () {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
       final playlist = Playlist(id: '1', name: 'Test Playlist', tracks: []);
       
       playlist.tracks.add(track);

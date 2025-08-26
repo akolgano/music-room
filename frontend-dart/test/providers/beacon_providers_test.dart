@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/providers/beacon_providers.dart';
 import 'package:music_room/services/beacon_services.dart';
 import 'package:music_room/core/locator_core.dart';
+import 'package:get_it/get_it.dart';
 
-import 'beacon_providers_test.mocks.dart';
-
-@GenerateMocks([BeaconService])
 void main() {
   group('BeaconProvider', () {
     late BeaconProvider provider;
@@ -19,6 +16,7 @@ void main() {
     late StreamController<bool> scanningStateController;
 
     setUp(() {
+      GetIt.instance.reset();
       mockBeaconService = MockBeaconService();
       beaconsController = StreamController<List<BeaconInfo>>.broadcast();
       beaconEnteredController = StreamController<BeaconInfo>.broadcast();
@@ -29,10 +27,9 @@ void main() {
       when(mockBeaconService.beaconEnteredStream).thenAnswer((_) => beaconEnteredController.stream);
       when(mockBeaconService.beaconExitedStream).thenAnswer((_) => beaconExitedController.stream);
       when(mockBeaconService.scanningStateStream).thenAnswer((_) => scanningStateController.stream);
+      when(mockBeaconService.discoveredBeacons).thenReturn([]);
+      when(mockBeaconService.getNearbyBeacons()).thenReturn([]);
 
-      if (getIt.isRegistered<BeaconService>()) {
-        getIt.unregister<BeaconService>();
-      }
       getIt.registerSingleton<BeaconService>(mockBeaconService);
 
       provider = BeaconProvider();
@@ -45,9 +42,7 @@ void main() {
       await scanningStateController.close();
       provider.dispose();
       
-      if (getIt.isRegistered<BeaconService>()) {
-        getIt.unregister<BeaconService>();
-      }
+      GetIt.instance.reset();
     });
 
     group('Initial State', () {
@@ -93,7 +88,7 @@ void main() {
 
         final result = await provider.initializeBeacons();
         expect(result, isTrue);
-        verify(mockBeaconService.initialize()).called(1); // Only called once
+        verify(mockBeaconService.initialize()).called(1);
       });
     });
 
@@ -163,7 +158,7 @@ void main() {
       });
 
       test('should stop scanning', () async {
-        when(mockBeaconService.stopScanning()).thenAnswer((_) async => null);
+        when(mockBeaconService.stopScanning()).thenAnswer((_) async {});
 
         await provider.stopScanning();
 
@@ -200,7 +195,7 @@ void main() {
       });
 
       test('should stop monitoring', () async {
-        when(mockBeaconService.stopMonitoring()).thenAnswer((_) async => null);
+        when(mockBeaconService.stopMonitoring()).thenAnswer((_) async {});
 
         await provider.stopMonitoring();
 
@@ -231,7 +226,7 @@ void main() {
         provider.addListener(() => listenerCalled = true);
 
         beaconsController.add(testBeacons);
-        await Future.delayed(Duration.zero); // Allow stream to process
+        await Future.delayed(Duration.zero);
 
         expect(listenerCalled, isTrue);
         expect(provider.discoveredBeacons, hasLength(1));
@@ -516,7 +511,7 @@ void main() {
     group('Dispose', () {
       test('should dispose all subscriptions and service', () async {
         when(mockBeaconService.initialize()).thenAnswer((_) async => true);
-        when(mockBeaconService.dispose()).thenAnswer((_) async => null);
+        when(mockBeaconService.dispose()).thenAnswer((_) async {});
 
         await provider.initializeBeacons();
 
@@ -525,7 +520,7 @@ void main() {
       });
 
       test('should handle dispose when not initialized', () {
-        when(mockBeaconService.dispose()).thenAnswer((_) async => null);
+        when(mockBeaconService.dispose()).thenAnswer((_) async {});
 
         expect(() => provider.dispose(), returnsNormally);
         verify(mockBeaconService.dispose()).called(1);
@@ -556,4 +551,3 @@ void main() {
     });
   });
 }
-*/

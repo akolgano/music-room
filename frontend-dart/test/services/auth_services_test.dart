@@ -1,14 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/services/auth_services.dart';
 import 'package:music_room/services/api_services.dart';
 import 'package:music_room/models/api_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 
-@GenerateMocks([ApiService, SharedPreferences])
-import 'auth_services_test.mocks.dart';
 
 void main() {
   group('AuthService Tests', () {

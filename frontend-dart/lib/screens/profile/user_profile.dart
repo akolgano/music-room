@@ -135,8 +135,8 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
       ),
       child: _userProfile!.avatar?.isNotEmpty == true
           ? ClipOval(child: _userProfile!.avatar!.startsWith('data:')
-              ? Image.memory(base64Decode(_userProfile!.avatar!.split(',')[1]), fit: BoxFit.cover, errorBuilder: (_, __, ___) => initialsAvatar)
-              : Image.network(_userProfile!.avatar!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => initialsAvatar))
+              ? Image.memory(base64Decode(_userProfile!.avatar!.split(',')[1]), fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => initialsAvatar)
+              : Image.network(_userProfile!.avatar!, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => initialsAvatar))
           : initialsAvatar,
     );
   }
@@ -198,8 +198,12 @@ class _UserPageScreenState extends BaseScreen<UserPageScreen> {
       if (kDebugMode) debugPrint('[UserPageScreen] Friend request sent to user ${widget.userId}');
     } else if (friendProvider.hasError) {
       final errorMessage = friendProvider.errorMessage!;
-      if (errorMessage.toLowerCase().contains('already friends')) { showError('You are already friends with this user'); setState(() => _isFriend = true); }
-      else showError(errorMessage);
+      if (errorMessage.toLowerCase().contains('already friends')) {
+        showError('You are already friends with this user');
+        setState(() => _isFriend = true);
+      } else {
+        showError(errorMessage);
+      }
       if (kDebugMode) debugPrint('[UserPageScreen] Error sending friend request: $errorMessage');
     }
   }

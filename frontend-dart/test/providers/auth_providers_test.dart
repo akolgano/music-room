@@ -1,23 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/services/auth_services.dart';
+import 'package:music_room/services/api_services.dart';
 import 'package:music_room/services/websocket_services.dart';
 import 'package:music_room/services/logging_services.dart';
 import 'package:music_room/services/player_services.dart';
 import 'package:music_room/models/api_models.dart';
+import 'package:music_room/models/music_models.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-@GenerateMocks([AuthService, WebSocketService, FrontendLoggingService, MusicPlayerService, GoogleSignIn])
-import 'auth_providers_test.mocks.dart';
 
 void main() {
   group('AuthProvider Tests', () {
     late AuthProvider authProvider;
     late MockAuthService mockAuthService;
+    late MockApiService mockApiService;
     late MockWebSocketService mockWebSocketService;
     late MockFrontendLoggingService mockLoggingService;
     late MockMusicPlayerService mockPlayerService;
@@ -26,15 +26,19 @@ void main() {
     setUp(() {
       GetIt.instance.reset();
       mockAuthService = MockAuthService();
+      mockApiService = MockApiService();
       mockWebSocketService = MockWebSocketService();
       mockLoggingService = MockFrontendLoggingService();
       mockPlayerService = MockMusicPlayerService();
       mockGoogleSignIn = MockGoogleSignIn();
       
       getIt.registerSingleton<AuthService>(mockAuthService);
+      getIt.registerSingleton<ApiService>(mockApiService);
       getIt.registerSingleton<WebSocketService>(mockWebSocketService);
       getIt.registerSingleton<FrontendLoggingService>(mockLoggingService);
       getIt.registerSingleton<MusicPlayerService>(mockPlayerService);
+      
+      when(mockAuthService.api).thenReturn(mockApiService);
       
       when(mockAuthService.isLoggedIn).thenReturn(false);
       when(mockAuthService.currentUser).thenReturn(null);
@@ -72,9 +76,11 @@ void main() {
     });
 
     test('should handle user login successfully', () async {
-      when(mockAuthService.login(any, any)).thenAnswer((_) async => true);
+      final testUser = User(id: '1', username: 'testuser', email: 'test@test.com');
+      final authResult = AuthResult(token: 'valid_token', user: testUser);
+      when(mockAuthService.login(any, any)).thenAnswer((_) async => authResult);
       when(mockAuthService.currentToken).thenReturn('valid_token');
-      when(mockAuthService.currentUser).thenReturn(User(id: '1', username: 'testuser', email: 'test@test.com'));
+      when(mockAuthService.currentUser).thenReturn(testUser);
       
       final result = await authProvider.login('testuser', 'password');
       
@@ -84,7 +90,7 @@ void main() {
     });
 
     test('should handle user login failure', () async {
-      when(mockAuthService.login(any, any)).thenAnswer((_) async => false);
+      when(mockAuthService.login(any, any)).thenThrow(Exception('Login failed'));
       
       final result = await authProvider.login('testuser', 'wrongpassword');
       
@@ -95,7 +101,7 @@ void main() {
     test('should handle logout successfully', () async {
       when(mockPlayerService.stop()).thenAnswer((_) async {});
       when(mockWebSocketService.disconnect()).thenAnswer((_) async {});
-      when(mockAuthService.logout()).thenAnswer((_) async => true);
+      when(mockAuthService.logout()).thenAnswer((_) async {});
       
       final result = await authProvider.logout();
       
@@ -109,7 +115,7 @@ void main() {
     test('should handle logout failure gracefully', () async {
       when(mockPlayerService.stop()).thenAnswer((_) async {});
       when(mockWebSocketService.disconnect()).thenAnswer((_) async {});
-      when(mockAuthService.logout()).thenAnswer((_) async => false);
+      when(mockAuthService.logout()).thenThrow(Exception('Logout failed'));
       
       final result = await authProvider.logout();
       
@@ -122,7 +128,7 @@ void main() {
     test('should handle player service error during logout', () async {
       when(mockPlayerService.stop()).thenThrow(Exception('Player error'));
       when(mockWebSocketService.disconnect()).thenAnswer((_) async {});
-      when(mockAuthService.logout()).thenAnswer((_) async => true);
+      when(mockAuthService.logout()).thenAnswer((_) async {});
       
       final result = await authProvider.logout();
       
@@ -135,7 +141,7 @@ void main() {
     test('should handle websocket error during logout', () async {
       when(mockPlayerService.stop()).thenAnswer((_) async {});
       when(mockWebSocketService.disconnect()).thenThrow(Exception('WebSocket error'));
-      when(mockAuthService.logout()).thenAnswer((_) async => true);
+      when(mockAuthService.logout()).thenAnswer((_) async {});
       
       final result = await authProvider.logout();
       
@@ -146,11 +152,12 @@ void main() {
     });
 
     test('should send password reset email successfully', () async {
-      when(mockAuthService.api).thenReturn(MockApiService() as dynamic);
+      when(mockApiService.forgotPassword(any)).thenAnswer((_) async {});
       
       final result = await authProvider.sendPasswordResetEmail('test@example.com');
       
       expect(result, isTrue);
+      verify(mockApiService.forgotPassword(any)).called(1);
     });
 
     test('should send signup email OTP successfully', () async {
@@ -163,7 +170,9 @@ void main() {
     });
 
     test('should handle signup with OTP successfully', () async {
-      when(mockAuthService.signupWithOtp(any, any, any, any)).thenAnswer((_) async => true);
+      final testUser = User(id: '1', username: 'username', email: 'email@test.com');
+      final authResult = AuthResult(token: 'valid_token', user: testUser);
+      when(mockAuthService.signupWithOtp(any, any, any, any)).thenAnswer((_) async => authResult);
       
       final result = await authProvider.signupWithOtp('username', 'email@test.com', 'password', '123456');
       
@@ -172,7 +181,7 @@ void main() {
     });
 
     test('should handle signup with OTP failure', () async {
-      when(mockAuthService.signupWithOtp(any, any, any, any)).thenAnswer((_) async => false);
+      when(mockAuthService.signupWithOtp(any, any, any, any)).thenThrow(Exception('Signup failed'));
       
       final result = await authProvider.signupWithOtp('username', 'email@test.com', 'password', '123456');
       
@@ -181,19 +190,21 @@ void main() {
     });
 
     test('should check email availability successfully', () async {
-      when(mockAuthService.api).thenReturn(MockApiService() as dynamic);
+      when(mockApiService.checkEmail(any)).thenAnswer((_) async => {'exists': false});
       
       final result = await authProvider.checkEmailAvailability('test@example.com');
       
-      expect(result, isA<bool>());
+      expect(result, isTrue);
+      verify(mockApiService.checkEmail('test@example.com')).called(1);
     });
 
     test('should handle check email availability error', () async {
-      when(mockAuthService.api).thenThrow(Exception('API error'));
+      when(mockApiService.checkEmail(any)).thenThrow(Exception('API error'));
       
       final result = await authProvider.checkEmailAvailability('test@example.com');
       
       expect(result, isFalse);
+      verify(mockApiService.checkEmail('test@example.com')).called(1);
     });
 
     test('should handle Google login successfully', () async {
@@ -205,7 +216,9 @@ void main() {
       
       when(mockGoogleSignIn.signOut()).thenAnswer((_) async => null);
       when(mockGoogleSignIn.signIn()).thenAnswer((_) async => mockGoogleSignInAccount);
-      when(mockAuthService.googleLogin(socialId: anyNamed('socialId'), socialEmail: anyNamed('socialEmail'), socialName: anyNamed('socialName'))).thenAnswer((_) async {});
+      final testUser = User(id: 'google_id', username: 'Test User', email: 'test@gmail.com');
+      final authResult = AuthResult(token: 'valid_token', user: testUser);
+      when(mockAuthService.googleLogin(socialId: anyNamed('socialId'), socialEmail: anyNamed('socialEmail'), socialName: anyNamed('socialName'))).thenAnswer((_) async => authResult);
       
       final result = await authProvider.googleLogin();
       
@@ -250,23 +263,24 @@ void main() {
     });
 
     test('should handle reset password with OTP successfully', () async {
-      when(mockAuthService.api).thenReturn(MockApiService() as dynamic);
+      when(mockApiService.forgotChangePassword(any)).thenAnswer((_) async {});
       
       final result = await authProvider.resetPasswordWithOtp('test@example.com', '123456', 'newpassword');
       
       expect(result, isTrue);
+      verify(mockApiService.forgotChangePassword(any)).called(1);
     });
 
     test('should handle reset password with OTP failure', () async {
-      when(mockAuthService.api).thenThrow(Exception('Reset failed'));
+      when(mockApiService.forgotChangePassword(any)).thenThrow(Exception('Reset failed'));
       
       final result = await authProvider.resetPasswordWithOtp('test@example.com', '123456', 'newpassword');
       
       expect(result, isFalse);
+      verify(mockApiService.forgotChangePassword(any)).called(1);
     });
   });
 }
 
-class MockApiService extends Mock {}
 class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
 class MockGoogleSignInAuthentication extends Mock implements GoogleSignInAuthentication {}

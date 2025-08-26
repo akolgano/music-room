@@ -127,7 +127,7 @@ void main() {
           child: PlaylistDetailWidgets.buildThemedPlaylistStats(tester.element(find.byType(Scaffold)), tracks),
         ));
 
-        expect(find.text('2'), findsAtLeastNWidgets(1)); // Track count
+        expect(find.text('2'), findsAtLeastNWidgets(1));
         expect(find.byType(Row), findsAtLeastNWidgets(1));
       });
 

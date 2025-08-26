@@ -1,33 +1,34 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 import 'package:music_room/providers/music_providers.dart';
 import 'package:music_room/services/api_services.dart';
-import 'package:music_room/services/player_services.dart';
+import 'package:music_room/services/music_services.dart';
+import 'package:music_room/services/cache_services.dart';
 import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/models/music_models.dart';
 import 'package:music_room/models/api_models.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 
-@GenerateMocks([ApiService, MusicPlayerService, AuthProvider])
-import 'music_providers_test.mocks.dart';
 
 void main() {
   group('MusicProvider Tests', () {
     late MusicProvider musicProvider;
     late MockApiService mockApiService;
-    late MockMusicPlayerService mockPlayerService;
+    late MockMusicService mockMusicService;
+    late MockTrackCacheService mockTrackCacheService;
     late MockAuthProvider mockAuthProvider;
 
     setUp(() {
       GetIt.instance.reset();
       mockApiService = MockApiService();
-      mockPlayerService = MockMusicPlayerService();
+      mockMusicService = MockMusicService();
+      mockTrackCacheService = MockTrackCacheService();
       mockAuthProvider = MockAuthProvider();
       
       getIt.registerSingleton<ApiService>(mockApiService);
-      getIt.registerSingleton<MusicPlayerService>(mockPlayerService);
+      getIt.registerSingleton<MusicService>(mockMusicService);
+      getIt.registerSingleton<TrackCacheService>(mockTrackCacheService);
       getIt.registerSingleton<AuthProvider>(mockAuthProvider);
       
       when(mockAuthProvider.token).thenReturn('test_token');

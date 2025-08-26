@@ -196,10 +196,8 @@ void main() {
     });
 
     test('setupServiceLocator should be idempotent', () {
-      // Test that calling setupServiceLocator multiple times doesn't cause errors
       setupServiceLocator();
       setupServiceLocator();
-      // If we get here without errors, the test passes
       expect(true, isTrue);
     });
   });

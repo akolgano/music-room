@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
 import 'package:music_room/main.dart' as app;
 
 void main() {
@@ -174,14 +173,9 @@ void main() {
     });
 
     test('main function should work with Function type checks', () {
-      expect(app.main is Function, isTrue);
-      expect(app.main is void Function(), isTrue);
-    });
-
-    test('main function should support dynamic invocation checks', () {
+      expect(app.main, isA<void Function()>());
       final dynamic dynamicMain = app.main;
       expect(dynamicMain, isNotNull);
-      expect(dynamicMain is Function, isTrue);
     });
 
     test('main function should handle casting operations', () {

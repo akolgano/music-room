@@ -418,7 +418,7 @@ void main() {
           requestOptions: RequestOptions(path: '/test'),
           response: Response(
             requestOptions: RequestOptions(path: '/test'),
-            statusCode: 418, // I'm a teapot
+            statusCode: 418,
           ),
         );
 

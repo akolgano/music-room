@@ -1,134 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 import 'package:music_room/widgets/action_widgets.dart';
 
 void main() {
-  group('ActionButton Tests', () {
-    testWidgets('should render with text and icon', (WidgetTester tester) async {
+  group('TrackActionsWidget Tests', () {
+    testWidgets('should render with play button', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ActionButton(
-              text: 'Play',
-              icon: Icons.play_arrow,
-              onPressed: () {},
+            body: TrackActionsWidget(
+              showAddButton: false,
+              showPlayButton: true,
+              trackIsPlaying: false,
+              isInPlaylist: false,
+              onPlay: () {},
             ),
           ),
         ),
       );
 
-      expect(find.text('Play'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow), findsOneWidget);
       expect(find.byType(ElevatedButton), findsOneWidget);
     });
 
-    testWidgets('should handle onPressed callback', (WidgetTester tester) async {
-      bool pressed = false;
-      
+    testWidgets('should render with add button', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ActionButton(
-              text: 'Test',
-              icon: Icons.test_outlined,
-              onPressed: () => pressed = true,
+            body: TrackActionsWidget(
+              showAddButton: true,
+              showPlayButton: false,
+              trackIsPlaying: false,
+              isInPlaylist: false,
+              onAdd: () {},
             ),
           ),
         ),
       );
 
-      await tester.tap(find.byType(ElevatedButton));
-      expect(pressed, isTrue);
+      expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
-    testWidgets('should be disabled when onPressed is null', (WidgetTester tester) async {
+    testWidgets('should show pause icon when track is playing', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ActionButton(
-              text: 'Disabled',
-              icon: Icons.block,
-              onPressed: null,
+            body: TrackActionsWidget(
+              showAddButton: false,
+              showPlayButton: true,
+              trackIsPlaying: true,
+              isInPlaylist: false,
+              onPlay: () {},
             ),
           ),
         ),
       );
 
-      final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
-      expect(button.onPressed, isNull);
+      expect(find.byIcon(Icons.pause), findsOneWidget);
     });
 
-    testWidgets('should apply custom colors', (WidgetTester tester) async {
+    testWidgets('should handle AnimatedActionButton', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ActionButton(
-              text: 'Custom',
-              icon: Icons.palette,
+            body: AnimatedActionButton(
               onPressed: () {},
-              backgroundColor: Colors.red,
-              textColor: Colors.white,
             ),
           ),
         ),
       );
 
-      final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
-      expect(button.style?.backgroundColor?.resolve({}), Colors.red);
-    });
-
-    testWidgets('should show loading state', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActionButton(
-              text: 'Loading',
-              icon: Icons.download,
-              onPressed: () {},
-              isLoading: true,
-            ),
-          ),
-        ),
-      );
-
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.text('Loading'), findsNothing);
-    });
-
-    testWidgets('should handle different sizes', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Column(
-              children: [
-                ActionButton(
-                  text: 'Small',
-                  icon: Icons.small_outlined,
-                  onPressed: () {},
-                  size: ActionButtonSize.small,
-                ),
-                ActionButton(
-                  text: 'Medium',
-                  icon: Icons.medium_outlined,
-                  onPressed: () {},
-                  size: ActionButtonSize.medium,
-                ),
-                ActionButton(
-                  text: 'Large',
-                  icon: Icons.large_outlined,
-                  onPressed: () {},
-                  size: ActionButtonSize.large,
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('Small'), findsOneWidget);
-      expect(find.text('Medium'), findsOneWidget);
-      expect(find.text('Large'), findsOneWidget);
+      expect(find.byType(AnimatedActionButton), findsOneWidget);
     });
   });
 
@@ -438,7 +380,7 @@ void main() {
                 ),
                 ActionButtonData(
                   text: 'Second',
-                  icon: Icons.second_page,
+                  icon: Icons.navigate_next,
                   onPressed: () {},
                 ),
               ],
@@ -465,7 +407,7 @@ void main() {
                 ),
                 ActionButtonData(
                   text: 'Second',
-                  icon: Icons.second_page,
+                  icon: Icons.navigate_next,
                   onPressed: () {},
                 ),
               ],
@@ -491,7 +433,7 @@ void main() {
                 ),
                 ActionButtonData(
                   text: 'Second',
-                  icon: Icons.second_page,
+                  icon: Icons.navigate_next,
                   onPressed: () {},
                 ),
               ],
@@ -533,7 +475,7 @@ void main() {
                 ),
                 ActionButtonData(
                   text: 'Second',
-                  icon: Icons.second_page,
+                  icon: Icons.navigate_next,
                   onPressed: () => secondPressed = true,
                 ),
               ],
