@@ -1,18 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/services/music_services.dart';
+import 'package:music_room/services/api_services.dart';
 import 'package:music_room/models/music_models.dart';
+import 'package:music_room/models/api_models.dart';
 
-class MockMusicService extends Mock implements MusicService {}
+import 'music_services_test.mocks.dart';
 
+@GenerateMocks([ApiService])
 void main() {
   group('MusicService Tests', () {
     late MusicService musicService;
-    late MockMusicService mockMusicService;
+    late MockApiService mockApiService;
 
     setUp(() {
-      musicService = MusicService();
-      mockMusicService = MockMusicService();
+      mockApiService = MockApiService();
+      musicService = MusicService(mockApiService);
     });
 
     test('should create MusicService instance', () {
@@ -21,213 +25,225 @@ void main() {
 
     test('should search for tracks', () async {
       const query = 'test song';
-      when(mockMusicService.searchTracks(query)).thenAnswer(
-        (_) async => [Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com')],
+      const token = 'test-token';
+      final mockResponse = SearchTracksResponse(
+        data: [Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com')],
       );
+      
+      when(mockApiService.searchTracks(query, token))
+          .thenAnswer((_) async => mockResponse);
 
-      final results = await mockMusicService.searchTracks(query);
+      final results = await musicService.searchTracks(query, token);
       expect(results.length, 1);
       expect(results.first.name, 'Test Song');
-      verify(mockMusicService.searchTracks(query)).called(1);
-    });
-
-    test('should play track', () async {
-      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
-      when(mockMusicService.playTrack(track)).thenAnswer((_) async => true);
-
-      final result = await mockMusicService.playTrack(track);
-      expect(result, true);
-      verify(mockMusicService.playTrack(track)).called(1);
-    });
-
-    test('should pause playback', () async {
-      when(mockMusicService.pausePlayback()).thenAnswer((_) async => true);
-
-      final result = await mockMusicService.pausePlayback();
-      expect(result, true);
-      verify(mockMusicService.pausePlayback()).called(1);
-    });
-
-    test('should resume playback', () async {
-      when(mockMusicService.resumePlayback()).thenAnswer((_) async => true);
-
-      final result = await mockMusicService.resumePlayback();
-      expect(result, true);
-      verify(mockMusicService.resumePlayback()).called(1);
-    });
-
-    test('should stop playback', () async {
-      when(mockMusicService.stopPlayback()).thenAnswer((_) async => true);
-
-      final result = await mockMusicService.stopPlayback();
-      expect(result, true);
-      verify(mockMusicService.stopPlayback()).called(1);
-    });
-
-    test('should get current track', () {
-      final track = Track(id: '1', title: 'Current Song', artist: 'Current Artist');
-      when(mockMusicService.getCurrentTrack()).thenReturn(track);
-
-      final result = mockMusicService.getCurrentTrack();
-      expect(result?.title, 'Current Song');
-      verify(mockMusicService.getCurrentTrack()).called(1);
-    });
-
-    test('should get playback position', () {
-      const position = Duration(seconds: 30);
-      when(mockMusicService.getPlaybackPosition()).thenReturn(position);
-
-      final result = mockMusicService.getPlaybackPosition();
-      expect(result.inSeconds, 30);
-      verify(mockMusicService.getPlaybackPosition()).called(1);
-    });
-
-    test('should set playback position', () async {
-      const position = Duration(seconds: 45);
-      when(mockMusicService.seekTo(position)).thenAnswer((_) async => true);
-
-      final result = await mockMusicService.seekTo(position);
-      expect(result, true);
-      verify(mockMusicService.seekTo(position)).called(1);
-    });
-
-    test('should set volume', () {
-      const volume = 0.7;
-      when(mockMusicService.setVolume(volume)).thenReturn(null);
-
-      mockMusicService.setVolume(volume);
-      verify(mockMusicService.setVolume(volume)).called(1);
-    });
-
-    test('should get current volume', () {
-      const volume = 0.8;
-      when(mockMusicService.getVolume()).thenReturn(volume);
-
-      final result = mockMusicService.getVolume();
-      expect(result, 0.8);
-      verify(mockMusicService.getVolume()).called(1);
+      verify(mockApiService.searchTracks(query, token)).called(1);
     });
 
     test('should create playlist', () async {
       const playlistName = 'My Playlist';
-      final playlist = Playlist(id: '1', name: playlistName, tracks: []);
-      when(mockMusicService.createPlaylist(playlistName)).thenAnswer((_) async => playlist);
+      const description = 'Test description';
+      const token = 'test-token';
+      final mockResponse = CreatePlaylistResponse(playlistId: '1');
+      
+      when(mockApiService.createPlaylist(
+          token,
+          argThat(isA<CreatePlaylistRequest>()
+              .having((r) => r.name, 'name', playlistName)
+              .having((r) => r.description, 'description', description))))
+          .thenAnswer((_) async => mockResponse);
 
-      final result = await mockMusicService.createPlaylist(playlistName);
-      expect(result.name, playlistName);
-      verify(mockMusicService.createPlaylist(playlistName)).called(1);
+      final result = await musicService.createPlaylist(playlistName, description, true, token, 'open', false);
+      expect(result, '1');
     });
 
     test('should add track to playlist', () async {
-      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
+      const trackId = '1';
       const playlistId = 'playlist_1';
-      when(mockMusicService.addTrackToPlaylist(playlistId, track)).thenAnswer((_) async => true);
+      const token = 'test-token';
+      
+      when(mockApiService.addTrackToPlaylist(
+          playlistId,
+          token,
+          argThat(isA<AddTrackRequest>()
+              .having((r) => r.trackId, 'trackId', trackId))))
+          .thenAnswer((_) async {});
 
-      final result = await mockMusicService.addTrackToPlaylist(playlistId, track);
-      expect(result, true);
-      verify(mockMusicService.addTrackToPlaylist(playlistId, track)).called(1);
+      await musicService.addTrackToPlaylist(playlistId, trackId, token);
+      verify(mockApiService.addTrackToPlaylist(playlistId, token, any)).called(1);
     });
 
     test('should remove track from playlist', () async {
-      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
+      const trackId = '1';
       const playlistId = 'playlist_1';
-      when(mockMusicService.removeTrackFromPlaylist(playlistId, track)).thenAnswer((_) async => true);
+      const token = 'test-token';
+      
+      when(mockApiService.removeTrackFromPlaylist(playlistId, trackId, token))
+          .thenAnswer((_) async {});
 
-      final result = await mockMusicService.removeTrackFromPlaylist(playlistId, track);
-      expect(result, true);
-      verify(mockMusicService.removeTrackFromPlaylist(playlistId, track)).called(1);
+      await musicService.removeTrackFromPlaylist(playlistId, trackId, token);
+      verify(mockApiService.removeTrackFromPlaylist(playlistId, trackId, token)).called(1);
     });
 
     test('should get user playlists', () async {
-      final playlists = [Playlist(id: '1', name: 'Playlist 1', tracks: [])];
-      when(mockMusicService.getUserPlaylists()).thenAnswer((_) async => playlists);
+      const token = 'test-token';
+      final playlists = [Playlist(id: '1', name: 'Playlist 1', description: 'Test', isPublic: true, creator: 'user1', tracks: [])];
+      final mockResponse = GetPlaylistsResponse(playlists: playlists);
+      
+      when(mockApiService.getSavedPlaylists(token))
+          .thenAnswer((_) async => mockResponse);
 
-      final result = await mockMusicService.getUserPlaylists();
+      final result = await musicService.getUserPlaylists(token);
       expect(result.length, 1);
       expect(result.first.name, 'Playlist 1');
-      verify(mockMusicService.getUserPlaylists()).called(1);
+      verify(mockApiService.getSavedPlaylists(token)).called(1);
     });
 
-    test('should shuffle playlist', () {
-      const shuffleEnabled = true;
-      when(mockMusicService.setShuffle(shuffleEnabled)).thenReturn(null);
+    test('should search Deezer tracks', () async {
+      const query = 'test song';
+      final mockResponse = SearchTracksResponse(
+        data: [Track(id: 'deezer_1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com', deezerTrackId: '1')],
+      );
+      
+      when(mockApiService.searchDeezerTracks(query))
+          .thenAnswer((_) async => mockResponse);
 
-      mockMusicService.setShuffle(shuffleEnabled);
-      verify(mockMusicService.setShuffle(shuffleEnabled)).called(1);
+      final results = await musicService.searchDeezerTracks(query);
+      expect(results.length, 1);
+      expect(results.first.name, 'Test Song');
+      expect(results.first.isDeezerTrack, true);
+      verify(mockApiService.searchDeezerTracks(query)).called(1);
     });
 
-    test('should set repeat mode', () {
-      const repeatMode = RepeatMode.all;
-      when(mockMusicService.setRepeatMode(repeatMode)).thenReturn(null);
+    test('should get playlist details', () async {
+      const playlistId = '1';
+      const token = 'test-token';
+      final playlist = Playlist(id: '1', name: 'Test Playlist', description: 'Test', isPublic: true, creator: 'user1', tracks: []);
+      final mockResponse = GetPlaylistResponse(playlist: playlist);
+      
+      when(mockApiService.getPlaylist(playlistId, token))
+          .thenAnswer((_) async => mockResponse);
 
-      mockMusicService.setRepeatMode(repeatMode);
-      verify(mockMusicService.setRepeatMode(repeatMode)).called(1);
+      final result = await musicService.getPlaylistDetails(playlistId, token);
+      expect(result.id, '1');
+      expect(result.name, 'Test Playlist');
+      verify(mockApiService.getPlaylist(playlistId, token)).called(1);
     });
 
-    test('should get track lyrics', () async {
-      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
-      const lyrics = 'Test lyrics content';
-      when(mockMusicService.getTrackLyrics(track)).thenAnswer((_) async => lyrics);
+    test('should move track in playlist', () async {
+      const playlistId = 'playlist_1';
+      const token = 'test-token';
+      
+      when(mockApiService.moveTrackInPlaylist(
+          playlistId,
+          token,
+          argThat(isA<MoveTrackRequest>()
+              .having((r) => r.rangeStart, 'rangeStart', 0)
+              .having((r) => r.insertBefore, 'insertBefore', 2))))
+          .thenAnswer((_) async {});
 
-      final result = await mockMusicService.getTrackLyrics(track);
-      expect(result, lyrics);
-      verify(mockMusicService.getTrackLyrics(track)).called(1);
-    });
-
-    test('should get track recommendations', () async {
-      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
-      final recommendations = [Track(id: '2', title: 'Similar Song', artist: 'Similar Artist')];
-      when(mockMusicService.getRecommendations(track)).thenAnswer((_) async => recommendations);
-
-      final result = await mockMusicService.getRecommendations(track);
-      expect(result.length, 1);
-      expect(result.first.title, 'Similar Song');
-      verify(mockMusicService.getRecommendations(track)).called(1);
-    });
-
-    test('should handle playback errors', () async {
-      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
-      when(mockMusicService.playTrack(track)).thenThrow(Exception('Playback failed'));
-
-      expect(() => mockMusicService.playTrack(track), throwsException);
-      verify(mockMusicService.playTrack(track)).called(1);
+      await musicService.moveTrackInPlaylist(
+        playlistId: playlistId,
+        rangeStart: 0,
+        insertBefore: 2,
+        token: token,
+      );
+      
+      verify(mockApiService.moveTrackInPlaylist(playlistId, token, any)).called(1);
     });
   });
 
   group('Track Tests', () {
     test('should create Track instance', () {
-      const track = Track(id: '1', title: 'Test Song', artist: 'Test Artist');
+      const track = Track(
+        id: '1', 
+        name: 'Test Song', 
+        artist: 'Test Artist',
+        album: 'Test Album',
+        url: 'https://test.com'
+      );
       expect(track.id, '1');
-      expect(track.title, 'Test Song');
+      expect(track.name, 'Test Song');
       expect(track.artist, 'Test Artist');
     });
 
-    test('should handle track duration', () {
+    test('should handle Deezer track', () {
       const track = Track(
-        id: '1',
-        title: 'Test Song',
+        id: 'deezer_123',
+        name: 'Test Song',
         artist: 'Test Artist',
-        duration: Duration(minutes: 3, seconds: 30),
+        album: 'Test Album',
+        url: 'https://test.com',
+        deezerTrackId: '123'
       );
-      expect(track.duration?.inSeconds, 210);
+      expect(track.isDeezerTrack, true);
+      expect(track.backendId, '123');
     });
   });
 
   group('Playlist Tests', () {
     test('should create Playlist instance', () {
-      final playlist = Playlist(id: '1', name: 'Test Playlist', tracks: []);
+      const playlist = Playlist(
+        id: '1', 
+        name: 'Test Playlist', 
+        description: 'Test description',
+        isPublic: true,
+        creator: 'user1',
+        tracks: []
+      );
       expect(playlist.id, '1');
       expect(playlist.name, 'Test Playlist');
       expect(playlist.tracks.isEmpty, true);
     });
 
-    test('should add track to playlist', () {
-      final track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
-      final playlist = Playlist(id: '1', name: 'Test Playlist', tracks: []);
+    test('should handle playlist with track', () {
+      const track = Track(id: '1', name: 'Test Song', artist: 'Test Artist', album: 'Test Album', url: 'https://test.com');
+      const playlist = Playlist(
+        id: '1', 
+        name: 'Test Playlist', 
+        description: 'Test description',
+        isPublic: true,
+        creator: 'user1',
+        tracks: [track]
+      );
       
-      playlist.tracks.add(track);
       expect(playlist.tracks.length, 1);
-      expect(playlist.tracks.first.title, 'Test Song');
+      expect(playlist.tracks.first.name, 'Test Song');
+    });
+  });
+
+  group('TrackSortingService Tests', () {
+    test('should sort tracks by name ascending', () {
+      final tracks = [
+        PlaylistTrack(trackId: '1', name: 'C Song', position: 0, points: 0, 
+            track: const Track(id: '1', name: 'C Song', artist: 'Artist', album: 'Album', url: '')),
+        PlaylistTrack(trackId: '2', name: 'A Song', position: 1, points: 0,
+            track: const Track(id: '2', name: 'A Song', artist: 'Artist', album: 'Album', url: '')),
+        PlaylistTrack(trackId: '3', name: 'B Song', position: 2, points: 0,
+            track: const Track(id: '3', name: 'B Song', artist: 'Artist', album: 'Album', url: '')),
+      ];
+
+      final sortOption = TrackSortOption(field: TrackSortField.name, order: SortOrder.ascending);
+      final sorted = TrackSortingService.sortTracks(tracks, sortOption);
+
+      expect(sorted[0].name, 'A Song');
+      expect(sorted[1].name, 'B Song');
+      expect(sorted[2].name, 'C Song');
+    });
+
+    test('should filter tracks by search term', () {
+      final tracks = [
+        PlaylistTrack(trackId: '1', name: 'Rock Song', position: 0, points: 0,
+            track: const Track(id: '1', name: 'Rock Song', artist: 'Rock Band', album: 'Rock Album', url: '')),
+        PlaylistTrack(trackId: '2', name: 'Pop Song', position: 1, points: 0,
+            track: const Track(id: '2', name: 'Pop Song', artist: 'Pop Star', album: 'Pop Album', url: '')),
+        PlaylistTrack(trackId: '3', name: 'Jazz Tune', position: 2, points: 0,
+            track: const Track(id: '3', name: 'Jazz Tune', artist: 'Jazz Ensemble', album: 'Jazz Collection', url: '')),
+      ];
+
+      final filtered = TrackSortingService.filterTracks(tracks, 'rock');
+
+      expect(filtered.length, 1);
+      expect(filtered.first.name, 'Rock Song');
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/screens/base_screens.dart';
 import 'package:music_room/providers/auth_providers.dart';
@@ -7,6 +8,9 @@ import 'package:music_room/providers/music_providers.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
+import 'base_screens_test.mocks.dart';
+
+@GenerateMocks([AuthProvider, MusicProvider])
 
 
 void main() {
@@ -40,7 +44,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -58,7 +62,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -75,7 +79,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -99,7 +103,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -121,7 +125,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -140,7 +144,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -156,7 +160,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -180,7 +184,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -202,7 +206,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -224,7 +228,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -243,7 +247,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -264,7 +268,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -284,7 +288,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -305,7 +309,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -323,7 +327,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -339,7 +343,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -355,7 +359,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -375,7 +379,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -395,7 +399,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -416,7 +420,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -432,7 +436,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(initialIndex: 2),
+            child: TestBaseScreen(initialIndex: 2),
           ),
         ),
       );
@@ -450,7 +454,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );
@@ -475,7 +479,7 @@ void main() {
               ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
               ChangeNotifierProvider<MusicProvider>.value(value: mockMusicProvider),
             ],
-            child: const BaseScreen(),
+            child: TestBaseScreen(),
           ),
         ),
       );

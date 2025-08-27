@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/providers/beacon_providers.dart';
 import 'package:music_room/services/beacon_services.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
+
+import 'beacon_providers_test.mocks.dart';
+
+@GenerateMocks([BeaconService])
 
 void main() {
   group('BeaconProvider', () {
@@ -181,6 +186,7 @@ void main() {
         expect(capturedRegions.length, 1);
         expect(capturedRegions.first.identifier, 'playlist-$playlistId');
         expect(capturedRegions.first.uuid, 'E2C56DB5-DFFB-48D2-B060-D0F5A71096E0');
+        expect(capturedRegions.first.major, 1); // Since 'playlist123' only has 3 digits, it defaults to 1
       });
 
       test('should handle monitoring failure', () async {
@@ -510,19 +516,25 @@ void main() {
 
     group('Dispose', () {
       test('should dispose all subscriptions and service', () async {
+        // Create a new provider instance for this test to avoid double dispose
+        final testProvider = BeaconProvider();
+        
         when(mockBeaconService.initialize()).thenAnswer((_) async => true);
         when(mockBeaconService.dispose()).thenAnswer((_) async {});
 
-        await provider.initializeBeacons();
+        await testProvider.initializeBeacons();
 
-        expect(() => provider.dispose(), returnsNormally);
+        expect(() => testProvider.dispose(), returnsNormally);
         verify(mockBeaconService.dispose()).called(1);
       });
 
       test('should handle dispose when not initialized', () {
+        // Create a new provider instance for this test to avoid double dispose
+        final testProvider = BeaconProvider();
+        
         when(mockBeaconService.dispose()).thenAnswer((_) async {});
 
-        expect(() => provider.dispose(), returnsNormally);
+        expect(() => testProvider.dispose(), returnsNormally);
         verify(mockBeaconService.dispose()).called(1);
       });
     });

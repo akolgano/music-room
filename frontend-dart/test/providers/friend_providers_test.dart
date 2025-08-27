@@ -1,13 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/providers/friend_providers.dart';
 import 'package:music_room/services/api_services.dart';
 import 'package:music_room/models/api_models.dart';
-import 'package:music_room/models/music_models.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 
+import 'friend_providers_test.mocks.dart';
 
+@GenerateMocks([ApiService, FriendService])
 void main() {
   group('FriendProvider Tests', () {
     late FriendProvider friendProvider;

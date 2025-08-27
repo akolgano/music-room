@@ -36,11 +36,6 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
   @override
   List<Widget> get actions => [
     if (_track != null) ...[
-      IconButton(
-        icon: const Icon(Icons.share), 
-        onPressed: _shareTrack, 
-        tooltip: 'Share Track'
-      ),
       PopupMenuButton<String>(
         onSelected: _handleMenuAction,
         itemBuilder: (context) => [
@@ -666,7 +661,4 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
     }
   }
 
-  void _shareTrack() {
-    if (_track != null) showInfo('Sharing "${_track!.name}" by ${_track!.artist}');
-  }
 }

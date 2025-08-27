@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/providers/music_providers.dart';
 import 'package:music_room/services/api_services.dart';
@@ -10,7 +11,9 @@ import 'package:music_room/models/api_models.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 
+import 'music_providers_test.mocks.dart';
 
+@GenerateMocks([ApiService, MusicService, TrackCacheService, AuthProvider])
 void main() {
   group('MusicProvider Tests', () {
     late MusicProvider musicProvider;
@@ -45,223 +48,128 @@ void main() {
     });
 
     test('should initialize with default values', () {
-      expect(musicProvider.currentTrack, isNull);
-      expect(musicProvider.isPlaying, isFalse);
-      expect(musicProvider.currentPosition, Duration.zero);
-      expect(musicProvider.totalDuration, Duration.zero);
-      expect(musicProvider.playlist, isEmpty);
-      expect(musicProvider.currentIndex, -1);
-      expect(musicProvider.isShuffled, isFalse);
-      expect(musicProvider.repeatMode, RepeatMode.none);
+      expect(musicProvider.playlists, isEmpty);
+      expect(musicProvider.userPlaylists, isEmpty);
+      expect(musicProvider.publicPlaylists, isEmpty);
+      expect(musicProvider.searchResults, isEmpty);
+      expect(musicProvider.playlistTracks, isEmpty);
+      expect(musicProvider.hasConnectionError, isFalse);
     });
 
     test('should search tracks successfully', () async {
       final testTracks = [
-        Track(id: '1', title: 'Test Song 1', artist: 'Artist 1', duration: 180),
-        Track(id: '2', title: 'Test Song 2', artist: 'Artist 2', duration: 220),
+        Track(
+          id: '1', 
+          name: 'Test Song 1', 
+          artist: 'Artist 1', 
+          album: 'Album 1',
+          url: 'https://example.com/track1'
+        ),
+        Track(
+          id: '2', 
+          name: 'Test Song 2', 
+          artist: 'Artist 2', 
+          album: 'Album 2',
+          url: 'https://example.com/track2'
+        ),
       ];
       
-      when(mockApiService.searchTracks(any, any)).thenAnswer((_) async => TrackSearchResponse(tracks: testTracks));
+      when(mockMusicService.searchTracks(any, any))
+          .thenAnswer((_) async => testTracks);
       
-      await musicProvider.searchTracks('test query');
+      await musicProvider.searchTracks('test query', 'test_token');
       
       expect(musicProvider.searchResults, hasLength(2));
-      expect(musicProvider.searchResults.first.title, 'Test Song 1');
-      verify(mockApiService.searchTracks('test_token', 'test query')).called(1);
+      expect(musicProvider.searchResults.first.name, 'Test Song 1');
+      verify(mockMusicService.searchTracks('test_token', 'test query')).called(1);
     });
 
     test('should handle search tracks error', () async {
-      when(mockApiService.searchTracks(any, any)).thenThrow(Exception('API Error'));
+      when(mockMusicService.searchTracks(any, any))
+          .thenThrow(Exception('API Error'));
       
-      await musicProvider.searchTracks('test query');
+      await musicProvider.searchTracks('test query', 'test_token');
       
       expect(musicProvider.searchResults, isEmpty);
       expect(musicProvider.hasError, isTrue);
-      verify(mockApiService.searchTracks('test_token', 'test query')).called(1);
+      verify(mockMusicService.searchTracks('test_token', 'test query')).called(1);
     });
 
-    test('should play track successfully', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist', duration: 180);
-      when(mockPlayerService.play(any)).thenAnswer((_) async {});
-      when(mockPlayerService.isPlaying).thenReturn(true);
+    test('should fetch user playlists successfully', () async {
+      final testPlaylists = [
+        Playlist(
+          id: '1',
+          name: 'My Playlist 1',
+          createdAt: DateTime.now(),
+          isPublic: false,
+          owner: User(id: 'user1', username: 'testuser')
+        ),
+        Playlist(
+          id: '2',
+          name: 'My Playlist 2',
+          createdAt: DateTime.now(),
+          isPublic: false,
+          owner: User(id: 'user1', username: 'testuser')
+        ),
+      ];
       
-      await musicProvider.playTrack(track);
+      when(mockMusicService.getUserPlaylists(any))
+          .thenAnswer((_) async => testPlaylists);
       
-      expect(musicProvider.currentTrack, equals(track));
-      expect(musicProvider.isPlaying, isTrue);
-      verify(mockPlayerService.play(track.url)).called(1);
+      await musicProvider.fetchUserPlaylists('test_token');
+      
+      expect(musicProvider.userPlaylists, hasLength(2));
+      expect(musicProvider.userPlaylists.first.name, 'My Playlist 1');
+      verify(mockMusicService.getUserPlaylists('test_token')).called(1);
     });
 
-    test('should handle play track error', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist', duration: 180);
-      when(mockPlayerService.play(any)).thenThrow(Exception('Player Error'));
+    test('should handle fetch user playlists error', () async {
+      when(mockMusicService.getUserPlaylists(any))
+          .thenThrow(Exception('API Error'));
       
-      await musicProvider.playTrack(track);
+      await musicProvider.fetchUserPlaylists('test_token');
       
+      expect(musicProvider.userPlaylists, isEmpty);
       expect(musicProvider.hasError, isTrue);
-      verify(mockPlayerService.play(track.url)).called(1);
+      verify(mockMusicService.getUserPlaylists('test_token')).called(1);
     });
 
-    test('should pause playback successfully', () async {
-      when(mockPlayerService.pause()).thenAnswer((_) async {});
-      when(mockPlayerService.isPlaying).thenReturn(false);
-      
-      await musicProvider.pausePlayback();
-      
-      expect(musicProvider.isPlaying, isFalse);
-      verify(mockPlayerService.pause()).called(1);
-    });
-
-    test('should resume playback successfully', () async {
-      when(mockPlayerService.resume()).thenAnswer((_) async {});
-      when(mockPlayerService.isPlaying).thenReturn(true);
-      
-      await musicProvider.resumePlayback();
-      
-      expect(musicProvider.isPlaying, isTrue);
-      verify(mockPlayerService.resume()).called(1);
-    });
-
-    test('should stop playback successfully', () async {
-      when(mockPlayerService.stop()).thenAnswer((_) async {});
-      when(mockPlayerService.isPlaying).thenReturn(false);
-      
-      await musicProvider.stopPlayback();
-      
-      expect(musicProvider.isPlaying, isFalse);
-      expect(musicProvider.currentTrack, isNull);
-      expect(musicProvider.currentPosition, Duration.zero);
-      verify(mockPlayerService.stop()).called(1);
-    });
-
-    test('should seek to position successfully', () async {
-      const seekPosition = Duration(seconds: 30);
-      when(mockPlayerService.seek(any)).thenAnswer((_) async {});
-      when(mockPlayerService.position).thenReturn(seekPosition);
-      
-      await musicProvider.seekTo(seekPosition);
-      
-      expect(musicProvider.currentPosition, equals(seekPosition));
-      verify(mockPlayerService.seek(seekPosition)).called(1);
-    });
-
-    test('should set volume successfully', () async {
-      const volume = 0.8;
-      when(mockPlayerService.setVolume(any)).thenAnswer((_) async {});
-      
-      await musicProvider.setVolume(volume);
-      
-      verify(mockPlayerService.setVolume(volume)).called(1);
-    });
-
-    test('should load playlist successfully', () async {
-      final testPlaylist = [
-        Track(id: '1', title: 'Song 1', artist: 'Artist 1', duration: 180),
-        Track(id: '2', title: 'Song 2', artist: 'Artist 2', duration: 220),
-        Track(id: '3', title: 'Song 3', artist: 'Artist 3', duration: 200),
+    test('should fetch public playlists successfully', () async {
+      final testPlaylists = [
+        Playlist(
+          id: '1',
+          name: 'Public Playlist 1',
+          createdAt: DateTime.now(),
+          isPublic: true,
+          owner: User(id: 'user1', username: 'publicuser')
+        ),
       ];
       
-      musicProvider.loadPlaylist(testPlaylist);
+      when(mockMusicService.getPublicPlaylists(any))
+          .thenAnswer((_) async => testPlaylists);
       
-      expect(musicProvider.playlist, hasLength(3));
-      expect(musicProvider.playlist.first.title, 'Song 1');
-      expect(musicProvider.currentIndex, -1);
+      await musicProvider.fetchPublicPlaylists('test_token');
+      
+      expect(musicProvider.publicPlaylists, hasLength(1));
+      expect(musicProvider.publicPlaylists.first.name, 'Public Playlist 1');
+      verify(mockMusicService.getPublicPlaylists('test_token')).called(1);
     });
 
-    test('should play next track in playlist', () async {
-      final testPlaylist = [
-        Track(id: '1', title: 'Song 1', artist: 'Artist 1', duration: 180),
-        Track(id: '2', title: 'Song 2', artist: 'Artist 2', duration: 220),
+    test('should clear search results', () async {
+      final testTracks = [
+        Track(
+          id: '1', 
+          name: 'Test Song', 
+          artist: 'Artist', 
+          album: 'Album',
+          url: 'https://example.com/track'
+        ),
       ];
       
-      musicProvider.loadPlaylist(testPlaylist);
-      musicProvider.currentIndex = 0;
+      when(mockMusicService.searchTracks(any, any))
+          .thenAnswer((_) async => testTracks);
       
-      when(mockPlayerService.play(any)).thenAnswer((_) async {});
-      when(mockPlayerService.isPlaying).thenReturn(true);
-      
-      await musicProvider.playNext();
-      
-      expect(musicProvider.currentIndex, 1);
-      expect(musicProvider.currentTrack?.title, 'Song 2');
-      verify(mockPlayerService.play(any)).called(1);
-    });
-
-    test('should play previous track in playlist', () async {
-      final testPlaylist = [
-        Track(id: '1', title: 'Song 1', artist: 'Artist 1', duration: 180),
-        Track(id: '2', title: 'Song 2', artist: 'Artist 2', duration: 220),
-      ];
-      
-      musicProvider.loadPlaylist(testPlaylist);
-      musicProvider.currentIndex = 1;
-      
-      when(mockPlayerService.play(any)).thenAnswer((_) async {});
-      when(mockPlayerService.isPlaying).thenReturn(true);
-      
-      await musicProvider.playPrevious();
-      
-      expect(musicProvider.currentIndex, 0);
-      expect(musicProvider.currentTrack?.title, 'Song 1');
-      verify(mockPlayerService.play(any)).called(1);
-    });
-
-    test('should toggle shuffle mode', () {
-      expect(musicProvider.isShuffled, isFalse);
-      
-      musicProvider.toggleShuffle();
-      expect(musicProvider.isShuffled, isTrue);
-      
-      musicProvider.toggleShuffle();
-      expect(musicProvider.isShuffled, isFalse);
-    });
-
-    test('should cycle repeat modes', () {
-      expect(musicProvider.repeatMode, RepeatMode.none);
-      
-      musicProvider.toggleRepeat();
-      expect(musicProvider.repeatMode, RepeatMode.playlist);
-      
-      musicProvider.toggleRepeat();
-      expect(musicProvider.repeatMode, RepeatMode.track);
-      
-      musicProvider.toggleRepeat();
-      expect(musicProvider.repeatMode, RepeatMode.none);
-    });
-
-    test('should add track to favorites successfully', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist', duration: 180);
-      when(mockApiService.addToFavorites(any, any)).thenAnswer((_) async => FavoriteResponse(success: true));
-      
-      final result = await musicProvider.addToFavorites(track);
-      
-      expect(result, isTrue);
-      verify(mockApiService.addToFavorites('test_token', '1')).called(1);
-    });
-
-    test('should handle add to favorites error', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist', duration: 180);
-      when(mockApiService.addToFavorites(any, any)).thenThrow(Exception('API Error'));
-      
-      final result = await musicProvider.addToFavorites(track);
-      
-      expect(result, isFalse);
-      expect(musicProvider.hasError, isTrue);
-      verify(mockApiService.addToFavorites('test_token', '1')).called(1);
-    });
-
-    test('should remove track from favorites successfully', () async {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist', duration: 180);
-      when(mockApiService.removeFromFavorites(any, any)).thenAnswer((_) async => FavoriteResponse(success: true));
-      
-      final result = await musicProvider.removeFromFavorites(track);
-      
-      expect(result, isTrue);
-      verify(mockApiService.removeFromFavorites('test_token', '1')).called(1);
-    });
-
-    test('should clear search results', () {
-      musicProvider.searchResults.add(Track(id: '1', title: 'Test', artist: 'Artist', duration: 180));
+      await musicProvider.searchTracks('test', 'test_token');
       expect(musicProvider.searchResults, isNotEmpty);
       
       musicProvider.clearSearchResults();
@@ -269,90 +177,151 @@ void main() {
       expect(musicProvider.searchResults, isEmpty);
     });
 
-    test('should get track by id', () {
-      final track = Track(id: '1', title: 'Test Song', artist: 'Test Artist', duration: 180);
-      musicProvider.playlist.add(track);
+    test('should create playlist successfully', () async {
+      final newPlaylist = Playlist(
+        id: '1',
+        name: 'New Playlist',
+        createdAt: DateTime.now(),
+        isPublic: false,
+        owner: User(id: 'user1', username: 'testuser')
+      );
       
-      final foundTrack = musicProvider.getTrackById('1');
-      expect(foundTrack, equals(track));
+      when(mockMusicService.createPlaylist(any, any, any))
+          .thenAnswer((_) async => newPlaylist);
       
-      final notFoundTrack = musicProvider.getTrackById('999');
-      expect(notFoundTrack, isNull);
+      final result = await musicProvider.createPlaylist(
+        'New Playlist', 
+        'test_token',
+        isPublic: false
+      );
+      
+      expect(result, isNotNull);
+      expect(result?.name, 'New Playlist');
+      verify(mockMusicService.createPlaylist('test_token', 'New Playlist', false))
+          .called(1);
     });
 
-    test('should handle playback position updates', () {
-      const newPosition = Duration(seconds: 45);
+    test('should delete playlist successfully', () async {
+      when(mockApiService.deletePlaylist(any, any))
+          .thenAnswer((_) async => true);
       
-      musicProvider.updatePosition(newPosition);
+      final result = await musicProvider.deletePlaylist('playlist1', 'test_token');
       
-      expect(musicProvider.currentPosition, equals(newPosition));
+      expect(result, isTrue);
+      verify(mockApiService.deletePlaylist('test_token', 'playlist1')).called(1);
     });
 
-    test('should handle playback duration updates', () {
-      const newDuration = Duration(seconds: 240);
+    test('should add track to playlist successfully', () async {
+      final track = Track(
+        id: '1', 
+        name: 'Test Song', 
+        artist: 'Artist',
+        album: 'Album',
+        url: 'https://example.com/track'
+      );
       
-      musicProvider.updateDuration(newDuration);
+      when(mockMusicService.addTrackToPlaylist(any, any, any))
+          .thenAnswer((_) async => true);
       
-      expect(musicProvider.totalDuration, equals(newDuration));
+      final result = await musicProvider.addTrackToPlaylist(
+        'playlist1', 
+        track, 
+        'test_token'
+      );
+      
+      expect(result, isTrue);
+      verify(mockMusicService.addTrackToPlaylist('test_token', 'playlist1', track))
+          .called(1);
     });
 
-    test('should handle playback state changes', () {
-      musicProvider.updatePlayingState(true);
-      expect(musicProvider.isPlaying, isTrue);
+    test('should remove track from playlist successfully', () async {
+      when(mockMusicService.removeTrackFromPlaylist(any, any, any))
+          .thenAnswer((_) async => true);
       
-      musicProvider.updatePlayingState(false);
-      expect(musicProvider.isPlaying, isFalse);
+      final result = await musicProvider.removeTrackFromPlaylist(
+        'playlist1', 
+        'track1', 
+        'test_token'
+      );
+      
+      expect(result, isTrue);
+      verify(mockMusicService.removeTrackFromPlaylist(
+        'test_token', 
+        'playlist1', 
+        'track1'
+      )).called(1);
     });
 
-    test('should calculate progress percentage correctly', () {
-      musicProvider.updateDuration(const Duration(seconds: 100));
-      musicProvider.updatePosition(const Duration(seconds: 25));
+    test('should fetch playlist tracks successfully', () async {
+      final testTracks = [
+        PlaylistTrack(
+          id: '1',
+          name: 'Track 1',
+          artist: 'Artist 1',
+          album: 'Album 1',
+          url: 'https://example.com/track1',
+          order: 0,
+          playlistTrackId: 'pt1'
+        ),
+        PlaylistTrack(
+          id: '2',
+          name: 'Track 2',
+          artist: 'Artist 2',
+          album: 'Album 2',
+          url: 'https://example.com/track2',
+          order: 1,
+          playlistTrackId: 'pt2'
+        ),
+      ];
       
-      expect(musicProvider.progressPercentage, 0.25);
+      when(mockMusicService.getPlaylistTracks(any, any))
+          .thenAnswer((_) async => testTracks);
+      
+      await musicProvider.fetchPlaylistTracks('playlist1', 'test_token');
+      
+      expect(musicProvider.playlistTracks, hasLength(2));
+      expect(musicProvider.playlistTracks.first.name, 'Track 1');
+      verify(mockMusicService.getPlaylistTracks('test_token', 'playlist1'))
+          .called(1);
     });
 
-    test('should handle zero duration for progress', () {
-      musicProvider.updateDuration(Duration.zero);
-      musicProvider.updatePosition(const Duration(seconds: 25));
+    test('should update playlist order successfully', () async {
+      final trackIds = ['track1', 'track2', 'track3'];
       
-      expect(musicProvider.progressPercentage, 0.0);
+      when(mockMusicService.updatePlaylistOrder(any, any, any))
+          .thenAnswer((_) async => true);
+      
+      final result = await musicProvider.updatePlaylistOrder(
+        'playlist1', 
+        trackIds, 
+        'test_token'
+      );
+      
+      expect(result, isTrue);
+      verify(mockMusicService.updatePlaylistOrder(
+        'test_token', 
+        'playlist1', 
+        trackIds
+      )).called(1);
+    });
+
+    test('should handle connection errors gracefully', () async {
+      when(mockMusicService.getUserPlaylists(any))
+          .thenThrow(Exception('Connection failed'));
+      
+      await musicProvider.fetchUserPlaylists('test_token');
+      
+      expect(musicProvider.hasError, isTrue);
+      expect(musicProvider.userPlaylists, isEmpty);
     });
 
     test('should notify listeners on state changes', () {
       var notified = false;
       musicProvider.addListener(() => notified = true);
       
-      musicProvider.updatePlayingState(true);
+      musicProvider.clearSearchResults();
       
       expect(notified, isTrue);
     });
   });
 }
-
-class Track {
-  final String id;
-  final String title;
-  final String artist;
-  final int duration;
-  final String? url;
-  
-  Track({
-    required this.id,
-    required this.title,
-    required this.artist,
-    required this.duration,
-    this.url,
-  });
-}
-
-class TrackSearchResponse {
-  final List<Track> tracks;
-  TrackSearchResponse({required this.tracks});
-}
-
-class FavoriteResponse {
-  final bool success;
-  FavoriteResponse({required this.success});
-}
-
-enum RepeatMode { none, playlist, track }

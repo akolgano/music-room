@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/screens/auth/auth_screens.dart';
 import 'package:music_room/providers/auth_providers.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'auth_screens_test.mocks.dart';
+
+@GenerateMocks([AuthProvider])
 
 
 void main() {
@@ -27,14 +32,22 @@ void main() {
       GetIt.instance.reset();
     });
 
-    testWidgets('should render login screen by default', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
+    Widget buildTestWidget(Widget child) {
+      return ScreenUtilInit(
+        designSize: const Size(375, 812),
+        builder: (context, child) => MaterialApp(
           home: ChangeNotifierProvider<AuthProvider>.value(
             value: mockAuthProvider,
-            child: const AuthScreen(),
+            child: child,
           ),
         ),
+        child: child,
+      );
+    }
+
+    testWidgets('should render login screen by default', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildTestWidget(const AuthScreen()),
       );
 
       expect(find.text('Login'), findsOneWidget);
@@ -46,12 +59,7 @@ void main() {
       when(mockAuthProvider.isLoading).thenReturn(true);
       
       await tester.pumpWidget(
-        MaterialApp(
-          home: ChangeNotifierProvider<AuthProvider>.value(
-            value: mockAuthProvider,
-            child: const AuthScreen(),
-          ),
-        ),
+        buildTestWidget(const AuthScreen()),
       );
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -62,12 +70,7 @@ void main() {
       when(mockAuthProvider.errorMessage).thenReturn('Invalid credentials');
       
       await tester.pumpWidget(
-        MaterialApp(
-          home: ChangeNotifierProvider<AuthProvider>.value(
-            value: mockAuthProvider,
-            child: const AuthScreen(),
-          ),
-        ),
+        buildTestWidget(const AuthScreen()),
       );
 
       expect(find.text('Invalid credentials'), findsOneWidget);
@@ -243,7 +246,7 @@ void main() {
     });
 
     testWidgets('should call signup when create account button is pressed', (WidgetTester tester) async {
-      when(mockAuthProvider.signupWithOtp(any, any, any, any)).thenAnswer((_) async => true);
+      when(mockAuthProvider.sendSignupEmailOtp(any)).thenAnswer((_) async => true);
       
       await tester.pumpWidget(
         MaterialApp(
@@ -278,7 +281,6 @@ void main() {
         ),
       );
 
-      final passwordField = find.byType(TextFormField).at(1);
       final visibilityIcon = find.byIcon(Icons.visibility_off);
       
       expect(visibilityIcon, findsOneWidget);

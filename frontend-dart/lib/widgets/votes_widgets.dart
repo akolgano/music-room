@@ -741,10 +741,6 @@ class _CollapsibleVotingSettings extends StatefulWidget {
   final ValueChanged<String> onLicenseTypeChanged;
   final Future<void> Function() onApplyVotingSettings;
   final Future<void> Function(bool) onSelectVotingDateTime;
-  final double? latitude;
-  final double? longitude;
-  final Future<void> Function()? onDetectLocation;
-  final Future<void> Function()? onClearLocation;
   
   const _CollapsibleVotingSettings({
     required this.isPublicVoting,
@@ -755,10 +751,6 @@ class _CollapsibleVotingSettings extends StatefulWidget {
     required this.onLicenseTypeChanged,
     required this.onApplyVotingSettings,
     required this.onSelectVotingDateTime,
-    this.latitude,
-    this.longitude,
-    this.onDetectLocation,
-    this.onClearLocation,
   });
 
   @override
@@ -808,10 +800,6 @@ class _CollapsibleVotingSettingsState extends State<_CollapsibleVotingSettings> 
                     onPublicVotingChanged: widget.onPublicVotingChanged,
                     onLicenseTypeChanged: widget.onLicenseTypeChanged,
                     onSelectVotingDateTime: widget.onSelectVotingDateTime,
-                    latitude: widget.latitude,
-                    longitude: widget.longitude,
-                    onDetectLocation: widget.onDetectLocation,
-                    onClearLocation: widget.onClearLocation,
                   ),
                   const SizedBox(height: 12),
                   AppWidgets.primaryButton(

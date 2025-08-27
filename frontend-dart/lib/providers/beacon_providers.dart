@@ -90,11 +90,16 @@ class BeaconProvider extends BaseProvider {
   Future<bool> startMonitoringPlaylistRegion(String playlistId) async {
     _selectedPlaylistId = playlistId;
     
+    final digitsOnly = playlistId.replaceAll(RegExp(r'\D'), '');
+    final major = digitsOnly.length >= 4 
+        ? (int.tryParse(digitsOnly.substring(0, 4)) ?? 1)
+        : 1;
+    
     final regions = [
       BeaconRegionConfig(
         identifier: 'playlist-$playlistId',
         uuid: 'E2C56DB5-DFFB-48D2-B060-D0F5A71096E0',
-        major: int.tryParse(playlistId.replaceAll(RegExp(r'\D'), '').substring(0, 4)) ?? 1,
+        major: major,
       ),
     ];
 
@@ -158,7 +163,11 @@ class BeaconProvider extends BaseProvider {
   }
 
   BeaconInfo? getBeaconForPlaylist(String playlistId) {
-    final expectedMajor = int.tryParse(playlistId.replaceAll(RegExp(r'\D'), '').substring(0, 4)) ?? 1;
+    final digitsOnly = playlistId.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.isEmpty || digitsOnly.length < 4) {
+      return null;
+    }
+    final expectedMajor = int.tryParse(digitsOnly.substring(0, 4)) ?? 1;
     
     try {
       return _discoveredBeacons.firstWhere(

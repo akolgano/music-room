@@ -1,13 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:music_room/providers/connectivity_providers.dart';
 import 'package:music_room/services/api_services.dart';
 import 'package:music_room/core/locator_core.dart';
 import 'package:get_it/get_it.dart';
 
+import 'connectivity_providers_test.mocks.dart';
+
+@GenerateMocks([ApiService])
 void main() {
   group('ConnectivityProvider', () {
-    late ConnectivityProvider provider;
+    ConnectivityProvider? provider;
     late MockApiService mockApiService;
 
     setUp(() {
@@ -19,9 +23,8 @@ void main() {
     });
 
     tearDown(() {
-      if (provider != null) {
-        provider.dispose();
-      }
+      provider?.dispose();
+      provider = null;
       
       GetIt.instance.reset();
     });
@@ -30,13 +33,13 @@ void main() {
       test('should start with checking status', () {
         provider = ConnectivityProvider();
         
-        expect(provider.connectionStatus, ConnectionStatus.checking);
-        expect(provider.isChecking, isTrue);
-        expect(provider.isConnected, isFalse);
-        expect(provider.isDisconnected, isFalse);
-        expect(provider.lastConnectedTime, isNull);
-        expect(provider.consecutiveFailures, 0);
-        expect(provider.currentCheckInterval, const Duration(seconds: 30));
+        expect(provider!.connectionStatus, ConnectionStatus.checking);
+        expect(provider!.isChecking, isTrue);
+        expect(provider!.isConnected, isFalse);
+        expect(provider!.isDisconnected, isFalse);
+        expect(provider!.lastConnectedTime, isNull);
+        expect(provider!.consecutiveFailures, 0);
+        expect(provider!.currentCheckInterval, const Duration(seconds: 30));
       });
     });
 
@@ -54,10 +57,10 @@ void main() {
       test('should set correct boolean flags for each status', () {
         provider = ConnectivityProvider();
         
-        expect(provider.connectionStatus, ConnectionStatus.checking);
-        expect(provider.isChecking, isTrue);
-        expect(provider.isConnected, isFalse);
-        expect(provider.isDisconnected, isFalse);
+        expect(provider!.connectionStatus, ConnectionStatus.checking);
+        expect(provider!.isChecking, isTrue);
+        expect(provider!.isConnected, isFalse);
+        expect(provider!.isDisconnected, isFalse);
       });
     });
 
@@ -65,13 +68,13 @@ void main() {
       test('should return correct status text for each connection state', () {
         provider = ConnectivityProvider();
         
-        expect(provider.connectionStatusText, 'Checking...');
+        expect(provider!.connectionStatusText, 'Checking...');
       });
 
       test('should provide detailed status text', () {
         provider = ConnectivityProvider();
         
-        expect(provider.detailedStatusText, 'Checking connection...');
+        expect(provider!.detailedStatusText, 'Checking connection...');
       });
     });
 
@@ -173,7 +176,7 @@ void main() {
         provider = ConnectivityProvider();
         
         int notificationCount = 0;
-        provider.addListener(() => notificationCount++);
+        provider!.addListener(() => notificationCount++);
         
         await Future.delayed(const Duration(milliseconds: 200));
         
@@ -184,13 +187,13 @@ void main() {
         provider = ConnectivityProvider();
         
         int notificationCount = 0;
-        provider.addListener(() => notificationCount++);
+        provider!.addListener(() => notificationCount++);
         
-        final currentStatus = provider.connectionStatus;
+        final currentStatus = provider!.connectionStatus;
         
         notificationCount = 0;
         
-        expect(provider.connectionStatus, currentStatus);
+        expect(provider!.connectionStatus, currentStatus);
       });
     });
 
@@ -253,16 +256,17 @@ void main() {
       test('should properly dispose without memory leaks', () {
         provider = ConnectivityProvider();
         
-        provider.addListener(() {});
+        provider!.addListener(() {});
         
-        expect(() => provider.dispose(), returnsNormally);
+        expect(() => provider!.dispose(), returnsNormally);
+        provider = null;
       });
 
       test('should handle dispose called multiple times', () {
-        provider = ConnectivityProvider();
+        final testProvider = ConnectivityProvider();
         
-        provider.dispose();
-        expect(() => provider.dispose(), returnsNormally);
+        testProvider.dispose();
+        expect(() => testProvider.dispose(), returnsNormally);
       });
     });
 
