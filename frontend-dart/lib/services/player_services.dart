@@ -136,10 +136,11 @@ class MusicPlayerService with ChangeNotifier {
   }
 
   Future<void> _playCurrentTrack() async {
-    if (_currentIndex < 0 || _currentIndex >= _playlist.length) return;
+    if (_currentIndex < 0 || _currentIndex >= _playlist.length) {
+      return;
+    }
     
-    _isHandlingCompletion = false; // Reset flag when starting new track
-    
+    _isHandlingCompletion = false;
     final playlistTrack = _playlist[_currentIndex];
     final track = playlistTrack.track;
     
@@ -267,7 +268,6 @@ class MusicPlayerService with ChangeNotifier {
   }
 
   Future<void> _onTrackCompleted() async {
-    // Debounce: ignore if called within 500ms of last completion
     final now = DateTime.now();
     if (_lastCompletionTime != null && 
         now.difference(_lastCompletionTime!).inMilliseconds < 500) {
@@ -296,7 +296,6 @@ class MusicPlayerService with ChangeNotifier {
         await stop();
       }
     } finally {
-      // Reset the flag only after the operation completes
       _isHandlingCompletion = false;
     }
   }

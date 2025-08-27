@@ -1,11 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/providers/voting_providers.dart';
 import 'package:music_room/models/voting_models.dart';
 
 void main() {
   group('VotingProvider Tests', () {
-    late VotingProvider votingProvider;
-
     setUp(() {
       // Skip complex setup - requires service dependencies
     });

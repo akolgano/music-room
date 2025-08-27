@@ -259,14 +259,14 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: SwipeActionWidget(
+              leftAction: const Icon(Icons.favorite, color: Colors.red),
+              onSwipeLeft: () {},
+              onSwipeRight: () {},
               child: Container(
                 width: 200,
                 height: 100,
                 color: Colors.blue,
               ),
-              leftAction: const Icon(Icons.favorite, color: Colors.red),
-              onSwipeLeft: () {},
-              onSwipeRight: () {},
             ),
           ),
         ),
@@ -283,14 +283,14 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: SwipeActionWidget(
+              rightAction: const Icon(Icons.delete, color: Colors.red),
+              onSwipeLeft: () {},
+              onSwipeRight: () {},
               child: Container(
                 width: 200,
                 height: 100,
                 color: Colors.blue,
               ),
-              rightAction: const Icon(Icons.delete, color: Colors.red),
-              onSwipeLeft: () {},
-              onSwipeRight: () {},
             ),
           ),
         ),
@@ -309,14 +309,14 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: SwipeActionWidget(
+              swipeThreshold: 150,
+              onSwipeLeft: () => swipedLeft = true,
+              onSwipeRight: () {},
               child: Container(
                 width: 200,
                 height: 100,
                 color: Colors.blue,
               ),
-              swipeThreshold: 150,
-              onSwipeLeft: () => swipedLeft = true,
-              onSwipeRight: () {},
             ),
           ),
         ),
@@ -505,7 +505,7 @@ class ActionButton extends StatelessWidget {
   final ActionButtonSize size;
 
   const ActionButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.icon,
     this.onPressed,
@@ -513,7 +513,7 @@ class ActionButton extends StatelessWidget {
     this.textColor,
     this.isLoading = false,
     this.size = ActionButtonSize.medium,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -542,14 +542,14 @@ class FloatingPlayButton extends StatelessWidget {
   final bool mini;
 
   const FloatingPlayButton({
-    Key? key,
+    super.key,
     this.isPlaying = false,
     this.onPressed,
     this.icon,
     this.backgroundColor,
     this.isLoading = false,
     this.mini = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -573,14 +573,14 @@ class SwipeActionWidget extends StatelessWidget {
   final double swipeThreshold;
 
   const SwipeActionWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.onSwipeLeft,
     this.onSwipeRight,
     this.leftAction,
     this.rightAction,
     this.swipeThreshold = 100,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -613,11 +613,11 @@ class ActionButtonGroup extends StatelessWidget {
   final double spacing;
 
   const ActionButtonGroup({
-    Key? key,
+    super.key,
     required this.buttons,
     this.direction = Axis.horizontal,
     this.spacing = 8.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

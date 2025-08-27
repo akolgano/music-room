@@ -535,9 +535,7 @@ class AppWidgets {
     required Playlist playlist,
     required VoidCallback onTap,
     VoidCallback? onMorePressed,
-    VoidCallback? onPlay,
     VoidCallback? onDelete,
-    bool showPlayButton = false,
     bool showDeleteButton = false,
     String? currentUsername,
   }) {
@@ -566,11 +564,6 @@ class AppWidgets {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (showPlayButton && onPlay != null)
-                IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: onPlay,
-                ),
               if (showDeleteButton && onDelete != null)
                 IconButton(
                   icon: const Icon(Icons.delete),

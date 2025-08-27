@@ -1,11 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/services/music_services.dart';
 import 'package:music_room/models/music_models.dart';
 
 void main() {
   group('MusicService Tests', () {
-    late MusicService musicService;
-
     setUp(() {
       // Skip API service setup - requires mocking
     });

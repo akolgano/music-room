@@ -1,11 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/providers/music_providers.dart';
 import 'package:music_room/models/music_models.dart';
 
 void main() {
   group('MusicProvider Tests', () {
-    late MusicProvider musicProvider;
-
     setUp(() {
       // Skip complex setup - requires service dependencies
     });

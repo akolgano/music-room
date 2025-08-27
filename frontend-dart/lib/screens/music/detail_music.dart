@@ -212,11 +212,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                     SizedBox(width: 8),
                     Text(
                       'Rate This Track',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ],
                 ),
@@ -226,14 +222,8 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   trackId: _track!.id,
                   trackIndex: 0,
                   isCompact: false,
-                  isInVotingMode: false, // Track detail view (grey thumbs for non-owners)
-                  stats: VoteStats(
-                    totalVotes: 0,
-                    upvotes: 0,
-                    downvotes: 0,
-                    userHasVoted: false,
-                    voteScore: 0.0,
-                  ),
+                  isInVotingMode: false,
+                  stats: VoteStats(totalVotes: 0, upvotes: 0, downvotes: 0, userHasVoted: false, voteScore: 0.0),
                   playlistOwnerId: null,
                 ),
               ],

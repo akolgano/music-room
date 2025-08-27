@@ -1,11 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_room/providers/friend_providers.dart';
 import 'package:music_room/models/api_models.dart';
 
 void main() {
   group('FriendProvider Tests', () {
-    late FriendProvider friendProvider;
-
     setUp(() {
       // Skip complex setup - requires service dependencies
     });
