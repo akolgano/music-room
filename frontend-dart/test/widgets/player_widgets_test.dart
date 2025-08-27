@@ -194,6 +194,9 @@ class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerServic
 
   @override
   void updatePlaylist(List<PlaylistTrack> updatedPlaylist) {}
+
+  @override
+  void clearFailedTracks() {}
 }
 
 void main() {

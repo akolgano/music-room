@@ -144,53 +144,67 @@ class AppWidgets {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) async {
-    final controller = TextEditingController(text: initialValue);
-    final formKey = GlobalKey<FormState>();
-    final result = await showDialog<String>(
+    return await showDialog<String>(
       context: context,
       builder: (ctx) {
+        final controller = TextEditingController(text: initialValue);
+        final formKey = GlobalKey<FormState>();
         final scheme = Theme.of(ctx).colorScheme;
         final defaultBorder = _border(8, Colors.white.withValues(alpha: 0.3), 1);
-        return AlertDialog(
-          backgroundColor: scheme.surface,
-          title: Text(title, style: TextStyle(color: scheme.onSurface)),
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: hintText,
-                filled: true,
-                fillColor: scheme.surface,
-                border: defaultBorder,
-                enabledBorder: defaultBorder,
-                focusedBorder: _border(8, scheme.primary, 2),
-                errorBorder: _border(8, scheme.error, 2),
-                focusedErrorBorder: _border(8, scheme.error, 2),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              style: TextStyle(color: scheme.onSurface),
-              maxLines: maxLines,
-              validator: validator,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.7))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState?.validate() ?? true) Navigator.pop(ctx, controller.text);
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return PopScope(
+              canPop: true,
+              onPopInvokedWithResult: (didPop, result) {
+                if (didPop) {
+                  controller.dispose();
+                }
               },
-              child: const Text('Save'),
+              child: AlertDialog(
+                backgroundColor: scheme.surface,
+                title: Text(title, style: TextStyle(color: scheme.onSurface)),
+                content: Form(
+                key: formKey,
+                child: TextFormField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: hintText,
+                    filled: true,
+                    fillColor: scheme.surface,
+                    border: defaultBorder,
+                    enabledBorder: defaultBorder,
+                    focusedBorder: _border(8, scheme.primary, 2),
+                    errorBorder: _border(8, scheme.error, 2),
+                    focusedErrorBorder: _border(8, scheme.error, 2),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  style: TextStyle(color: scheme.onSurface),
+                  maxLines: maxLines,
+                  validator: validator,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                  },
+                  child: Text('Cancel', style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.7))),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState?.validate() ?? true) {
+                      final text = controller.text;
+                      Navigator.pop(ctx, text);
+                    }
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
             ),
-          ],
-        );
+            );
+          });
       },
     );
-    controller.dispose();
-    return result;
   }
 
   static OutlineInputBorder _border(double radius, Color color, double width) => OutlineInputBorder(
