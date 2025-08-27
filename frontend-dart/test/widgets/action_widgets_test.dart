@@ -65,6 +65,7 @@ void main() {
           home: Scaffold(
             body: AnimatedActionButton(
               onPressed: () {},
+              icon: Icons.add,
             ),
           ),
         ),

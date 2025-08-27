@@ -626,6 +626,7 @@ class PlaylistVotingWidgets {
                         trackId: track.id,
                         trackIndex: index,
                         isCompact: true,
+                        isInVotingMode: true, // This is used in voting mode section
                         stats: VoteStats(
                           totalVotes: playlistTrack.points.toInt(),
                           upvotes: playlistTrack.points.toInt(),
@@ -664,7 +665,7 @@ class PlaylistVotingWidgets {
 class TrackVotingControls extends StatelessWidget {
   final String playlistId, trackId;
   final int trackIndex;
-  final bool isCompact, isEvent;
+  final bool isCompact, isEvent, isInVotingMode;
   final VoteStats stats;
   final VoidCallback? onVoteSubmitted;
   final String? playlistOwnerId;
@@ -678,14 +679,23 @@ class TrackVotingControls extends StatelessWidget {
     this.onVoteSubmitted,
     this.playlistOwnerId,
     this.isEvent = false,
+    this.isInVotingMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final icon = Icon(Icons.thumb_up, color: stats.userHasVoted ? Colors.grey : AppTheme.primary, size: isCompact ? 18 : null);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isOwner = playlistOwnerId != null && authProvider.userId == playlistOwnerId;
+    
+    // Non-owners can only vote when in explicit voting mode (green thumbs up)
+    // Owners can always see voting controls but with grey thumbs up when not in voting mode
+    final canVote = stats.userHasVoted ? false : (isOwner || isInVotingMode);
+    final thumbColor = stats.userHasVoted ? Colors.grey : (isInVotingMode ? AppTheme.primary : Colors.grey);
+    
+    final icon = Icon(Icons.thumb_up, color: thumbColor, size: isCompact ? 18 : null);
     final button = IconButton(
       icon: icon,
-      onPressed: stats.userHasVoted ? null : () => _handleVote(context),
+      onPressed: canVote ? () => _handleVote(context) : null,
       padding: isCompact ? const EdgeInsets.all(4) : null,
       constraints: isCompact ? const BoxConstraints(minWidth: 30, minHeight: 30) : null,
     );
@@ -699,8 +709,16 @@ class TrackVotingControls extends StatelessWidget {
       return;
     }
 
-    final votingProvider = Provider.of<VotingProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final isOwner = playlistOwnerId != null && authProvider.userId == playlistOwnerId;
+    
+    // Additional check: non-owners can only vote in explicit voting mode
+    if (!isOwner && !isInVotingMode) {
+      AppWidgets.showSnackBar(context, 'Voting is only available in voting mode', backgroundColor: Colors.orange);
+      return;
+    }
+
+    final votingProvider = Provider.of<VotingProvider>(context, listen: false);
     final token = authProvider.token;
     
     if (token == null) {
