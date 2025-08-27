@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../providers/music_providers.dart';
 import '../../core/provider_core.dart';
-import '../../core/locator_core.dart';
 import '../../core/navigation_core.dart';
 import '../../widgets/app_widgets.dart'; 
 import '../../widgets/sort_widgets.dart';
 import '../../models/music_models.dart';
 import '../../models/sort_models.dart';
-import '../../services/player_services.dart';
 import '../base_screens.dart';
 
 class AllPlaylistsScreen extends StatefulWidget {
@@ -152,38 +150,6 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
     );
   }
 
-  void _playPlaylist(Playlist playlist) async {
-    if (playlist.tracks.isNotEmpty != true) {
-      showInfo('This playlist is empty or tracks are not loaded');
-      return;
-    }
-
-    try {
-      setState(() {});
-      final musicProvider = getProvider<MusicProvider>();
-      await musicProvider.fetchPlaylistTracks(playlist.id, auth.token!);
-      
-      final playlistTracks = musicProvider.playlistTracks;
-      if (playlistTracks.isEmpty) {
-        showInfo('This playlist has no tracks to play');
-        return;
-      }
-
-      final musicPlayerService = getIt<MusicPlayerService>();
-      await musicPlayerService.setPlaylistAndPlay(
-        playlist: playlistTracks,
-        startIndex: 0,
-        playlistId: playlist.id,
-        authToken: auth.token,
-      );
-      
-      showSuccess('Playing ${playlist.name}');
-    } catch (e) {
-      showError('Failed to play playlist: ${e.toString()}');
-    } finally {
-      setState(() {});
-    }
-  }
   
   void _showSortOptions() {
     showModalBottomSheet(
@@ -318,9 +284,7 @@ class _AllPlaylistsScreenState extends BaseScreen<AllPlaylistsScreen> with Widge
               child: AppWidgets.playlistCard(
                 playlist: playlist,
                 onTap: () => navigateTo(AppRoutes.playlistDetail, arguments: playlist.id),
-                onPlay: () => _playPlaylist(playlist),
                 onDelete: () => _deletePlaylist(playlist),
-                showPlayButton: true,
                 showDeleteButton: true,
                 currentUsername: auth.username,
               ),

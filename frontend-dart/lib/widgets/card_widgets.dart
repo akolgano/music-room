@@ -62,10 +62,8 @@ class AppCardWidgets {
   static Widget playlistCard({
     required Playlist playlist,
     VoidCallback? onTap,
-    VoidCallback? onPlay,
     VoidCallback? onCreatorTap,
     VoidCallback? onDelete,
-    bool showPlayButton = false,
     bool showDeleteButton = false,
     String? currentUsername,
   }) {
@@ -102,12 +100,6 @@ class AppCardWidgets {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (showPlayButton && onPlay != null)
-                IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: onPlay,
-                  tooltip: 'Play Playlist',
-                ),
               if (showDeleteButton && onDelete != null && currentUsername == playlist.creator)
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),

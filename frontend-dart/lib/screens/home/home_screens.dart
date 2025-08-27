@@ -5,8 +5,6 @@ import '../../providers/auth_providers.dart';
 import '../../providers/music_providers.dart';
 import '../../providers/profile_providers.dart';
 import '../../providers/friend_providers.dart';
-import '../../services/player_services.dart';
-import '../../core/locator_core.dart';
 import '../../core/theme_core.dart';
 import '../../core/responsive_core.dart';
 import '../../core/provider_core.dart';
@@ -248,10 +246,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
             ),
           ],
         ),
-        trailing: PulsingContainer(child: IconButton(
-          icon: PulsingIcon(icon: Icons.play_arrow, size: 24),
-          onPressed: () => _playPlaylist(playlist),
-        )),
         onTap: () {
           AppLogger.debug('Navigating to playlist with ID: ${playlist.id}', 'HomeScreen');
           if (playlist.id.isNotEmpty && playlist.id != 'null') {
@@ -643,41 +637,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     }
   }
 
-  void _playPlaylist(Playlist playlist) async {
-    if (playlist.tracks.isNotEmpty != true) {
-      _showInfo('This playlist is empty or tracks are not loaded');
-      return;
-    }
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final token = authProvider.token;
-    
-    try {
-      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-      await musicProvider.fetchPlaylistTracks(playlist.id, token!);
-      
-      final playlistTracks = musicProvider.playlistTracks;
-      if (playlistTracks.isEmpty) {
-        _showInfo('This playlist has no tracks to play');
-        return;
-      }
-
-      final musicPlayerService = getIt<MusicPlayerService>();
-      await musicPlayerService.setPlaylistAndPlay(
-        playlist: playlistTracks,
-        startIndex: 0,
-        playlistId: playlist.id,
-        authToken: token,
-      );
-      
-      if (mounted) AppWidgets.showSnackBar(context, 'Playing ${playlist.name}', backgroundColor: Colors.green);
-    } catch (e) {
-      AppLogger.error('Failed to play playlist', e, null, 'HomeScreen');
-      if (mounted) _showError('Failed to play playlist: ${e.toString()}');
-    }
-  }
-
-  void _showInfo(String message) => AppWidgets.showSnackBar(context, message);
   void _showError(String message) => AppWidgets.showSnackBar(context, message, backgroundColor: AppTheme.error);
 
   @override

@@ -7,12 +7,10 @@ void main() {
   
   group('Service Locator Tests', () {
     setUp(() async {
-      // Reset getIt before each test
       await getIt.reset();
     });
 
     tearDown(() async {
-      // Ensure clean state after each test
       await getIt.reset();
     });
 
@@ -29,11 +27,6 @@ void main() {
       final instance2 = getIt;
       expect(identical(instance1, instance2), isTrue);
     });
-
-    // Skipping this test as it requires platform-specific plugins
-    // test('setupServiceLocator should be callable', () {
-    //   expect(() => setupServiceLocator(), returnsNormally);
-    // });
 
     test('getIt should reset properly', () async {
       getIt.registerSingleton<String>('test');
@@ -101,7 +94,6 @@ void main() {
         () => DisposableService(() => disposed = true),
         dispose: (service) => service.onDispose(),
       );
-      // Force instantiation
       getIt<DisposableService>();
       expect(disposed, isFalse);
       getIt.resetLazySingleton<DisposableService>();
@@ -139,18 +131,6 @@ void main() {
       await getIt.popScope();
       expect(disposed, isTrue);
     });
-
-    // Skipping this test as it requires platform-specific plugins
-    // test('setupServiceLocator should initialize all required services', () {
-    //   setupServiceLocator();
-    //   expect(getIt, isNotNull);
-    // });
-
-    // Skipping this test as it requires platform-specific plugins
-    // test('setupServiceLocator should handle multiple calls', () {
-    //   setupServiceLocator();
-    //   expect(() => setupServiceLocator(), returnsNormally);
-    // });
 
     test('getIt should handle concurrent access', () async {
       getIt.registerFactory<String>(() => 'concurrent');
@@ -209,13 +189,6 @@ void main() {
       final service = getIt<TestService>();
       expect(service.dependency, equals('async dependency'));
     });
-
-    // Skipping this test as it requires platform-specific plugins
-    // test('setupServiceLocator should be idempotent', () {
-    //   setupServiceLocator();
-    //   setupServiceLocator();
-    //   expect(true, isTrue);
-    // });
   });
 }
 

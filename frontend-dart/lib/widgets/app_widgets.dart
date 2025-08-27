@@ -196,14 +196,8 @@ class TrackCardWidget extends StatelessWidget {
                             playlistId: playlistId!,
                             trackId: track.id,
                             trackIndex: 0,
-                            isInVotingMode: false, // Regular playlist view (grey thumbs)
-                            stats: VoteStats(
-                              totalVotes: 0,
-                              upvotes: 0,
-                              downvotes: 0,
-                              userHasVoted: false,
-                              voteScore: 0.0,
-                            ),
+                            isInVotingMode: false,
+                            stats: VoteStats(totalVotes: 0, upvotes: 0, downvotes: 0, userHasVoted: false, voteScore: 0.0),
                             playlistOwnerId: playlistOwnerId,
                           ),
                         ),

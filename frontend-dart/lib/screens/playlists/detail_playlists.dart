@@ -256,7 +256,6 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
                     ),
                   ],
                 ),
-                // Only show sort indicator for non-default sorts (and only for event playlists if it's votes-related)
                 if (currentSort.field != TrackSortField.position && 
                     (currentSort.field != TrackSortField.points || _playlist?.isEvent == true)) ...[
                   const SizedBox(height: 4),

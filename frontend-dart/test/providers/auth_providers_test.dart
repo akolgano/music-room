@@ -89,7 +89,6 @@ class TestAuthService implements AuthService {
 class TestApiService implements ApiService {
   @override
   dynamic noSuchMethod(Invocation invocation) {
-    // Return appropriate default values for missing methods
     if (invocation.isMethod) {
       return Future.value();
     }
@@ -102,13 +101,7 @@ class TestApiService implements ApiService {
   @override
   String get baseUrl => 'http://test.com';
   
-  String? _authToken;
-  
-  String? get authToken => _authToken;
-  
-  set authToken(String? token) {
-    _authToken = token;
-  }
+  String? authToken;
   
   @override
   Future<void> forgotPassword(ForgotPasswordRequest data) async {}
@@ -155,6 +148,7 @@ class TestApiService implements ApiService {
   
   Future<List<User>> getUsers() async => [];
   
+  @override
   Future<UserResponse> getUser(String token) async {
     throw UnimplementedError();
   }
@@ -246,17 +240,6 @@ class TestApiService implements ApiService {
   
   Future<void> updateServerConfig(Map<String, dynamic> config) async {}
   
-  Future<List<Map<String, dynamic>>> getBeacons() async => [];
-  
-  Future<void> createBeacon(Map<String, dynamic> data) async {}
-  
-  Future<void> updateBeacon(String beaconId, Map<String, dynamic> data) async {}
-  
-  Future<void> deleteBeacon(String beaconId) async {}
-  
-  Future<List<Map<String, dynamic>>> getBeaconLogs(String beaconId) async => [];
-  
-  Future<void> testBeacon(String beaconId) async {}
   
   Future<Map<String, dynamic>> getLocation() async => {};
   
@@ -338,6 +321,7 @@ class TestWebSocketService implements WebSocketService {
 }
 
 class TestFrontendLoggingService implements FrontendLoggingService {
+  @override
   void updateUserId(String? userId) {}
   
   void log(String message, {LogLevel? level, Map<String, dynamic>? extra}) {}
@@ -346,13 +330,10 @@ class TestFrontendLoggingService implements FrontendLoggingService {
   
   void info(String message, {Map<String, dynamic>? extra}) {}
   
-  @override
   void warning(String message, {Map<String, dynamic>? extra}) {}
   
-  @override
   void error(String message, {dynamic error, StackTrace? stackTrace, Map<String, dynamic>? extra}) {}
   
-  @override
   void critical(String message, {dynamic error, StackTrace? stackTrace, Map<String, dynamic>? extra}) {}
   
   @override
@@ -398,7 +379,6 @@ class TestFrontendLoggingService implements FrontendLoggingService {
 class TestMusicPlayerService with ChangeNotifier implements MusicPlayerService {
   @override
   dynamic noSuchMethod(Invocation invocation) {
-    // Return appropriate default values for missing methods/properties
     if (invocation.isGetter) {
       return null;
     }
@@ -417,7 +397,6 @@ class TestMusicPlayerService with ChangeNotifier implements MusicPlayerService {
   @override
   Future<void> pause() async {}
   
-  @override
   Future<void> resume() async {}
   
   @override
@@ -439,9 +418,6 @@ class TestMusicPlayerService with ChangeNotifier implements MusicPlayerService {
   
   @override
   Duration get duration => Duration.zero;
-  
-  @override
-  void dispose() {}
 }
 
 void main() {

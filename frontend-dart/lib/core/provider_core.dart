@@ -230,7 +230,6 @@ class AppRoutes {
   static const String signupOtp = '/signup_otp';
   static const String userPage = '/user_page';
   static const String adminDashboard = '/admin_dashboard';
-  static const String beaconAdmin = '/beacon_admin';
 }
 
 class FormatUtils {

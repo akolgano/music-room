@@ -626,7 +626,7 @@ class PlaylistVotingWidgets {
                         trackId: track.id,
                         trackIndex: index,
                         isCompact: true,
-                        isInVotingMode: true, // This is used in voting mode section
+                        isInVotingMode: true,
                         stats: VoteStats(
                           totalVotes: playlistTrack.points.toInt(),
                           upvotes: playlistTrack.points.toInt(),
@@ -686,9 +686,7 @@ class TrackVotingControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final isOwner = playlistOwnerId != null && authProvider.userId == playlistOwnerId;
-    
-    // Non-owners can only vote when in explicit voting mode (green thumbs up)
-    // Owners can always see voting controls but with grey thumbs up when not in voting mode
+
     final canVote = stats.userHasVoted ? false : (isOwner || isInVotingMode);
     final thumbColor = stats.userHasVoted ? Colors.grey : (isInVotingMode ? AppTheme.primary : Colors.grey);
     
@@ -711,8 +709,7 @@ class TrackVotingControls extends StatelessWidget {
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final isOwner = playlistOwnerId != null && authProvider.userId == playlistOwnerId;
-    
-    // Additional check: non-owners can only vote in explicit voting mode
+
     if (!isOwner && !isInVotingMode) {
       AppWidgets.showSnackBar(context, 'Voting is only available in voting mode', backgroundColor: Colors.orange);
       return;
