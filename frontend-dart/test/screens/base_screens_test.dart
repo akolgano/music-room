@@ -27,20 +27,6 @@ void main() {
       );
     }
 
-    testWidgets('should render BaseScreen', (WidgetTester tester) async {
-      // Skip test - BaseScreen is abstract and cannot be instantiated
-    }, skip: true);
-
-    testWidgets('should show navigation structure', (WidgetTester tester) async {
-      // Skip test - requires navigation setup
-    }, skip: true);
-
-    testWidgets('should handle screen transitions', (WidgetTester tester) async {
-      // Skip test - requires provider state setup
-    }, skip: true);
-
-    testWidgets('should show bottom navigation', (WidgetTester tester) async {
-      // Skip test - requires navigation component setup
-    }, skip: true);
+    // All tests removed - were skipped and requiring extensive mocking
   });
 }

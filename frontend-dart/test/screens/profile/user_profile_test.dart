@@ -32,24 +32,6 @@ void main() {
       expect(find.byType(Container), findsOneWidget); // UserProfileScreen does not exist
     });
 
-    testWidgets('should display user profile information', (WidgetTester tester) async {
-      // Skip test - requires provider state setup
-    }, skip: true);
-
-    testWidgets('should show friend request button', (WidgetTester tester) async {
-      // Skip test - requires provider state setup
-    }, skip: true);
-
-    testWidgets('should handle friend request actions', (WidgetTester tester) async {
-      // Skip test - requires provider state setup
-    }, skip: true);
-
-    testWidgets('should show user avatar', (WidgetTester tester) async {
-      // Skip test - requires provider state setup
-    }, skip: true);
-
-    testWidgets('should show user playlists', (WidgetTester tester) async {
-      // Skip test - requires provider state setup
-    }, skip: true);
+    // Skipped user profile tests removed - required provider state setup
   });
 }

@@ -10,9 +10,7 @@ void main() {
       // Skip complex setup - requires service dependencies
     });
 
-    test('should create FriendProvider instance', () {
-      // Skip test - requires service dependencies
-    }, skip: true);
+    // FriendProvider instance test removed - requires service dependencies
 
     test('should handle friend data models', () {
       final friend = Friend(
@@ -26,13 +24,6 @@ void main() {
       expect(friend.email, 'friend@example.com');
     });
 
-    test('should handle friend request models', () {
-      // Skip test - FriendRequest class and RequestStatus enum do not exist
-    }, skip: true);
-
-    test('should validate friend operations', () {
-      // Skip test - static methods isValidUsername and canSendRequest do not exist in FriendProvider
-      // FriendStatus enum also does not exist
-    }, skip: true);
+    // Friend request and validation tests removed - classes/methods don't exist
   });
 }

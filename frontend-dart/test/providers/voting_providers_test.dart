@@ -10,9 +10,7 @@ void main() {
       // Skip complex setup - requires service dependencies
     });
 
-    test('should create VotingProvider instance', () {
-      // Skip test - requires service dependencies
-    }, skip: true);
+    // VotingProvider instance test removed - requires service dependencies
 
     test('should handle voting models', () {
       final vote = Vote(
@@ -29,8 +27,6 @@ void main() {
       expect(vote.voteValue, 1);
     });
 
-    test('should validate voting operations', () {
-      // Skip test - static method canUserVote does not exist in VotingProvider
-    }, skip: true);
+    // Voting validation test removed - method doesn't exist
   });
 }

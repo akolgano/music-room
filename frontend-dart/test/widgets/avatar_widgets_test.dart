@@ -48,9 +48,7 @@ void main() {
       expect(find.byType(ProfileAvatarWidget), findsOneWidget);
     });
 
-    testWidgets('should show loading state when isLoading is true', (WidgetTester tester) async {
-      // Skip test - requires provider state mocking
-    }, skip: true);
+    // Loading state test removed - requires provider state mocking
 
     testWidgets('should display default avatar when no profile picture', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
@@ -58,9 +56,7 @@ void main() {
       expect(find.byType(ProfileAvatarWidget), findsOneWidget);
     });
 
-    testWidgets('should display profile picture when available', (WidgetTester tester) async {
-      // Skip test - requires provider state setup
-    }, skip: true);
+    // Profile picture display test removed - requires provider state setup
 
     testWidgets('should be tappable when not loading', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
@@ -71,9 +67,7 @@ void main() {
       await tester.pump();
     });
 
-    testWidgets('should not be tappable when loading', (WidgetTester tester) async {
-      // Skip test - requires loading state control
-    }, skip: true);
+    // Loading tap interaction test removed - requires loading state control
 
     testWidgets('should handle tap interaction correctly', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
@@ -104,9 +98,7 @@ void main() {
       expect(find.byType(GestureDetector), findsOneWidget);
     });
 
-    testWidgets('should update when profile picture changes', (WidgetTester tester) async {
-      // Skip test - requires provider state changes
-    }, skip: true);
+    // Profile picture update test removed - requires provider state changes
 
     testWidgets('should handle different avatar sizes', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(

@@ -10,9 +10,7 @@ void main() {
       // Skip complex setup - requires service dependencies
     });
 
-    test('should create MusicProvider instance', () {
-      // Skip test - requires service dependencies
-    }, skip: true);
+    // MusicProvider instance test removed - requires service dependencies
 
     test('should handle music track models', () {
       final track = Track(
@@ -30,8 +28,6 @@ void main() {
       expect(track.url, 'https://example.com/track/1');
     });
 
-    test('should validate music search queries', () {
-      // Skip test - static method isValidSearchQuery does not exist in MusicProvider
-    }, skip: true);
+    // Search query validation test removed - method doesn't exist
   });
 }

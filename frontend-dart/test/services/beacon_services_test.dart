@@ -252,24 +252,8 @@ void main() {
       expect(beaconService.scanningStateStream, isNotNull);
     });
 
-    test('should create region config', () {
-      // Skip test - method createRegionConfig does not exist in BeaconService
-    }, skip: true);
+    // Skipped beacon configuration tests removed - methods don't exist
 
-    test('should create region config without major and minor', () {
-      // Skip test - method createRegionConfig does not exist in BeaconService
-    }, skip: true);
-
-    test('should get beacon by identifier', () {
-      // Skip test - method getBeaconByIdentifier does not exist in BeaconService
-    }, skip: true);
-
-    test('should filter beacons by proximity', () {
-      // Skip test - method getBeaconsByProximity does not exist in BeaconService
-    }, skip: true);
-
-    test('should get strongest beacon', () {
-      // Skip test - method getStrongestBeacon does not exist in BeaconService
-    }, skip: true);
+    // Final skipped test removed - getStrongestBeacon method doesn't exist
   });
 }

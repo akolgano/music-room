@@ -226,6 +226,7 @@ class _TrackDetailScreenState extends BaseScreen<TrackDetailScreen> {
                   trackId: _track!.id,
                   trackIndex: 0,
                   isCompact: false,
+                  isInVotingMode: false, // Track detail view (grey thumbs for non-owners)
                   stats: VoteStats(
                     totalVotes: 0,
                     upvotes: 0,
