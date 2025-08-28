@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/services/location_services.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('LocationService Tests', () {
     late LocationService locationService;
 
@@ -12,7 +14,5 @@ void main() {
     test('should create LocationService instance', () {
       expect(locationService, isA<LocationService>());
     });
-
-    // All other tests removed - were skipped and requiring external location dependencies
   });
 }

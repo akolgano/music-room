@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/social_core.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('SocialLoginUtils Tests', () {
     test('SocialLoginUtils should have initialize method', () {
       expect(SocialLoginUtils.initialize, isA<Function>());

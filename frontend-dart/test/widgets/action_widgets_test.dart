@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/widgets/action_widgets.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('TrackActionsWidget Tests', () {
     testWidgets('should render with play button', (WidgetTester tester) async {
       await tester.pumpWidget(

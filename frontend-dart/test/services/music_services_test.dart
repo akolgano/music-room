@@ -2,12 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/music_models.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('MusicService Tests', () {
     setUp(() {
-      // Skip API service setup - requires mocking
     });
-
-    // Skipped MusicService tests removed - required API mocking or non-existent methods
 
     test('should handle track data models', () {
       final track = Track(
@@ -24,8 +23,6 @@ void main() {
       expect(track.album, 'Test Album');
       expect(track.url, 'https://music.example.com/track/1');
     });
-
-    // Album test removed - class does not exist
 
     test('should handle playlist data models', () {
       final playlist = Playlist(

@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/responsive_core.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('MusicAppResponsive Tests', () {
     testWidgets('should determine screen size correctly', (WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(300, 600));

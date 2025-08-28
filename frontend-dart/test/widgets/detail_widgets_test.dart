@@ -13,6 +13,7 @@ class MockVotingProvider extends VotingProvider {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('PlaylistDetailWidgets', () {
     late MockDynamicThemeProvider mockThemeProvider;
     late MockVotingProvider mockVotingProvider;

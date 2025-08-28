@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/widgets/core_widgets.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('DialogWidgets Tests', () {
     testWidgets('showTextInputDialog displays correct title and hint text', (WidgetTester tester) async {
       await tester.pumpWidget(

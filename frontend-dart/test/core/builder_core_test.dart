@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/builder_core.dart';
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('App Builder Tests', () {
     test('AppBuilder should be properly configured', () {
       expect(AppBuilder, isA<Type>());

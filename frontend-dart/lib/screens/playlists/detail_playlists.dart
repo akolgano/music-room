@@ -321,12 +321,15 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
   }
 
   Widget _buildTracksList(List<PlaylistTrack> tracks, TrackSortOption currentSort) {
-    
-    return ListView.builder(
-      shrinkWrap: true, 
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: tracks.length,
-      itemBuilder: (context, index) => _buildTrackItemSafely(tracks, index),
+    return Consumer<MusicPlayerService>(
+      builder: (context, playerService, _) {
+        return ListView.builder(
+          shrinkWrap: true, 
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: tracks.length,
+          itemBuilder: (context, index) => _buildTrackItemSafely(tracks, index),
+        );
+      },
     );
   }
 
@@ -348,9 +351,16 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final musicProvider = getProvider<MusicProvider>();
     final sortedTracks = musicProvider.sortedPlaylistTracks;
     
+    final playerService = getProvider<MusicPlayerService>(listen: false);
+    final isCurrentlyPlaying = playerService.isPlaying && playerService.playlistId == widget.playlistId;
+    
     final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
     final bool canRemoveTrack = canModifyTracks && 
         !((_playlist?.isEvent ?? false) && playlistTrack.points > 0);
+    
+    final bool canReorderTracks = canModifyTracks && 
+        !isCurrentlyPlaying && 
+        musicProvider.currentSortOption.field == TrackSortField.position;
     
     return PlaylistDetailWidgets.buildTrackItem(
       context: context,
@@ -359,9 +369,9 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
       isOwner: _canEditPlaylist,
       onPlay: () => _playTrackAt(index),
       onRemove: canRemoveTrack ? () => _removeTrack(playlistTrack.trackId) : null,
-      onMoveUp: canModifyTracks && index > 0 ? () => _moveTrackWithSortCheck(index, index - 1) : null,
-      onMoveDown: canModifyTracks && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
-      canReorder: canModifyTracks,
+      onMoveUp: canReorderTracks && index > 0 ? () => _moveTrackWithSortCheck(index, index - 1) : null,
+      onMoveDown: canReorderTracks && index < sortedTracks.length - 1 ? () => _moveTrackWithSortCheck(index, index + 1) : null,
+      canReorder: canReorderTracks,
       playlistId: widget.playlistId,
       playlistOwnerId: _playlist?.creator,
       isEvent: _playlist?.isEvent ?? false,
@@ -745,6 +755,20 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
     if (!canModifyTracks) return;
     
+    final playerService = getProvider<MusicPlayerService>(listen: false);
+    if (playerService.isPlaying && playerService.playlistId == widget.playlistId) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Cannot reorder tracks while music is playing. Please stop playback first.'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+    
     final musicProvider = getProvider<MusicProvider>();
     final currentSort = musicProvider.currentSortOption;
     
@@ -769,6 +793,13 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
 
   Future<void> _moveTrack(int fromIndex, int toIndex) async {
     if (!mounted || fromIndex == toIndex || fromIndex < 0 || toIndex < 0) return;
+    
+    final playerService = getProvider<MusicPlayerService>(listen: false);
+    if (playerService.isPlaying && playerService.playlistId == widget.playlistId) {
+      AppLogger.warning('Attempted to move track while music is playing', 'PlaylistDetailScreen');
+      return;
+    }
+    
     final sortedTracks = getProvider<MusicProvider>().sortedPlaylistTracks;
     if (fromIndex >= sortedTracks.length || toIndex >= sortedTracks.length) return;
     try {

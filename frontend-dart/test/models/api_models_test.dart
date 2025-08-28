@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/api_models.dart';
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('API Models Tests', () {
     group('LoginRequest', () {
       test('should serialize to JSON correctly', () {

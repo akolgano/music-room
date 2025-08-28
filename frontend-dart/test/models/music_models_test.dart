@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/music_models.dart';
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('Music Models Tests', () {
     group('User', () {
       test('should create User from JSON', () {

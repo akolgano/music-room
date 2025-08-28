@@ -39,6 +39,8 @@ class TestProvider extends BaseProvider {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('BaseProvider', () {
     late TestProvider provider;
 

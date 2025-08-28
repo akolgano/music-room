@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/widgets/core_widgets.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('AppWidgets', () {
     testWidgets('loading widget should display CircularProgressIndicator', (tester) async {
       await tester.pumpWidget(

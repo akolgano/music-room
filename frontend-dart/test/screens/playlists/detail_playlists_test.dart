@@ -95,6 +95,7 @@ class MockVotingProvider extends VotingProvider {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('PlaylistDetailScreen', () {
     late MockAuthProvider mockAuthProvider;
     late MockMusicProvider mockMusicProvider;

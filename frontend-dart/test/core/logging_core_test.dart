@@ -35,6 +35,8 @@ class _TestWidgetWithLoggingState extends State<TestWidgetWithLogging> with User
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('UserActionLoggingMixin Tests', () {
     testWidgets('should create logging icon button', (WidgetTester tester) async {
       await tester.pumpWidget(

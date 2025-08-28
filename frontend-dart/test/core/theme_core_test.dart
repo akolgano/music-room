@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/theme_core.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('Theme Utils Tests', () {
     test('AppTheme should provide dark theme data', () {
       final darkTheme = AppTheme.darkTheme;

@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/provider_core.dart';
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('AppConstants Tests', () {
     test('AppConstants should have correct values', () {
       expect(AppConstants.appName, 'Music Room');

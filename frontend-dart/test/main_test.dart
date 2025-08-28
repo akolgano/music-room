@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/main.dart' as app;
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('Main App Tests', () {
     test('should have main function available', () {
       expect(app.main, isA<Function>());
