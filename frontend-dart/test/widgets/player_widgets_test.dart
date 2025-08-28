@@ -200,6 +200,8 @@ class MockMusicPlayerService extends ChangeNotifier implements MusicPlayerServic
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('MiniPlayerWidget', () {
     late MockMusicPlayerService mockPlayerService;
 

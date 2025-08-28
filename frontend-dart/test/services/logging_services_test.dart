@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/services/logging_services.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('FrontendLoggingService Tests', () {
     late FrontendLoggingService loggingService;
 
@@ -15,7 +17,6 @@ void main() {
 
     test('should handle user ID updates', () {
       loggingService.updateUserId('testUser123');
-      // Since these are private properties, we can only test that no exception is thrown
       expect(() => loggingService.updateUserId('testUser123'), returnsNormally);
     });
 
@@ -90,7 +91,7 @@ void main() {
       expect(event.id, equals('test-id'));
       expect(event.actionType, equals(UserActionType.buttonClick));
       expect(event.description, equals('Test button click'));
-      expect(event.level, equals(LogLevel.info)); // default value
+      expect(event.level, equals(LogLevel.info));
     });
 
     test('should convert to JSON correctly', () {

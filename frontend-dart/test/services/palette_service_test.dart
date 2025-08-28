@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:music_room/services/palette_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('ColorPalette', () {
     test('should create ColorPalette with default null values', () {
       const palette = ColorPalette();

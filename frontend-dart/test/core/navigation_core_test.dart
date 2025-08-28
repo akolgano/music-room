@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/core/navigation_core.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('LoggingNavigationObserver Tests', () {
     late LoggingNavigationObserver observer;
 

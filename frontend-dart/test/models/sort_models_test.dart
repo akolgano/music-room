@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/sort_models.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('TrackSortOption Tests', () {
     test('should provide correct default options', () {
       final defaultOptions = TrackSortOption.defaultOptions;

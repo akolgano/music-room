@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:music_room/widgets/app_widgets.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('App Widgets Tests', () {
     test('AppWidgets should provide color scheme utilities', () {
       expect(AppWidgets, isA<Type>());

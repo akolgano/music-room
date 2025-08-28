@@ -10,6 +10,8 @@ class TestTickerProvider extends TickerProvider {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('AnimationSettingsProvider', () {
     late AnimationSettingsProvider provider;
 

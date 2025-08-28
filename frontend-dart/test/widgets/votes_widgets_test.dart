@@ -2,9 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:music_room/models/voting_models.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('PlaylistVotingWidgets', () {
-    // Widget tests removed - required complex provider state setup with GetIt dependencies
-    // Focusing on simple model tests only
 
     test('should handle voting data models', () {
       final vote = Vote(

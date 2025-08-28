@@ -3,6 +3,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:music_room/services/auth_services.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('GoogleSignInCore Tests', () {
     test('should have GoogleSignIn instance getter', () {
       expect(GoogleSignInCore.instance, isNotNull);

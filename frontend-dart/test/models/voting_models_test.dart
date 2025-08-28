@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:music_room/models/voting_models.dart';
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('Voting Models Tests', () {
     test('VoteStats should track vote counts correctly', () {
       const voteStats = VoteStats(

@@ -421,6 +421,8 @@ class TestMusicPlayerService with ChangeNotifier implements MusicPlayerService {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('AuthProvider Tests', () {
     late AuthProvider authProvider;
     late TestAuthService testAuthService;

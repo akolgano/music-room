@@ -4,6 +4,8 @@ import 'package:music_room/providers/theme_providers.dart';
 import 'package:music_room/core/theme_core.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('DynamicThemeProvider', () {
     late DynamicThemeProvider provider;
 
@@ -103,7 +105,7 @@ void main() {
       try {
         await provider.extractAndApplyDominantColor('https://invalid-url.com/image.jpg');
       } catch (e) {
-        // Expected to fail with invalid URL
+        // Expected to throw exception for invalid URL
       }
 
       expect(provider.isExtracting, isFalse);
