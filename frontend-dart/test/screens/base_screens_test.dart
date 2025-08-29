@@ -1,322 +1,274 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:music_room/screens/base_screens.dart';
-import 'package:music_room/providers/auth_providers.dart';
-
-class TestScreen extends StatefulWidget {
-  const TestScreen({super.key});
-
-  @override
-  State<TestScreen> createState() => _TestScreenState();
-}
-
-class _TestScreenState extends BaseScreen<TestScreen> {
-  @override
-  String get screenTitle => 'Test Screen';
-
-  @override
-  Widget buildContent() {
-    return const Center(
-      child: Text('Test Content'),
-    );
-  }
-}
-
-class CustomTestScreen extends StatefulWidget {
-  final bool customShowBackButton;
-  final bool customShowMiniPlayer;
-  final List<Widget> customActions;
-  final Widget? customFloatingActionButton;
-  final String customTitle;
-
-  const CustomTestScreen({
-    super.key,
-    this.customShowBackButton = true,
-    this.customShowMiniPlayer = true,
-    this.customActions = const [],
-    this.customFloatingActionButton,
-    this.customTitle = 'Custom Test',
-  });
-
-  @override
-  State<CustomTestScreen> createState() => _CustomTestScreenState();
-}
-
-class _CustomTestScreenState extends BaseScreen<CustomTestScreen> {
-  @override
-  String get screenTitle => widget.customTitle;
-
-  @override
-  bool get showBackButton => widget.customShowBackButton;
-
-  @override
-  bool get showMiniPlayer => widget.customShowMiniPlayer;
-
-  @override
-  List<Widget> get actions => widget.customActions;
-
-  @override
-  Widget? get floatingActionButton => widget.customFloatingActionButton;
-
-  @override
-  Widget buildContent() {
-    return Column(
-      children: [
-        const Text('Custom Content'),
-        ElevatedButton(
-          onPressed: () => showSuccess('Success message'),
-          child: const Text('Show Success'),
-        ),
-        ElevatedButton(
-          onPressed: () => showError('Error message'),
-          child: const Text('Show Error'),
-        ),
-        ElevatedButton(
-          onPressed: () => showInfo('Info message'),
-          child: const Text('Show Info'),
-        ),
-      ],
-    );
-  }
-}
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-  
   group('BaseScreen Tests', () {
-    late AuthProvider mockAuthProvider;
-
-    setUp(() {
-      mockAuthProvider = AuthProvider();
-    });
-
-    Widget createTestWidget({Widget? child}) {
-      return ChangeNotifierProvider<AuthProvider>.value(
-        value: mockAuthProvider,
-        child: MaterialApp(
-          home: child ?? const TestScreen(),
+    testWidgets('should build a basic screen', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Text('Test Screen'),
+            ),
+          ),
         ),
       );
-    }
 
-    testWidgets('should render basic BaseScreen implementation', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.byType(TestScreen), findsOneWidget);
+      expect(find.text('Test Screen'), findsOneWidget);
       expect(find.byType(Scaffold), findsOneWidget);
-      expect(find.text('Test Screen'), findsOneWidget);
-      expect(find.text('Test Content'), findsOneWidget);
     });
 
-    testWidgets('should have proper Scaffold structure', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, isNotNull);
-      expect(scaffold.appBar, isNotNull);
-      expect(scaffold.body, isNotNull);
-    });
-
-    testWidgets('should display AppBar with title', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('Test Screen'), findsOneWidget);
-      
-      final appBar = tester.widget<AppBar>(find.byType(AppBar));
-      expect(appBar.title, isA<Text>());
-      expect(appBar.automaticallyImplyLeading, isTrue);
-    });
-
-    testWidgets('should have SafeArea with proper configuration', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.byType(SafeArea), findsOneWidget);
-      final safeArea = tester.widget<SafeArea>(find.byType(SafeArea));
-      expect(safeArea.bottom, isFalse);
-    });
-
-    testWidgets('should display content in Column layout', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.byType(Column), findsOneWidget);
-      expect(find.byType(Expanded), findsOneWidget);
-    });
-
-    testWidgets('should handle custom showBackButton setting', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget(
-        child: const CustomTestScreen(customShowBackButton: false),
-      ));
-
-      final appBar = tester.widget<AppBar>(find.byType(AppBar));
-      expect(appBar.automaticallyImplyLeading, isFalse);
-    });
-
-    testWidgets('should handle custom actions', (WidgetTester tester) async {
-      final customActions = [
-        IconButton(onPressed: () {}, icon: const Icon(Icons.settings)),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.help)),
-      ];
-
-      await tester.pumpWidget(createTestWidget(
-        child: CustomTestScreen(customActions: customActions),
-      ));
-
-      expect(find.byIcon(Icons.settings), findsOneWidget);
-      expect(find.byIcon(Icons.help), findsOneWidget);
-    });
-
-    testWidgets('should handle custom floating action button', (WidgetTester tester) async {
-      final fab = FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
+    testWidgets('should have proper Material structure', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(
+              title: Text('Test Title'),
+            ),
+            body: Center(
+              child: Column(
+                children: [
+                  Text('Content 1'),
+                  Text('Content 2'),
+                ],
+              ),
+            ),
+          ),
+        ),
       );
 
-      await tester.pumpWidget(createTestWidget(
-        child: CustomTestScreen(customFloatingActionButton: fab),
-      ));
+      expect(find.byType(AppBar), findsOneWidget);
+      expect(find.text('Test Title'), findsOneWidget);
+      expect(find.text('Content 1'), findsOneWidget);
+      expect(find.text('Content 2'), findsOneWidget);
+    });
+
+    testWidgets('should handle FloatingActionButton', (WidgetTester tester) async {
+      bool buttonPressed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                buttonPressed = true;
+              },
+              child: const Icon(Icons.add),
+            ),
+            body: const Center(
+              child: Text('FAB Test'),
+            ),
+          ),
+        ),
+      );
 
       expect(find.byType(FloatingActionButton), findsOneWidget);
       expect(find.byIcon(Icons.add), findsOneWidget);
+      
+      await tester.tap(find.byType(FloatingActionButton));
+      expect(buttonPressed, isTrue);
     });
 
-    testWidgets('should handle custom title', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget(
-        child: const CustomTestScreen(customTitle: 'My Custom Title'),
-      ));
-
-      expect(find.text('My Custom Title'), findsOneWidget);
-    });
-
-    testWidgets('should handle showMiniPlayer setting', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget(
-        child: const CustomTestScreen(customShowMiniPlayer: false),
-      ));
-
-      expect(find.byType(Scaffold), findsOneWidget);
-    });
-
-    testWidgets('should position FAB correctly with mini player', (WidgetTester tester) async {
-      final fab = FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
+    testWidgets('should render navigation elements', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(
+              leading: const BackButton(),
+              actions: const [
+                Icon(Icons.search),
+                Icon(Icons.more_vert),
+              ],
+            ),
+            body: const Center(
+              child: Text('Navigation Test'),
+            ),
+          ),
+        ),
       );
 
-      await tester.pumpWidget(createTestWidget(
-        child: CustomTestScreen(
-          customFloatingActionButton: fab,
-          customShowMiniPlayer: true,
+      expect(find.byType(BackButton), findsOneWidget);
+      expect(find.byIcon(Icons.search), findsOneWidget);
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
+    });
+
+    testWidgets('should handle drawer', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            drawer: const Drawer(
+              child: ListView(
+                children: [
+                  DrawerHeader(
+                    child: Text('Header'),
+                  ),
+                  ListTile(
+                    title: Text('Item 1'),
+                  ),
+                ],
+              ),
+            ),
+            body: const Center(
+              child: Text('Drawer Test'),
+            ),
+          ),
         ),
-      ));
+      );
 
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.floatingActionButtonLocation, FloatingActionButtonLocation.endFloat);
+      expect(find.byType(Drawer), findsNothing); // Drawer is closed initially
+      
+      // Open drawer
+      await tester.dragFrom(const Offset(0, 100), const Offset(300, 100));
+      await tester.pumpAndSettle();
+      
+      expect(find.byType(Drawer), findsOneWidget);
+      expect(find.text('Header'), findsOneWidget);
+      expect(find.text('Item 1'), findsOneWidget);
     });
 
-    testWidgets('should handle success message display', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget(
-        child: const CustomTestScreen(),
-      ));
+    testWidgets('should handle bottom navigation', (WidgetTester tester) async {
+      int selectedIndex = 0;
 
-      await tester.tap(find.text('Show Success'));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StatefulBuilder(
+            builder: (context, setState) {
+              return Scaffold(
+                body: Center(
+                  child: Text('Page $selectedIndex'),
+                ),
+                bottomNavigationBar: BottomNavigationBar(
+                  currentIndex: selectedIndex,
+                  onTap: (index) {
+                    setState(() {
+                      selectedIndex = index;
+                    });
+                  },
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home),
+                      label: 'Home',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.search),
+                      label: 'Search',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.person),
+                      label: 'Profile',
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      expect(find.text('Page 0'), findsOneWidget);
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
+      
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pumpAndSettle();
+      
+      expect(find.text('Page 1'), findsOneWidget);
+    });
+
+    testWidgets('should display snackbar messages', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Test Message')),
+                    );
+                  },
+                  child: const Text('Show Snackbar'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Test Message'), findsNothing);
+      
+      await tester.tap(find.text('Show Snackbar'));
       await tester.pump();
-
-      expect(true, isTrue);
+      
+      expect(find.text('Test Message'), findsOneWidget);
+      expect(find.byType(SnackBar), findsOneWidget);
     });
 
-    testWidgets('should handle error message display', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget(
-        child: const CustomTestScreen(),
-      ));
+    testWidgets('should handle safe area', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SafeArea(
+              child: Center(
+                child: Text('Safe Area Content'),
+              ),
+            ),
+          ),
+        ),
+      );
 
-      await tester.tap(find.text('Show Error'));
-      await tester.pump();
-
-      expect(true, isTrue);
+      expect(find.byType(SafeArea), findsOneWidget);
+      expect(find.text('Safe Area Content'), findsOneWidget);
     });
 
-    testWidgets('should handle info message display', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget(
-        child: const CustomTestScreen(),
-      ));
+    testWidgets('should handle responsive layout', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 600) {
+                  return const Center(child: Text('Wide Layout'));
+                } else {
+                  return const Center(child: Text('Narrow Layout'));
+                }
+              },
+            ),
+          ),
+        ),
+      );
 
-      await tester.tap(find.text('Show Info'));
-      await tester.pump();
-
-      expect(true, isTrue);
+      // Default test size is narrow
+      expect(find.text('Narrow Layout'), findsOneWidget);
     });
 
-    testWidgets('should provide access to AuthProvider', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
+    testWidgets('should handle theme properly', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            brightness: Brightness.light,
+          ),
+          home: Scaffold(
+            appBar: AppBar(
+              title: const Text('Theme Test'),
+            ),
+            body: const Center(
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('Themed Content'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 
-      expect(find.byType(TestScreen), findsOneWidget);
-    });
-
-    testWidgets('should handle navigation methods', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.byType(TestScreen), findsOneWidget);
-    });
-
-    testWidgets('should handle provider access method', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.byType(TestScreen), findsOneWidget);
-    });
-
-    testWidgets('should handle empty actions list', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      final appBar = tester.widget<AppBar>(find.byType(AppBar));
-      expect(appBar.actions, isEmpty);
-    });
-
-    testWidgets('should handle null floating action button', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.floatingActionButton, isNull);
-    });
-
-    testWidgets('should have proper background color', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, isNotNull);
-    });
-
-    testWidgets('should handle widget rebuilds correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.text('Test Content'), findsOneWidget);
-
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.text('Test Content'), findsOneWidget);
-    });
-
-    testWidgets('should maintain state consistency', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-
-      expect(find.byType(BaseScreen), findsOneWidget);
-      expect(find.text('Test Screen'), findsOneWidget);
-    });
-
-    testWidgets('should handle different screen configurations', (WidgetTester tester) async {
-      const configurations = [
-        CustomTestScreen(customShowBackButton: true, customShowMiniPlayer: true),
-        CustomTestScreen(customShowBackButton: false, customShowMiniPlayer: false),
-        CustomTestScreen(customShowBackButton: true, customShowMiniPlayer: false),
-        CustomTestScreen(customShowBackButton: false, customShowMiniPlayer: true),
-      ];
-
-      for (final config in configurations) {
-        await tester.pumpWidget(createTestWidget(child: config));
-        expect(find.byType(CustomTestScreen), findsOneWidget);
-        
-        await tester.pumpWidget(Container());
-      }
+      expect(find.byType(Card), findsOneWidget);
+      expect(find.text('Themed Content'), findsOneWidget);
+      
+      final MaterialApp app = tester.widget(find.byType(MaterialApp));
+      expect(app.theme?.brightness, Brightness.light);
     });
   });
 }

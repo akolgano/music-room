@@ -355,8 +355,11 @@ class _PlaylistDetailScreenState extends BaseScreen<PlaylistDetailScreen> with U
     final isCurrentlyPlaying = playerService.isPlaying && playerService.playlistId == widget.playlistId;
     
     final bool canModifyTracks = (_playlist?.isEvent ?? false) ? _isOwner : _canEditPlaylist;
+    
+    // Disable deletion of ANY track when music is playing in this playlist
     final bool canRemoveTrack = canModifyTracks && 
-        !((_playlist?.isEvent ?? false) && playlistTrack.points > 0);
+        !((_playlist?.isEvent ?? false) && playlistTrack.points > 0) &&
+        !isCurrentlyPlaying;
     
     final bool canReorderTracks = canModifyTracks && 
         !isCurrentlyPlaying && 
