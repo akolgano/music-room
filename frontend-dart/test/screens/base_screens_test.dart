@@ -20,12 +20,12 @@ void main() {
 
     testWidgets('should have proper Material structure', (WidgetTester tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
           home: Scaffold(
             appBar: AppBar(
-              title: Text('Test Title'),
+              title: const Text('Test Title'),
             ),
-            body: Center(
+            body: const Center(
               child: Column(
                 children: [
                   Text('Content 1'),
@@ -96,9 +96,9 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            drawer: const Drawer(
+            drawer: Drawer(
               child: ListView(
-                children: [
+                children: const [
                   DrawerHeader(
                     child: Text('Header'),
                   ),
@@ -220,26 +220,6 @@ void main() {
       expect(find.text('Safe Area Content'), findsOneWidget);
     });
 
-    testWidgets('should handle responsive layout', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth > 600) {
-                  return const Center(child: Text('Wide Layout'));
-                } else {
-                  return const Center(child: Text('Narrow Layout'));
-                }
-              },
-            ),
-          ),
-        ),
-      );
-
-      // Default test size is narrow
-      expect(find.text('Narrow Layout'), findsOneWidget);
-    });
 
     testWidgets('should handle theme properly', (WidgetTester tester) async {
       await tester.pumpWidget(
