@@ -1,36 +1,171 @@
-# created by virtualenv automatically
+# Python
 *.pyc
-*.swp
+*.pyo
+*.pyd
 __pycache__/
-*/__pycache__/
-/bin/
-/lib/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.swp
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+htmlcov/
+*.cover
+.hypothesis/
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv
+bin/
+lib/
+lib64/
+include/
+pyvenv.cfg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media/
+/static/
 /logs/
 django.log
-.vscode/
-/venv/
-#migrations/
-.env
-tmp
 
-# Kotlin & Android
+# Environment variables
+.env
+.env.*
+*.env
+
+# IDE
+.vscode/
+.idea/
 *.iml
-.gradle/
-/local.properties
-/.idea/
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
 /build/
-/captures/
-.externalNativeBuild
-.cxx/
+frontend-dart/build/
+frontend-dart/.env
+**/windows/flutter/
+*.lock.json
+
+# Android
 *.apk
 *.aab
 *.aar
 *.ap_
 *.dex
+*.class
+.gradle/
+local.properties
+captures/
+.externalNativeBuild
+.cxx/
 output.json
-frontend-dart/.env
+frontend-dart/android/.gradle/
+frontend-dart/android/build/
+frontend-dart/android/local.properties
 
-**/windows/flutter/
+# iOS
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+**/*.pbxproj.bak
+**/*.xcworkspace
+xcuserdata/
+DerivedData/
+.build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+frontend-dart/ios/Flutter/Flutter.framework
+frontend-dart/ios/Flutter/Flutter.podspec
+frontend-dart/ios/.symlinks/
+frontend-dart/ios/Pods/
+
+# Testing
+.coverage
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.coveragerc
+.nox/
+
+# Documentation
+docs/_build/
+site/
 music-room.pdf
 music-room.md
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.old
+*~
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Node (if any JS/TS in future)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.dockerignore
+
+# Avatars and uploaded files (keep structure but ignore contents)
+apps/profile/avatars/avatars/*
+!apps/profile/avatars/avatars/.gitkeep
+
+# Fixtures backup
+*.backup
+
+# Misc
+*.orig
+.cache/
+.history/
