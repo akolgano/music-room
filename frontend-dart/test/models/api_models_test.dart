@@ -154,7 +154,7 @@ void main() {
         final json = request.toJson();
         
         expect(json['license_type'], 'premium');
-        expect(json['invited_users'], [1, 2, 3]);
+        expect(json['invited_users'], ['1', '2', '3']);
         expect(json['vote_start_time'], '2023-01-01T00:00:00Z');
         expect(json['vote_end_time'], '2023-01-02T00:00:00Z');
         expect(json['latitude'], 40.7128);
