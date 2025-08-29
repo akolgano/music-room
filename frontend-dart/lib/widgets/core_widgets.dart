@@ -146,64 +146,13 @@ class AppWidgets {
   }) async {
     return await showDialog<String>(
       context: context,
-      builder: (ctx) {
-        final controller = TextEditingController(text: initialValue);
-        final formKey = GlobalKey<FormState>();
-        final scheme = Theme.of(ctx).colorScheme;
-        final defaultBorder = _border(8, Colors.white.withValues(alpha: 0.3), 1);
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return PopScope(
-              canPop: true,
-              onPopInvokedWithResult: (didPop, result) {
-                if (didPop) {
-                  controller.dispose();
-                }
-              },
-              child: AlertDialog(
-                backgroundColor: scheme.surface,
-                title: Text(title, style: TextStyle(color: scheme.onSurface)),
-                content: Form(
-                key: formKey,
-                child: TextFormField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    hintText: hintText,
-                    filled: true,
-                    fillColor: scheme.surface,
-                    border: defaultBorder,
-                    enabledBorder: defaultBorder,
-                    focusedBorder: _border(8, scheme.primary, 2),
-                    errorBorder: _border(8, scheme.error, 2),
-                    focusedErrorBorder: _border(8, scheme.error, 2),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  style: TextStyle(color: scheme.onSurface),
-                  maxLines: maxLines,
-                  validator: validator,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                  },
-                  child: Text('Cancel', style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.7))),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (formKey.currentState?.validate() ?? true) {
-                      final text = controller.text;
-                      Navigator.pop(ctx, text);
-                    }
-                  },
-                  child: const Text('Save'),
-                ),
-              ],
-            ),
-            );
-          });
-      },
+      builder: (ctx) => _TextInputDialog(
+        title: title,
+        initialValue: initialValue,
+        hintText: hintText,
+        maxLines: maxLines,
+        validator: validator,
+      ),
     );
   }
 
@@ -662,6 +611,90 @@ class AppWidgets {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TextInputDialog extends StatefulWidget {
+  final String title;
+  final String? initialValue;
+  final String? hintText;
+  final int maxLines;
+  final String? Function(String?)? validator;
+
+  const _TextInputDialog({
+    required this.title,
+    this.initialValue,
+    this.hintText,
+    this.maxLines = 1,
+    this.validator,
+  });
+
+  @override
+  State<_TextInputDialog> createState() => _TextInputDialogState();
+}
+
+class _TextInputDialogState extends State<_TextInputDialog> {
+  late final TextEditingController _controller;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final defaultBorder = AppWidgets._border(8, Colors.white.withValues(alpha: 0.3), 1);
+    
+    return AlertDialog(
+      backgroundColor: scheme.surface,
+      title: Text(widget.title, style: TextStyle(color: scheme.onSurface)),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            hintText: widget.hintText,
+            filled: true,
+            fillColor: scheme.surface,
+            border: defaultBorder,
+            enabledBorder: defaultBorder,
+            focusedBorder: AppWidgets._border(8, scheme.primary, 2),
+            errorBorder: AppWidgets._border(8, scheme.error, 2),
+            focusedErrorBorder: AppWidgets._border(8, scheme.error, 2),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          style: TextStyle(color: scheme.onSurface),
+          maxLines: widget.maxLines,
+          validator: widget.validator,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text('Cancel', style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.7))),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_formKey.currentState?.validate() ?? true) {
+              final text = _controller.text;
+              Navigator.pop(context, text);
+            }
+          },
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 }

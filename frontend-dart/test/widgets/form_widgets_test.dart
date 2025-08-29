@@ -95,6 +95,8 @@ void main() {
 
       await tester.enterText(find.byType(TextFormField), 'test input');
       expect(controller.text, 'test input');
+      
+      controller.dispose();
     });
 
     testWidgets('should handle different input types', (WidgetTester tester) async {
